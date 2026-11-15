@@ -1,0 +1,119 @@
+@import "@nezha-kumo/ui/styles.css";
+@import "tailwindcss";
+
+.demo-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+    font-weight: 600;
+}
+.demo-brand svg {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    color: var(--text-color-kumo-link);
+}
+.demo-tiles {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+}
+.demo-tile {
+    height: 128px;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: 8px;
+    background: var(--color-kumo-base);
+    box-shadow: 0 0 0 1px var(--color-kumo-line);
+}
+.demo-tile-header {
+    padding: 12px 16px 2px;
+}
+.demo-tile-label {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 500;
+    color: var(--text-color-kumo-subtle);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.demo-tile-value {
+    font-size: 24px;
+    line-height: 30px;
+    font-weight: 600;
+    color: var(--text-color-kumo-strong);
+}
+.demo-spark {
+    height: 56px;
+    width: 100%;
+    color: var(--color-kumo-brand);
+}
+.demo-panel {
+    margin-top: 28px;
+    padding: 20px 24px;
+    border: 1px solid var(--color-kumo-line);
+    border-radius: 8px;
+    background: var(--color-kumo-base);
+}
+.demo-panel h2,
+.demo-aside h2 {
+    margin: 0 0 16px;
+    font-size: 14px;
+    font-weight: 600;
+}
+.demo-report {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding: 16px 0;
+    border-top: 1px solid var(--color-kumo-line);
+}
+.demo-report:first-of-type {
+    border-top: 0;
+}
+.demo-report a {
+    flex: 1;
+    min-width: 150px;
+    color: var(--text-color-kumo-link);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.demo-muted {
+    color: var(--text-color-kumo-subtle);
+    font-size: 12px;
+}
+.demo-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-color-kumo-success);
+}
+.demo-status::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-kumo-success);
+}
+.demo-aside dl {
+    margin: 0;
+}
+.demo-aside dt {
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--text-color-kumo-subtle);
+}
+.demo-aside dd {
+    margin: 4px 0 0;
+    overflow-wrap: anywhere;
+}
+.demo-banner {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-kumo-line);
+}
