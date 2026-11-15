@@ -40,13 +40,15 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(
                         role="combobox"
                         variant="outline"
                         aria-expanded={open}
-                        className={cn("flex w-full justify-between hover:bg-inherit", className)}
+                        className={cn("flex min-w-0 w-full justify-between", className)}
                     >
                         {value ? (
                             (() => {
                                 const val = options.find((option) => option.value === value)?.label
                                 return val ? (
-                                    <div>{val}</div>
+                                    <div className="truncate" title={val}>
+                                        {val}
+                                    </div>
                                 ) : (
                                     <div className="text-muted-foreground">{placeholder}</div>
                                 )

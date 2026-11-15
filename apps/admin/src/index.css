@@ -1,4 +1,6 @@
+@import "@nezha-kumo/ui/styles.css";
 @import "tailwindcss";
+@import "@cloudflare/kumo/styles/tailwind";
 @import "@fontsource-variable/inter/wght.css";
 @plugin "tailwindcss-animate";
 
@@ -45,64 +47,60 @@
     --text-xsm--line-height: 1.25rem;
 }
 
-/* ZOOL palette (zool-theme src/styles/app.css) */
+/* Keep the existing Radix/shadcn API on the shared Kumo semantic palette. */
 :root {
-    --radius: 0.625rem;
-    --background: #f3f5f8;
-    --foreground: #0d1526;
-    --card: #ffffff;
-    --card-foreground: #0d1526;
-    --popover: #ffffff;
-    --popover-foreground: #0d1526;
-    --primary: #1849c6;
-    --primary-foreground: #ffffff;
-    --secondary: #e5ebf3;
-    --secondary-foreground: #0d1526;
-    --muted: #e8edf4;
-    --muted-foreground: #45546a;
-    --accent: #e3ecff;
-    --accent-foreground: #1643b8;
-    --destructive: #bf1b30;
-    --destructive-foreground: #ffffff;
-    --border: #d4dce8;
-    --input: #b5c2d4;
-    --ring: #1849c6;
-    --good: #0a7246;
-    --warn: #8f4b00;
-    --chart-1: #1849c6;
-    --chart-2: #0b877d;
-    --chart-3: #c86400;
-    --chart-4: #8e2de2;
-    --chart-5: #d6336c;
+    --radius: 0.5rem;
+    --background: var(--color-kumo-canvas);
+    --foreground: var(--text-color-kumo-default);
+    --card: var(--color-kumo-base);
+    --card-foreground: var(--text-color-kumo-default);
+    --popover: var(--color-kumo-control);
+    --popover-foreground: var(--text-color-kumo-default);
+    --primary: var(--color-kumo-brand);
+    --primary-foreground: light-dark(
+        var(--text-color-kumo-inverse),
+        var(--text-color-kumo-default)
+    );
+    --secondary: var(--color-kumo-base);
+    --secondary-foreground: var(--text-color-kumo-default);
+    --muted: var(--color-kumo-recessed);
+    --muted-foreground: var(--text-color-kumo-subtle);
+    --accent: var(--color-kumo-tint);
+    --accent-foreground: var(--text-color-kumo-default);
+    --destructive: var(--color-kumo-danger);
+    --destructive-foreground: var(--primary-foreground);
+    --border: var(--color-kumo-line);
+    --input: var(--color-kumo-line);
+    --ring: var(--color-kumo-focus);
+    --good: var(--text-color-kumo-success);
+    --warn: var(--text-color-kumo-warning);
+    --chart-1: var(--color-kumo-brand);
+    --chart-2: var(--color-kumo-success);
+    --chart-3: var(--color-kumo-warning);
+    --chart-4: var(--color-kumo-badge-purple);
+    --chart-5: var(--color-kumo-danger);
 }
 
-.dark {
-    --background: #0a0f1a;
-    --foreground: #f0f4fa;
-    --card: #111827;
-    --card-foreground: #f0f4fa;
-    --popover: #111827;
-    --popover-foreground: #f0f4fa;
-    --primary: #4e86f7;
-    --primary-foreground: #070e1b;
-    --secondary: #1a263b;
-    --secondary-foreground: #f0f4fa;
-    --muted: #172133;
-    --muted-foreground: #97a8c2;
-    --accent: #142442;
-    --accent-foreground: #78a6ff;
-    --destructive: #c81e3a;
-    --destructive-foreground: #ffffff;
-    --border: #23314a;
-    --input: #354868;
-    --ring: #4e86f7;
-    --good: #34d399;
-    --warn: #fbbf24;
-    --chart-1: #5b92ff;
-    --chart-2: #2dd4bf;
-    --chart-3: #fbbf24;
-    --chart-4: #e879f9;
-    --chart-5: #f472b6;
+/* Kumo emphasis gradient also applies to Radix asChild triggers and links. */
+.nkt-emphasis {
+    --nkt-emphasis: var(--primary);
+    background-color: var(--nkt-emphasis);
+    background-image: linear-gradient(
+        to bottom,
+        color-mix(in oklch, var(--nkt-emphasis), var(--primary-foreground) 15%),
+        var(--nkt-emphasis)
+    );
+    box-shadow: inset 0 1px color-mix(in oklch, var(--nkt-emphasis), var(--primary-foreground) 30%);
+}
+.nkt-emphasis:hover:not(:disabled) {
+    background-image: linear-gradient(
+        to bottom,
+        color-mix(in oklch, var(--nkt-emphasis), var(--primary-foreground) 30%),
+        var(--nkt-emphasis)
+    );
+}
+.nkt-emphasis-danger {
+    --nkt-emphasis: var(--destructive);
 }
 
 @layer base {
@@ -111,7 +109,8 @@
     }
 
     body {
-        @apply bg-background text-foreground font-sans antialiased;
+        @apply bg-background text-foreground font-sans text-base antialiased;
+        letter-spacing: -0.01em;
         font-synthesis: none;
     }
     .dark {
@@ -146,7 +145,7 @@ body,
     overflow: hidden;
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    background: #09090b;
+    background: light-dark(var(--color-kumo-contrast), var(--color-kumo-canvas));
 }
 
 .terminal-screen {

@@ -21,7 +21,7 @@ import { TableVirtuoso } from "react-virtuoso"
 // but here we don't want it, so let's use a new component with only <table> tag
 const TableComponent = forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
     ({ className, ...props }, ref) => (
-        <table ref={ref} className={cn("w-full caption-bottom text-sm", className)} {...props} />
+        <table ref={ref} className={cn("w-full caption-bottom text-base", className)} {...props} />
     ),
 )
 TableComponent.displayName = "TableComponent"

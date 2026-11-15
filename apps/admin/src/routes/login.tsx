@@ -65,9 +65,18 @@ function Login() {
     const { t } = useTranslation()
 
     return (
-        <div className="mt-28 sm:max-w-sm m-auto max-w-xs">
+        <div className="mx-auto my-12 w-[calc(100%-2rem)] max-w-sm rounded-xl border bg-card p-6 shadow-xs">
+            <div className="mb-6 space-y-2">
+                <h1 className="text-xl leading-6 font-semibold">{t("Login")}</h1>
+                <p
+                    className="truncate text-base text-muted-foreground"
+                    title={settingData?.config?.site_name}
+                >
+                    {settingData?.config?.site_name || t("nezha")}
+                </p>
+            </div>
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <FormField
                         control={form.control}
                         name="username"
@@ -99,10 +108,7 @@ function Login() {
                             </FormItem>
                         )}
                     />
-                    <Button
-                        type="submit"
-                        className="w-full rounded-lg shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]"
-                    >
+                    <Button type="submit" className="w-full">
                         {t("Login")}
                     </Button>
                 </form>
@@ -121,7 +127,8 @@ function Login() {
                 {settingData?.config?.oauth2_providers?.map((p: string) => (
                     <Button
                         key={p}
-                        className="w-full rounded-lg shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] bg-muted text-primary hover:bg-muted/80 hover:text-primary/80"
+                        variant="secondary"
+                        className="w-full"
                         onClick={() => loginWith(p)}
                     >
                         <OAuthProviderIcon provider={p} className="size-4" />

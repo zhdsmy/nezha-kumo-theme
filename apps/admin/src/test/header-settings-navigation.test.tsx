@@ -31,7 +31,7 @@ test.each([true, false])(
                 </Routes>
             </MemoryRouter>,
         )
-        const accountMenu = document.querySelector<HTMLElement>('[aria-haspopup="menu"]')
+        const accountMenu = screen.getByText("alice").closest<HTMLElement>('[aria-haspopup="menu"]')
         expect(accountMenu).not.toBeNull()
         fireEvent.keyDown(accountMenu!, { key: "Enter" })
         fireEvent.click(await screen.findByRole("menuitem", { name: "Settings" }))

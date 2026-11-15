@@ -29,7 +29,7 @@ const Table = forwardRef<HTMLTableElement, HTMLAttributes<HTMLTableElement>>(
             >
                 <table
                     ref={ref}
-                    className={cn("w-full caption-bottom text-sm", className)}
+                    className={cn("w-full caption-bottom text-base", className)}
                     {...props}
                 />
             </div>
@@ -40,7 +40,7 @@ Table.displayName = "Table"
 
 const TableHeader = forwardRef<HTMLTableSectionElement, HTMLAttributes<HTMLTableSectionElement>>(
     ({ className, ...props }, ref) => (
-        <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
+        <thead ref={ref} className={cn("bg-background [&_tr]:border-b", className)} {...props} />
     ),
 )
 TableHeader.displayName = "TableHeader"
@@ -92,7 +92,7 @@ const TableHead = forwardRef<HTMLTableCellElement, ThHTMLAttributes<HTMLTableCel
         <th
             ref={ref}
             className={cn(
-                "h-10 px-3 text-left align-middle text-xs font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
+                "h-11 px-4 py-2 text-left align-middle text-sm font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
                 className,
             )}
             {...props}
@@ -105,10 +105,7 @@ const TableCell = forwardRef<HTMLTableCellElement, TdHTMLAttributes<HTMLTableCel
     ({ className, ...props }, ref) => (
         <td
             ref={ref}
-            className={cn(
-                "px-3 py-2.5 align-middle tabular-nums [&:has([role=checkbox])]:pr-0",
-                className,
-            )}
+            className={cn("h-12 px-4 py-2 align-middle [&:has([role=checkbox])]:pr-0", className)}
             {...props}
         />
     ),
