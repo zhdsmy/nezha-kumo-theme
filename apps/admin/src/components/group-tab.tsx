@@ -8,7 +8,7 @@ export const GroupTab = ({ className }: { className?: string }) => {
 
     return (
         <Tabs defaultValue={location.pathname} className={className}>
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="flex w-max max-w-full overflow-x-auto justify-start">
                 <TabsTrigger value="/dashboard/server-group" asChild>
                     <Link to="/dashboard/server-group">{t("Server")}</Link>
                 </TabsTrigger>

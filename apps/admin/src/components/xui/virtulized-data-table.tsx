@@ -1,10 +1,9 @@
-"use client"
-
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { TableCell, TableHead, TableRow } from "@/components/ui/table"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { virtualizedTableFeatures } from "@/lib/table"
 import { cn } from "@/lib/utils"
+import { BREAKPOINTS } from "@nezha-kumo/ui"
 import {
     ColumnDef,
     Row,
@@ -21,7 +20,11 @@ import { TableVirtuoso } from "react-virtuoso"
 // but here we don't want it, so let's use a new component with only <table> tag
 const TableComponent = forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
     ({ className, ...props }, ref) => (
-        <table ref={ref} className={cn("w-full caption-bottom text-base", className)} {...props} />
+        <table
+            ref={ref}
+            className={cn("w-full table-fixed caption-bottom text-base", className)}
+            {...props}
+        />
     ),
 )
 TableComponent.displayName = "TableComponent"
@@ -99,7 +102,7 @@ export function DataTable<TData extends RowData>({
 
     const [heightState, setHeight] = useState(0)
     const ref = useRef(null)
-    const isDesktop = useMediaQuery("(min-width: 640px)")
+    const isDesktop = useMediaQuery(`(min-width: ${BREAKPOINTS.gutter}px)`)
 
     useEffect(() => {
         const calculateHeight = () => {
@@ -150,7 +153,7 @@ export function DataTable<TData extends RowData>({
                                         key={header.id}
                                         colSpan={header.colSpan}
                                         style={{
-                                            width: header.getSize(),
+                                            width: header.column.columnDef.size,
                                         }}
                                     >
                                         {header.isPlaceholder ? null : (

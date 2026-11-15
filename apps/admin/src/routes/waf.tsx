@@ -29,6 +29,7 @@ import {
     wafBlockIdentifiers,
     wafBlockReasons,
 } from "@/types"
+import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender, useTable } from "@tanstack/react-table"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -257,12 +258,13 @@ export default function WAFPage() {
     }
 
     return (
-        <div className="px-3">
-            <SettingsTab className="mt-6 w-full" />
-            <div className="flex mt-4 mb-4">
-                {isAdmin && (
+        <Page
+            title={t("WAF")}
+            tabs={<SettingsTab />}
+            actions={
+                isAdmin && (
                     <HeaderButtonGroup
-                        className="flex-2 flex gap-2 ml-auto"
+                        className="flex flex-wrap gap-2"
                         delete={{
                             fn: deleteWAF,
                             id: selectedRows.map((r) => r.original.ip || ""),
@@ -271,9 +273,10 @@ export default function WAFPage() {
                     >
                         <></>
                     </HeaderButtonGroup>
-                )}
-            </div>
-            <Table>
+                )
+            }
+        >
+            <Table primaryColumn="ip">
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>
@@ -327,6 +330,6 @@ export default function WAFPage() {
                 </TableBody>
             </Table>
             {renderPagination()}
-        </div>
+        </Page>
     )
 }

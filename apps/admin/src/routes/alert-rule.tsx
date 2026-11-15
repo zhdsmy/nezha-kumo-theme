@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/table"
 import { selectableTableFeatures } from "@/lib/table"
 import { ModelAlertRule, triggerModes } from "@/types"
+import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender, useTable } from "@tanstack/react-table"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -142,9 +143,10 @@ export default function AlertRulePage() {
     const selectedRows = table.getSelectedRowModel().rows
 
     return (
-        <div className="px-3">
-            <div className="flex mt-6 mb-4">
-                <NotificationTab className="flex-1 mr-4 sm:max-w-[40%]" />
+        <Page
+            title={t("AlertRule")}
+            tabs={<NotificationTab />}
+            actions={
                 <HeaderButtonGroup
                     className="flex ml-auto self-end sm:self-auto gap-2 flex-wrap shrink-0"
                     delete={{
@@ -155,8 +157,8 @@ export default function AlertRulePage() {
                 >
                     <AlertRuleCard mutate={mutate} />
                 </HeaderButtonGroup>
-            </div>
-
+            }
+        >
             <Table>
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
@@ -210,6 +212,6 @@ export default function AlertRulePage() {
                     )}
                 </TableBody>
             </Table>
-        </div>
+        </Page>
     )
 }

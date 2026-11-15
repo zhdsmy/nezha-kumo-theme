@@ -1,7 +1,10 @@
+import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { cn } from "@/lib/utils"
+import { BREAKPOINTS } from "@nezha-kumo/ui"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
 import { ComponentPropsWithoutRef, ComponentRef, HTMLAttributes, forwardRef } from "react"
+import { useTranslation } from "react-i18next"
 
 const Dialog = DialogPrimitive.Root
 
@@ -29,25 +32,30 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 const DialogContent = forwardRef<
     ComponentRef<typeof DialogPrimitive.Content>,
     ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-    <DialogPortal>
-        <DialogOverlay />
-        <DialogPrimitive.Content
-            ref={ref}
-            className={cn(
-                "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-card p-6 shadow-lg max-sm:inset-0 max-sm:max-w-none! max-sm:translate-0 max-sm:border-0 max-sm:p-3 max-sm:pt-[max(0.75rem,env(safe-area-inset-top))] duration-150 motion-reduce:animate-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
-                className,
-            )}
-            {...props}
-        >
-            {children}
-            <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-                <X className="h-4 w-4" />
-                <span className="sr-only">Close</span>
-            </DialogPrimitive.Close>
-        </DialogPrimitive.Content>
-    </DialogPortal>
-))
+>(({ className, children, ...props }, ref) => {
+    const sheet = !useMediaQuery(`(min-width: ${BREAKPOINTS.gutter}px)`)
+    const { t } = useTranslation()
+    return (
+        <DialogPortal>
+            <DialogOverlay />
+            <DialogPrimitive.Content
+                ref={ref}
+                data-layout={sheet ? "sheet" : "dialog"}
+                className={cn(
+                    "nkt-dialog max-w-lg fixed z-50 flex flex-col gap-4 border bg-card p-6 shadow-lg duration-150 motion-reduce:animate-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+                    className,
+                )}
+                {...props}
+            >
+                {children}
+                <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">{t("Close")}</span>
+                </DialogPrimitive.Close>
+            </DialogPrimitive.Content>
+        </DialogPortal>
+    )
+})
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
 const DialogHeader = ({ className, ...props }: HTMLAttributes<HTMLDivElement>) => (
@@ -58,7 +66,7 @@ DialogHeader.displayName = "DialogHeader"
 const DialogFooter = ({ className, ...props }: HTMLAttributes<HTMLDivElement>) => (
     <div
         className={cn(
-            "sticky bottom-0 z-10 -mx-1 mt-4 flex flex-row justify-end gap-2 border-t bg-card px-1 pt-1 pb-[env(safe-area-inset-bottom)] [&>*]:my-2",
+            "nkt-dialog-footer sticky z-10 mt-auto flex shrink-0 flex-row justify-end gap-2 border-t bg-card pt-3",
             className,
         )}
         {...props}

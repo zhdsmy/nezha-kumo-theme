@@ -1,4 +1,6 @@
 {
+    "Navigation": { "Monitoring": "監控", "Automation": "自動化", "System": "系統" },
+    "TableDetails": "列詳情",
     "nezha": "哪吒監控",
     "theme": {
         "light": "亮色",

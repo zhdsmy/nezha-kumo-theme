@@ -24,6 +24,7 @@ import {
 import { useAuth } from "@/hooks/useAuth"
 import { selectableTableFeatures } from "@/lib/table"
 import { ModelOnlineUser, ModelOnlineUserApi } from "@/types"
+import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender, useTable } from "@tanstack/react-table"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -238,12 +239,13 @@ export default function OnlineUserPage() {
     }
 
     return (
-        <div className="px-3">
-            <SettingsTab className="mt-6 w-full" />
-            <div className="flex mt-4 mb-4">
-                {isAdmin && (
+        <Page
+            title={t("OnlineUser")}
+            tabs={<SettingsTab />}
+            actions={
+                isAdmin && (
                     <HeaderBlockButtonGroup
-                        className="flex-2 flex gap-2 ml-auto"
+                        className="flex flex-wrap gap-2"
                         block={{
                             fn: blockUser,
                             id: selectedRows.map((r) => r.original.ip ?? ""),
@@ -252,9 +254,10 @@ export default function OnlineUserPage() {
                     >
                         <></>
                     </HeaderBlockButtonGroup>
-                )}
-            </div>
-            <Table>
+                )
+            }
+        >
+            <Table primaryColumn="ip">
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>
@@ -308,6 +311,6 @@ export default function OnlineUserPage() {
                 </TableBody>
             </Table>
             {renderPagination()}
-        </div>
+        </Page>
     )
 }

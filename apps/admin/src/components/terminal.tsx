@@ -7,8 +7,10 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { useMediaQuery } from "@/hooks/useMediaQuery"
 import useTerminal from "@/hooks/useTerminal"
 import { type TerminalKey, controlSequenceForInput, terminalKeySequence } from "@/lib/terminal-keys"
+import { BREAKPOINTS, Page } from "@nezha-kumo/ui"
 import { FitAddon } from "@xterm/addon-fit"
 import { Terminal } from "@xterm/xterm"
 import "@xterm/xterm/css/xterm.css"
@@ -54,6 +56,7 @@ const maxClipboardBytes = 512 * 1024
 
 export const XtermComponent = forwardRef<HTMLDivElement, XtermProps & JSX.IntrinsicElements["div"]>(
     ({ wsUrl, setClose, className = "", ...props }, ref) => {
+        const mobile = !useMediaQuery(`(min-width: ${BREAKPOINTS.gutter}px)`)
         const shellRef = useRef<HTMLDivElement>(null)
         const screenRef = useRef<HTMLDivElement>(null)
         const terminalRef = useRef<Terminal | null>(null)
@@ -115,7 +118,7 @@ export const XtermComponent = forwardRef<HTMLDivElement, XtermProps & JSX.Intrin
             let active = true
             const terminal = new Terminal({
                 cursorBlink: true,
-                fontSize: window.innerWidth <= 640 ? 13 : 16,
+                fontSize: window.innerWidth < BREAKPOINTS.gutter ? 13 : 16,
                 scrollback: 10000,
                 scrollOnUserInput: true,
             })
@@ -287,6 +290,7 @@ export const XtermComponent = forwardRef<HTMLDivElement, XtermProps & JSX.Intrin
                 ref={shellRef}
                 className={`terminal-shell ${className}`}
                 data-connection-state={connectionState}
+                data-mobile={mobile}
                 {...props}
             >
                 <div ref={screenRef} className="terminal-screen" />
@@ -337,10 +341,11 @@ export const TerminalPage = () => {
     const terminal = useTerminal(id ? parseInt(id) : undefined)
     const terminalIdRef = useRef<HTMLDivElement>(null)
     return (
-        <div className="terminal-page px-3 sm:px-8">
-            <div className="flex mt-3 sm:mt-6 mb-3 sm:mb-4 items-center gap-2">
-                <h1 className="flex-1 text-xl sm:text-3xl font-bold tracking-tight">{`Terminal (${id})`}</h1>
-                <div className="flex ml-auto gap-2 shrink-0">
+        <Page
+            title={`Terminal (${id})`}
+            maxWidth={10000}
+            actions={
+                <div className="flex gap-2">
                     <IconButton
                         icon="expand"
                         onClick={async () => {
@@ -349,7 +354,8 @@ export const TerminalPage = () => {
                     />
                     <FMCard id={id} />
                 </div>
-            </div>
+            }
+        >
             {terminal?.session_id ? (
                 <XtermComponent
                     ref={terminalIdRef}
@@ -375,7 +381,7 @@ export const TerminalPage = () => {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </div>
+        </Page>
     )
 }
 

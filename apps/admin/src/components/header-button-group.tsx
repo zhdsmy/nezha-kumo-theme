@@ -78,7 +78,6 @@ export function HeaderButtonGroup<E, U>({
                                 <AlertDialogAction
                                     className={buttonVariants({
                                         variant: "destructive",
-                                        className: "text-white",
                                     })}
                                     onClick={handleDelete}
                                 >
@@ -145,7 +144,6 @@ export function HeaderBlockButtonGroup<E, U>({
                                 <AlertDialogAction
                                     className={buttonVariants({
                                         variant: "destructive",
-                                        className: "text-white",
                                     })}
                                     onClick={handleBlock}
                                 >

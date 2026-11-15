@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table"
 import { selectableTableFeatures } from "@/lib/table"
 import { ModelDDNSProfile } from "@/types"
+import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender, useTable } from "@tanstack/react-table"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -148,9 +149,9 @@ export default function DDNSPage() {
     const selectedRows = table.getSelectedRowModel().rows
 
     return (
-        <div className="px-3">
-            <div className="flex mt-6 mb-4">
-                <h1 className="flex-1 text-3xl font-bold tracking-tight">{t("DDNS")}</h1>
+        <Page
+            title={t("DDNS")}
+            actions={
                 <HeaderButtonGroup
                     className="flex ml-auto self-end sm:self-auto gap-2 flex-wrap shrink-0"
                     delete={{
@@ -161,8 +162,8 @@ export default function DDNSPage() {
                 >
                     <DDNSCard mutate={mutate} providers={providers} />
                 </HeaderButtonGroup>
-            </div>
-
+            }
+        >
             <Table>
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
@@ -216,6 +217,6 @@ export default function DDNSPage() {
                     )}
                 </TableBody>
             </Table>
-        </div>
+        </Page>
     )
 }

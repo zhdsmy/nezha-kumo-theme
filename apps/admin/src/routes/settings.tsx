@@ -29,6 +29,7 @@ import useSetting from "@/hooks/useSetting"
 import { asOptionalField, safeExternalHref } from "@/lib/utils"
 import { nezhaLang, settingCoverageTypes } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { Page } from "@nezha-kumo/ui"
 import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -147,8 +148,7 @@ export default function SettingsPage() {
     }
 
     return (
-        <div className="px-3">
-            <SettingsTab className="mt-6 mb-4 w-full" />
+        <Page title={t("Settings")} tabs={<SettingsTab />}>
             <div>
                 <Form {...form}>
                     <form
@@ -235,11 +235,11 @@ export default function SettingsPage() {
                                                                         {template.author}
                                                                     </span>
                                                                     {!template.is_official ? (
-                                                                        <span className="px-1.5 py-0.5 rounded-md bg-red-100 text-red-800 text-xs">
+                                                                        <span className="px-1.5 py-0.5 rounded-md bg-kumo-danger-tint text-kumo-danger text-xs">
                                                                             {t("Community")}
                                                                         </span>
                                                                     ) : (
-                                                                        <span className="px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-800 text-xs">
+                                                                        <span className="px-1.5 py-0.5 rounded-md bg-kumo-info-tint text-kumo-link text-xs">
                                                                             {t("Official")}
                                                                         </span>
                                                                     )}
@@ -256,7 +256,7 @@ export default function SettingsPage() {
                                                                     )}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
-                                                                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                                                                    className="text-sm text-kumo-link hover:underline"
                                                                 >
                                                                     {template.repository}
                                                                 </a>
@@ -275,11 +275,11 @@ export default function SettingsPage() {
                                     {!config?.frontend_templates?.find(
                                         (t) => t.path === field.value,
                                     )?.is_official && (
-                                        <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-200 bg-yellow-100 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-md p-2">
+                                        <div className="mt-2 text-sm text-kumo-warning bg-kumo-warning-tint border border-kumo-warning/40 rounded-md p-2">
                                             <div className="font-medium text-lg mb-1">
                                                 {t("CommunityThemeWarning")}
                                             </div>
-                                            <div className="text-yellow-700 dark:text-yellow-200">
+                                            <div className="text-kumo-warning">
                                                 {t("CommunityThemeDescription")}
                                             </div>
                                         </div>
@@ -624,6 +624,6 @@ export default function SettingsPage() {
                     </form>
                 </Form>
             </div>
-        </div>
+        </Page>
     )
 }

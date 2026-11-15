@@ -6,18 +6,19 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { OAuthProviderIcon } from "@/components/ui/icon"
 import { useMainStore } from "@/hooks/useMainStore"
-import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { useServer } from "@/hooks/useServer"
 import useSetting from "@/hooks/useSetting"
+import { Page } from "@nezha-kumo/ui"
 import { Boxes, Server } from "lucide-react"
 import { useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 
 export default function ProfilePage() {
     const { profile, setProfile } = useMainStore()
     const { servers, serverGroups } = useServer()
     const { data: settingData } = useSetting()
-    const isDesktop = useMediaQuery("(min-width: 890px)")
+    const { t } = useTranslation()
 
     useEffect(() => {
         const oauth2 = new URLSearchParams(window.location.search).get("oauth2")
@@ -50,104 +51,111 @@ export default function ProfilePage() {
 
     return (
         profile && (
-            <div className={`flex p-8 gap-4 ${isDesktop ? "ml-6" : "flex-col"}`}>
-                <div
-                    className={`flex ${isDesktop ? "flex-col mr-6" : "gap-4 w-full items-center"}`}
-                >
-                    <Avatar
-                        className={`${isDesktop ? "h-[300px] w-[300px]" : "h-[150px] w-[150px]"} border-foreground border-[1px]`}
-                    >
-                        <AvatarImage
-                            src={
-                                "https://api.dicebear.com/7.x/notionists/svg?seed=" +
-                                profile.username
-                            }
-                            alt={profile.username}
-                        />
-                        <AvatarFallback>{profile.username}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                        <p className="justify-center text-3xl font-semibold">{profile.username}</p>
-                        <p className="text-gray-400">IP: {profile.login_ip || "Unknown"}</p>
+            <Page title={t("Profile")} actions={<ProfileCard className="rounded-lg" />}>
+                <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr))]">
+                    <div className="flex min-w-0 items-start gap-4">
+                        <Avatar className="size-24 shrink-0 border">
+                            <AvatarImage
+                                src={
+                                    "https://api.dicebear.com/7.x/notionists/svg?seed=" +
+                                    encodeURIComponent(profile.username)
+                                }
+                                alt=""
+                            />
+                            <AvatarFallback>
+                                {Array.from(profile.username).slice(0, 2).join("").toUpperCase()}
+                            </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                            <p
+                                className="line-clamp-2 text-xl font-semibold"
+                                title={profile.username}
+                            >
+                                {profile.username}
+                            </p>
+                            <p className="break-all text-muted-foreground">
+                                IP: {profile.login_ip || "Unknown"}
+                            </p>
+                        </div>
                     </div>
-                    {isDesktop && (
-                        <ProfileCard className="flex mt-4 justify-center items-center max-w-[300px] rounded-lg" />
-                    )}
-                </div>
-                {!isDesktop && (
-                    <ProfileCard className="flex justify-center items-center max-w-full rounded-lg" />
-                )}
-                <div className="w-full">
-                    <div className="flex flex-col gap-4">
-                        <Card className="w-full">
-                            <CardHeader>
-                                <CardTitle className="flex gap-2 text-xl items-center">
-                                    <Server /> Servers
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="text-lg font-semibold">
-                                {servers?.length || 0}
-                            </CardContent>
-                        </Card>
-                        <Card className="w-full">
-                            <CardHeader>
-                                <CardTitle className="flex gap-2 text-xl items-center">
-                                    <Boxes /> Server Groups
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="text-lg font-semibold">
-                                {serverGroups?.length || 0}
-                            </CardContent>
-                        </Card>
+                    <div className="w-full">
+                        <div className="flex flex-col gap-4">
+                            <Card className="w-full">
+                                <CardHeader>
+                                    <CardTitle className="flex gap-2 text-xl items-center">
+                                        <Server /> Servers
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="text-lg font-semibold">
+                                    {servers?.length || 0}
+                                </CardContent>
+                            </Card>
+                            <Card className="w-full">
+                                <CardHeader>
+                                    <CardTitle className="flex gap-2 text-xl items-center">
+                                        <Boxes /> Server Groups
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="text-lg font-semibold">
+                                    {serverGroups?.length || 0}
+                                </CardContent>
+                            </Card>
 
-                        <Card className="w-full">
-                            <CardHeader>
-                                <CardTitle className="flex gap-2 text-xl items-center">
-                                    <Boxes /> Oauth2 bindings
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="text-lg font-semibold">
-                                {settingData?.config?.oauth2_providers?.map((provider) => (
-                                    <div
-                                        key={provider}
-                                        className="flex justify-between items-center flex-wrap gap-2"
-                                    >
-                                        <section className="flex gap-2 items-center">
-                                            <OAuthProviderIcon
-                                                provider={provider}
-                                                className="size-4 text-muted-foreground"
-                                            />
-                                            <p>{provider}: </p>
-                                            {profile.oauth2_bind?.[provider.toLowerCase()] && (
-                                                <p className=" bg-muted px-1.5 py-0.5 text-sm rounded-full">
-                                                    {profile.oauth2_bind?.[provider.toLowerCase()]}
-                                                </p>
+                            <Card className="w-full">
+                                <CardHeader>
+                                    <CardTitle className="flex gap-2 text-xl items-center">
+                                        <Boxes /> Oauth2 bindings
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="text-lg font-semibold">
+                                    {settingData?.config?.oauth2_providers?.map((provider) => (
+                                        <div
+                                            key={provider}
+                                            className="flex justify-between items-center flex-wrap gap-2"
+                                        >
+                                            <section className="flex gap-2 items-center">
+                                                <OAuthProviderIcon
+                                                    provider={provider}
+                                                    className="size-4 text-muted-foreground"
+                                                />
+                                                <p>{provider}: </p>
+                                                {profile.oauth2_bind?.[provider.toLowerCase()] && (
+                                                    <p className=" bg-muted px-1.5 py-0.5 text-sm rounded-full">
+                                                        {
+                                                            profile.oauth2_bind?.[
+                                                                provider.toLowerCase()
+                                                            ]
+                                                        }
+                                                    </p>
+                                                )}
+                                            </section>
+                                            {profile.oauth2_bind?.[provider.toLowerCase()] ? (
+                                                <Button
+                                                    variant="outline"
+                                                    className="my-1"
+                                                    size="sm"
+                                                    onClick={() => unbindO2(provider)}
+                                                >
+                                                    Unbind
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    variant="outline"
+                                                    className="my-1"
+                                                    size="sm"
+                                                    onClick={() => bindO2(provider)}
+                                                >
+                                                    Bind
+                                                </Button>
                                             )}
-                                        </section>
-                                        {profile.oauth2_bind?.[provider.toLowerCase()] ? (
-                                            <Button
-                                                className="w-fit bg-red-600 hover:bg-red-500 dark:text-white rounded-lg shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] my-1"
-                                                size="sm"
-                                                onClick={() => unbindO2(provider)}
-                                            >
-                                                Unbind
-                                            </Button>
-                                        ) : (
-                                            <Button
-                                                className="my-1"
-                                                size="sm"
-                                                onClick={() => bindO2(provider)}
-                                            >
-                                                Bind
-                                            </Button>
-                                        )}
-                                    </div>
-                                ))}
-                            </CardContent>
-                        </Card>
+                                        </div>
+                                    ))}
+                                </CardContent>
+                            </Card>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </Page>
         )
     )
 }

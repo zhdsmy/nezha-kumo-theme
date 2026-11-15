@@ -30,6 +30,7 @@ import { IconButton } from "@/components/xui/icon-button"
 import { useServer } from "@/hooks/useServer"
 import { selectableTableFeatures } from "@/lib/table"
 import { ModelServerTaskResponse, ModelServer as Server } from "@/types"
+import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender, useTable } from "@tanstack/react-table"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -245,9 +246,9 @@ export default function ServerPage() {
     const selectedRows = table.getSelectedRowModel().rows
 
     return (
-        <div className="px-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-3 mt-6 mb-4">
-                <h1 className="text-3xl font-bold tracking-tight">{t("Server")}</h1>
+        <Page
+            title={t("Server")}
+            actions={
                 <HeaderButtonGroup
                     className="flex gap-2 flex-wrap shrink-0"
                     delete={{
@@ -296,10 +297,11 @@ export default function ServerPage() {
                     <ServerConfigCardBatch sid={selectedRows.map((r) => r.original.id)} />
                     <InstallCommandsMenu className="rounded-lg" />
                 </HeaderButtonGroup>
-            </div>
+            }
+        >
             <div>
                 <Table>
-                    <TableHeader className="sticky top-0 bg-card z-10">
+                    <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
@@ -358,6 +360,6 @@ export default function ServerPage() {
                     </TableBody>
                 </Table>
             </div>
-        </div>
+        </Page>
     )
 }

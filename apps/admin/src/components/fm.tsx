@@ -11,13 +11,6 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import {
-    Drawer,
-    DrawerContent,
-    DrawerHeader,
-    DrawerTitle,
-    DrawerTrigger,
-} from "@/components/ui/drawer"
-import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -35,6 +28,7 @@ import {
     FMWorkerOpcode,
     ModelCreateFMResponse,
 } from "@/types"
+import { BREAKPOINTS } from "@nezha-kumo/ui"
 import { ColumnDef } from "@tanstack/react-table"
 import { Row, flexRender } from "@tanstack/react-table"
 import { File, Folder } from "lucide-react"
@@ -88,6 +82,7 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
     const columns: ColumnDef<typeof virtualizedTableFeatures, FMEntry>[] = [
         {
             id: "type",
+            size: 48,
             header: () => <span>{t("Type")}</span>,
             accessorFn: (row) => row.type,
             cell: ({ row }) => (row.original.type == 0 ? <File size={24} /> : <Folder size={24} />),
@@ -97,15 +92,15 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
             id: "name",
             accessorFn: (row) => row.name,
             cell: ({ row }) => (
-                <div className="max-w-48 text-sm whitespace-normal break-words">
+                <div className="line-clamp-2 break-all text-sm" title={row.original.name}>
                     {row.original.name}
                 </div>
             ),
-            size: 5000,
         },
         {
             header: () => <span>{t("Actions")}</span>,
             id: "download",
+            size: 80,
             cell: ({ row }) => {
                 return row.original.type == 0 ? (
                     <IconButton
@@ -440,7 +435,7 @@ export const FMCard = ({ id }: { id?: string }) => {
     const [fm, setFM] = useState<ModelCreateFMResponse | null>(null)
     const [init, setInit] = useState(false)
 
-    const isDesktop = useMediaQuery("(min-width: 640px)")
+    const isDesktop = useMediaQuery(`(min-width: ${BREAKPOINTS.gutter}px)`)
 
     const fetchFM = async () => {
         if (id) {
@@ -459,55 +454,31 @@ export const FMCard = ({ id }: { id?: string }) => {
         }
     }
 
-    return isDesktop ? (
-        <Sheet
-            modal={false}
-            open={open}
-            onOpenChange={(isOpen) => {
-                if (isOpen) setOpen(true)
-            }}
-        >
+    return (
+        <Sheet modal={!isDesktop} open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
                 <IconButton icon="folder-closed" onClick={fetchFM} />
             </SheetTrigger>
-            <SheetContent setOpen={setOpen} className="min-w-[35%]">
-                <div className="overflow-auto">
-                    <SheetTitle />
-                    <SheetHeader className="pb-2">
-                        <SheetDescription />
-                    </SheetHeader>
-                    {fm?.session_id && init ? (
-                        <FMComponent
-                            className="p-1 space-y-5"
-                            wsUrl={`/api/v1/ws/file/${fm.session_id}`}
-                        />
-                    ) : (
-                        <p>{t("Results.TheServerDoesNotOnline")}</p>
-                    )}
-                </div>
+            <SheetContent
+                className="overflow-y-auto"
+                style={{ width: isDesktop ? "min(65vw, 60rem)" : "100%", maxWidth: "none" }}
+                onInteractOutside={(event) => {
+                    if (isDesktop) event.preventDefault()
+                }}
+            >
+                <SheetHeader className="pb-4 pr-8 text-left">
+                    <SheetTitle>{t("FileManager")}</SheetTitle>
+                    <SheetDescription />
+                </SheetHeader>
+                {fm?.session_id && init ? (
+                    <FMComponent
+                        className="p-1 space-y-5"
+                        wsUrl={`/api/v1/ws/file/${fm.session_id}`}
+                    />
+                ) : (
+                    <p>{t("Results.TheServerDoesNotOnline")}</p>
+                )}
             </SheetContent>
         </Sheet>
-    ) : (
-        <Drawer>
-            <DrawerTrigger asChild>
-                <IconButton icon="folder-closed" onClick={fetchFM} />
-            </DrawerTrigger>
-            <DrawerContent className="min-h-[60%] p-4">
-                <div className="overflow-auto">
-                    <DrawerTitle />
-                    <DrawerHeader className="pb-2">
-                        <SheetDescription />
-                    </DrawerHeader>
-                    {fm?.session_id && init ? (
-                        <FMComponent
-                            className="p-1 space-y-5"
-                            wsUrl={`/api/v1/ws/file/${fm.session_id}`}
-                        />
-                    ) : (
-                        <p>{t("Results.TheServerDoesNotOnline")}</p>
-                    )}
-                </div>
-            </DrawerContent>
-        </Drawer>
     )
 }

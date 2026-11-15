@@ -15,6 +15,7 @@ import {
 import { UserCard } from "@/components/user"
 import { selectableTableFeatures } from "@/lib/table"
 import { ModelUser } from "@/types"
+import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender, useTable } from "@tanstack/react-table"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -114,11 +115,12 @@ export default function UserPage() {
     const selectedRows = table.getSelectedRowModel().rows
 
     return (
-        <div className="px-3">
-            <SettingsTab className="mt-6 w-full" />
-            <div className="flex mt-4 mb-4">
+        <Page
+            title={t("User")}
+            tabs={<SettingsTab />}
+            actions={
                 <HeaderButtonGroup
-                    className="flex-2 flex gap-2 ml-auto"
+                    className="flex flex-wrap gap-2"
                     delete={{
                         fn: deleteUser,
                         id: selectedRows.map((r) => r.original.id),
@@ -127,9 +129,9 @@ export default function UserPage() {
                 >
                     <UserCard mutate={mutate} />
                 </HeaderButtonGroup>
-            </div>
-
-            <Table>
+            }
+        >
+            <Table primaryColumn="username">
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>
@@ -182,6 +184,6 @@ export default function UserPage() {
                     )}
                 </TableBody>
             </Table>
-        </div>
+        </Page>
     )
 }

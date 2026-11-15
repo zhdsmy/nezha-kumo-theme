@@ -8,11 +8,10 @@ export const SettingsTab = ({ className }: { className?: string }) => {
     const { profile } = useAuth()
 
     const isAdmin = profile?.role === 0
-    const colsClass = isAdmin ? "grid-cols-3 gap-1 sm:grid-cols-7" : "grid-cols-2"
 
     return (
         <Tabs defaultValue={window.location.pathname} className={className}>
-            <TabsList className={`grid h-auto w-full ${colsClass}`}>
+            <TabsList className="flex w-max max-w-full overflow-x-auto justify-start">
                 {isAdmin && (
                     <>
                         <TabsTrigger value="/dashboard/settings" asChild>
