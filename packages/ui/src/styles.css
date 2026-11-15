@@ -1,0 +1,13 @@
+/*
+ * Shared design tokens and Kumo component styles.
+ * Each app's main CSS starts with:
+ *
+ *   @import "@nezha-kumo/ui/styles.css";   (must come BEFORE tailwindcss)
+ *   @import "tailwindcss";
+ *
+ * Kumo's semantic tokens match the live dashboard exactly in light mode and in
+ * 61 of 62 dark tokens (dispatch spec, tokens/kumo-diff.md).
+ */
+@source "../node_modules/@cloudflare/kumo/dist/**/*.{js,jsx}";
+@source "./**/*.{ts,tsx}";
+@import "@cloudflare/kumo/styles/tailwind";
