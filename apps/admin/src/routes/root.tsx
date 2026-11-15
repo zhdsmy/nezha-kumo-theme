@@ -1,4 +1,4 @@
-import AdminShell from "@/components/admin-shell"
+import AdminShell, { AdminActions } from "@/components/admin-shell"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import useSetting from "@/hooks/useSetting"
@@ -39,7 +39,12 @@ export default function Root() {
     return (
         <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
             {pathname === "/dashboard/login" ? (
-                <Outlet />
+                <>
+                    <div className="flex items-center justify-end gap-2 px-4 pt-3">
+                        <AdminActions />
+                    </div>
+                    <Outlet />
+                </>
             ) : (
                 <AdminShell
                     siteName={settingData.config?.site_name || "Nezha"}

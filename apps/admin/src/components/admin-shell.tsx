@@ -47,7 +47,7 @@ export default function AdminShell({
     version?: string
     children: ReactNode
 }) {
-    const { t, i18n } = useTranslation()
+    const { t } = useTranslation()
     const { profile } = useAuth()
     const { pathname } = useLocation()
     const isAdmin = profile?.role === 0
@@ -214,45 +214,7 @@ export default function AdminShell({
                     {active?.label}
                 </span>
             }
-            actions={
-                <>
-                    <Button
-                        asChild
-                        variant="ghost"
-                        size="icon"
-                        title={t("BackToHome")}
-                        aria-label={t("BackToHome")}
-                    >
-                        <a href="/">
-                            <ExternalLink />
-                        </a>
-                    </Button>
-                    <ModeToggle />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                title={t("Language")}
-                                aria-label={t("Language")}
-                            >
-                                <Languages />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="max-h-[70dvh] overflow-y-auto">
-                            {Object.entries(nezhaLang).map(([value, label]) => (
-                                <DropdownMenuItem
-                                    key={value}
-                                    onSelect={() => void i18n.changeLanguage(value)}
-                                >
-                                    {label}
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    <UserMenu />
-                </>
-            }
+            actions={<AdminActions />}
             footer={
                 <span className="text-xs text-muted-foreground">
                     {t("nezha")} {version}
@@ -261,5 +223,48 @@ export default function AdminShell({
         >
             {children}
         </AppShell>
+    )
+}
+
+export function AdminActions() {
+    const { t, i18n } = useTranslation()
+    return (
+        <>
+            <Button
+                asChild
+                variant="ghost"
+                size="icon"
+                title={t("BackToHome")}
+                aria-label={t("BackToHome")}
+            >
+                <a href="/">
+                    <ExternalLink />
+                </a>
+            </Button>
+            <ModeToggle />
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        title={t("Language")}
+                        aria-label={t("Language")}
+                    >
+                        <Languages />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="max-h-[70dvh] overflow-y-auto">
+                    {Object.entries(nezhaLang).map(([value, label]) => (
+                        <DropdownMenuItem
+                            key={value}
+                            onSelect={() => void i18n.changeLanguage(value)}
+                        >
+                            {label}
+                        </DropdownMenuItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <UserMenu />
+        </>
     )
 }
