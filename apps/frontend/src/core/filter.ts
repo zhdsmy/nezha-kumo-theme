@@ -46,18 +46,24 @@ export function matchGroups(node: NodeInfo, picked: readonly string[]) {
     return groupsOf(node).some((g) => picked.includes(g))
 }
 
-/** Every group on the page with how many nodes it holds, in page order. */
-export function groupCounts(nodes: readonly NodeInfo[]): [string, number][] {
-    const counts = new Map<string, { count: number; weight: number }>()
+/** Every group on the page with how many nodes it holds, ordered by `groupOrder` then name. */
+export function groupCounts(
+    nodes: readonly NodeInfo[],
+    groupOrder: readonly string[] = [],
+): [string, number][] {
+    const counts = new Map<string, number>()
     for (const n of nodes) {
-        for (const g of groupsOf(n)) {
-            const c = counts.get(g) ?? { count: 0, weight: Infinity }
-            counts.set(g, { count: c.count + 1, weight: Math.min(c.weight, n.weight) })
-        }
+        for (const g of groupsOf(n)) counts.set(g, (counts.get(g) ?? 0) + 1)
     }
-    return [...counts.entries()]
-        .sort((a, b) => a[1].weight - b[1].weight || a[0].localeCompare(b[0]))
-        .map(([g, c]) => [g, c.count])
+    const rank = new Map<string, number>()
+    groupOrder.forEach((g, i) => {
+        if (!rank.has(g)) rank.set(g, i)
+    })
+    const orderOf = (g: string) =>
+        g === "" ? groupOrder.length + 1 : (rank.get(g) ?? groupOrder.length)
+    return [...counts.entries()].sort(
+        (a, b) => orderOf(a[0]) - orderOf(b[0]) || a[0].localeCompare(b[0]),
+    )
 }
 
 /** Every non-empty region code in `nodes` with its count, ordered by count desc then code asc. */

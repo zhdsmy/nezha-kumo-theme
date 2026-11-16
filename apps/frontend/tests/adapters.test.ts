@@ -6,6 +6,7 @@ import {
     type NezhaGroup,
     groupIndex,
     mapFrame,
+    mapGroupOrder,
     mapServices,
     mapState,
     mergeMetrics,
@@ -33,6 +34,36 @@ describe("nezha adapter", () => {
         expect(event.nodes).toHaveLength(20)
         expect(event.nodes.filter((n) => n.groups.length > 0).length).toBeGreaterThan(10)
         expect(Object.keys(event.snapshots)).toHaveLength(20)
+    })
+
+    it("sorts group order and per-server memberships by group.id ascending even when API returns out of order", () => {
+        const shuffled: NezhaGroup[] = [
+            { group: { id: 7, name: "OTHER" }, servers: [1, 2] },
+            { group: { id: 2, name: "AWS" }, servers: [1] },
+            { group: { id: 8, name: "HOME" }, servers: [3] },
+            { group: { id: 1, name: "Tencent" }, servers: [1] },
+            { group: { id: 5, name: "BageVM" }, servers: null },
+            { group: { id: 4, name: "Akile" }, servers: [] },
+            { group: { id: 3, name: "Azure" }, servers: [2] },
+            { group: { id: 9, name: "" }, servers: [1] },
+            { group: { id: 10, name: "AWS" }, servers: [3] },
+        ]
+        const snapshotIds = shuffled.map((g) => g.group.id)
+        expect(mapGroupOrder(shuffled)).toEqual([
+            "Tencent",
+            "AWS",
+            "Azure",
+            "Akile",
+            "BageVM",
+            "OTHER",
+            "HOME",
+        ])
+        // Input array is not mutated.
+        expect(shuffled.map((g) => g.group.id)).toEqual(snapshotIds)
+        // Per-server groups also follow group.id ascending order.
+        const indexed = groupIndex(shuffled)
+        expect(indexed.get(1)).toEqual(["Tencent", "AWS", "OTHER"])
+        expect(indexed.get(2)).toEqual(["Azure", "OTHER"])
     })
 
     it("fills omitted zero values", () => {

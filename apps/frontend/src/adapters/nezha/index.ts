@@ -315,9 +315,21 @@ export function mapState(s: NezhaServer, now: number): Snapshot {
     }
 }
 
-export function groupIndex(groups: NezhaGroup[]): Map<number, string[]> {
+const sortGroups = (groups: readonly NezhaGroup[]) =>
+    [...groups].sort((a, b) => a.group.id - b.group.id)
+
+export function mapGroupOrder(groups: readonly NezhaGroup[]): string[] {
+    const seen = new Set<string>()
+    for (const { group } of sortGroups(groups)) {
+        if (group.name) seen.add(group.name)
+    }
+    return [...seen]
+}
+
+export function groupIndex(groups: readonly NezhaGroup[]): Map<number, string[]> {
     const index = new Map<number, string[]>()
-    for (const g of groups) {
+    for (const g of sortGroups(groups)) {
+        if (!g.group.name) continue
         for (const id of g.servers ?? []) index.set(id, [...(index.get(id) ?? []), g.group.name])
     }
     return index
@@ -424,11 +436,13 @@ const hub = (() => {
 // Module-level so socket frames replayed synchronously on subscribe already see the groups.
 let rawGroupsCache: NezhaGroup[] = []
 let groupsCache = new Map<number, string[]>()
+let groupOrderCache: string[] = []
 let groupsPromise: Promise<Map<number, string[]>> | null = null
 const loadGroups = () =>
     (groupsPromise ??= request<Common<NezhaGroup[]>>("/api/v1/server-group")
         .then((r) => {
             rawGroupsCache = r.data ?? []
+            groupOrderCache = mapGroupOrder(rawGroupsCache)
             return (groupsCache = groupIndex(rawGroupsCache))
         })
         .catch(() => groupsCache))
@@ -571,6 +585,8 @@ export const nezha = {
         const [frame, groups] = await Promise.all([hub.first(FIRST_FRAME_TIMEOUT_MS), loadGroups()])
         return mapFrame(frame, groups).nodes
     },
+
+    loadGroupOrder: () => loadGroups().then(() => groupOrderCache),
 
     async loadSession(): Promise<Session> {
         try {

@@ -75,6 +75,7 @@ export function App() {
     const phase = useStore((s) => s.phase)
     const site = useStore((s) => s.site)
     const settings = useStore((s) => s.settings)
+    const groupOrder = useStore((s) => s.groupOrder)
     const groupIcons = useStore((s) => s.groupIcons)
     const connection = useStore((s) => s.connection)
     const location = usePathname()
@@ -84,7 +85,7 @@ export function App() {
     const node = nodes.find((n) => n.id === nodeId)
     const section = SECTIONS.find((s) => url.hash === `#${s}`) ?? "overview"
     const picked = parseFilterQuery(url.search).groups ?? []
-    const groups = settings.showGroups ? groupCounts(nodes) : []
+    const groups = settings.showGroups ? groupCounts(nodes, groupOrder) : []
     useEffect(() => {
         void start()
     }, [])

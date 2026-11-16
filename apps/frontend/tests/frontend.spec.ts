@@ -320,3 +320,63 @@ test("sidebar group icons show emoji, https img, and fall back to folder on 404 
     await expect(insecureItem.locator("img")).toHaveCount(0)
     await expect(insecureItem.locator(".nk-nav-icon svg")).toHaveCount(1)
 })
+
+test("sidebar groups follow server-group ID order rather than API order or node weight", async ({
+    page,
+}) => {
+    await page.route("**/api/v1/server-group", (route) =>
+        route.fulfill({
+            json: {
+                success: true,
+                data: [
+                    { group: { id: 7, name: "OTHER" }, servers: [2] },
+                    { group: { id: 8, name: "HOME" }, servers: [3] },
+                    { group: { id: 3, name: "Azure" }, servers: [4] },
+                    { group: { id: 1, name: "Tencent" }, servers: [1, 4] },
+                    { group: { id: 2, name: "AWS" }, servers: [5] },
+                ],
+            },
+        }),
+    )
+    await page.routeWebSocket("**/api/v1/ws/server", (ws) => {
+        const now = Date.now()
+        const last_active = new Date(now).toISOString()
+        // Nezha weight = -display_index, so weight order is Ungrouped, OTHER, HOME, AWS, Azure, Tencent.
+        ws.send(
+            JSON.stringify({
+                now,
+                servers: [
+                    { id: 1, name: "Node Tencent", display_index: 1, last_active },
+                    { id: 2, name: "Node Other", display_index: 400, last_active },
+                    { id: 3, name: "Node Home", display_index: 300, last_active },
+                    { id: 4, name: "Node Shared", display_index: 10, last_active },
+                    { id: 5, name: "Node AWS", display_index: 200, last_active },
+                    { id: 6, name: "Node Bare", display_index: 500, last_active },
+                ],
+            }),
+        )
+    })
+
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto("/")
+    await expect(page.locator("[data-server]")).toHaveCount(6)
+
+    const groupLinks = page.locator('nav a[href^="/?group="]')
+    await expect(groupLinks.locator(".nk-nav-label")).toHaveText([
+        "Tencent",
+        "AWS",
+        "Azure",
+        "OTHER",
+        "HOME",
+        "Ungrouped",
+    ])
+    await expect(groupLinks.locator(".nk-nav-badge")).toHaveText(["2", "1", "1", "1", "1", "1"])
+
+    await groupLinks.nth(3).click()
+    await expect(page).toHaveURL("/?group=OTHER")
+    await expect(groupLinks.nth(3)).toHaveAttribute("aria-current", "page")
+    await expect(page.locator("[data-server]")).toHaveCount(1)
+
+    await page.goto("/server/4")
+    await expect(page.getByText("Tencent · Azure", { exact: true })).toBeVisible()
+})

@@ -20,6 +20,7 @@ interface State {
     phase: "loading" | "ready" | "error"
     site: SiteInfo | null
     settings: ThemeSettings
+    groupOrder: string[]
     groupIcons: Record<string, string>
     nodes: NodeInfo[]
     snapshots: Record<string, Snapshot>
@@ -45,6 +46,7 @@ let state: State = {
     phase: "loading",
     site: null,
     settings: DEFAULT_SETTINGS,
+    groupOrder: [],
     groupIcons: {},
     nodes: [],
     snapshots: {},
@@ -158,14 +160,16 @@ let refreshTimer: ReturnType<typeof setTimeout> | undefined
 
 const load = async () => {
     const session = await adapter.loadSession()
-    const [site, nodes] = await Promise.all([
+    const [site, nodes, groupOrder] = await Promise.all([
         adapter.loadSite(session.loggedIn),
         adapter.loadNodes(),
+        adapter.loadGroupOrder(),
     ])
     const actualCosts = session.loggedIn ? await adapter.loadActualCosts().catch(() => null) : null
     set({
         site,
         nodes,
+        groupOrder,
         session,
         actualCosts,
         groupIcons: site.groupIcons ?? {},
