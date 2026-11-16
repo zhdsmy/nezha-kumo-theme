@@ -536,6 +536,23 @@
     padding: 20px 12px;
 }
 /* node page */
+.nk-page-title-row:has(> .nk-page-actions > .status) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 12px;
+}
+.nk-page-title-row:has(> .nk-page-actions > .status) h1 {
+    overflow-wrap: anywhere;
+}
+.nk-page-title-row:has(> .nk-page-actions > .status) .nk-page-actions {
+    min-height: 25px;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+.nk-page:has(.nk-page-title-row > .nk-page-actions > .status) .nk-page-tabs {
+    margin-top: -12px;
+}
 .node-live-strip {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

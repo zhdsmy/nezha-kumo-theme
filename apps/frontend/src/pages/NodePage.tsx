@@ -178,8 +178,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
                     stripFlag(node.name)
                 )
             }
-            eyebrow={node.os}
-            description={<Status snapshot={snap} />}
+            actions={<Status snapshot={snap} />}
             tabs={
                 <Tabs
                     variant="underline"
