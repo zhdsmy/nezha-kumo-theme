@@ -379,5 +379,7 @@
     "GroupIconPlaceholder": "一個 Emoji 或單一字元，或 https:// 圖片網址",
     "GroupIconHint": "留空則移除圖示並恢復預設資料夾圖示。",
     "GroupIconLoadError": "圖示圖片載入失敗",
-    "GroupIconInvalid": "請輸入一個 Emoji 或單一字元，或有效的 https:// 圖片網址"
+    "GroupIconInvalid": "請輸入一個 Emoji 或單一字元，或有效的 https:// 圖片網址",
+    "SelectAll": "全選",
+    "SelectedCount": "已選 {{count}} 項"
 }

@@ -403,5 +403,7 @@
     "GroupIconPlaceholder": "一个 Emoji 或单个字符，或 https:// 图片地址",
     "GroupIconHint": "留空则移除图标并恢复默认文件夹图标。",
     "GroupIconLoadError": "图标图片加载失败",
-    "GroupIconInvalid": "请输入一个 Emoji 或单个字符，或有效的 https:// 图片地址"
+    "GroupIconInvalid": "请输入一个 Emoji 或单个字符，或有效的 https:// 图片地址",
+    "SelectAll": "全选",
+    "SelectedCount": "已选 {{count}} 项"
 }

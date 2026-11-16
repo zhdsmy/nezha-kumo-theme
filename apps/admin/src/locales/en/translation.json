@@ -403,5 +403,7 @@
     "GroupIconPlaceholder": "One emoji or character, or an https:// image URL",
     "GroupIconHint": "Leave blank to clear the icon and use the default folder.",
     "GroupIconLoadError": "Failed to load icon image",
-    "GroupIconInvalid": "Enter one emoji or character, or a valid https:// URL"
+    "GroupIconInvalid": "Enter one emoji or character, or a valid https:// URL",
+    "SelectAll": "Select all",
+    "SelectedCount": "{{count}} selected"
 }

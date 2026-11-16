@@ -1,16 +1,18 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/hooks/useAuth"
 import { useTranslation } from "react-i18next"
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 
 export const SettingsTab = ({ className }: { className?: string }) => {
     const { t } = useTranslation()
     const { profile } = useAuth()
+    const { pathname } = useLocation()
 
     const isAdmin = profile?.role === 0
+    const activeTab = pathname.replace(/\/+$/, "") || "/"
 
     return (
-        <Tabs defaultValue={window.location.pathname} className={className}>
+        <Tabs value={activeTab} className={className}>
             <TabsList className="flex w-max max-w-full overflow-x-auto justify-start">
                 {isAdmin && (
                     <>

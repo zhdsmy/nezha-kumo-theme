@@ -29,5 +29,7 @@
     "GroupIconPlaceholder": "絵文字または1文字、もしくは https:// 画像URL",
     "GroupIconHint": "空欄にするとアイコンを削除し、標準のフォルダに戻します。",
     "GroupIconLoadError": "アイコン画像を読み込めませんでした",
-    "GroupIconInvalid": "絵文字または1文字、もしくは有効な https:// URLを入力してください"
+    "GroupIconInvalid": "絵文字または1文字、もしくは有効な https:// URLを入力してください",
+    "SelectAll": "すべて選択",
+    "SelectedCount": "{{count}} 件選択中"
 }

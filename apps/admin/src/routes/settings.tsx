@@ -213,7 +213,7 @@ export default function SettingsPage() {
                                             }}
                                         >
                                             <FormControl>
-                                                <SelectTrigger className="py-8">
+                                                <SelectTrigger>
                                                     <SelectValue placeholder={t("SelectTheme")} />
                                                 </SelectTrigger>
                                             </FormControl>
@@ -224,12 +224,10 @@ export default function SettingsPage() {
                                                     ) || []
                                                 ).map((template) => (
                                                     <div key={template.path}>
-                                                        <SelectItem value={template.path!}>
-                                                            <div className="flex flex-col items-start gap-1">
-                                                                <div className="font-medium">
-                                                                    {template.name}
-                                                                </div>
-                                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                        <SelectItem
+                                                            value={template.path!}
+                                                            description={
+                                                                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                                                                     <span>
                                                                         {t("Author")}:{" "}
                                                                         {template.author}
@@ -244,7 +242,9 @@ export default function SettingsPage() {
                                                                         </span>
                                                                     )}
                                                                 </div>
-                                                            </div>
+                                                            }
+                                                        >
+                                                            {template.name}
                                                         </SelectItem>
                                                         <div className="px-8 py-1">
                                                             {safeExternalHref(
@@ -256,12 +256,12 @@ export default function SettingsPage() {
                                                                     )}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
-                                                                    className="text-sm text-kumo-link hover:underline"
+                                                                    className="break-all text-sm text-kumo-link hover:underline"
                                                                 >
                                                                     {template.repository}
                                                                 </a>
                                                             ) : (
-                                                                <span className="text-sm text-muted-foreground">
+                                                                <span className="break-all text-sm text-muted-foreground">
                                                                     {template.repository}
                                                                 </span>
                                                             )}
