@@ -14,19 +14,39 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { selectableTableFeatures } from "@/lib/table"
+import useSetting from "@/hooks/useSetting"
+import { removeServerGroupIcons } from "@/lib/group-icons"
 import { ModelServerGroupResponseItem } from "@/types"
 import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender, useTable } from "@tanstack/react-table"
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import useSWR from "swr"
 
 export default function ServerGroupPage() {
     const { t } = useTranslation()
+    const { mutate: mutateSetting } = useSetting()
     const { data, mutate, error, isLoading } = useSWR<ModelServerGroupResponseItem[]>(
         "/api/v1/server-group",
         swrFetcher,
+    )
+
+    const handleDeleteGroups = useCallback(
+        async (ids: number[]) => {
+            await deleteServerGroups(ids)
+            try {
+                if (await removeServerGroupIcons(ids)) {
+                    await mutateSetting()
+                }
+            } catch (e) {
+                console.error(e)
+                toast(t("Error"), {
+                    description: t("Results.UnExpectedError"),
+                })
+            }
+        },
+        [mutateSetting, t],
     )
 
     useEffect(() => {
@@ -97,7 +117,7 @@ export default function ServerGroupPage() {
                     <ActionButtonGroup
                         className="flex gap-2"
                         delete={{
-                            fn: deleteServerGroups,
+                            fn: handleDeleteGroups,
                             id: s.group.id,
                             mutate: mutate,
                         }}
@@ -129,7 +149,7 @@ export default function ServerGroupPage() {
                 <HeaderButtonGroup
                     className="flex ml-auto self-end sm:self-auto gap-2 flex-wrap shrink-0"
                     delete={{
-                        fn: deleteServerGroups,
+                        fn: handleDeleteGroups,
                         id: selectedRows.map((r) => r.original.group.id),
                         mutate: mutate,
                     }}

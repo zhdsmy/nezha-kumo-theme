@@ -398,5 +398,10 @@
             "expired": "已过期",
             "unavailable": "不可用"
         }
-    }
+    },
+    "GroupIcon": "图标",
+    "GroupIconPlaceholder": "Emoji、短文本（≤8 字符）或 https:// 图片地址",
+    "GroupIconHint": "留空则移除图标并恢复默认文件夹图标。",
+    "GroupIconLoadError": "图标图片加载失败",
+    "GroupIconInvalid": "请输入不超过 8 个字符的文本，或有效的 https:// 图片地址"
 }

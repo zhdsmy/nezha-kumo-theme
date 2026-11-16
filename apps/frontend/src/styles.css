@@ -51,6 +51,21 @@
 .connection[data-open="true"] i {
     background: var(--color-kumo-success);
 }
+/* group icons */
+.group-icon-img {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    object-fit: contain;
+}
+.group-icon-text {
+    max-width: 16px;
+    overflow: hidden;
+    font-size: 13px;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+}
 .muted {
     color: var(--text-color-kumo-subtle);
 }

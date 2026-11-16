@@ -12,6 +12,15 @@ export async function mockNezha(
         noHistory = false,
         stableNode = false,
         price = "USD 12.00",
+        customCode,
+    }: {
+        loggedIn?: boolean
+        empty?: boolean
+        fail?: boolean
+        noHistory?: boolean
+        stableNode?: boolean
+        price?: string
+        customCode?: string
     } = {},
 ) {
     const startedAt = Date.now()
@@ -78,6 +87,7 @@ export async function mockNezha(
                             site_name: "Infrastructure",
                             language: "en",
                             oauth2_providers: ["GitHub", "Google"],
+                            ...(customCode !== undefined ? { custom_code: customCode } : {}),
                         },
                         tsdb_enabled: !noHistory,
                     },

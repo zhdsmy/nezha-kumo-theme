@@ -20,6 +20,7 @@ interface State {
     phase: "loading" | "ready" | "error"
     site: SiteInfo | null
     settings: ThemeSettings
+    groupIcons: Record<string, string>
     nodes: NodeInfo[]
     snapshots: Record<string, Snapshot>
     session: Session
@@ -44,6 +45,7 @@ let state: State = {
     phase: "loading",
     site: null,
     settings: DEFAULT_SETTINGS,
+    groupIcons: {},
     nodes: [],
     snapshots: {},
     session: { loggedIn: false },
@@ -166,6 +168,7 @@ const load = async () => {
         nodes,
         session,
         actualCosts,
+        groupIcons: site.groupIcons ?? {},
         settings: normalizeSettings(site.settings),
         phase: "ready",
     })

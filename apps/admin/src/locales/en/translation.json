@@ -398,5 +398,10 @@
             "expired": "Expired",
             "unavailable": "Unavailable"
         }
-    }
+    },
+    "GroupIcon": "Icon",
+    "GroupIconPlaceholder": "Emoji, short text (≤8 chars), or https:// image URL",
+    "GroupIconHint": "Leave blank to clear the icon and use the default folder.",
+    "GroupIconLoadError": "Failed to load icon image",
+    "GroupIconInvalid": "Enter up to 8 characters or a valid https:// URL"
 }
