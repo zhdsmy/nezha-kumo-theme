@@ -30,10 +30,13 @@ export function Meter({
     label,
     value,
     kind,
+    detail,
 }: {
     label: string
     value: number
     kind: "cpu" | "memory" | "disk"
+    /** Small line under the track, for example "1.1 GB / 2 GB". */
+    detail?: string
 }) {
     return (
         <span className="meter" data-level={levelFor(kind, value)}>
@@ -42,6 +45,11 @@ export function Meter({
             <span className="meter-track" aria-hidden>
                 <span style={{ width: `${Math.max(0, Math.min(100, value))}%` }} />
             </span>
+            {detail && (
+                <span className="meter-detail num" title={detail}>
+                    {detail}
+                </span>
+            )}
         </span>
     )
 }

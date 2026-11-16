@@ -42,7 +42,10 @@
         "empty": "No nodes match these filters.",
         "ascending": "Ascending",
         "descending": "Descending",
-        "ungrouped": "Ungrouped"
+        "ungrouped": "Ungrouped",
+        "view": "View",
+        "cards": "Cards",
+        "compact": "Compact"
     },
     "sort": {
         "default": "Default",

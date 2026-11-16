@@ -1,11 +1,11 @@
 import { useDailyCounters } from "@/app/history"
 import { type MoneyPeriod, setMoneyCurrency, setMoneyPeriod, useMoney } from "@/app/money"
-import { Link } from "@/app/router"
+import { Link, navigate, usePathname } from "@/app/router"
 import { adapter, getLive, getSpark, seedLive, useStore, useVisibleNodes } from "@/app/store"
 import { useBilling } from "@/components/billing"
 import { Meter, NoData, Spark, Status, Tile } from "@/components/ui"
 import { onlineMonthlyCost, sharedCurrency } from "@/core/cost"
-import { groupCounts, matchGroups, parseFilterQuery, serializeFilterQuery } from "@/core/filter"
+import { matchGroups, parseFilterQuery } from "@/core/filter"
 import { SORT_KEYS, type SortKey, needsAttention, sortNodes } from "@/core/fleet"
 import {
     duration,
@@ -17,13 +17,19 @@ import {
 } from "@/core/format"
 import { recentBuckets } from "@/core/live"
 import type { NodeInfo, Snapshot } from "@/core/model"
-import { regionName, stripFlag } from "@/core/region"
+import { stripFlag } from "@/core/region"
 import { readStorage, writeStorage } from "@/core/storage"
 import { summariseFleetDay } from "@/core/summary"
-import { Button, Input, Select, Table } from "@cloudflare/kumo"
+import { Button, DropdownMenu, Input, Select, Table } from "@cloudflare/kumo"
 import { Page } from "@nezha-kumo/ui"
-import { ArrowDownIcon, ArrowUpIcon, CaretDownIcon, CaretUpIcon } from "@phosphor-icons/react"
-import { Fragment, memo, useEffect, useMemo, useState } from "react"
+import {
+    ArrowDownIcon,
+    ArrowUpIcon,
+    CaretDownIcon,
+    RowsIcon,
+    SquaresFourIcon,
+} from "@phosphor-icons/react"
+import { type ReactNode, memo, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 function readPreference<T>(key: string, fallback: T): T {
@@ -34,150 +40,167 @@ function readPreference<T>(key: string, fallback: T): T {
     }
 }
 
-const ServerRow = memo(function ServerRow({
-    node,
-    snap,
-    showBilling,
-    showRegions,
-}: {
+function ServerFacts({ node, snap, showBilling }: RowProps) {
+    const { t } = useTranslation()
+    const billing = useBilling()
+    const on = !!snap?.online
+    const days = duration(snap?.uptime ?? 0)
+    const expiry = billing.expiry(node)
+    const facts: [string, ReactNode, string?][] = [
+        [
+            t("metric.network"),
+            <>
+                <span>↑ {on ? formatSpeed(snap!.netUp) : "—"}</span>
+                <span>↓ {on ? formatSpeed(snap!.netDown) : "—"}</span>
+            </>,
+        ],
+        [
+            t("metric.traffic"),
+            <>
+                <span>↑ {formatBytes(snap?.totalUp ?? 0)}</span>
+                <span>↓ {formatBytes(snap?.totalDown ?? 0)}</span>
+            </>,
+        ],
+        [t("metric.uptime"), on ? `${days.days}d ${days.hours}h ${days.minutes}m` : "—"],
+        [
+            t("metric.load"),
+            on
+                ? [snap!.load1, snap!.load5, snap!.load15].map((v) => v.toFixed(2)).join(" / ")
+                : "—",
+        ],
+    ]
+    if (showBilling)
+        facts.push(
+            [t("metric.price"), billing.price(node) || "—"],
+            [t("metric.quota"), billing.quota(node)],
+            [t("metric.expiry"), expiry?.text || "—", expiry?.level],
+        )
+    return (
+        <dl className="card-facts">
+            {facts.map(([k, v, level]) => (
+                <div key={k}>
+                    <dt>{k}</dt>
+                    <dd className="num" data-level={level}>
+                        {v}
+                    </dd>
+                </div>
+            ))}
+        </dl>
+    )
+}
+
+interface RowProps {
     node: NodeInfo
     snap?: Snapshot
     showBilling: boolean
     showRegions: boolean
-}) {
-    const { t, i18n } = useTranslation()
-    const [expanded, setExpanded] = useState(false)
-    const billing = useBilling()
-    const cpu = snap?.cpu ?? 0,
-        mem = ratio(snap?.memUsed ?? 0, snap?.memTotal || node.memTotal)
-    const disk = ratio(snap?.diskUsed ?? 0, snap?.diskTotal || node.diskTotal)
-    const expiry = billing.expiry(node)
-    const days = duration(snap?.uptime ?? 0)
+}
+
+const usage = (used: number, total: number) =>
+    total ? `${formatBytes(used)} / ${formatBytes(total)}` : "—"
+
+/** Card view: everything the list knows about a node, with nothing left behind an expander. */
+const ServerCard = memo(function ServerCard({ node, snap, showBilling, showRegions }: RowProps) {
+    const { t } = useTranslation()
+    const memTotal = snap?.memTotal || node.memTotal
+    const diskTotal = snap?.diskTotal || node.diskTotal
+    const meta = [showRegions && node.region, node.os, node.arch, ...node.groups]
+        .filter(Boolean)
+        .join(" · ")
     return (
-        <Fragment>
-            <Table.Row className="server-row" data-server={node.id}>
-                <Table.Cell className="server-name">
-                    <Link href={adapter.nodePath(node.id)} title={node.name}>
+        <article className="server-card" data-server={node.id}>
+            <header className="card-head">
+                <div className="min-w-0">
+                    <Link className="card-name" href={adapter.nodePath(node.id)} title={node.name}>
                         {stripFlag(node.name)}
                     </Link>
-                    <span
-                        className="muted truncate"
-                        title={`${node.os} · ${node.groups.join(" · ")}`}
-                    >
-                        {showRegions && node.region ? `${node.region} · ` : ""}
-                        {node.os || node.groups.join(" · ")}
+                    <span className="card-meta muted" title={meta}>
+                        {meta || "—"}
                     </span>
-                </Table.Cell>
-                <Table.Cell className="server-status">
-                    <Status snapshot={snap} />
-                </Table.Cell>
-                <Table.Cell className="server-cpu">
-                    <Meter label={t("metric.cpu")} value={cpu} kind="cpu" />
-                </Table.Cell>
-                <Table.Cell className="server-memory">
-                    <Meter label={t("metric.memory")} value={mem} kind="memory" />
-                </Table.Cell>
-                <Table.Cell className="server-network">
-                    <span className="cell-label">{t("metric.network")}</span>
-                    <span className="net-rates num">
-                        <span>↑ {snap?.online ? formatSpeed(snap.netUp) : "—"}</span>
-                        <span>↓ {snap?.online ? formatSpeed(snap.netDown) : "—"}</span>
-                    </span>
-                </Table.Cell>
-                <Table.Cell className="wide-cell">
-                    <Meter label={t("metric.disk")} value={disk} kind="disk" />
-                </Table.Cell>
-                <Table.Cell className="wide-cell">
-                    <span className="num">
-                        {formatBytes((snap?.totalUp ?? 0) + (snap?.totalDown ?? 0))}
-                    </span>
-                    <span className="muted block text-xs">{t("node.totals")}</span>
-                </Table.Cell>
-                <Table.Cell className="wide-cell">
-                    <span className="num text-xs">
-                        {snap?.online ? `${days.days}d ${days.hours}h` : "—"}
-                    </span>
-                </Table.Cell>
-                {showBilling && (
-                    <Table.Cell className="wide-cell billing-cell">
-                        <span className="numeric-text" title={billing.price(node)}>
-                            {billing.price(node) || "—"}
-                        </span>
-                        <span className="muted numeric-text text-xs" title={expiry?.text}>
-                            {expiry?.text || "—"}
-                        </span>
-                    </Table.Cell>
-                )}
-                <Table.Cell className="row-expand">
-                    <Button
-                        size="sm"
-                        variant="ghost"
-                        shape="square"
-                        aria-expanded={expanded}
-                        aria-label={`${t("ui.details")} ${stripFlag(node.name)}`}
-                        onClick={() => setExpanded(!expanded)}
-                    >
-                        {expanded ? <CaretUpIcon size={16} /> : <CaretDownIcon size={16} />}
-                    </Button>
-                </Table.Cell>
-            </Table.Row>
-            {expanded && (
-                <Table.Row className="expanded-row">
-                    <Table.Cell colSpan={showBilling ? 10 : 9}>
-                        <dl className="expanded-info">
-                            <div>
-                                <dt>{t("metric.disk")}</dt>
-                                <dd>
-                                    {formatPercent(disk)}% · {formatBytes(snap?.diskUsed ?? 0)} /{" "}
-                                    {formatBytes(snap?.diskTotal || node.diskTotal)}
-                                </dd>
-                            </div>
-                            <div>
-                                <dt>{t("metric.traffic")}</dt>
-                                <dd>
-                                    ↑ {formatBytes(snap?.totalUp ?? 0)} · ↓{" "}
-                                    {formatBytes(snap?.totalDown ?? 0)}
-                                </dd>
-                            </div>
-                            <div>
-                                <dt>{t("metric.uptime")}</dt>
-                                <dd>
-                                    {snap?.online
-                                        ? `${days.days}d ${days.hours}h ${days.minutes}m`
-                                        : "—"}
-                                </dd>
-                            </div>
-                            {showBilling && (
-                                <>
-                                    <div>
-                                        <dt>{t("metric.price")}</dt>
-                                        <dd>{billing.price(node) || "—"}</dd>
-                                    </div>
-                                    <div>
-                                        <dt>{t("metric.quota")}</dt>
-                                        <dd>{billing.quota(node)}</dd>
-                                    </div>
-                                    <div>
-                                        <dt>{t("metric.expiry")}</dt>
-                                        <dd>{expiry?.text || "—"}</dd>
-                                    </div>
-                                </>
-                            )}
-                            <div>
-                                <dt>{t("node.region")}</dt>
-                                <dd>{regionName(node.region, i18n.language) || "—"}</dd>
-                            </div>
-                        </dl>
-                    </Table.Cell>
-                </Table.Row>
-            )}
-        </Fragment>
+                </div>
+                <Status snapshot={snap} />
+            </header>
+            <div className="card-meters">
+                <Meter
+                    label={t("metric.cpu")}
+                    value={snap?.cpu ?? 0}
+                    kind="cpu"
+                    detail={node.cpuCores ? t("metric.cores", { count: node.cpuCores }) : undefined}
+                />
+                <Meter
+                    label={t("metric.memory")}
+                    value={ratio(snap?.memUsed ?? 0, memTotal)}
+                    kind="memory"
+                    detail={usage(snap?.memUsed ?? 0, memTotal)}
+                />
+                <Meter
+                    label={t("metric.disk")}
+                    value={ratio(snap?.diskUsed ?? 0, diskTotal)}
+                    kind="disk"
+                    detail={usage(snap?.diskUsed ?? 0, diskTotal)}
+                />
+            </div>
+            <ServerFacts
+                node={node}
+                snap={snap}
+                showBilling={showBilling}
+                showRegions={showRegions}
+            />
+        </article>
     )
 })
 
+/** Compact view: one table row of the readings that matter at a glance. */
+const ServerRow = memo(function ServerRow({ node, snap, showRegions }: RowProps) {
+    const { t } = useTranslation()
+    return (
+        <Table.Row className="server-row" data-server={node.id}>
+            <Table.Cell className="server-name">
+                <Link href={adapter.nodePath(node.id)} title={node.name}>
+                    {stripFlag(node.name)}
+                </Link>
+                <span className="muted truncate" title={`${node.os} · ${node.groups.join(" · ")}`}>
+                    {showRegions && node.region ? `${node.region} · ` : ""}
+                    {node.os || node.groups.join(" · ")}
+                </span>
+            </Table.Cell>
+            <Table.Cell className="server-status">
+                <Status snapshot={snap} />
+            </Table.Cell>
+            <Table.Cell className="server-cpu">
+                <Meter label={t("metric.cpu")} value={snap?.cpu ?? 0} kind="cpu" />
+            </Table.Cell>
+            <Table.Cell className="server-memory">
+                <Meter
+                    label={t("metric.memory")}
+                    value={ratio(snap?.memUsed ?? 0, snap?.memTotal || node.memTotal)}
+                    kind="memory"
+                />
+            </Table.Cell>
+            <Table.Cell className="wide-cell">
+                <Meter
+                    label={t("metric.disk")}
+                    value={ratio(snap?.diskUsed ?? 0, snap?.diskTotal || node.diskTotal)}
+                    kind="disk"
+                />
+            </Table.Cell>
+            <Table.Cell className="server-network">
+                <span className="cell-label">{t("metric.network")}</span>
+                <span className="net-rates num">
+                    <span>↑ {snap?.online ? formatSpeed(snap.netUp) : "—"}</span>
+                    <span>↓ {snap?.online ? formatSpeed(snap.netDown) : "—"}</span>
+                </span>
+            </Table.Cell>
+        </Table.Row>
+    )
+})
+
+const CURRENCIES = ["original", "CNY", "USD", "EUR", "GBP", "JPY", "TWD", "HKD"]
+type View = "cards" | "compact"
+
 export function HomePage() {
     const { t } = useTranslation()
-    const nodes = useVisibleNodes()
+    const all = useVisibleNodes()
     const snapshots = useStore((s) => s.snapshots)
     const fed = useStore((s) => s.fed)
     const settings = useStore((s) => s.settings)
@@ -186,15 +209,16 @@ export function HomePage() {
     const actual = useStore((s) => s.actualCosts)
     const version = useStore((s) => s.liveVersion)
     const [query, setQuery] = useState("")
-    const [groups, setGroups] = useState<string[]>(
-        () =>
-            parseFilterQuery(location.search).groups ??
-            (() => {
-                const saved = readPreference<unknown>("nkt:groups", [])
-                return Array.isArray(saved)
-                    ? saved.filter((v): v is string => typeof v === "string")
-                    : []
-            })(),
+    // The sidebar's group links are the filter: it lives in the address only.
+    const search = new URL(usePathname(), location.origin).search
+    const groups = useMemo(
+        () => (settings.showGroups ? (parseFilterQuery(search).groups ?? []) : []),
+        [search, settings.showGroups],
+    )
+    // A picked group scopes the whole page, overview included.
+    const nodes = useMemo(() => all.filter((n) => matchGroups(n, groups)), [all, groups])
+    const [view, setView] = useState<View>(() =>
+        readPreference<string>("nkt:view", "cards") === "compact" ? "compact" : "cards",
     )
     const [sort, setSort] = useState<SortKey>(() => {
         const v = readPreference<string>("nkt:sort", "default")
@@ -202,24 +226,16 @@ export function HomePage() {
     })
     const [desc, setDesc] = useState(() => readPreference<boolean>("nkt:desc", false) === true)
     const money = useMoney()
-    const daily = useDailyCounters(settings.showOverview ? nodes : [])
+    // Counters and live seeds cover every node, so switching groups refetches nothing.
+    const daily = useDailyCounters(settings.showOverview ? all : [])
     useEffect(() => {
-        if (settings.showOverview) void seedLive(nodes)
-    }, [nodes, settings.showOverview])
+        if (settings.showOverview) void seedLive(all)
+    }, [all, settings.showOverview])
     useEffect(() => {
-        try {
-            writeStorage("nkt:groups", JSON.stringify(groups))
-            writeStorage("nkt:sort", JSON.stringify(sort))
-            writeStorage("nkt:desc", JSON.stringify(desc))
-        } catch {
-            /* private mode */
-        }
-        history.replaceState(
-            null,
-            "",
-            location.pathname + serializeFilterQuery(location.search, { groups, region: null }),
-        )
-    }, [groups, sort, desc])
+        writeStorage("nkt:sort", JSON.stringify(sort))
+        writeStorage("nkt:desc", JSON.stringify(desc))
+        writeStorage("nkt:view", JSON.stringify(view))
+    }, [sort, desc, view])
     const online = nodes.filter((n) => snapshots[n.id]?.online).length
     const attention = nodes.filter((n) => needsAttention(n, snapshots[n.id], fed)).length
     const offline = nodes.length - online
@@ -303,7 +319,6 @@ export function HomePage() {
         nodes.filter(
             (n) =>
                 (settings.showOffline || snapshots[n.id]?.online) &&
-                (!settings.showGroups || matchGroups(n, groups)) &&
                 `${n.name} ${n.os} ${n.region} ${n.groups.join(" ")}`
                     .toLowerCase()
                     .includes(query.toLowerCase()),
@@ -321,40 +336,59 @@ export function HomePage() {
             : attention
               ? t("status.attention", { count: attention })
               : t("status.allOnline")
+    const groupTitle =
+        groups.length === 1 ? groups[0] || t("toolbar.ungrouped") : groups.join(" · ")
+    const costLabel = t(money.period === "year" ? "overview.costYear" : "overview.cost")
+    const costHint =
+        cost?.amount === null || !currency
+            ? t(rateError ? "overview.costUnavailable" : "overview.costLoading")
+            : t("overview.costNodes", { count: cost?.paid ?? 0 })
     return (
         <Page
-            title={t("ui.overview")}
+            title={groups.length ? groupTitle : t("ui.overview")}
+            eyebrow={groups.length ? t("toolbar.groups") : undefined}
             actions={
                 settings.showCost && (
-                    <div className="money-controls">
-                        <Select
-                            size="sm"
-                            aria-label={t("money.currency")}
-                            value={money.currency}
-                            onValueChange={(v) => v && setMoneyCurrency(v)}
-                            items={{
-                                original: t("money.original"),
-                                CNY: "CNY",
-                                USD: "USD",
-                                EUR: "EUR",
-                                GBP: "GBP",
-                                JPY: "JPY",
-                                TWD: "TWD",
-                                HKD: "HKD",
-                            }}
-                        />
-                        <Select
-                            size="sm"
-                            aria-label={t("money.period")}
-                            value={money.period}
-                            onValueChange={(v) => v && setMoneyPeriod(v as MoneyPeriod)}
-                            items={{
-                                original: t("money.original"),
-                                month: t("money.month"),
-                                year: t("money.year"),
-                            }}
-                        />
-                    </div>
+                    <DropdownMenu>
+                        <DropdownMenu.Trigger>
+                            <Button variant="secondary" className="cost-button" title={costHint}>
+                                <span className="muted">{costLabel}</span>
+                                <span className="num cost-value">{costValue}</span>
+                                <CaretDownIcon size={14} />
+                            </Button>
+                        </DropdownMenu.Trigger>
+                        <DropdownMenu.Content align="end" className="min-w-40">
+                            <DropdownMenu.Group>
+                                <DropdownMenu.Label>{t("money.currency")}</DropdownMenu.Label>
+                                <DropdownMenu.RadioGroup
+                                    value={money.currency}
+                                    onValueChange={(v: string) => setMoneyCurrency(v)}
+                                >
+                                    {CURRENCIES.map((c) => (
+                                        <DropdownMenu.RadioItem key={c} value={c}>
+                                            {c === "original" ? t("money.original") : c}
+                                            <DropdownMenu.RadioItemIndicator />
+                                        </DropdownMenu.RadioItem>
+                                    ))}
+                                </DropdownMenu.RadioGroup>
+                            </DropdownMenu.Group>
+                            <DropdownMenu.Separator />
+                            <DropdownMenu.Group>
+                                <DropdownMenu.Label>{t("money.period")}</DropdownMenu.Label>
+                                <DropdownMenu.RadioGroup
+                                    value={money.period}
+                                    onValueChange={(v: string) => setMoneyPeriod(v as MoneyPeriod)}
+                                >
+                                    {(["original", "month", "year"] as const).map((p) => (
+                                        <DropdownMenu.RadioItem key={p} value={p}>
+                                            {t(`money.${p}`)}
+                                            <DropdownMenu.RadioItemIndicator />
+                                        </DropdownMenu.RadioItem>
+                                    ))}
+                                </DropdownMenu.RadioGroup>
+                            </DropdownMenu.Group>
+                        </DropdownMenu.Content>
+                    </DropdownMenu>
                 )
             }
             description={
@@ -408,23 +442,6 @@ export function HomePage() {
                     >
                         <Spark buckets={sparks.cpu} />
                     </Tile>
-                    {settings.showCost && (
-                        <Tile
-                            label={t(
-                                money.period === "year" ? "overview.costYear" : "overview.cost",
-                            )}
-                            value={costValue}
-                            sub={
-                                cost?.amount === null || !currency
-                                    ? t(
-                                          rateError
-                                              ? "overview.costUnavailable"
-                                              : "overview.costLoading",
-                                      )
-                                    : t("overview.costNodes", { count: cost?.paid ?? 0 })
-                            }
-                        />
-                    )}
                 </section>
             )}
             <section className="servers-section" aria-label={t("ui.servers")}>
@@ -441,21 +458,6 @@ export function HomePage() {
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                     />
-                    {settings.showGroups && (
-                        <Select
-                            multiple
-                            aria-label={t("toolbar.groups")}
-                            placeholder={t("toolbar.all")}
-                            value={groups}
-                            onValueChange={setGroups}
-                            items={Object.fromEntries(
-                                groupCounts(nodes).map(([g, count]) => [
-                                    g,
-                                    `${g || t("toolbar.ungrouped")} (${count})`,
-                                ]),
-                            )}
-                        />
-                    )}
                     <Select
                         aria-label={t("toolbar.sort")}
                         value={sort}
@@ -470,19 +472,53 @@ export function HomePage() {
                     >
                         {desc ? <ArrowDownIcon size={16} /> : <ArrowUpIcon size={16} />}
                     </Button>
+                    <div className="view-switch" role="group" aria-label={t("toolbar.view")}>
+                        {(
+                            [
+                                ["cards", <SquaresFourIcon size={16} />],
+                                ["compact", <RowsIcon size={16} />],
+                            ] as const
+                        ).map(([v, icon]) => (
+                            <Button
+                                key={v}
+                                variant={view === v ? "secondary" : "ghost"}
+                                shape="square"
+                                aria-pressed={view === v}
+                                aria-label={t(`toolbar.${v}`)}
+                                title={t(`toolbar.${v}`)}
+                                onClick={() => setView(v)}
+                            >
+                                {icon}
+                            </Button>
+                        ))}
+                    </div>
                     {query || groups.length ? (
                         <Button
                             variant="ghost"
                             onClick={() => {
                                 setQuery("")
-                                setGroups([])
+                                if (groups.length) navigate("/")
                             }}
                         >
                             {t("toolbar.clear")}
                         </Button>
                     ) : null}
                 </div>
-                {visible.length ? (
+                {!visible.length ? (
+                    <NoData title={t("toolbar.empty")} />
+                ) : view === "cards" ? (
+                    <div className="server-cards">
+                        {visible.map((n) => (
+                            <ServerCard
+                                key={n.id}
+                                node={n}
+                                snap={snapshots[n.id]}
+                                showBilling={settings.showBilling}
+                                showRegions={settings.showRegions}
+                            />
+                        ))}
+                    </div>
+                ) : (
                     <div className="server-list">
                         <Table className="fleet-table" layout="fixed">
                             <Table.Header variant="compact">
@@ -495,25 +531,11 @@ export function HomePage() {
                                     </Table.Head>
                                     <Table.Head>{t("metric.cpu")}</Table.Head>
                                     <Table.Head>{t("metric.memory")}</Table.Head>
-                                    <Table.Head className="server-network">
-                                        {t("metric.network")}
-                                    </Table.Head>
                                     <Table.Head className="wide-cell">
                                         {t("metric.disk")}
                                     </Table.Head>
-                                    <Table.Head className="wide-cell">
-                                        {t("metric.traffic")}
-                                    </Table.Head>
-                                    <Table.Head className="wide-cell">
-                                        {t("metric.uptime")}
-                                    </Table.Head>
-                                    {settings.showBilling && (
-                                        <Table.Head className="wide-cell">
-                                            {t("metric.price")}
-                                        </Table.Head>
-                                    )}
-                                    <Table.Head className="row-expand">
-                                        <span className="sr-only">{t("ui.details")}</span>
+                                    <Table.Head className="server-network">
+                                        {t("metric.network")}
                                     </Table.Head>
                                 </Table.Row>
                             </Table.Header>
@@ -530,8 +552,6 @@ export function HomePage() {
                             </Table.Body>
                         </Table>
                     </div>
-                ) : (
-                    <NoData title={t("toolbar.empty")} />
                 )}
             </section>
             <p className="page-footnote">{settings.footerNote || "Nezha · Kumo theme"}</p>

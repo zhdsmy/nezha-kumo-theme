@@ -24,9 +24,12 @@ installation, copy `apps/frontend/public/config.js` next to the extracted
 `index.html`; keep the existing file on upgrades. Every setting is optional.
 Preferences use the `nkt:` namespace. Only `window.NezhaKumoConfig` is read.
 
-The home page uses one table tree: CSS turns its rows into compact cards below
-`BREAKPOINTS.gutter`. Medium screens expand disk, traffic, uptime and billing in
-a row. Node sections use hash URLs, so drawer links and browser history agree.
+The home page lists servers as cards or as a compact table (`nkt:view`). Cards
+show every reading and fill as many 320 px columns as fit; the compact table keeps
+name, status, CPU, memory, disk (wide screens) and network, and becomes a dense
+list below `BREAKPOINTS.gutter`. Groups are sidebar links (`/?group=…`) that scope
+the whole page, overview included. The fee total sits beside the title; its menu
+picks currency and period. Node sections use hash URLs, so drawer links and browser history agree.
 Guests see up to one day of history. Authenticated sessions get 7d/30d when TSDB
 is enabled. The report grid records observed hours, not an uptime SLA. Monthly
 quota usage is withheld when the API's cumulative counter window does not match

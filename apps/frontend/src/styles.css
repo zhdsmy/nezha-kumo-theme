@@ -62,6 +62,9 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
 }
+.metric-grid + .servers-section {
+    margin-top: 32px;
+}
 .metric-grid > :last-child:nth-child(odd) {
     grid-column: 1/-1;
 }
@@ -127,12 +130,6 @@
 .status-headline[data-level="warn"] {
     color: var(--text-color-kumo-warning);
 }
-.money-controls {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-}
 .section-heading {
     display: flex;
     align-items: center;
@@ -153,8 +150,9 @@
     align-items: center;
     margin-bottom: 16px;
 }
+/* Phones: search takes the first row; sort, direction and view share the second. */
 .list-toolbar > input {
-    flex: 1 1 220px;
+    flex: 1 1 100%;
     min-width: 0;
 }
 .list-toolbar > button {
@@ -202,6 +200,9 @@
     font-size: 12px;
 }
 .meter-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     color: var(--text-color-kumo-subtle);
     font-size: 12px;
 }
@@ -228,18 +229,98 @@
 .meter[data-level="danger"] .meter-track > span {
     background: var(--color-kumo-danger);
 }
-.expanded-info {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    font-size: 12px;
+.cost-button {
+    gap: 8px;
+    max-width: 100%;
 }
-.expanded-info dt {
+.cost-button .cost-value {
+    font-weight: 600;
+}
+.view-switch {
+    display: flex;
+    margin-left: auto;
+    gap: 2px;
+}
+.meter > .meter-detail {
+    grid-column: 1/-1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-color-kumo-subtle);
+    font-size: 11px;
+    line-height: 14px;
+}
+/* Card view: as many 320 px columns as the content width holds (1 on phones, 3 at 1440). */
+.server-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: 12px;
+}
+.server-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+    padding: 14px 16px 16px;
+    background: var(--color-kumo-base);
+    border: 1px solid var(--color-kumo-line);
+    border-radius: 8px;
+}
+.card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+.card-name {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    font-size: 15px;
+    line-height: 20px;
+    font-weight: 500;
+    color: var(--text-color-kumo-link);
+}
+.card-meta {
+    display: block;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    line-height: 16px;
+}
+.card-meters {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+.card-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 12px;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--color-kumo-line);
+    font-size: 12px;
+    line-height: 16px;
+}
+.card-facts dt {
     color: var(--text-color-kumo-subtle);
 }
-.expanded-info dd {
-    margin-top: 4px;
+.card-facts dd {
+    display: flex;
+    flex-direction: column;
+    margin-top: 2px;
     overflow-wrap: anywhere;
+}
+.card-facts dd[data-level="warn"] {
+    color: var(--text-color-kumo-warning);
+}
+.card-facts dd[data-level="danger"] {
+    color: var(--text-color-kumo-danger);
 }
 .page-footnote {
     color: var(--text-color-kumo-subtle);

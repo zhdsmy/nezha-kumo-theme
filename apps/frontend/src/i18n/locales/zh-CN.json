@@ -38,7 +38,10 @@
         "empty": "没有符合筛选条件的节点。",
         "ascending": "升序",
         "descending": "降序",
-        "ungrouped": "未分组"
+        "ungrouped": "未分组",
+        "view": "视图",
+        "cards": "卡片",
+        "compact": "紧凑"
     },
     "sort": {
         "default": "默认",

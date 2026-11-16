@@ -38,7 +38,10 @@
         "empty": "条件に一致するノードはありません。",
         "ascending": "昇順",
         "descending": "降順",
-        "ungrouped": "グループなし"
+        "ungrouped": "グループなし",
+        "view": "表示",
+        "cards": "カード",
+        "compact": "コンパクト"
     },
     "sort": {
         "default": "標準",

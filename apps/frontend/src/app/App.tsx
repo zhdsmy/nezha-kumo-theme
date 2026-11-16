@@ -1,6 +1,7 @@
 import { Actions } from "@/components/Actions"
 import { Loading, NoData } from "@/components/ui"
 import { loadExchangeRates } from "@/core/cost"
+import { groupCounts, parseFilterQuery } from "@/core/filter"
 import { pollVisible } from "@/core/http"
 import { stripFlag } from "@/core/region"
 import { resolveLocale, setLocale } from "@/i18n"
@@ -11,6 +12,7 @@ import {
     ChartLineIcon,
     ClockIcon,
     CreditCardIcon,
+    FolderSimpleIcon,
     GaugeIcon,
     HardDrivesIcon,
 } from "@phosphor-icons/react"
@@ -56,6 +58,8 @@ export function App() {
     const nodes = useVisibleNodes()
     const node = nodes.find((n) => n.id === nodeId)
     const section = SECTIONS.find((s) => url.hash === `#${s}`) ?? "overview"
+    const picked = parseFilterQuery(url.search).groups ?? []
+    const groups = settings.showGroups ? groupCounts(nodes) : []
     useEffect(() => {
         void start()
     }, [])
@@ -105,7 +109,7 @@ export function App() {
                     </span>
                 }
                 linkComponent={Link}
-                activeId={nodeId ? section : "fleet"}
+                activeId={nodeId ? section : picked.length === 1 ? `group:${picked[0]}` : "fleet"}
                 context={
                     nodeId
                         ? {
@@ -139,6 +143,21 @@ export function App() {
                                   },
                               ],
                     },
+                    ...(!nodeId && groups.length > 1
+                        ? [
+                              {
+                                  id: "groups",
+                                  title: t("toolbar.groups"),
+                                  items: groups.map(([g, count]) => ({
+                                      id: `group:${g}`,
+                                      label: g || t("toolbar.ungrouped"),
+                                      href: `/?${new URLSearchParams({ group: g })}`,
+                                      icon: <FolderSimpleIcon size={16} />,
+                                      badge: count,
+                                  })),
+                              },
+                          ]
+                        : []),
                 ]}
                 topbar={
                     <span className="topbar-title" title={siteTitle}>

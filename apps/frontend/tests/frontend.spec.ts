@@ -8,14 +8,18 @@ test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem("nkt:language", "en"))
 })
 
-test("fleet filters, expanding rows, search shortcut and two-second data", async ({ page }) => {
+test("fleet views, search shortcut and two-second data", async ({ page }) => {
     await page.goto("/")
     await expect(page.locator("[data-server]")).toHaveCount(20)
     await page.setViewportSize({ width: 856, height: 900 })
-    const first = page.locator("[data-server]").first()
-    await first.getByRole("button", { name: /Details/ }).click()
-    await expect(page.locator(".expanded-info")).toBeVisible()
-    await expect(page.locator(".expanded-row > td")).toHaveCSS("display", "table-cell")
+    // cards show every reading with nothing to expand
+    await expect(page.locator(".server-card").first().locator(".card-facts dt")).toHaveCount(7)
+    await expect(page.getByRole("button", { name: /Details/ })).toHaveCount(0)
+    await page.getByRole("button", { name: "Compact", exact: true }).click()
+    await expect(page.locator(".fleet-table .server-row")).toHaveCount(20)
+    await page.reload()
+    await expect(page.locator(".fleet-table .server-row")).toHaveCount(20)
+    await page.getByRole("button", { name: "Cards", exact: true }).click()
     await page.locator(".list-toolbar").getByRole("textbox", { name: "Search" }).fill("Server 02")
     await expect(page.locator("[data-server]")).toHaveCount(1)
     await page.keyboard.press("Control+k")
@@ -102,10 +106,13 @@ test("responsive boundaries keep a single table/card tree and no overflow", asyn
                 message: `width ${width}`,
             })
             .toBe(true)
-        expect(
-            await page.locator(".fleet-table").evaluate((e) => getComputedStyle(e).display),
-        ).toBe(width < BREAKPOINTS.gutter ? "block" : "table")
-        await expect(page.locator(".fleet-table")).toHaveCount(1)
+        for (const view of ["Compact", "Cards"]) {
+            await page.getByRole("button", { name: view, exact: true }).click()
+            expect(
+                await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+                `${view} at ${width}`,
+            ).toBe(true)
+        }
     }
     expect(errors).toEqual([])
 })
@@ -113,11 +120,14 @@ test("responsive boundaries keep a single table/card tree and no overflow", asyn
 test("group and sort controls, locale persistence, and system theme", async ({ page }) => {
     await page.goto("/")
     await expect(page.locator("[data-server]")).toHaveCount(20)
-    await page.getByRole("combobox", { name: "Groups", exact: true }).click()
-    await page.getByRole("option").first().click()
-    await page.keyboard.press("Escape")
+    const groupLink = page.locator('nav a[href^="/?group="]').first()
+    const group = (await groupLink.locator(".nk-nav-label").getAttribute("title")) ?? ""
+    await groupLink.click()
     await expect(page.locator("[data-server]")).not.toHaveCount(20)
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(group)
+    await expect(groupLink).toHaveAttribute("aria-current", "page")
     await page.getByRole("button", { name: "Clear filters" }).click()
+    await expect(page.locator("[data-server]")).toHaveCount(20)
     await page.getByRole("combobox", { name: "Sort", exact: true }).click()
     await page.getByRole("option", { name: "Name", exact: true }).click()
     await expect(page.locator("[data-server]").first()).toContainText("Server 02")

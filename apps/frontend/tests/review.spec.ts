@@ -16,7 +16,7 @@ async function instrumentRenders(page: Page) {
     const modules: Record<string, string[]> = {
         "NodeCharts.tsx": ["LoadCharts", "PingChart"],
         "Chart.tsx": ["downsample"],
-        "HomePage.tsx": ["ServerRow"],
+        "HomePage.tsx": ["ServerCard"],
         "Actions.tsx": ["Actions"],
     }
     await page.route("**/src/**/*.tsx*", async (route) => {
@@ -27,7 +27,7 @@ async function instrumentRenders(page: Page) {
         for (const name of names) {
             const pattern = new RegExp(`(function ${name}\\([^)]*\\)\\s*\\{)`)
             expect(body).toMatch(pattern)
-            const key = name === "ServerRow" ? `'ServerRow:' + node.id` : JSON.stringify(name)
+            const key = name === "ServerCard" ? `'ServerCard:' + node.id` : JSON.stringify(name)
             body = body.replace(
                 pattern,
                 `$1 window.__nktRenders[${key}] = (window.__nktRenders[${key}] || 0) + 1;`,
@@ -89,28 +89,20 @@ test("compact tiles and full seeded sparks fit the first phone screen; numbers s
             .evaluate((e) => getComputedStyle(e).gridTemplateColumns.split(" ").length),
     ).toBe(2)
     await expect(page.locator(".nk-page-eyebrow")).toHaveCount(0)
-    await expect(page.locator(".nk-page-actions").getByRole("combobox")).toHaveCount(2)
+    await expect(page.locator(".nk-page-actions .cost-button")).toBeVisible()
     await expect(page.locator(".topbar-title")).toHaveText("Infrastructure")
     await page.setViewportSize({ width: 1440, height: 900 })
     await expect(page.locator(".topbar-title")).toBeHidden()
-    const price = page
-        .locator(".billing-cell .numeric-text")
-        .filter({ hasText: "¥1,888.00/mo" })
-        .first()
+    const price = page.locator(".card-facts dd").filter({ hasText: "¥1,888.00/mo" }).first()
     await expect(price).toBeVisible()
-    expect(
-        await price.evaluate(
-            (e) =>
-                e.scrollWidth <= e.clientWidth && getComputedStyle(e).textOverflow !== "ellipsis",
-        ),
-    ).toBe(true)
-    await page.setViewportSize({ width: 856, height: 900 })
-    expect(
-        await page
-            .locator(".metric-tile")
-            .last()
-            .evaluate((e) => getComputedStyle(e).gridColumn),
-    ).toBe("1 / -1")
+    expect(await price.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true)
+    // the fee sits beside the title; its menu sets currency and period in place
+    await expect(page.locator(".cost-button .cost-value")).toContainText("¥")
+    await page.locator(".cost-button").click()
+    await page.getByRole("menuitemradio", { name: "Yearly", exact: true }).click()
+    await expect(page.locator(".cost-button")).toContainText("Yearly fees")
+    await expect(price).toHaveCount(0)
+    await page.keyboard.press("Escape")
     await page.setViewportSize({ width: 375, height: 900 })
     await page.goto("/server/6")
     await fullSparks(page, 4)
@@ -146,9 +138,9 @@ test("unchanged rows and closed search actions do not render on live frames", as
     const before = await counts(page)
     await page.waitForTimeout(2200)
     const after = await counts(page)
-    expect(after["ServerRow:2"]).toBe(before["ServerRow:2"])
+    expect(after["ServerCard:2"]).toBe(before["ServerCard:2"])
     expect(after.Actions).toBe(before.Actions)
-    expect(after["ServerRow:6"]).toBeGreaterThan(before["ServerRow:6"])
+    expect(after["ServerCard:6"]).toBeGreaterThan(before["ServerCard:6"])
 })
 
 test("24h, 7d and 30d charts and downsampling do not recompute for live frames", async ({
