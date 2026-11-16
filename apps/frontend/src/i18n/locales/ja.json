@@ -94,7 +94,8 @@
         "longTerm": "長期"
     },
     "node": {
-        "back": "すべてのノード",
+        "back": "一覧に戻る",
+        "allNodes": "すべてのノード",
         "system": "システム",
         "network": "ネットワーク",
         "billing": "請求",

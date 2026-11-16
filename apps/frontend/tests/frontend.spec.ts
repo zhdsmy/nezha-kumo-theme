@@ -320,3 +320,281 @@ test("sidebar group icons show emoji, https img, and fall back to folder on 404 
     await expect(insecureItem.locator("img")).toHaveCount(0)
     await expect(insecureItem.locator(".nk-nav-icon svg")).toHaveCount(1)
 })
+
+test("sidebar groups follow server-group ID order rather than API order or node weight", async ({
+    page,
+}) => {
+    await page.route("**/api/v1/server-group", (route) =>
+        route.fulfill({
+            json: {
+                success: true,
+                data: [
+                    { group: { id: 7, name: "OTHER" }, servers: [2] },
+                    { group: { id: 8, name: "HOME" }, servers: [3] },
+                    { group: { id: 3, name: "Azure" }, servers: [4] },
+                    { group: { id: 1, name: "Tencent" }, servers: [1, 4] },
+                    { group: { id: 2, name: "AWS" }, servers: [5] },
+                ],
+            },
+        }),
+    )
+    await page.routeWebSocket("**/api/v1/ws/server", (ws) => {
+        const now = Date.now()
+        const last_active = new Date(now).toISOString()
+        // Nezha weight = -display_index, so weight order is Ungrouped, OTHER, HOME, AWS, Azure, Tencent.
+        ws.send(
+            JSON.stringify({
+                now,
+                servers: [
+                    { id: 1, name: "Node Tencent", display_index: 1, last_active },
+                    { id: 2, name: "Node Other", display_index: 400, last_active },
+                    { id: 3, name: "Node Home", display_index: 300, last_active },
+                    { id: 4, name: "Node Shared", display_index: 10, last_active },
+                    { id: 5, name: "Node AWS", display_index: 200, last_active },
+                    { id: 6, name: "Node Bare", display_index: 500, last_active },
+                ],
+            }),
+        )
+    })
+
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto("/")
+    await expect(page.locator("[data-server]")).toHaveCount(6)
+
+    const groupLinks = page.locator('nav a[href^="/?group="]')
+    await expect(groupLinks.locator(".nk-nav-label")).toHaveText([
+        "Tencent",
+        "AWS",
+        "Azure",
+        "OTHER",
+        "HOME",
+        "Ungrouped",
+    ])
+    await expect(groupLinks.locator(".nk-nav-badge")).toHaveText(["2", "1", "1", "1", "1", "1"])
+
+    await groupLinks.nth(3).click()
+    await expect(page).toHaveURL("/?group=OTHER")
+    await expect(groupLinks.nth(3)).toHaveAttribute("aria-current", "page")
+    await expect(page.locator("[data-server]")).toHaveCount(1)
+
+    await page.goto("/server/4")
+    await expect(page.getByText("Tencent · Azure", { exact: true })).toBeVisible()
+})
+
+test("navigation: clickable brand/topbar reset filters, back link preserves list URL and scroll, and in-page tabs replace history without scroll jump", async ({
+    page,
+    browser,
+}) => {
+    // 1. Mobile topbar-title from node page -> "/", and mobile drawer brand closes drawer + clears group/region/search
+    await page.setViewportSize({ width: 375, height: 640 })
+    await page.goto("/?region=HK")
+    await expect(page.locator("[data-server]")).toHaveCount(6)
+    await page.locator("[data-server] a").first().click()
+    await expect(page).toHaveURL(/\/server\/\d+$/)
+    await page.locator(".topbar-title").click()
+    await expect(page).toHaveURL(/\/$/)
+    await expect(page.locator("[data-server]")).toHaveCount(20)
+
+    await page.goto("/?region=HK")
+    await page
+        .locator(".section-heading")
+        .getByRole("button", { name: "Search", exact: true })
+        .click()
+    await page.locator(".section-heading").getByRole("textbox", { name: "Search" }).fill("Server")
+    await page.getByRole("button", { name: "Open navigation" }).click()
+    await expect(page.locator(".nk-sidebar")).toHaveAttribute("data-state", "expanded")
+    await page.locator(".nk-sidebar .brand").click()
+    await expect(page.locator(".nk-sidebar")).toHaveAttribute("data-state", "collapsed")
+    await expect(page.locator(".nk-sidebar")).toHaveAttribute("aria-hidden", "true")
+    await expect(page).toHaveURL(/\/$/)
+    await expect(
+        page.locator(".section-heading").getByRole("textbox", { name: "Search" }),
+    ).toHaveCount(0)
+    await expect(page.locator("[data-server]")).toHaveCount(20)
+
+    // 2. HomePage scroll behavior: region tab keeps scrollY > 0, sidebar group resets scrollY to 0
+    await page.setViewportSize({ width: 1024, height: 640 })
+    await page.goto("/")
+    await expect(page.locator("[data-server]")).toHaveCount(20)
+    await page.evaluate(() => window.scrollTo({ top: 220 }))
+    const beforeTabScroll = await page.evaluate(() => window.scrollY)
+    expect(beforeTabScroll).toBeGreaterThan(150)
+    await page.locator(".region-tabs").getByRole("tab", { name: /HK/ }).click()
+    await expect(page).toHaveURL(/\/\?region=HK$/)
+    expect(await page.evaluate(() => window.scrollY)).toBe(beforeTabScroll)
+
+    await page.locator('nav a[href^="/?group="]').first().click()
+    await expect(page).toHaveURL(/\/\?group=/)
+    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+
+    // 3. Filtered list (?group=...&region=...) -> node -> Back link & Browser Back after 3 tab switches
+    const listQuery = new URLSearchParams({ group: "🇺🇸 美国", region: "US" }).toString()
+    await page.setViewportSize({ width: 1024, height: 420 })
+    await page.goto(`/?${listQuery}`)
+    await expect(page.locator("[data-server]")).toHaveCount(2)
+    const cardLink = page.locator("[data-server] a").last()
+    await cardLink.scrollIntoViewIfNeeded()
+    const savedY = await page.evaluate(() => window.scrollY)
+    expect(savedY).toBeGreaterThan(100)
+
+    await cardLink.click()
+    await expect(page).toHaveURL(/\/server\/\d+$/)
+
+    const backLink = page.locator(".nk-context a")
+    await expect(backLink).toContainText("Back to list")
+    await expect(backLink).toHaveAttribute("href", `/?${listQuery}`)
+
+    // Switch 3 tabs on node page: scroll stays > 0 and history is replaced, so 1 Back returns to list
+    await expect(page.locator(".node-live-strip")).toBeVisible()
+    await page.evaluate(() => window.scrollTo({ top: 55 }))
+    const nodeScrollY = await page.evaluate(() => window.scrollY)
+    expect(nodeScrollY).toBeGreaterThan(40)
+    await page.getByRole("tab", { name: "Load", exact: true }).click()
+    await expect(page.locator(".chart svg")).toHaveCount(6)
+    expect(await page.evaluate(() => window.scrollY)).toBe(nodeScrollY)
+    await page.getByRole("tab", { name: "Latency", exact: true }).click()
+    await page.getByRole("tab", { name: "Reporting history", exact: true }).click()
+    await expect(page).toHaveURL(/#history$/)
+
+    await page.goBack()
+    await expect(page).toHaveURL(
+        new RegExp(`\\/\\?${listQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`),
+    )
+    await expect
+        .poll(() => page.evaluate(() => Math.round(window.scrollY)))
+        .toBeCloseTo(Math.round(savedY), -1)
+
+    // Clicking Back to list link also returns to the same filtered list and restores scrollY
+    await cardLink.click()
+    await expect(page).toHaveURL(/\/server\/\d+$/)
+    await page.locator(".nk-context a").click()
+    await expect(page).toHaveURL(
+        new RegExp(`\\/\\?${listQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`),
+    )
+    await expect
+        .poll(() => page.evaluate(() => Math.round(window.scrollY)))
+        .toBeCloseTo(Math.round(savedY), -1)
+
+    // 4. Direct entry to node page without prior list history falls back to "/"
+    const directCtx = await browser.newContext({ viewport: { width: 1440, height: 700 } })
+    const directPage = await directCtx.newPage()
+    await mockNezha(directPage)
+    await directPage.addInitScript(() => localStorage.setItem("nkt:language", "en"))
+    await directPage.goto("/server/6")
+    await expect(directPage.locator(".nk-context a")).toHaveAttribute("href", "/")
+    await directCtx.close()
+})
+
+test("node sidebar peer switcher: lists group peers, keeps hash & range, respects group filter, rail & mobile drawer", async ({
+    page,
+    browser,
+}) => {
+    await page.setViewportSize({ width: 1440, height: 800 })
+    await mockNezha(page, { loggedIn: true })
+    await page.addInitScript(() => localStorage.setItem("nkt:language", "en"))
+
+    // 1. Direct entry to /server/32 (🇭🇰 香港 group: 32, 35, 38 online + 44 offline)
+    await page.goto("/server/32")
+    const sidebarNav = page.locator(".nk-sidebar nav")
+    await expect(sidebarNav.locator('[data-sidebar="group-label"]')).toContainText("🇭🇰 香港 (4)")
+    await expect(sidebarNav.locator("a")).toHaveCount(4)
+
+    // Sidebar no longer has the 4 section links; page Tabs still work
+    await expect(
+        sidebarNav.locator('a[href$="#load"], a[href$="#latency"], a[href$="#history"]'),
+    ).toHaveCount(0)
+    await expect(sidebarNav.locator('a[aria-current="page"] .nk-nav-label')).toHaveText("Server 12")
+
+    // Online vs offline peers have non-color-only distinction (data-status + sr-only label)
+    const offlinePeer = sidebarNav.locator('a[href^="/server/44"]')
+    await expect(offlinePeer.locator(".peer-badge")).toHaveAttribute("data-status", "offline")
+    await expect(offlinePeer.locator(".sr-only")).toContainText("Offline")
+    const onlinePeer = sidebarNav.locator('a[href^="/server/35"]')
+    await expect(onlinePeer.locator(".peer-badge")).toHaveAttribute("data-status", "online")
+
+    // 2. Switch page Tab to Latency + pick "7 d" range + scroll down, then click peer Server 13 (/server/35)
+    await page.getByRole("tab", { name: "Latency", exact: true }).click()
+    await expect(page).toHaveURL(/\/server\/32#latency$/)
+    const range7d = page.getByRole("button", { name: "7 d", exact: true })
+    await range7d.click()
+    await expect(range7d).toHaveAttribute("aria-pressed", "true")
+    await page.setViewportSize({ width: 1440, height: 420 })
+    await page.evaluate(() => window.scrollTo({ top: 120 }))
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(50)
+
+    await onlinePeer.click()
+    await expect(page).toHaveURL(/\/server\/35#latency$/)
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Server 13")
+    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+    await expect(sidebarNav.locator('a[aria-current="page"] .nk-nav-label')).toHaveText("Server 13")
+    // Range state ("7 d") is preserved across peer navigation
+    await expect(page.getByRole("button", { name: "7 d", exact: true })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+    )
+    // Peer switch pushed history: browser Back returns to /server/32#latency
+    await page.goBack()
+    await expect(page).toHaveURL(/\/server\/32#latency$/)
+
+    // 3. Dual-group node (/server/31 belongs to both "🇨🇳 中国" id=4 and "Missuo" id=7):
+    // Direct entry uses lower group ID ("🇨🇳 中国"), whereas entering from /?group=Missuo uses "Missuo"
+    await page.setViewportSize({ width: 1440, height: 800 })
+    await page.goto("/server/31")
+    await expect(sidebarNav.locator('[data-sidebar="group-label"]')).toContainText("🇨🇳 中国 (5)")
+
+    await page.goto("/?group=Missuo")
+    await page.locator('[data-server="31"] a').first().click()
+    await expect(page).toHaveURL(/\/server\/31$/)
+    await expect(sidebarNav.locator('[data-sidebar="group-label"]')).toContainText("Missuo (1)")
+
+    // 4. Ungrouped node (/server/41) lists All nodes (20), scrolls active peer into view, keeps Back & Live visible
+    await page.setViewportSize({ width: 1440, height: 420 })
+    await page.goto("/server/41")
+    await expect(sidebarNav.locator('[data-sidebar="group-label"]')).toContainText("All nodes (20)")
+    await expect
+        .poll(() =>
+            page.evaluate(() => {
+                const active = document.querySelector('.nk-sidebar nav a[aria-current="page"]')
+                const vp = document.querySelector('[data-sidebar="viewport"]')
+                const ctx = document.querySelector(".nk-sidebar .nk-context")
+                const footer = document.querySelector(".nk-sidebar-footer")
+                if (!active || !vp || !ctx || !footer) return false
+                const ar = active.getBoundingClientRect()
+                const vr = vp.getBoundingClientRect()
+                const cr = ctx.getBoundingClientRect()
+                const fr = footer.getBoundingClientRect()
+                return (
+                    ar.top >= cr.bottom - 1 &&
+                    ar.bottom <= vr.bottom + 1 &&
+                    cr.top >= 0 &&
+                    fr.bottom <= window.innerHeight + 1
+                )
+            }),
+        )
+        .toBe(true)
+
+    // 5. Desktop collapsed rail: keeps node name as title and switches node on click
+    await page.setViewportSize({ width: 1440, height: 800 })
+    await page.goto("/server/32#latency")
+    await page.getByRole("button", { name: "Collapse navigation" }).click()
+    await expect(page.locator("aside.nk-sidebar")).toHaveAttribute("data-state", "collapsed")
+    await expect(sidebarNav.locator('li[data-sidebar="menu-item"][title="Server 13"]')).toHaveCount(
+        1,
+    )
+    await sidebarNav.locator('a[href="/server/35#latency"]').click()
+    await expect(page).toHaveURL(/\/server\/35#latency$/)
+
+    // 6. Mobile 375 drawer: clicking a peer switches node and closes the drawer
+    const mobileCtx = await browser.newContext({ viewport: { width: 375, height: 812 } })
+    const mobilePage = await mobileCtx.newPage()
+    await mockNezha(mobilePage)
+    await mobilePage.addInitScript(() => localStorage.setItem("nkt:language", "en"))
+    await mobilePage.goto("/server/32#latency")
+    await mobilePage.getByRole("button", { name: "Open navigation" }).click()
+    const mobileDrawer = mobilePage.locator(".nk-sidebar[data-mobile]")
+    await expect(mobileDrawer).toHaveAttribute("data-state", "expanded")
+    await mobileDrawer.locator('nav a[href="/server/35#latency"]').click()
+    await expect(mobilePage).toHaveURL(/\/server\/35#latency$/)
+    await expect(mobileDrawer).toHaveAttribute("data-state", "collapsed")
+    await mobileCtx.close()
+})

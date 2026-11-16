@@ -210,11 +210,106 @@ describe("nezha adapter groupIcons mapping", () => {
         vi.stubGlobal("WebSocket", FakeWebSocket)
 
         const { nezha } = await import("../src/adapters/nezha")
-        const [site, nodes] = await Promise.all([nezha.loadSite(false), nezha.loadNodes()])
+        const [site, nodes, order] = await Promise.all([
+            nezha.loadSite(false),
+            nezha.loadNodes(),
+            nezha.loadGroupOrder(),
+        ])
         nezha.reset()
         expect(site.groupIcons).toEqual({ Cloud: "☁️" })
         expect(nodes[0]?.groups).toEqual(["Cloud"])
+        expect(order).toEqual(["Cloud"])
         expect(calls.filter((u) => u.endsWith("/api/v1/setting"))).toHaveLength(1)
+        expect(calls.filter((u) => u.endsWith("/api/v1/server-group"))).toHaveLength(1)
+    })
+
+    it("loads ID-sorted groupOrder without group icons and without making loadSite wait on /api/v1/server-group", async () => {
+        vi.resetModules()
+        const calls: string[] = []
+        let releaseGroups!: () => void
+        const groupsGate = new Promise<void>((resolve) => {
+            releaseGroups = resolve
+        })
+        vi.stubGlobal("window", {
+            location: {
+                origin: "https://status.example.test",
+                protocol: "https:",
+                host: "status.example.test",
+            },
+        })
+        vi.stubGlobal(
+            "fetch",
+            vi.fn(async (input: string) => {
+                calls.push(String(input))
+                if (String(input).endsWith("/api/v1/setting")) {
+                    return new Response(
+                        JSON.stringify({
+                            success: true,
+                            data: {
+                                config: { site_name: "NoIconsSite", custom_code: "" },
+                                tsdb_enabled: false,
+                            },
+                        }),
+                    )
+                }
+                if (String(input).endsWith("/api/v1/server-group")) {
+                    await groupsGate
+                    return new Response(
+                        JSON.stringify({
+                            success: true,
+                            data: [
+                                { group: { id: 7, name: "OTHER" }, servers: [1] },
+                                { group: { id: 1, name: "Tencent" }, servers: [1] },
+                                { group: { id: 2, name: "AWS" }, servers: [1] },
+                            ],
+                        }),
+                    )
+                }
+                return new Response(JSON.stringify({ success: true, data: [] }))
+            }),
+        )
+        class FakeWebSocket {
+            static OPEN = 1
+            readyState = 1
+            onopen: (() => void) | null = null
+            onmessage: ((e: { data: string }) => void) | null = null
+            onclose: (() => void) | null = null
+            constructor() {
+                setTimeout(() => {
+                    this.onopen?.()
+                    this.onmessage?.({
+                        data: JSON.stringify({
+                            now: Date.now(),
+                            servers: [
+                                {
+                                    id: 1,
+                                    name: "Node 1",
+                                    last_active: new Date().toISOString(),
+                                },
+                            ],
+                        }),
+                    })
+                }, 0)
+            }
+            send() {}
+            close() {}
+        }
+        vi.stubGlobal("WebSocket", FakeWebSocket)
+
+        const { nezha } = await import("../src/adapters/nezha")
+        const sitePromise = nezha.loadSite(false)
+        const nodesPromise = nezha.loadNodes()
+        const orderPromise = nezha.loadGroupOrder()
+
+        // Site without icons resolves before /api/v1/server-group finishes.
+        const site = await sitePromise
+        expect(site.groupIcons).toEqual({})
+
+        releaseGroups()
+        const [nodes, order] = await Promise.all([nodesPromise, orderPromise])
+        nezha.reset()
+        expect(order).toEqual(["Tencent", "AWS", "OTHER"])
+        expect(nodes[0]?.groups).toEqual(["Tencent", "AWS", "OTHER"])
         expect(calls.filter((u) => u.endsWith("/api/v1/server-group"))).toHaveLength(1)
     })
 })

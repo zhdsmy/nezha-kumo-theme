@@ -11,6 +11,7 @@ const fake = vi.hoisted(() => {
         resets: 0,
         loads: 0,
         nodes: [node("a")],
+        groupOrder: ["Tencent", "AWS"],
         failNextLoad: false,
         loggedIn: false,
         privateLoads: 0,
@@ -38,6 +39,7 @@ vi.mock("@/adapters/nezha", () => ({
             }
             return fake.nodes
         },
+        loadGroupOrder: async () => fake.groupOrder,
         loadSession: async () => ({ loggedIn: fake.loggedIn }),
         loadActualCosts: async () => {
             fake.privateLoads++
@@ -88,6 +90,7 @@ describe("store: fed and refresh", () => {
         const { start, getState } = await import("../src/app/store")
         await start()
         expect(getState().phase).toBe("ready")
+        expect(getState().groupOrder).toEqual(["Tencent", "AWS"])
         expect(getState().fed).toBe(false)
         emit()
         expect(getState().fed).toBe(true)

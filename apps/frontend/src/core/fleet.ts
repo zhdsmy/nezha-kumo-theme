@@ -61,6 +61,21 @@ export function sortNodes(
         return (desc ? -diff : diff) || a.id.localeCompare(b.id)
     })
 }
+
+/** Filters visible nodes to the chosen peer group (or all) and sorts them in HomePage default order. */
+export function peerNodes(
+    visibleNodes: readonly NodeInfo[],
+    peerGroup: string | null,
+    offlineIds: ReadonlySet<string>,
+    fed: boolean,
+    showOffline: boolean,
+) {
+    const scoped = peerGroup
+        ? visibleNodes.filter((n) => n.groups.includes(peerGroup))
+        : visibleNodes
+    const listed = showOffline || !fed ? scoped : scoped.filter((n) => !offlineIds.has(n.id))
+    return sortNodes(listed, {}, "default", false)
+}
 export type IssueReason =
     | { kind: "offline" }
     | { kind: "stale" }

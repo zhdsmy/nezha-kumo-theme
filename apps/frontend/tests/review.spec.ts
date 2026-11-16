@@ -136,14 +136,40 @@ test("compact tiles and full seeded sparks fit the first phone screen; numbers s
         expect(await price.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true)
     }
     await page.setViewportSize({ width: 375, height: 900 })
+    const expectInlineNodeStatus = async (expectedText: string) => {
+        await expect(page.locator(".nk-page-eyebrow")).toHaveCount(0)
+        await expect(page.locator(".nk-page-description")).toHaveCount(0)
+        await expect(page.locator(".nk-page-actions .status")).toHaveText(expectedText)
+        const box = await page.evaluate(() => {
+            const h1 = document.querySelector(".nk-page h1")!.getBoundingClientRect()
+            const badge = document
+                .querySelector(".nk-page-actions .status")!
+                .getBoundingClientRect()
+            return {
+                overlap: Math.min(h1.bottom, badge.bottom) - Math.max(h1.top, badge.top),
+                firstLineCenterDiff: Math.abs(h1.top + 12.5 - (badge.top + badge.height / 2)),
+                gap: badge.left - h1.right,
+                fitsViewport: badge.right <= window.innerWidth,
+                noOverflow: document.documentElement.scrollWidth <= window.innerWidth,
+            }
+        })
+        expect(box.overlap).toBeGreaterThan(0)
+        expect(box.firstLineCenterDiff).toBeLessThanOrEqual(3)
+        expect(box.gap).toBeGreaterThan(0)
+        expect(box.fitsViewport).toBe(true)
+        expect(box.noOverflow).toBe(true)
+    }
     await page.goto("/server/6")
     await expect(page.locator(".spark")).toHaveCount(0)
     await expect(page.locator(".topbar-title")).toHaveText("Infrastructure")
+    await expectInlineNodeStatus("Online")
     expect(
         await page
             .locator(".node-info-panel[data-active]")
             .evaluate((e) => e.getBoundingClientRect().top),
     ).toBeLessThan(900)
+    await page.goto("/server/44")
+    await expectInlineNodeStatus("Offline")
     await page.goto("/server/6#load")
     await expect(page.locator(".spark")).toHaveCount(0)
     await expect(page.locator(".chart svg")).toHaveCount(6)

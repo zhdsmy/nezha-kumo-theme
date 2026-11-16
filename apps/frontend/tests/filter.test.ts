@@ -6,6 +6,7 @@ import {
     matchGroups,
     parseFilterQuery,
     regionCounts,
+    resolvePeerGroup,
     resolveRegion,
     serializeFilterQuery,
 } from "../src/core/filter"
@@ -128,12 +129,15 @@ describe("matchGroups", () => {
 describe("groupCounts", () => {
     it("counts each membership of multi-group nodes and counts ungrouped nodes under the empty name", () => {
         expect(
-            groupCounts([
-                makeNode({ id: "shared", groups: ["a", "b"], weight: 1 }),
-                makeNode({ id: "a", groups: ["a"], weight: 2 }),
-                makeNode({ id: "ungrouped-1", weight: 3 }),
-                makeNode({ id: "ungrouped-2", weight: 4 }),
-            ]),
+            groupCounts(
+                [
+                    makeNode({ id: "shared", groups: ["a", "b"], weight: 1 }),
+                    makeNode({ id: "a", groups: ["a"], weight: 2 }),
+                    makeNode({ id: "ungrouped-1", weight: 3 }),
+                    makeNode({ id: "ungrouped-2", weight: 4 }),
+                ],
+                ["a", "b"],
+            ),
         ).toEqual([
             ["a", 2],
             ["b", 1],
@@ -141,23 +145,65 @@ describe("groupCounts", () => {
         ])
     })
 
-    it("orders groups by their minimum node weight rather than insertion order or count", () => {
+    it("orders groups by groupOrder (server-group ID order) regardless of node weight", () => {
+        const order = ["Tencent", "AWS", "Azure", "Akile", "BageVM", "OTHER", "HOME"]
+        expect(
+            groupCounts(
+                [
+                    makeNode({ id: "other", groups: ["OTHER"], weight: -100 }),
+                    makeNode({ id: "home", groups: ["HOME"], weight: -50 }),
+                    makeNode({ id: "aws-1", groups: ["AWS"], weight: 10 }),
+                    makeNode({ id: "aws-2", groups: ["AWS", "Tencent"], weight: 20 }),
+                    makeNode({ id: "ungrouped", weight: -200 }),
+                ],
+                order,
+            ),
+        ).toEqual([
+            ["Tencent", 1],
+            ["AWS", 2],
+            ["OTHER", 1],
+            ["HOME", 1],
+            ["", 1],
+        ])
+    })
+
+    it("places unknown groups after known groups sorted by name, and ungrouped last", () => {
+        expect(
+            groupCounts(
+                [
+                    makeNode({ id: "1", groups: ["Zeta"] }),
+                    makeNode({ id: "2", groups: ["OTHER"] }),
+                    makeNode({ id: "3", groups: ["Alpha"] }),
+                    makeNode({ id: "4", groups: ["Tencent"] }),
+                    makeNode({ id: "5" }),
+                ],
+                ["Tencent", "OTHER"],
+            ),
+        ).toEqual([
+            ["Tencent", 1],
+            ["OTHER", 1],
+            ["Alpha", 1],
+            ["Zeta", 1],
+            ["", 1],
+        ])
+
+        // When groupOrder is empty (e.g. server-group endpoint failed), all named groups sort by name.
         expect(
             groupCounts([
-                makeNode({ id: "heavy-a", groups: ["a"], weight: 100 }),
-                makeNode({ id: "b", groups: ["b"], weight: 20 }),
-                makeNode({ id: "light-a", groups: ["a"], weight: 5 }),
-                makeNode({ id: "ungrouped", weight: 10 }),
+                makeNode({ id: "1", groups: ["Zeta"], weight: 1 }),
+                makeNode({ id: "2", weight: -100 }),
+                makeNode({ id: "3", groups: ["Alpha"], weight: 50 }),
             ]),
         ).toEqual([
-            ["a", 2],
+            ["Alpha", 1],
+            ["Zeta", 1],
             ["", 1],
-            ["b", 1],
         ])
     })
 
     it("returns no counts for no nodes", () => {
         expect(groupCounts([])).toEqual([])
+        expect(groupCounts([], ["Tencent", "AWS"])).toEqual([])
     })
 })
 
@@ -203,5 +249,34 @@ describe("regionCounts and resolveRegion", () => {
 
         // showRegions disabled -> falls back to null
         expect(resolveRegion("HK", fullFleet, false)).toBeNull()
+    })
+})
+
+describe("resolvePeerGroup", () => {
+    const groupOrder = ["Tencent", "AWS", "Missuo"]
+
+    it("uses the group filter from lastListHref when the node belongs to it", () => {
+        const dual = makeNode({ id: "31", groups: ["Tencent", "Missuo"] })
+        expect(resolvePeerGroup(dual, "/?group=Missuo&region=US", groupOrder)).toBe("Missuo")
+        expect(resolvePeerGroup(dual, "/?group=Other&group=Missuo", groupOrder)).toBe("Missuo")
+    })
+
+    it("falls back to the node's first group in groupOrder when lastListHref has no matching group", () => {
+        const dual = makeNode({ id: "31", groups: ["Missuo", "AWS"] })
+        expect(resolvePeerGroup(dual, "/", groupOrder)).toBe("AWS")
+        expect(resolvePeerGroup(dual, "/?group=Tencent", groupOrder)).toBe("AWS")
+        expect(resolvePeerGroup(dual, "/?group=", groupOrder)).toBe("AWS")
+    })
+
+    it("returns null for ungrouped nodes or undefined node (list all visible nodes)", () => {
+        const ungrouped = makeNode({ id: "41", groups: [] })
+        expect(resolvePeerGroup(ungrouped, "/?group=Tencent", groupOrder)).toBeNull()
+        expect(resolvePeerGroup(ungrouped, "/", groupOrder)).toBeNull()
+        expect(resolvePeerGroup(undefined, "/?group=Tencent", groupOrder)).toBeNull()
+    })
+
+    it("returns null when showGroups is false even if the node belongs to groups", () => {
+        const dual = makeNode({ id: "31", groups: ["Tencent", "Missuo"] })
+        expect(resolvePeerGroup(dual, "/?group=Missuo", groupOrder, false)).toBeNull()
     })
 })

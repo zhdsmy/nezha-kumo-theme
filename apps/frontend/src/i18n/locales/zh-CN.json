@@ -94,7 +94,8 @@
         "longTerm": "长期"
     },
     "node": {
-        "back": "全部节点",
+        "back": "返回列表",
+        "allNodes": "全部节点",
         "system": "系统",
         "network": "网络",
         "billing": "账单",
