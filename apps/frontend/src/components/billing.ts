@@ -26,12 +26,9 @@ export function useBilling() {
     }
     const money = (amount: number, source: string, days: number) => {
         // a recurring bill is restated per month or year; one-time and unset cycles stay as they are
-        const restate = period !== "original" && days > 0
-        const value = restate ? monthlyCost(amount, days) * (period === "year" ? 12 : 1) : amount
-        const suffix = restate
-            ? t(period === "year" ? "unit.perYear" : "unit.perMonth")
-            : cycle(days)
-        if (currency === "original") return `${formatMoney(value, source)}${suffix}`
+        const value = days > 0 ? monthlyCost(amount, days) * (period === "year" ? 12 : 1) : amount
+        const suffix =
+            days > 0 ? t(period === "year" ? "unit.perYear" : "unit.perMonth") : cycle(days)
         const converted = convertAmount(value, source, currency, rates?.rates)
         return converted === null ? "—" : `${formatMoney(converted, currency)}${suffix}`
     }

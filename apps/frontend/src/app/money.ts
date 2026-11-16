@@ -5,39 +5,26 @@ import { useSyncExternalStore } from "react"
 import { useTranslation } from "react-i18next"
 
 /**
- * How bills are shown, chosen on the home page and kept per browser. `original` leaves each
- * node's own currency or billing cycle alone; the default is the locale currency and each
- * node's own cycle, which is how bills read before the choice existed.
+ * How bills are shown: always in the interface language's currency, restated per month or
+ * year. The period is chosen on the home page and kept per browser.
  */
-type MoneyCurrency = "original" | string
-export type MoneyPeriod = "original" | "month" | "year"
+export type MoneyPeriod = "month" | "year"
 
-const KEYS = { currency: "nkt:currency", period: "nkt:period" } as const
+const KEY = "nkt:period"
 const listeners = new Set<() => void>()
 const subscribe = (l: () => void) => {
     listeners.add(l)
     return () => listeners.delete(l)
 }
-const write = (key: string, value: string) => {
-    writeStorage(key, value)
+const getPeriod = (): MoneyPeriod => (readStorage(KEY) === "year" ? "year" : "month")
+
+export const setMoneyPeriod = (period: MoneyPeriod) => {
+    writeStorage(KEY, period)
     listeners.forEach((l) => l())
 }
 
-const getCurrency = () => {
-    const v = readStorage(KEYS.currency)
-    return v === "original" || (v && /^[A-Z]{3}$/.test(v)) ? v : null
-}
-const getPeriod = (): MoneyPeriod => {
-    const v = readStorage(KEYS.period)
-    return v === "month" || v === "year" ? v : "original"
-}
-
-export const setMoneyCurrency = (currency: MoneyCurrency) => write(KEYS.currency, currency)
-export const setMoneyPeriod = (period: MoneyPeriod) => write(KEYS.period, period)
-
-export function useMoney(): { currency: MoneyCurrency; period: MoneyPeriod } {
+export function useMoney(): { currency: string; period: MoneyPeriod } {
     const { i18n } = useTranslation()
-    const currency = useSyncExternalStore(subscribe, getCurrency, getCurrency)
     const period = useSyncExternalStore(subscribe, getPeriod, getPeriod)
-    return { currency: currency ?? displayCurrency(i18n.resolvedLanguage), period }
+    return { currency: displayCurrency(i18n.resolvedLanguage), period }
 }

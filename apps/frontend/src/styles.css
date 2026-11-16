@@ -134,16 +134,67 @@
     height: 56px;
     border-radius: 0 0 8px 8px;
 }
-.status-number[data-level="good"],
-.status-headline[data-level="good"] {
+.status-number[data-level="good"] {
     color: var(--text-color-kumo-success);
 }
 .status-number[data-level="danger"],
-.status-headline[data-level="danger"] {
+.status-trigger[data-level="danger"],
+.attention-reason[data-level="danger"] {
     color: var(--text-color-kumo-danger);
 }
-.status-headline[data-level="warn"] {
+.status-trigger[data-level="warn"],
+.attention-reason[data-level="warn"] {
     color: var(--text-color-kumo-warning);
+}
+.status-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    line-height: inherit;
+    cursor: pointer;
+    text-align: left;
+}
+.status-trigger:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.status-trigger > svg {
+    flex-shrink: 0;
+}
+.attention-menu {
+    width: min(320px, calc(100vw - 32px));
+    max-height: min(320px, 60svh);
+    overflow-y: auto;
+}
+.attention-item {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+}
+.attention-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+    color: var(--text-color-kumo-link);
+}
+.attention-reason {
+    flex-shrink: 0;
+    max-width: 55%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
 }
 .section-heading {
     display: flex;
@@ -243,6 +294,22 @@
 }
 .meter[data-level="danger"] .meter-track > span {
     background: var(--color-kumo-danger);
+}
+.nk-page-title-row:has(.cost-button) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px 16px;
+}
+.nk-page-title-row:has(.cost-button) .nk-page-title-body {
+    display: contents;
+}
+.nk-page-title-row:has(.cost-button) .nk-page-description {
+    grid-column: 1/-1;
+    margin-top: 0;
+}
+.nk-page-title-row:has(.cost-button) .nk-page-actions {
+    justify-self: end;
 }
 .cost-button {
     gap: 8px;

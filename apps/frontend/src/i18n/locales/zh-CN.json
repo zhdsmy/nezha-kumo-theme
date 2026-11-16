@@ -6,11 +6,13 @@
         "retry": "重试"
     },
     "status": {
-        "allOnline": "所有节点运行正常。",
-        "someOffline_other": "{{count}} 个节点离线。",
-        "attention_other": "所有节点在线，{{count}} 个需要注意。",
+        "allNormal": "全部正常",
+        "someOffline_other": "{{count}} 个离线",
+        "attention_other": "{{count}} 个需要注意",
         "noNodes": "还没有节点。",
-        "summary_other": "{{online}} / {{count}} 个节点在线",
+        "expired": "已过期",
+        "quotaExceeded": "流量超额",
+        "stale": "数据停更",
         "live": "实时",
         "connecting": "连接中",
         "reconnecting": "重新连接中",
@@ -151,8 +153,6 @@
     },
     "money": {
         "period": "周期",
-        "currency": "货币",
-        "original": "原始",
         "month": "按月",
         "year": "按年"
     },

@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test"
 
-import original from "./fixtures/nezha-frame.json" with { type: "json" }
+import frameFixture from "./fixtures/nezha-frame.json" with { type: "json" }
 import groups from "./fixtures/nezha-groups.json" with { type: "json" }
 
 export async function mockNezha(
@@ -11,6 +11,8 @@ export async function mockNezha(
         fail = false,
         noHistory = false,
         stableNode = false,
+        allOnline = false,
+        highDiskRatio,
         price = "USD 12.00",
         customCode,
     }: {
@@ -19,6 +21,8 @@ export async function mockNezha(
         fail?: boolean
         noHistory?: boolean
         stableNode?: boolean
+        allOnline?: boolean
+        highDiskRatio?: number
         price?: string
         customCode?: string
     } = {},
@@ -26,7 +30,7 @@ export async function mockNezha(
     const startedAt = Date.now()
     let signedIn = loggedIn
     const metricNow = Math.floor(Date.now() / 30_000) * 30_000
-    const servers = structuredClone(original.servers)
+    const servers = structuredClone(frameFixture.servers)
     servers.forEach((s, i) => {
         s.name =
             i === 0
@@ -54,13 +58,17 @@ export async function mockNezha(
             s.state.cpu = 12 + i
             s.state.net_out_transfer = 100 * 1024 ** 3 + 2881 * 1024 ** 2
             s.state.net_in_transfer = 100 * 1024 ** 3 + 2881 * 1024 ** 2
-            s.state.disk_used = (s.host.disk_total ?? 0) * (i === 2 ? 0.8 : 0.35)
+            if (highDiskRatio !== undefined && i === 2)
+                s.state.mem_used = (s.host.mem_total ?? 0) * 0.4
+            s.state.disk_used = (s.host.disk_total ?? 0) * (i === 2 ? (highDiskRatio ?? 0.8) : 0.35)
         }
     })
     await page.route("https://api.frankfurter.dev/**", (route) =>
         route.fulfill({
             json: [
                 { base: "USD", quote: "CNY", date: "2026-11-16", rate: 7 },
+                { base: "USD", quote: "HKD", date: "2026-11-16", rate: 7.8 },
+                { base: "USD", quote: "JPY", date: "2026-11-16", rate: 150 },
                 { base: "USD", quote: "EUR", date: "2026-11-16", rate: 0.9 },
             ],
         }),
@@ -158,7 +166,8 @@ export async function mockNezha(
                               ? (s as typeof s & { public_note: string }).public_note
                               : undefined,
                       last_active: new Date(
-                          (stableNode && i === 1 ? startedAt : now) - (i === 19 ? 100000 : 0),
+                          (stableNode && i === 1 ? startedAt : now) -
+                              (!allOnline && i === 19 ? 100000 : 0),
                       ).toISOString(),
                       state: {
                           ...s.state,

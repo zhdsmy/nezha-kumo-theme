@@ -6,14 +6,15 @@
         "retry": "Try again"
     },
     "status": {
-        "allOnline": "All systems operational.",
-        "someOffline_one": "{{count}} node is offline.",
-        "someOffline_other": "{{count}} nodes are offline.",
-        "attention_one": "All nodes online, {{count}} needs attention.",
-        "attention_other": "All nodes online, {{count}} need attention.",
+        "allNormal": "All normal",
+        "someOffline_one": "{{count}} offline",
+        "someOffline_other": "{{count}} offline",
+        "attention_one": "{{count}} needs attention",
+        "attention_other": "{{count}} need attention",
         "noNodes": "No nodes yet.",
-        "summary_one": "{{online}} of {{count}} node online",
-        "summary_other": "{{online}} of {{count}} nodes online",
+        "expired": "Expired",
+        "quotaExceeded": "Over quota",
+        "stale": "Stale data",
         "live": "Live",
         "connecting": "Connecting",
         "reconnecting": "Reconnecting",
@@ -157,8 +158,6 @@
     },
     "money": {
         "period": "Period",
-        "currency": "Currency",
-        "original": "Original",
         "month": "Monthly",
         "year": "Yearly"
     },

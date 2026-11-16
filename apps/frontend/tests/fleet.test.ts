@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { levelFor, needsAttention, sortNodes } from "../src/core/fleet"
+import { levelFor, needsAttention, nodeIssues, sortNodes } from "../src/core/fleet"
 import { type NodeInfo } from "../src/core/model"
 import { emptySnapshot } from "./snapshot"
 
@@ -54,9 +54,26 @@ describe("fleet ordering and attention", () => {
         expect(sortNodes(nodes, snapshots, "name", false)[0].id).toBe("a")
         expect(nodes[0].id).toBe("b")
     })
-    it("flags the 80% disk and near-limit CPU consistently", () => {
+    it("flags the 80% disk and near-limit CPU consistently and returns structured reasons", () => {
         expect(needsAttention(nodes[1], snapshots.a, true)).toBe(true)
+        expect(nodeIssues(nodes[1], snapshots.a, true)).toEqual([{ kind: "disk", percent: "80" }])
+        expect(nodeIssues(nodes[0], snapshots.b, true)).toEqual([
+            { kind: "cpu", percent: "70" },
+            { kind: "memory", percent: "80" },
+        ])
         expect(needsAttention(nodes[1], undefined, false)).toBe(false)
+        expect(nodeIssues(nodes[1], undefined, false)).toEqual([])
+        expect(nodeIssues(nodes[1], emptySnapshot(false), true)).toEqual([{ kind: "offline" }])
+        expect(needsAttention(nodes[1], emptySnapshot(false), true)).toBe(false)
+        const now = 1_000_000_000
+        expect(
+            nodeIssues(
+                { ...nodes[1], expiredAt: now - 1, trafficLimit: 100, trafficLimitType: "sum" },
+                { ...emptySnapshot(true), at: now - 6 * 60_000, totalUp: 60, totalDown: 50 },
+                true,
+                now,
+            ),
+        ).toEqual([{ kind: "stale" }, { kind: "expired" }, { kind: "quota" }])
         expect(levelFor("disk", 79.6)).toBe("warn")
         expect(levelFor("memory", 89.6)).toBe("danger")
     })

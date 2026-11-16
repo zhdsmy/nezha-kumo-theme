@@ -61,6 +61,22 @@ const fullSparks = async (page: Page, count: number) => {
     ).toBe(true)
 }
 
+const expectCostButtonAligned = async (page: Page) => {
+    const metrics = await page.evaluate(() => {
+        const h1 = document.querySelector(".nk-page h1")!.getBoundingClientRect()
+        const btn = document.querySelector(".nk-page-actions .cost-button")!.getBoundingClientRect()
+        const content = document.querySelector(".nk-page-content")!.getBoundingClientRect()
+        return {
+            centerDiff: Math.abs(h1.top + h1.height / 2 - (btn.top + btn.height / 2)),
+            gap: btn.left - h1.right,
+            rightDiff: Math.abs(content.right - btn.right),
+        }
+    })
+    expect(metrics.centerDiff).toBeLessThanOrEqual(4)
+    expect(metrics.gap).toBeGreaterThan(0)
+    expect(metrics.rightDiff).toBeLessThanOrEqual(2)
+}
+
 test.beforeEach(async ({ page }) => {
     await mockNezha(page)
     await page.addInitScript(() => localStorage.setItem("nkt:language", "en"))
@@ -70,13 +86,10 @@ test("compact tiles and full seeded sparks fit the first phone screen; numbers s
     page,
 }) => {
     await mockNezha(page, { price: "CNY 22656.00" })
-    await page.addInitScript(() => {
-        localStorage.setItem("nkt:currency", "CNY")
-        localStorage.setItem("nkt:period", "month")
-    })
     await page.setViewportSize({ width: 375, height: 900 })
     await page.goto("/")
-    await fullSparks(page, 3)
+    await fullSparks(page, 4)
+    await expect(page.locator(".metric-tile").first().locator(".spark")).toBeVisible()
     expect(
         await page
             .locator("[data-server]")
@@ -89,20 +102,39 @@ test("compact tiles and full seeded sparks fit the first phone screen; numbers s
             .evaluate((e) => getComputedStyle(e).gridTemplateColumns.split(" ").length),
     ).toBe(2)
     await expect(page.locator(".nk-page-eyebrow")).toHaveCount(0)
+    await expect(page.locator(".nk-page-description")).toHaveCount(0)
+    await expect(page.locator(".status-headline")).toHaveCount(0)
     await expect(page.locator(".nk-page-actions .cost-button")).toBeVisible()
+    await expectCostButtonAligned(page)
     await expect(page.locator(".topbar-title")).toHaveText("Infrastructure")
     await page.setViewportSize({ width: 1440, height: 900 })
     await expect(page.locator(".topbar-title")).toBeHidden()
-    const price = page.locator(".card-facts dd").filter({ hasText: "¥1,888.00/mo" }).first()
-    await expect(price).toBeVisible()
-    expect(await price.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true)
-    // the fee sits beside the title; its menu sets currency and period in place
-    await expect(page.locator(".cost-button .cost-value")).toContainText("¥")
+    await expectCostButtonAligned(page)
+    const usdPrice = page.locator(".card-facts dd").filter({ hasText: "$269.71/mo" }).first()
+    await expect(usdPrice).toBeVisible()
+    await expect(page.locator(".cost-button .cost-value")).toContainText("$")
+    // the fee sits beside the title; its menu sets period only while currency follows interface language
     await page.locator(".cost-button").click()
+    await expect(page.getByRole("menuitemradio")).toHaveCount(2)
     await page.getByRole("menuitemradio", { name: "Yearly", exact: true }).click()
     await expect(page.locator(".cost-button")).toContainText("Yearly fees")
-    await expect(price).toHaveCount(0)
+    await expect(usdPrice).toHaveCount(0)
+    await page.getByRole("menuitemradio", { name: "Monthly", exact: true }).click()
+    await expect(page.locator(".cost-button")).toContainText("Monthly fees")
     await page.keyboard.press("Escape")
+    for (const [buttonLabel, menuLabel, symbol, cardSample] of [
+        ["Language", "简体中文", "¥", "¥1,888.00/月"],
+        ["语言", "繁體中文", "HK$", "HK$2,103.77/月"],
+        ["語言", "日本語", "JP¥", "JP¥40,457/月"],
+        ["言語", "English", "$", "$269.71/mo"],
+    ] as const) {
+        await page.getByRole("button", { name: buttonLabel, exact: true }).click()
+        await page.getByRole("menuitem", { name: menuLabel, exact: true }).click()
+        await expect(page.locator(".cost-button .cost-value")).toContainText(symbol)
+        const price = page.locator(".card-facts dd").filter({ hasText: cardSample }).first()
+        await expect(price).toBeVisible()
+        expect(await price.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true)
+    }
     await page.setViewportSize({ width: 375, height: 900 })
     await page.goto("/server/6")
     await fullSparks(page, 4)
@@ -113,6 +145,31 @@ test("compact tiles and full seeded sparks fit the first phone screen; numbers s
             .first()
             .evaluate((e) => e.getBoundingClientRect().top),
     ).toBeLessThan(900)
+})
+
+test("online nodes tile lists attention and offline reasons and opens node details", async ({
+    page,
+}) => {
+    await page.goto("/")
+    const offlineTrigger = page.locator(".metric-tile").first().locator(".status-trigger")
+    await expect(offlineTrigger).toHaveText("1 offline")
+    await expect(offlineTrigger).toHaveAttribute("data-level", "danger")
+    await offlineTrigger.click()
+    await expect(page.getByRole("menuitem", { name: /Server 20.*Offline/ })).toBeVisible()
+    await expect(page.getByRole("menuitem", { name: /Server 03.*Disk 80%/ })).toBeVisible()
+    await page.keyboard.press("Escape")
+
+    await mockNezha(page, { allOnline: true, highDiskRatio: 0.92 })
+    await page.goto("/")
+    const warnTrigger = page.locator(".metric-tile").first().locator(".status-trigger")
+    await expect(warnTrigger).toHaveText("1 needs attention")
+    await expect(warnTrigger).toHaveAttribute("data-level", "warn")
+    await warnTrigger.click()
+    const item = page.getByRole("menuitem", { name: /Server 03.*Disk 92%/ })
+    await expect(item).toBeVisible()
+    await item.click()
+    await expect(page).toHaveURL(/\/server\/19$/)
+    await expect(page.getByRole("heading", { name: "Server 03", exact: true })).toBeVisible()
 })
 
 test("daily traffic includes available nodes and reports partial coverage", async ({ page }) => {
@@ -133,7 +190,7 @@ test("unchanged rows and closed search actions do not render on live frames", as
     await mockNezha(page, { stableNode: true })
     await instrumentRenders(page)
     await page.goto("/")
-    await fullSparks(page, 3)
+    await fullSparks(page, 4)
     await page.waitForTimeout(250)
     const before = await counts(page)
     await page.waitForTimeout(2200)
