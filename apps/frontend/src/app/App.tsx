@@ -11,10 +11,10 @@ import { AppShell, Page } from "@nezha-kumo/ui"
 import {
     ChartLineIcon,
     ClockIcon,
-    CreditCardIcon,
     FolderSimpleIcon,
     GaugeIcon,
     HardDrivesIcon,
+    PulseIcon,
 } from "@phosphor-icons/react"
 import { Component, type ReactNode, Suspense, lazy, useEffect } from "react"
 import { useTranslation } from "react-i18next"
@@ -28,8 +28,8 @@ import { adapter, setExchangeRates, start, useStore, useVisibleNodes } from "./s
 const NodePage = lazy(() => import("@/pages/NodePage"))
 const icons = [
     <GaugeIcon size={16} />,
+    <PulseIcon size={16} />,
     <ChartLineIcon size={16} />,
-    <CreditCardIcon size={16} />,
     <ClockIcon size={16} />,
 ]
 
