@@ -146,7 +146,15 @@ export default function NATPage() {
                 </HeaderButtonGroup>
             }
         >
-            <Table>
+            <Table
+                columnPriority={[
+                    ["id", 64],
+                    ["enabled", 80],
+                    ["serverID", 100],
+                    ["domain", 160],
+                    ["host", 160],
+                ]}
+            >
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>

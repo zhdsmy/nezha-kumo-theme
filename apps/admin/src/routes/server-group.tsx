@@ -138,7 +138,12 @@ export default function ServerGroupPage() {
                 </HeaderButtonGroup>
             }
         >
-            <Table>
+            <Table
+                columnPriority={[
+                    ["id", 64],
+                    ["servers", 150],
+                ]}
+            >
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>

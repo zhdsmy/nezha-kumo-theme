@@ -179,7 +179,19 @@ export default function TransferPage() {
 
     return (
         <Page title={t("Transfer.Title")} description={t("Transfer.PageHint")}>
-            <Table primaryColumn="id">
+            <Table
+                primaryColumn="id"
+                columnPriority={[
+                    ["id", 160],
+                    ["server", 90],
+                    ["status", 100],
+                    ["from", 90],
+                    ["to", 90],
+                    ["created", 150],
+                    ["initiator", 90],
+                    ["error", 160],
+                ]}
+            >
                 <TableHeader>
                     <TableRow>
                         <TableHead data-col="id">ID</TableHead>

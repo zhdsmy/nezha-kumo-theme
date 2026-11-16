@@ -276,7 +276,15 @@ export default function WAFPage() {
                 )
             }
         >
-            <Table primaryColumn="ip">
+            <Table
+                primaryColumn="ip"
+                columnPriority={[
+                    ["count", 90],
+                    ["lastBlockReason", 130],
+                    ["BlockIdentifier", 140],
+                    ["lastBlockTime", 160],
+                ]}
+            >
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>

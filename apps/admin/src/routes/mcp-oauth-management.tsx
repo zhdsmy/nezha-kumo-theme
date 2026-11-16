@@ -94,7 +94,15 @@ function OAuthGrants({ all, userID }: { all: boolean; userID: number }) {
                     {actionError || errorMessage(error)}
                 </p>
             )}
-            <Table>
+            <Table
+                columnPriority={[
+                    ["user", 100],
+                    ["permissions", 170],
+                    ["servers", 110],
+                    ["lifetime", 150],
+                    ["lastUsed", 150],
+                ]}
+            >
                 <TableHeader>
                     <TableRow>
                         <TableHead data-col="name">{t("MCPOAuthManager.Application")}</TableHead>
@@ -222,7 +230,13 @@ function OAuthClients({ userID }: { userID: number }) {
                     {actionError || errorMessage(error)}
                 </p>
             )}
-            <Table>
+            <Table
+                columnPriority={[
+                    ["callback", 180],
+                    ["grants", 90],
+                    ["lastUsed", 150],
+                ]}
+            >
                 <TableHeader>
                     <TableRow>
                         <TableHead data-col="name">{t("MCPOAuthManager.Application")}</TableHead>

@@ -76,7 +76,14 @@ export default function ApiTokensPage() {
             tabs={<SettingsTab />}
             actions={<Button onClick={() => setCreateOpen(true)}>{t("CreateApiToken")}</Button>}
         >
-            <Table>
+            <Table
+                columnPriority={[
+                    ["scopes", 170],
+                    ["servers", 100],
+                    ["expires", 150],
+                    ["lastUsed", 150],
+                ]}
+            >
                 <TableHeader>
                     <TableRow>
                         <TableHead data-col="name">{t("Name")}</TableHead>

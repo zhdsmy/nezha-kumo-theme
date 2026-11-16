@@ -143,7 +143,12 @@ export default function NotificationGroupPage() {
                 </HeaderButtonGroup>
             }
         >
-            <Table>
+            <Table
+                columnPriority={[
+                    ["id", 64],
+                    ["notifications", 150],
+                ]}
+            >
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>

@@ -87,6 +87,7 @@ export default function AlertRulePage() {
             accessorFn: (row) => triggerModes[row.trigger_mode] || "",
         },
         {
+            id: "rules",
             header: t("Rules"),
             cell: ({ row }) => {
                 const s = row.original
@@ -159,7 +160,17 @@ export default function AlertRulePage() {
                 </HeaderButtonGroup>
             }
         >
-            <Table>
+            <Table
+                columnPriority={[
+                    ["id", 64],
+                    ["enable", 80],
+                    ["ngroup", 110],
+                    ["trigger Mode", 120],
+                    ["rules", 80],
+                    ["failTriggerTasks", 120],
+                    ["recoverTriggerTasks", 120],
+                ]}
+            >
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>

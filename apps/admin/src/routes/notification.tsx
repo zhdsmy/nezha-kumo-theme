@@ -155,7 +155,14 @@ export default function NotificationPage() {
                 </HeaderButtonGroup>
             }
         >
-            <Table>
+            <Table
+                columnPriority={[
+                    ["id", 64],
+                    ["groups", 90],
+                    ["url", 100],
+                    ["verify_tls", 100],
+                ]}
+            >
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>

@@ -164,7 +164,16 @@ export default function DDNSPage() {
                 </HeaderButtonGroup>
             }
         >
-            <Table>
+            <Table
+                columnPriority={[
+                    ["id", 64],
+                    ["provider", 110],
+                    ["domains", 160],
+                    ["enableIPv4", 90],
+                    ["enableIPv6", 90],
+                    ["maxRetries", 100],
+                ]}
+            >
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>

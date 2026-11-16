@@ -17,50 +17,100 @@ import {
 } from "react"
 import { useTranslation } from "react-i18next"
 
-const TableContext = createContext<{ primaryColumn: string; layout: string } | null>(null)
+const TableContext = createContext<{
+    primaryColumn: string
+    layout: string
+    hiddenColumns: string[]
+} | null>(null)
 const RowContext = createContext({ open: false, toggle: () => {} })
+const defaultPriority: [string, number][] = []
 
 const Table = forwardRef<
     HTMLTableElement,
-    HTMLAttributes<HTMLTableElement> & { primaryColumn?: string }
->(({ className, primaryColumn = "name", ...props }, ref) => {
-    const box = useRef<HTMLDivElement>(null)
-    const tableWidth = useMediaQuery(`(min-width: ${BREAKPOINTS.gutter}px)`)
-    const wide = useMediaQuery(`(min-width: ${BREAKPOINTS.wide}px)`)
-    const layout = wide ? "wide" : tableWidth ? "compact" : "cards"
-    useLayoutEffect(() => {
-        const heads = box.current?.querySelectorAll("thead th") ?? []
-        box.current?.querySelectorAll("tbody tr").forEach((tr) =>
-            Array.from(tr.children).forEach((td, i) => {
-                const label = heads[i]?.textContent?.trim()
-                if (label) td.setAttribute("data-label", label)
-                const value = td.querySelector<HTMLElement>(".nkt-cell-value")
-                if (value?.textContent) value.title = value.textContent.trim()
-            }),
+    HTMLAttributes<HTMLTableElement> & {
+        primaryColumn?: string
+        columnPriority?: [string, number][]
+    }
+>(
+    (
+        { className, primaryColumn = "name", columnPriority = defaultPriority, children, ...props },
+        ref,
+    ) => {
+        const box = useRef<HTMLDivElement>(null)
+        const tableWidth = useMediaQuery(`(min-width: ${BREAKPOINTS.gutter}px)`)
+        const [hiddenColumns, setHiddenColumns] = useState<string[]>([])
+        const layout = !tableWidth ? "cards" : hiddenColumns.length ? "compact" : "wide"
+        useLayoutEffect(() => {
+            const container = box.current
+            if (!container) return
+            const heads = Array.from(container.querySelectorAll<HTMLElement>("thead th"))
+            container.querySelectorAll("tbody tr").forEach((tr) =>
+                Array.from(tr.children).forEach((td, i) => {
+                    const label = heads[i]?.textContent?.trim()
+                    if (label) td.setAttribute("data-label", label)
+                    const value = td.querySelector<HTMLElement>(".nkt-cell-value")
+                    if (value?.textContent) value.title = value.textContent.trim()
+                }),
+            )
+            heads.forEach((head) => {
+                if (head.textContent?.trim()) head.setAttribute("title", head.textContent.trim())
+            })
+            const actions = container.querySelectorAll<HTMLElement>(".nkt-table-actions")
+            const actionWidth = Math.max(80, ...Array.from(actions, (el) => el.scrollWidth)) + 32
+            const columns = heads.map((head) => head.dataset.col).filter((id): id is string => !!id)
+            const sizes = new Map(columnPriority)
+            sizes.set("select", 48)
+            sizes.set("actions", actionWidth)
+            if (!sizes.has(primaryColumn)) sizes.set(primaryColumn, 180)
+            const size = (id: string) => sizes.get(id) ?? 120
+            const update = (width: number) => {
+                const visible = new Set(
+                    columns.filter((id) => ["select", "actions", primaryColumn].includes(id)),
+                )
+                let remaining = width - Array.from(visible).reduce((sum, id) => sum + size(id), 0)
+                // Priority decides which fields survive; DOM order still decides their position.
+                const ordered = [...new Set([...sizes.keys(), ...columns])]
+                for (const id of ordered) {
+                    if (!columns.includes(id) || visible.has(id) || size(id) > remaining) continue
+                    visible.add(id)
+                    remaining -= size(id)
+                }
+                const hidden = columns.filter((id) => !visible.has(id))
+                setHiddenColumns((previous) =>
+                    previous.join("\0") === hidden.join("\0") ? previous : hidden,
+                )
+                container.style.setProperty(
+                    "--nkt-table-columns",
+                    columns
+                        .filter((id) => visible.has(id))
+                        .map((id) => (id === primaryColumn ? "minmax(0, 1fr)" : `${size(id)}px`))
+                        .join(" "),
+                )
+            }
+            update(container.clientWidth)
+            const observer = new ResizeObserver(([entry]) => update(entry.contentRect.width))
+            observer.observe(container)
+            return () => observer.disconnect()
+        }, [children, columnPriority, primaryColumn, tableWidth])
+        return (
+            <TableContext.Provider value={{ primaryColumn, layout, hiddenColumns }}>
+                <div
+                    ref={box}
+                    data-layout={layout}
+                    className="nkt-table relative w-full min-w-0 rounded-lg border bg-card"
+                >
+                    <table
+                        ref={ref}
+                        className={cn("w-full caption-bottom text-base", className)}
+                        {...props}
+                    >
+                        {children}
+                    </table>
+                </div>
+            </TableContext.Provider>
         )
-        heads.forEach((head) => {
-            if (head.textContent?.trim()) head.setAttribute("title", head.textContent.trim())
-        })
-        const actions = box.current?.querySelectorAll<HTMLElement>(".nkt-table-actions") ?? []
-        const width = Math.max(0, ...Array.from(actions, (el) => el.scrollWidth))
-        box.current?.style.setProperty("--nkt-actions-width", `${width + 32}px`)
-    })
-    return (
-        <TableContext.Provider value={{ primaryColumn, layout }}>
-            <div
-                ref={box}
-                data-layout={layout}
-                className="nkt-table relative w-full min-w-0 rounded-lg border bg-card"
-            >
-                <table
-                    ref={ref}
-                    className={cn("w-full caption-bottom text-base", className)}
-                    {...props}
-                />
-            </div>
-        </TableContext.Provider>
-    )
-})
+    },
+)
 Table.displayName = "Table"
 
 const TableHeader = forwardRef<HTMLTableSectionElement, HTMLAttributes<HTMLTableSectionElement>>(
@@ -130,18 +180,25 @@ type ColumnAttribute = { "data-col"?: string }
 const TableHead = forwardRef<
     HTMLTableCellElement,
     ThHTMLAttributes<HTMLTableCellElement> & ColumnAttribute
->(({ className, ...props }, ref) => {
+>(({ className, children, ...props }, ref) => {
     const table = useContext(TableContext)
     return (
         <th
             ref={ref}
             data-primary={props["data-col"] === table?.primaryColumn || undefined}
+            data-hidden={table?.hiddenColumns.includes(props["data-col"] ?? "") || undefined}
             className={cn(
                 "h-11 px-4 py-2 text-left align-middle text-sm font-medium text-muted-foreground",
                 className,
             )}
             {...props}
-        />
+        >
+            {props["data-col"] === "select" ? (
+                children
+            ) : (
+                <div className="nkt-cell-value">{children}</div>
+            )}
+        </th>
     )
 })
 TableHead.displayName = "TableHead"
@@ -159,6 +216,7 @@ const TableCell = forwardRef<
         <td
             ref={ref}
             data-primary={primary || undefined}
+            data-hidden={table?.hiddenColumns.includes(props["data-col"] ?? "") || undefined}
             className={cn("h-12 px-4 py-2 align-middle", className)}
             {...props}
         >

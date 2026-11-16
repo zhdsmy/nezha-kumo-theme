@@ -257,7 +257,13 @@ export default function OnlineUserPage() {
                 )
             }
         >
-            <Table primaryColumn="ip">
+            <Table
+                primaryColumn="ip"
+                columnPriority={[
+                    ["user_id", 90],
+                    ["connected_at", 160],
+                ]}
+            >
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>

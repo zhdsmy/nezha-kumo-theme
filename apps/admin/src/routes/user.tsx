@@ -131,7 +131,14 @@ export default function UserPage() {
                 </HeaderButtonGroup>
             }
         >
-            <Table primaryColumn="username">
+            <Table
+                primaryColumn="username"
+                columnPriority={[
+                    ["id", 64],
+                    ["role", 100],
+                    ["updated_at", 160],
+                ]}
+            >
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>

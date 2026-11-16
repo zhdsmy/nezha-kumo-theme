@@ -227,7 +227,20 @@ export default function CronPage() {
                 </HeaderButtonGroup>
             }
         >
-            <Table>
+            <Table
+                columnPriority={[
+                    ["id", 64],
+                    ["taskType", 100],
+                    ["scheduler", 130],
+                    ["lastResult", 100],
+                    ["lastExecution", 150],
+                    ["servers", 110],
+                    ["command", 150],
+                    ["ngroup", 110],
+                    ["pushSuccessful", 110],
+                    ["cover", 100],
+                ]}
+            >
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>

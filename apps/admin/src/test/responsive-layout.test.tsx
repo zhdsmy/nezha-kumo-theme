@@ -8,14 +8,31 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { cleanup, fireEvent, render, screen } from "@testing-library/react"
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { useState } from "react"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
 
 let width = 1440
+let containerWidth = 360
+let resize: (width: number) => void
 vi.mock("@/lib/i18n", () => ({ default: { t: (key: string) => key } }))
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
 beforeEach(() => {
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(containerWidth)
+    vi.stubGlobal(
+        "ResizeObserver",
+        class {
+            constructor(callback: ResizeObserverCallback) {
+                resize = (value) =>
+                    callback(
+                        [{ contentRect: { width: value } } as ResizeObserverEntry],
+                        this as unknown as ResizeObserver,
+                    )
+            }
+            observe() {}
+            disconnect() {}
+        },
+    )
     vi.stubGlobal("matchMedia", (query: string) => ({
         matches: width >= Number(query.match(/\d+/)?.[0]),
         addEventListener: vi.fn(),
@@ -24,13 +41,19 @@ beforeEach(() => {
 })
 afterEach(() => {
     cleanup()
+    vi.restoreAllMocks()
     vi.unstubAllGlobals()
 })
 
 function List({ action }: { action: () => void }) {
     const [selected, setSelected] = useState(false)
     return (
-        <Table>
+        <Table
+            columnPriority={[
+                ["id", 64],
+                ["details", 120],
+            ]}
+        >
             <TableHeader>
                 <TableRow>
                     <TableHead data-col="select">
@@ -42,6 +65,7 @@ function List({ action }: { action: () => void }) {
                     </TableHead>
                     <TableHead data-col="name">Name</TableHead>
                     <TableHead data-col="id">ID</TableHead>
+                    <TableHead data-col="details">Details</TableHead>
                     <TableHead data-col="actions">Actions</TableHead>
                 </TableRow>
             </TableHeader>
@@ -56,6 +80,7 @@ function List({ action }: { action: () => void }) {
                     </TableCell>
                     <TableCell data-col="name">Long server name</TableCell>
                     <TableCell data-col="id">42</TableCell>
+                    <TableCell data-col="details">Extra details</TableCell>
                     <TableCell data-col="actions">
                         <button onClick={action}>Edit</button>
                     </TableCell>
@@ -66,13 +91,15 @@ function List({ action }: { action: () => void }) {
 }
 
 test.each([
-    [375, "cards"],
-    [767, "cards"],
-    [768, "compact"],
-    [1279, "compact"],
-    [1280, "wide"],
-])("selection and accessible row details at %s", (w, layout) => {
+    [375, 800, "cards"],
+    [767, 800, "cards"],
+    [768, 360, "compact"],
+    [1279, 800, "wide"],
+    [1440, 360, "compact"],
+])("selection and accessible row details at viewport %s / container %s", (w, available, layout) => {
     width = Number(w)
+    containerWidth = Number(available)
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(containerWidth)
     render(<List action={vi.fn()} />)
     expect(document.querySelector(".nkt-table")?.getAttribute("data-layout")).toBe(layout)
     fireEvent.click(screen.getByRole("checkbox", { name: "Select all" }))
@@ -89,6 +116,25 @@ test.each([
         ).toBe("true")
     }
     expect(document.querySelector('td[data-col="id"]')?.getAttribute("data-label")).toBe("ID")
+})
+
+test("container resize reveals columns in priority order without a viewport change", () => {
+    width = 1024
+    containerWidth = 360
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(containerWidth)
+    render(<List action={vi.fn()} />)
+    const hidden = () =>
+        Array.from(document.querySelectorAll("thead [data-hidden]"), (e) =>
+            e.getAttribute("data-col"),
+        )
+    expect(hidden()).toEqual(["id", "details"])
+    act(() => resize(420))
+    expect(hidden()).toEqual(["details"])
+    act(() => resize(800))
+    expect(hidden()).toEqual([])
+    expect(screen.queryByRole("button", { name: "TableDetails" })).toBeNull()
+    act(() => resize(360))
+    expect(hidden()).toEqual(["id", "details"])
 })
 
 test("phone actions open without expanding the row", async () => {

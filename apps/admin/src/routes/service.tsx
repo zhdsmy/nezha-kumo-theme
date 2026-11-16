@@ -121,6 +121,7 @@ export default function ServicePage() {
             },
         },
         {
+            id: "servers",
             header: t("SpecificServers"),
             cell: ({ row }) => {
                 const s = row.original
@@ -210,7 +211,20 @@ export default function ServicePage() {
                 </HeaderButtonGroup>
             }
         >
-            <Table>
+            <Table
+                columnPriority={[
+                    ["id", 64],
+                    ["type", 90],
+                    ["target", 160],
+                    ["duration", 100],
+                    ["ngroup", 110],
+                    ["cover", 100],
+                    ["servers", 110],
+                    ["triggerTask", 100],
+                    ["failTriggerTasks", 120],
+                    ["recoverTriggerTasks", 120],
+                ]}
+            >
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>

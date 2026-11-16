@@ -300,7 +300,19 @@ export default function ServerPage() {
             }
         >
             <div>
-                <Table>
+                <Table
+                    columnPriority={[
+                        ["id", 64],
+                        ["groups", 80],
+                        ["geoip", 156],
+                        ["host_version", 88],
+                        ["owner", 120],
+                        ["enableDDNS", 100],
+                        ["hideForGuest", 110],
+                        ["note", 80],
+                        ["uuid", 100],
+                    ]}
+                >
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>

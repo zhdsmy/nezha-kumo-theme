@@ -195,7 +195,6 @@ export default function AdminShell({
         : pathname === "/dashboard/mcp/authorize"
           ? "/dashboard/settings/mcp-oauth"
           : pathname.replace(/\/$/, "")
-    const active = nav.flatMap((section) => section.items).find((item) => item.id === activeId)
     return (
         <AppShell
             brand={
@@ -210,8 +209,8 @@ export default function AdminShell({
             activeId={activeId}
             linkComponent={RouterLink}
             topbar={
-                <span className="truncate" title={active?.label}>
-                    {active?.label}
+                <span className="truncate" title={siteName}>
+                    {siteName}
                 </span>
             }
             actions={<AdminActions />}
