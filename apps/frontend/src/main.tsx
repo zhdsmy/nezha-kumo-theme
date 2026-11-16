@@ -1,12 +1,10 @@
 import "@fontsource-variable/inter"
-import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 
-import { ShellDemo } from "./shell-demo"
+import { App } from "./app/App"
+import { applyAppearance } from "./app/prefs"
+import "./i18n"
 import "./styles.css"
 
-createRoot(document.getElementById("root")!).render(
-    <StrictMode>
-        <ShellDemo />
-    </StrictMode>,
-)
+applyAppearance()
+createRoot(document.getElementById("root")!).render(<App />)

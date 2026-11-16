@@ -9,7 +9,7 @@ import {
     type ShellLinkProps,
 } from "./contract"
 
-const STORAGE_KEY = "nezha-kumo:sidebar-collapsed"
+const STORAGE_KEY = "nkt:sidebar-collapsed"
 const FOCUSABLE = 'a[href], button:not([disabled]), input, select, textarea, [tabindex="0"]'
 
 // CSS media queries cannot read custom properties; derive them from the contract here.
