@@ -46,6 +46,14 @@ export function matchGroups(node: NodeInfo, picked: readonly string[]) {
     return groupsOf(node).some((g) => picked.includes(g))
 }
 
+function groupOrderKey(groupOrder: readonly string[]) {
+    const rank = new Map<string, number>()
+    groupOrder.forEach((g, i) => {
+        if (!rank.has(g)) rank.set(g, i)
+    })
+    return (g: string) => (g === "" ? groupOrder.length + 1 : (rank.get(g) ?? groupOrder.length))
+}
+
 /** Every group on the page with how many nodes it holds, ordered by `groupOrder` then name. */
 export function groupCounts(
     nodes: readonly NodeInfo[],
@@ -55,15 +63,33 @@ export function groupCounts(
     for (const n of nodes) {
         for (const g of groupsOf(n)) counts.set(g, (counts.get(g) ?? 0) + 1)
     }
-    const rank = new Map<string, number>()
-    groupOrder.forEach((g, i) => {
-        if (!rank.has(g)) rank.set(g, i)
-    })
-    const orderOf = (g: string) =>
-        g === "" ? groupOrder.length + 1 : (rank.get(g) ?? groupOrder.length)
+    const orderOf = groupOrderKey(groupOrder)
     return [...counts.entries()].sort(
         (a, b) => orderOf(a[0]) - orderOf(b[0]) || a[0].localeCompare(b[0]),
     )
+}
+
+/**
+ * Picks which group's peer nodes to list in the node page sidebar, or `null` for all visible nodes:
+ * 1. If `lastListHref` carries a group filter and `node` belongs to it, use that group.
+ * 2. Otherwise use `node`'s first group ordered by `groupOrder` (server-group ID order).
+ * 3. If `node` has no groups or `showGroups` is false, return `null` (all visible nodes).
+ */
+export function resolvePeerGroup(
+    node: NodeInfo | undefined,
+    lastListHref: string,
+    groupOrder: readonly string[] = [],
+    showGroups = true,
+): string | null {
+    if (!showGroups || !node || !node.groups.length) return null
+    const qIdx = lastListHref.indexOf("?")
+    if (qIdx >= 0) {
+        const picked = parseFilterQuery(lastListHref.slice(qIdx)).groups ?? []
+        const matched = picked.find((g) => g !== "" && node.groups.includes(g))
+        if (matched) return matched
+    }
+    const orderOf = groupOrderKey(groupOrder)
+    return [...node.groups].sort((a, b) => orderOf(a) - orderOf(b) || a.localeCompare(b))[0]
 }
 
 /** Every non-empty region code in `nodes` with its count, ordered by count desc then code asc. */

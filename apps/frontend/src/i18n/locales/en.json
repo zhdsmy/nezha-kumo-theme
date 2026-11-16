@@ -100,6 +100,7 @@
     },
     "node": {
         "back": "Back to list",
+        "allNodes": "All nodes",
         "system": "System",
         "network": "Network",
         "billing": "Billing",

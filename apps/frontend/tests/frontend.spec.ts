@@ -484,3 +484,117 @@ test("navigation: clickable brand/topbar reset filters, back link preserves list
     await expect(directPage.locator(".nk-context a")).toHaveAttribute("href", "/")
     await directCtx.close()
 })
+
+test("node sidebar peer switcher: lists group peers, keeps hash & range, respects group filter, rail & mobile drawer", async ({
+    page,
+    browser,
+}) => {
+    await page.setViewportSize({ width: 1440, height: 800 })
+    await mockNezha(page, { loggedIn: true })
+    await page.addInitScript(() => localStorage.setItem("nkt:language", "en"))
+
+    // 1. Direct entry to /server/32 (🇭🇰 香港 group: 32, 35, 38 online + 44 offline)
+    await page.goto("/server/32")
+    const sidebarNav = page.locator(".nk-sidebar nav")
+    await expect(sidebarNav.locator('[data-sidebar="group-label"]')).toContainText("🇭🇰 香港 (4)")
+    await expect(sidebarNav.locator("a")).toHaveCount(4)
+
+    // Sidebar no longer has the 4 section links; page Tabs still work
+    await expect(
+        sidebarNav.locator('a[href$="#load"], a[href$="#latency"], a[href$="#history"]'),
+    ).toHaveCount(0)
+    await expect(sidebarNav.locator('a[aria-current="page"] .nk-nav-label')).toHaveText("Server 12")
+
+    // Online vs offline peers have non-color-only distinction (data-status + sr-only label)
+    const offlinePeer = sidebarNav.locator('a[href^="/server/44"]')
+    await expect(offlinePeer.locator(".peer-badge")).toHaveAttribute("data-status", "offline")
+    await expect(offlinePeer.locator(".sr-only")).toContainText("Offline")
+    const onlinePeer = sidebarNav.locator('a[href^="/server/35"]')
+    await expect(onlinePeer.locator(".peer-badge")).toHaveAttribute("data-status", "online")
+
+    // 2. Switch page Tab to Latency + pick "7 d" range + scroll down, then click peer Server 13 (/server/35)
+    await page.getByRole("tab", { name: "Latency", exact: true }).click()
+    await expect(page).toHaveURL(/\/server\/32#latency$/)
+    const range7d = page.getByRole("button", { name: "7 d", exact: true })
+    await range7d.click()
+    await expect(range7d).toHaveAttribute("aria-pressed", "true")
+    await page.setViewportSize({ width: 1440, height: 420 })
+    await page.evaluate(() => window.scrollTo({ top: 120 }))
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(50)
+
+    await onlinePeer.click()
+    await expect(page).toHaveURL(/\/server\/35#latency$/)
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Server 13")
+    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+    await expect(sidebarNav.locator('a[aria-current="page"] .nk-nav-label')).toHaveText("Server 13")
+    // Range state ("7 d") is preserved across peer navigation
+    await expect(page.getByRole("button", { name: "7 d", exact: true })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+    )
+    // Peer switch pushed history: browser Back returns to /server/32#latency
+    await page.goBack()
+    await expect(page).toHaveURL(/\/server\/32#latency$/)
+
+    // 3. Dual-group node (/server/31 belongs to both "🇨🇳 中国" id=4 and "Missuo" id=7):
+    // Direct entry uses lower group ID ("🇨🇳 中国"), whereas entering from /?group=Missuo uses "Missuo"
+    await page.setViewportSize({ width: 1440, height: 800 })
+    await page.goto("/server/31")
+    await expect(sidebarNav.locator('[data-sidebar="group-label"]')).toContainText("🇨🇳 中国 (5)")
+
+    await page.goto("/?group=Missuo")
+    await page.locator('[data-server="31"] a').first().click()
+    await expect(page).toHaveURL(/\/server\/31$/)
+    await expect(sidebarNav.locator('[data-sidebar="group-label"]')).toContainText("Missuo (1)")
+
+    // 4. Ungrouped node (/server/41) lists All nodes (20), scrolls active peer into view, keeps Back & Live visible
+    await page.setViewportSize({ width: 1440, height: 420 })
+    await page.goto("/server/41")
+    await expect(sidebarNav.locator('[data-sidebar="group-label"]')).toContainText("All nodes (20)")
+    await expect
+        .poll(() =>
+            page.evaluate(() => {
+                const active = document.querySelector('.nk-sidebar nav a[aria-current="page"]')
+                const vp = document.querySelector('[data-sidebar="viewport"]')
+                const ctx = document.querySelector(".nk-sidebar .nk-context")
+                const footer = document.querySelector(".nk-sidebar-footer")
+                if (!active || !vp || !ctx || !footer) return false
+                const ar = active.getBoundingClientRect()
+                const vr = vp.getBoundingClientRect()
+                const cr = ctx.getBoundingClientRect()
+                const fr = footer.getBoundingClientRect()
+                return (
+                    ar.top >= cr.bottom - 1 &&
+                    ar.bottom <= vr.bottom + 1 &&
+                    cr.top >= 0 &&
+                    fr.bottom <= window.innerHeight + 1
+                )
+            }),
+        )
+        .toBe(true)
+
+    // 5. Desktop collapsed rail: keeps node name as title and switches node on click
+    await page.setViewportSize({ width: 1440, height: 800 })
+    await page.goto("/server/32#latency")
+    await page.getByRole("button", { name: "Collapse navigation" }).click()
+    await expect(page.locator("aside.nk-sidebar")).toHaveAttribute("data-state", "collapsed")
+    await expect(sidebarNav.locator('li[data-sidebar="menu-item"][title="Server 13"]')).toHaveCount(
+        1,
+    )
+    await sidebarNav.locator('a[href="/server/35#latency"]').click()
+    await expect(page).toHaveURL(/\/server\/35#latency$/)
+
+    // 6. Mobile 375 drawer: clicking a peer switches node and closes the drawer
+    const mobileCtx = await browser.newContext({ viewport: { width: 375, height: 812 } })
+    const mobilePage = await mobileCtx.newPage()
+    await mockNezha(mobilePage)
+    await mobilePage.addInitScript(() => localStorage.setItem("nkt:language", "en"))
+    await mobilePage.goto("/server/32#latency")
+    await mobilePage.getByRole("button", { name: "Open navigation" }).click()
+    const mobileDrawer = mobilePage.locator(".nk-sidebar[data-mobile]")
+    await expect(mobileDrawer).toHaveAttribute("data-state", "expanded")
+    await mobileDrawer.locator('nav a[href="/server/35#latency"]').click()
+    await expect(mobilePage).toHaveURL(/\/server\/35#latency$/)
+    await expect(mobileDrawer).toHaveAttribute("data-state", "collapsed")
+    await mobileCtx.close()
+})

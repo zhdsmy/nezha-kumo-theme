@@ -6,6 +6,7 @@ import {
     matchGroups,
     parseFilterQuery,
     regionCounts,
+    resolvePeerGroup,
     resolveRegion,
     serializeFilterQuery,
 } from "../src/core/filter"
@@ -248,5 +249,34 @@ describe("regionCounts and resolveRegion", () => {
 
         // showRegions disabled -> falls back to null
         expect(resolveRegion("HK", fullFleet, false)).toBeNull()
+    })
+})
+
+describe("resolvePeerGroup", () => {
+    const groupOrder = ["Tencent", "AWS", "Missuo"]
+
+    it("uses the group filter from lastListHref when the node belongs to it", () => {
+        const dual = makeNode({ id: "31", groups: ["Tencent", "Missuo"] })
+        expect(resolvePeerGroup(dual, "/?group=Missuo&region=US", groupOrder)).toBe("Missuo")
+        expect(resolvePeerGroup(dual, "/?group=Other&group=Missuo", groupOrder)).toBe("Missuo")
+    })
+
+    it("falls back to the node's first group in groupOrder when lastListHref has no matching group", () => {
+        const dual = makeNode({ id: "31", groups: ["Missuo", "AWS"] })
+        expect(resolvePeerGroup(dual, "/", groupOrder)).toBe("AWS")
+        expect(resolvePeerGroup(dual, "/?group=Tencent", groupOrder)).toBe("AWS")
+        expect(resolvePeerGroup(dual, "/?group=", groupOrder)).toBe("AWS")
+    })
+
+    it("returns null for ungrouped nodes or undefined node (list all visible nodes)", () => {
+        const ungrouped = makeNode({ id: "41", groups: [] })
+        expect(resolvePeerGroup(ungrouped, "/?group=Tencent", groupOrder)).toBeNull()
+        expect(resolvePeerGroup(ungrouped, "/", groupOrder)).toBeNull()
+        expect(resolvePeerGroup(undefined, "/?group=Tencent", groupOrder)).toBeNull()
+    })
+
+    it("returns null when showGroups is false even if the node belongs to groups", () => {
+        const dual = makeNode({ id: "31", groups: ["Tencent", "Missuo"] })
+        expect(resolvePeerGroup(dual, "/?group=Missuo", groupOrder, false)).toBeNull()
     })
 })

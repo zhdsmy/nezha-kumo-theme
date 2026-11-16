@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { levelFor, needsAttention, nodeIssues, sortNodes } from "../src/core/fleet"
+import { levelFor, needsAttention, nodeIssues, peerNodes, sortNodes } from "../src/core/fleet"
 import { type NodeInfo } from "../src/core/model"
 import { emptySnapshot } from "./snapshot"
 
@@ -8,6 +8,7 @@ const nodes = [
     {
         id: "b",
         name: "Beta",
+        groups: ["HK"],
         weight: 1,
         memTotal: 100,
         diskTotal: 100,
@@ -17,6 +18,7 @@ const nodes = [
     {
         id: "a",
         name: "Alpha",
+        groups: ["HK", "CN"],
         weight: 0,
         memTotal: 100,
         diskTotal: 100,
@@ -53,6 +55,45 @@ describe("fleet ordering and attention", () => {
         expect(sortNodes(nodes, snapshots, "memory", false)[0].id).toBe("a")
         expect(sortNodes(nodes, snapshots, "name", false)[0].id).toBe("a")
         expect(nodes[0].id).toBe("b")
+    })
+    it("builds peerNodes in HomePage default sort order and respects group and showOffline", () => {
+        const extra = [
+            ...nodes,
+            { ...nodes[0], id: "c", name: "Gamma", groups: ["HK"], weight: 0 },
+            { ...nodes[0], id: "d", name: "Delta", groups: ["US"], weight: -5 },
+        ] as NodeInfo[]
+        // Same order as HomePage default sort (weight asc, then id asc)
+        expect(peerNodes(extra, "HK", new Set(["b"]), true, true).map((n) => n.id)).toEqual(
+            sortNodes(
+                extra.filter((n) => n.groups.includes("HK")),
+                {},
+                "default",
+                false,
+            ).map((n) => n.id),
+        )
+        expect(peerNodes(extra, "HK", new Set(["b"]), true, true).map((n) => n.id)).toEqual([
+            "a",
+            "c",
+            "b",
+        ])
+        // Hides offline peers when showOffline is false and live feed has arrived
+        expect(peerNodes(extra, "HK", new Set(["b"]), true, false).map((n) => n.id)).toEqual([
+            "a",
+            "c",
+        ])
+        // Keeps all peers before initial feed arrives even if showOffline is false
+        expect(peerNodes(extra, "HK", new Set(["b"]), false, false).map((n) => n.id)).toEqual([
+            "a",
+            "c",
+            "b",
+        ])
+        // Null peerGroup lists all visible nodes in default order
+        expect(peerNodes(extra, null, new Set(), true, true).map((n) => n.id)).toEqual([
+            "d",
+            "a",
+            "c",
+            "b",
+        ])
     })
     it("flags the 80% disk and near-limit CPU consistently and returns structured reasons", () => {
         expect(needsAttention(nodes[1], snapshots.a, true)).toBe(true)

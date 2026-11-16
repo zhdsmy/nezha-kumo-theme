@@ -1,7 +1,9 @@
 import { Actions } from "@/components/Actions"
+import { RegionFlag } from "@/components/RegionFlag"
 import { Loading, NoData } from "@/components/ui"
 import { loadExchangeRates } from "@/core/cost"
-import { groupCounts, parseFilterQuery } from "@/core/filter"
+import { groupCounts, parseFilterQuery, resolvePeerGroup } from "@/core/filter"
+import { peerNodes } from "@/core/fleet"
 import { pollVisible } from "@/core/http"
 import { stripFlag } from "@/core/region"
 import { resolveLocale, setLocale } from "@/i18n"
@@ -9,15 +11,8 @@ import { HomePage } from "@/pages/HomePage"
 import { Button } from "@cloudflare/kumo"
 import { useSidebar } from "@cloudflare/kumo/components/sidebar"
 import { AppShell, Page } from "@nezha-kumo/ui"
-import {
-    ChartLineIcon,
-    ClockIcon,
-    FolderSimpleIcon,
-    GaugeIcon,
-    HardDrivesIcon,
-    PulseIcon,
-} from "@phosphor-icons/react"
-import { Component, type ReactNode, Suspense, lazy, useEffect, useState } from "react"
+import { FolderSimpleIcon, GaugeIcon, GlobeIcon, HardDrivesIcon } from "@phosphor-icons/react"
+import { Component, type ReactNode, Suspense, lazy, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { classifyGroupIcon } from "../../../../packages/shared/group-icons"
@@ -28,12 +23,6 @@ import { SECTIONS } from "./sections"
 import { adapter, setExchangeRates, start, useStore, useVisibleNodes } from "./store"
 
 const NodePage = lazy(() => import("@/pages/NodePage"))
-const icons = [
-    <GaugeIcon size={16} />,
-    <PulseIcon size={16} />,
-    <ChartLineIcon size={16} />,
-    <ClockIcon size={16} />,
-]
 
 function BrandLink({ title }: { title: string }) {
     const { setOpenMobile } = useSidebar()
@@ -71,12 +60,17 @@ function GroupNavIcon({ icon }: { icon?: string }) {
 }
 
 class ErrorBoundary extends Component<
-    { children: ReactNode; fallback: ReactNode },
+    { resetKey: string; children: ReactNode; fallback: ReactNode },
     { error: boolean }
 > {
     state = { error: false }
     static getDerivedStateFromError() {
         return { error: true }
+    }
+    componentDidUpdate(prev: { resetKey: string }) {
+        if (this.state.error && prev.resetKey !== this.props.resetKey) {
+            this.setState({ error: false })
+        }
     }
     render() {
         return this.state.error ? this.props.fallback : this.props.children
@@ -97,9 +91,31 @@ export function App() {
     const nodeId = adapter.matchNodePath(url.pathname)
     const nodes = useVisibleNodes()
     const node = nodes.find((n) => n.id === nodeId)
+    const offlineKey = useStore((s) => {
+        if (!nodeId) return ""
+        if (!s.fed) return "?"
+        let out = ""
+        for (const n of s.nodes) if (!s.snapshots[n.id]?.online) out += `${n.id},`
+        return out
+    })
+    const fedForPeers = offlineKey !== "?"
+    const offlineIds = useMemo(
+        () => new Set(fedForPeers && offlineKey ? offlineKey.split(",").filter(Boolean) : []),
+        [fedForPeers, offlineKey],
+    )
     const section = SECTIONS.find((s) => url.hash === `#${s}`) ?? "overview"
     const picked = parseFilterQuery(url.search).groups ?? []
     const groups = settings.showGroups ? groupCounts(nodes, groupOrder) : []
+    const peerGroup = nodeId
+        ? resolvePeerGroup(node, lastListHref, groupOrder, settings.showGroups)
+        : null
+    const peers = useMemo(
+        () =>
+            nodeId
+                ? peerNodes(nodes, peerGroup, offlineIds, fedForPeers, settings.showOffline)
+                : [],
+        [nodeId, nodes, peerGroup, offlineIds, fedForPeers, settings.showOffline],
+    )
     useEffect(() => {
         void start()
     }, [])
@@ -136,62 +152,129 @@ export function App() {
     useEffect(() => {
         if (!nodeId) document.title = siteTitle
     }, [nodeId, siteTitle])
+    useEffect(() => {
+        if (!nodeId) return
+        const frame = requestAnimationFrame(() => {
+            const active = document.querySelector<HTMLElement>(
+                '.nk-sidebar nav a[aria-current="page"]',
+            )
+            const viewport = active?.closest<HTMLElement>('[data-sidebar="viewport"]')
+            if (!active || !viewport) return
+            const stickyBottom =
+                viewport.querySelector<HTMLElement>(".nk-context")?.getBoundingClientRect()
+                    .bottom ?? viewport.getBoundingClientRect().top
+            const vpRect = viewport.getBoundingClientRect()
+            const itemRect = active.getBoundingClientRect()
+            if (itemRect.top < stickyBottom) {
+                viewport.scrollTop -= stickyBottom - itemRect.top + 8
+            } else if (itemRect.bottom > vpRect.bottom) {
+                viewport.scrollTop += itemRect.bottom - vpRect.bottom + 8
+            }
+        })
+        return () => cancelAnimationFrame(frame)
+    }, [nodeId, peers.length])
     return (
         <>
             <style>{responsive}</style>
             <AppShell
                 brand={<BrandLink title={siteTitle} />}
                 linkComponent={Link}
-                activeId={nodeId ? section : picked.length === 1 ? `group:${picked[0]}` : "fleet"}
+                activeId={
+                    nodeId ? `peer:${nodeId}` : picked.length === 1 ? `group:${picked[0]}` : "fleet"
+                }
                 context={
                     nodeId
                         ? {
                               backLabel: t("node.back"),
                               backHref: lastListHref,
-                              title: (
-                                  <span title={node?.name}>
-                                      {node ? stripFlag(node.name) : nodeId}
-                                  </span>
-                              ),
+                              title: null,
                           }
                         : undefined
                 }
-                nav={[
-                    {
-                        id: "main",
-                        items: nodeId
-                            ? SECTIONS.map((s, i) => ({
-                                  id: s,
-                                  label: t(`ui.${s}`),
-                                  href: `${adapter.nodePath(nodeId)}#${s}`,
-                                  icon: icons[i],
-                              }))
-                            : [
-                                  {
-                                      id: "fleet",
-                                      label: t("ui.overview"),
-                                      href: "/",
-                                      icon: <GaugeIcon size={16} />,
-                                      badge: nodes.length || undefined,
-                                  },
-                              ],
-                    },
-                    ...(!nodeId && groups.length > 1
+                nav={
+                    nodeId
                         ? [
                               {
-                                  id: "groups",
-                                  title: t("toolbar.groups"),
-                                  items: groups.map(([g, count]) => ({
-                                      id: `group:${g}`,
-                                      label: g || t("toolbar.ungrouped"),
-                                      href: `/?${new URLSearchParams({ group: g })}`,
-                                      icon: <GroupNavIcon icon={g ? groupIcons[g] : undefined} />,
-                                      badge: count,
-                                  })),
+                                  id: "peers",
+                                  title: `${peerGroup ?? t("node.allNodes")} (${peers.length})`,
+                                  items: peers.map((p) => {
+                                      const kind = !fedForPeers
+                                          ? "connecting"
+                                          : offlineIds.has(p.id)
+                                            ? "offline"
+                                            : "online"
+                                      const statusText = t(`status.${kind}`)
+                                      return {
+                                          id: `peer:${p.id}`,
+                                          label: stripFlag(p.name),
+                                          href: `${adapter.nodePath(p.id)}${url.hash}`,
+                                          icon: settings.showRegions ? (
+                                              p.region ? (
+                                                  <RegionFlag code={p.region} />
+                                              ) : (
+                                                  <GlobeIcon
+                                                      width={16}
+                                                      height={12}
+                                                      className="region-flag"
+                                                  />
+                                              )
+                                          ) : (
+                                              <i className="peer-dot" data-status={kind} />
+                                          ),
+                                          badge: (
+                                              <span
+                                                  className="peer-badge"
+                                                  data-status={kind}
+                                                  title={statusText}
+                                              >
+                                                  {settings.showRegions && (
+                                                      <i
+                                                          className="peer-dot"
+                                                          data-status={kind}
+                                                          aria-hidden="true"
+                                                      />
+                                                  )}
+                                                  <span className="sr-only"> ({statusText})</span>
+                                              </span>
+                                          ),
+                                      }
+                                  }),
                               },
                           ]
-                        : []),
-                ]}
+                        : [
+                              {
+                                  id: "main",
+                                  items: [
+                                      {
+                                          id: "fleet",
+                                          label: t("ui.overview"),
+                                          href: "/",
+                                          icon: <GaugeIcon size={16} />,
+                                          badge: nodes.length || undefined,
+                                      },
+                                  ],
+                              },
+                              ...(groups.length > 1
+                                  ? [
+                                        {
+                                            id: "groups",
+                                            title: t("toolbar.groups"),
+                                            items: groups.map(([g, count]) => ({
+                                                id: `group:${g}`,
+                                                label: g || t("toolbar.ungrouped"),
+                                                href: `/?${new URLSearchParams({ group: g })}`,
+                                                icon: (
+                                                    <GroupNavIcon
+                                                        icon={g ? groupIcons[g] : undefined}
+                                                    />
+                                                ),
+                                                badge: count,
+                                            })),
+                                        },
+                                    ]
+                                  : []),
+                          ]
+                }
                 topbar={
                     <Link className="topbar-title" href="/" reset title={siteTitle}>
                         {siteTitle}
@@ -206,7 +289,7 @@ export function App() {
                 }
             >
                 <ErrorBoundary
-                    key={url.pathname}
+                    resetKey={url.pathname}
                     fallback={
                         <Page title={t("app.loadError")}>
                             <NoData
@@ -234,7 +317,7 @@ export function App() {
                                 </Page>
                             }
                         >
-                            <NodePage key={nodeId} id={nodeId} section={section} />
+                            <NodePage id={nodeId} section={section} />
                         </Suspense>
                     ) : url.pathname === "/" ? (
                         <HomePage />
