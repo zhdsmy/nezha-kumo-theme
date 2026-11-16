@@ -137,8 +137,16 @@ test("compact tiles and full seeded sparks fit the first phone screen; numbers s
     }
     await page.setViewportSize({ width: 375, height: 900 })
     await page.goto("/server/6")
-    await fullSparks(page, 4)
+    await expect(page.locator(".spark")).toHaveCount(0)
     await expect(page.locator(".topbar-title")).toHaveText("Infrastructure")
+    expect(
+        await page
+            .locator(".node-info-panel[data-active]")
+            .evaluate((e) => e.getBoundingClientRect().top),
+    ).toBeLessThan(900)
+    await page.goto("/server/6#load")
+    await expect(page.locator(".spark")).toHaveCount(0)
+    await expect(page.locator(".chart svg")).toHaveCount(6)
     expect(
         await page
             .locator(".chart")
@@ -205,7 +213,7 @@ test("24h, 7d and 30d charts and downsampling do not recompute for live frames",
 }) => {
     await mockNezha(page, { loggedIn: true })
     await instrumentRenders(page)
-    await page.goto("/server/6")
+    await page.goto("/server/6#load")
     await expect(page.locator(".chart svg")).toHaveCount(6)
     for (const name of ["1 d", "7 d", "30 d"]) {
         await page.getByRole("button", { name, exact: true }).click()
@@ -252,13 +260,17 @@ test("24h, 7d and 30d charts and downsampling do not recompute for live frames",
     }
 })
 
-test("cold node shows loading while live history is backfilled", async ({ page }) => {
+test("cold node overview never blocks on metrics and load shows loading while live history is backfilled", async ({
+    page,
+}) => {
     await page.route("**/metrics*", async (route) => {
         await new Promise((resolve) => setTimeout(resolve, 300))
         await route.fallback()
     })
     await page.goto("/server/6")
-    await expect(page.locator(".node-metrics")).toBeVisible()
+    await expect(page.locator(".node-live-strip")).toBeVisible()
+    await expect(page.locator(".loading-state")).toHaveCount(0)
+    await page.goto("/server/6#load")
     await expect(page.locator(".loading-state")).toBeVisible()
     await expect(page.getByText("No data for this range yet.", { exact: true })).toHaveCount(0)
     await expect(page.locator(".chart svg")).toHaveCount(6)
@@ -291,15 +303,13 @@ test("cold home requests one profile and exactly five series per node with at mo
     await expect.poll(() => finished).toBe(104)
     expect(profiles).toBe(1)
     expect(peak).toBeLessThanOrEqual(4)
-    // Billing adds only its counters; report history reuses the already-cached CPU period.
+    // Overview and report history reuse the already-cached 1d speed/transfer/CPU series.
     await page.locator('[data-server="6"] a').click()
-    await expect(page.locator(".chart svg")).toHaveCount(6)
-    await page.getByRole("tab", { name: "Traffic & billing", exact: true }).click()
     await expect(page.getByText("Public server information")).toBeVisible()
     const loaded = finished
     await page.getByRole("tab", { name: "Reporting history", exact: true }).click()
     await expect(page.getByText(/hours reported/)).toBeVisible()
-    await page.getByRole("tab", { name: "Traffic & billing", exact: true }).click()
+    await page.getByRole("tab", { name: "Overview", exact: true }).click()
     await expect(page.getByText("Public server information")).toBeVisible()
     await page.waitForTimeout(100)
     expect(finished).toBe(loaded)

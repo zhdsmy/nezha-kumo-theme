@@ -94,7 +94,6 @@ export const responsive = `
 @media (min-width:${BREAKPOINTS.sidebar}px) { .topbar-title { display:none; } }
 @media (min-width:${BREAKPOINTS.wide}px) {
  .metric-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
- .node-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
  .chart-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
  .fleet-table .wide-cell { display:table-cell !important; }
  .fleet-table .server-name { width:${FLEET_COLUMNS.wide.name}; }

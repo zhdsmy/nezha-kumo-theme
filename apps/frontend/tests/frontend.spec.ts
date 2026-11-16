@@ -28,28 +28,109 @@ test("fleet views, search shortcut and two-second data", async ({ page }) => {
     await dialog.getByRole("textbox").fill("Server 03")
     await dialog.getByRole("textbox").press("Enter")
     await expect(page.getByRole("heading", { name: "China Server 03", exact: true })).toBeVisible()
-    await expect(page.locator(".chart svg")).toHaveCount(6)
-    await expect(page.locator(".tile-value").first()).toContainText("%")
+    await expect(page.locator(".node-live-strip .meter")).toHaveCount(3)
+    await expect(page.locator(".node-live-strip .meter .num").first()).toContainText("%")
 })
 
-test("context sections, chart hover, range limits and report history", async ({ page }) => {
+test("node tabs hash navigation, overview responsive panels, #billing link and load charts", async ({
+    page,
+}) => {
+    await page.setViewportSize({ width: 1024, height: 900 })
     await page.goto("/server/6")
+    await expect(page.getByRole("tab", { name: "Overview", exact: true })).toHaveAttribute(
+        "aria-selected",
+        "true",
+    )
+    // 1024 wide: all three Info blocks visible simultaneously, no secondary tabs or charts
+    await expect(page.locator(".node-subtabs")).toBeHidden()
+    await expect(page.locator(".chart svg")).toHaveCount(0)
+    await expect(page.locator(".spark")).toHaveCount(0)
+    await expect(page.getByRole("heading", { name: "System", exact: true })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Network", exact: true })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Billing", exact: true })).toBeVisible()
+    await expect(page.getByText("Usage for this period is unavailable.")).toBeVisible()
+    await expect(page.getByText("Public server information")).toBeVisible()
+
+    // 4 tabs hash navigation
+    await page.getByRole("tab", { name: "Load", exact: true }).click()
+    await expect(page).toHaveURL(/\/server\/6#load$/)
+    await expect(page.locator(".metric-tile")).toHaveCount(0)
+    await expect(page.locator(".spark")).toHaveCount(0)
     await expect(page.locator(".chart svg")).toHaveCount(6)
     await expect(page.getByRole("button", { name: "7 d", exact: true })).toHaveCount(0)
-    const chart = page.locator(".chart svg").first()
-    await chart.hover({ position: { x: 150, y: 60 } })
+    await page
+        .locator(".chart svg")
+        .first()
+        .hover({ position: { x: 150, y: 60 } })
     await expect(page.locator(".chart-tooltip")).toBeVisible()
+
     await page.getByRole("tab", { name: "Latency", exact: true }).click()
+    await expect(page).toHaveURL(/\/server\/6#latency$/)
     await expect(page.locator(".node-ping-list button")).toHaveCount(3)
     await page.locator(".node-ping-list button").first().click()
     await expect(page.locator(".node-ping-detail")).toBeVisible()
-    await page.getByRole("tab", { name: "Traffic & billing", exact: true }).click()
-    await expect(page.getByText("Usage for this period is unavailable.")).toBeVisible()
+
     await page.getByRole("tab", { name: "Reporting history", exact: true }).click()
+    await expect(page).toHaveURL(/\/server\/6#history$/)
     await expect(page.getByText(/hours reported/)).toBeVisible()
+
+    await page.getByRole("tab", { name: "Overview", exact: true }).click()
+    await expect(page).toHaveURL(/\/server\/6#overview$/)
+
+    // 375 narrow: secondary tabs switch System / Network / Billing without mutating URL
+    await page.setViewportSize({ width: 375, height: 900 })
+    await expect(page.locator(".node-subtabs")).toBeVisible()
+    await expect(page.getByRole("heading", { name: "System", exact: true })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Network", exact: true })).toBeHidden()
+    await expect(page.getByRole("heading", { name: "Billing", exact: true })).toBeHidden()
+
+    await page.locator(".node-subtabs").getByRole("tab", { name: "Network", exact: true }).click()
+    await expect(page).toHaveURL(/\/server\/6#overview$/)
+    await expect(page.getByRole("heading", { name: "Network", exact: true })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "System", exact: true })).toBeHidden()
+
+    await page.locator(".node-subtabs").getByRole("tab", { name: "Billing", exact: true }).click()
+    await expect(page).toHaveURL(/\/server\/6#overview$/)
+    await expect(page.getByRole("heading", { name: "Billing", exact: true })).toBeVisible()
+    await expect(page.getByText("Public server information")).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Network", exact: true })).toBeHidden()
+
+    // Legacy #billing hash opens Overview and selects Billing
+    await page.goto("/server/6#load")
+    await page.goto("/server/6#billing")
+    await expect(page.getByRole("tab", { name: "Overview", exact: true })).toHaveAttribute(
+        "aria-selected",
+        "true",
+    )
+    await expect(
+        page.locator(".node-subtabs").getByRole("tab", { name: "Billing", exact: true }),
+    ).toHaveAttribute("aria-selected", "true")
+    await expect(page.getByRole("heading", { name: "Billing", exact: true })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "System", exact: true })).toBeHidden()
+
+    // Failed reports request on Overview leaves Today's traffic and Peak as "—" without blocking
+    await page.setViewportSize({ width: 1024, height: 900 })
+    await page.route("**/server/25/metrics*", (route) =>
+        route.fulfill({ status: 503, json: { success: false } }),
+    )
+    await page.goto("/server/25")
+    const netPanel = page.locator('[data-panel="network"]')
+    await expect(
+        netPanel.locator("div").filter({ hasText: "Today’s traffic" }).locator("dd"),
+    ).toHaveText("—")
+    await expect(
+        netPanel.locator("div").filter({ hasText: "Peak (24 h)" }).locator("dd"),
+    ).toHaveText("—")
+    await expect(page.getByText("Could not reach the monitor.")).toHaveCount(0)
 })
 
-test("login and OAuth use local mocks, authenticated history unlocks", async ({ page }) => {
+test("login and OAuth use local mocks, authenticated history unlocks and shares range across load and latency", async ({
+    page,
+}) => {
+    const requested: string[] = []
+    page.on("request", (r) => {
+        if (r.url().includes("/api/v1/server/6/")) requested.push(r.url())
+    })
     await page.goto("/")
     await expect(page.locator("[data-server]")).toHaveCount(20)
     await page.getByRole("button", { name: "Sign in", exact: true }).click()
@@ -60,9 +141,22 @@ test("login and OAuth use local mocks, authenticated history unlocks", async ({ 
     await dialog.getByLabel("Password").fill("fixture-only")
     await dialog.getByRole("button", { name: "Sign in", exact: true }).click()
     await expect(dialog).toHaveCount(0)
-    await page.goto("/server/6")
-    await expect(page.getByRole("button", { name: "7 d", exact: true })).toBeVisible()
+    await page.goto("/server/6#load")
+    const sevenDays = page.getByRole("button", { name: "7 d", exact: true })
+    await expect(sevenDays).toBeVisible()
     await expect(page.getByRole("button", { name: "30 d", exact: true })).toBeVisible()
+    requested.length = 0
+    await sevenDays.click()
+    await expect(sevenDays).toHaveAttribute("aria-pressed", "true")
+    await expect(page.locator(".chart svg")).toHaveCount(6)
+    expect(requested.some((u) => u.includes("/metrics?period=7d&"))).toBe(true)
+    await page.getByRole("tab", { name: "Latency", exact: true }).click()
+    await expect(page.getByRole("button", { name: "7 d", exact: true })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+    )
+    await expect(page.locator(".node-ping-list button")).toHaveCount(3)
+    expect(requested.some((u) => u.includes("/service?period=7d"))).toBe(true)
 })
 
 test("drawer focus, appearance and language remain reachable", async ({ page }) => {
