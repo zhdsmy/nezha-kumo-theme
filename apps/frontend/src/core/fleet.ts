@@ -61,17 +61,38 @@ export function sortNodes(
         return (desc ? -diff : diff) || a.id.localeCompare(b.id)
     })
 }
+export type IssueReason =
+    | { kind: "offline" }
+    | { kind: "stale" }
+    | { kind: "expired" }
+    | { kind: "quota" }
+    | { kind: "cpu" | "memory" | "disk"; percent: string }
+
+export function nodeIssues(
+    n: NodeInfo,
+    s: Snapshot | undefined,
+    fed: boolean,
+    now = Date.now(),
+): IssueReason[] {
+    const c = nodeCondition(n, s, now, fed)
+    const reasons: IssueReason[] = []
+    if (fed && !s?.online) reasons.push({ kind: "offline" })
+    if (s?.online) {
+        if (c.kind === "stale") reasons.push({ kind: "stale" })
+        const mem = ratio(s.memUsed, s.memTotal || n.memTotal)
+        const disk = ratio(s.diskUsed, s.diskTotal || n.diskTotal)
+        if (levelFor("cpu", s.cpu) !== "good")
+            reasons.push({ kind: "cpu", percent: formatPercent(s.cpu) })
+        if (levelFor("memory", mem) !== "good")
+            reasons.push({ kind: "memory", percent: formatPercent(mem) })
+        if (levelFor("disk", disk) !== "good")
+            reasons.push({ kind: "disk", percent: formatPercent(disk) })
+    }
+    if (c.expired) reasons.push({ kind: "expired" })
+    if (c.quotaUsed) reasons.push({ kind: "quota" })
+    return reasons
+}
+
 export function needsAttention(n: NodeInfo, s: Snapshot | undefined, fed: boolean) {
-    const c = nodeCondition(n, s, Date.now(), fed)
-    return (
-        c.expired ||
-        c.quotaUsed ||
-        c.kind === "stale" ||
-        Boolean(
-            s?.online &&
-            (levelFor("cpu", s.cpu) !== "good" ||
-                levelFor("memory", ratio(s.memUsed, s.memTotal || n.memTotal)) !== "good" ||
-                levelFor("disk", ratio(s.diskUsed, s.diskTotal || n.diskTotal)) !== "good"),
-        )
-    )
+    return nodeIssues(n, s, fed).some((r) => r.kind !== "offline")
 }

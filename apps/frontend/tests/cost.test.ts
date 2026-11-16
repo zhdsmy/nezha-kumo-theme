@@ -6,12 +6,11 @@ import {
     displayCurrency,
     loadExchangeRates,
     onlineMonthlyCost,
-    sharedCurrency,
 } from "../src/core/cost"
 import { currencyCode, formatMoney } from "../src/core/format"
 import type { NodeInfo, Snapshot } from "../src/core/model"
 
-const rates = { USD: 1, CNY: 7, EUR: 0.9, AUD: 1.5 }
+const rates = { USD: 1, CNY: 7, HKD: 7.8, JPY: 150, EUR: 0.9, AUD: 1.5 }
 const wire = Object.entries(rates)
     .filter(([quote]) => quote !== "USD")
     .map(([quote, rate]) => ({ base: "USD", quote, rate, date: "2026-11-03" }))
@@ -25,11 +24,14 @@ afterEach(() => {
 })
 
 describe("monthly fleet cost", () => {
-    it("shares locale currency and validates conversion for all billing displays", () => {
+    it("binds display currency to interface locale and validates conversion", () => {
         expect(displayCurrency("zh-CN")).toBe("CNY")
-        for (const locale of ["en", "zh-TW", "ja", undefined])
-            expect(displayCurrency(locale)).toBe("USD")
+        expect(displayCurrency("zh-TW")).toBe("HKD")
+        expect(displayCurrency("ja")).toBe("JPY")
+        for (const locale of ["en", "fr", undefined]) expect(displayCurrency(locale)).toBe("USD")
         expect(convertAmount(10, "USD", "CNY", rates)).toBe(70)
+        expect(convertAmount(10, "USD", "HKD", rates)).toBe(78)
+        expect(convertAmount(10, "USD", "JPY", rates)).toBe(1500)
         expect(convertAmount(70, "CNY", "USD", rates)).toBe(10)
         expect(convertAmount(0, "CNY", "USD")).toBe(0)
         expect(convertAmount(70, "CNY", "CNY")).toBe(70)
@@ -79,17 +81,6 @@ describe("monthly fleet cost", () => {
     it("converts every online recurring bill to the selected currency", () => {
         expect(onlineMonthlyCost(nodes, snapshots, "USD", rates)).toEqual({ amount: 40, paid: 4 })
         expect(onlineMonthlyCost(nodes, snapshots, "CNY", rates)).toEqual({ amount: 280, paid: 4 })
-    })
-
-    it("finds the one currency online paid nodes share", () => {
-        expect(sharedCurrency(nodes, snapshots)).toBeNull()
-        expect(
-            sharedCurrency([node("a", "￥", 70), node("b", "CNY", 10), node("c", "$", -1)], {
-                a: online,
-                b: online,
-                c: online,
-            }),
-        ).toBe("CNY")
     })
 
     it("does not misrepresent missing rates as a partial total", () => {

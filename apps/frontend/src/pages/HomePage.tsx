@@ -1,12 +1,12 @@
 import { useDailyCounters } from "@/app/history"
-import { type MoneyPeriod, setMoneyCurrency, setMoneyPeriod, useMoney } from "@/app/money"
+import { type MoneyPeriod, setMoneyPeriod, useMoney } from "@/app/money"
 import { Link, navigate, usePathname } from "@/app/router"
 import { adapter, getLive, getSpark, seedLive, useStore, useVisibleNodes } from "@/app/store"
 import { useBilling } from "@/components/billing"
 import { Meter, NoData, Spark, Status, Tile } from "@/components/ui"
-import { onlineMonthlyCost, sharedCurrency } from "@/core/cost"
+import { onlineMonthlyCost } from "@/core/cost"
 import { matchGroups, parseFilterQuery } from "@/core/filter"
-import { SORT_KEYS, type SortKey, needsAttention, sortNodes } from "@/core/fleet"
+import { type IssueReason, SORT_KEYS, type SortKey, nodeIssues, sortNodes } from "@/core/fleet"
 import {
     duration,
     formatBytes,
@@ -195,7 +195,6 @@ const ServerRow = memo(function ServerRow({ node, snap, showRegions }: RowProps)
     )
 })
 
-const CURRENCIES = ["original", "CNY", "USD", "EUR", "GBP", "JPY", "TWD", "HKD"]
 type View = "cards" | "compact"
 
 export function HomePage() {
@@ -237,8 +236,23 @@ export function HomePage() {
         writeStorage("nkt:view", JSON.stringify(view))
     }, [sort, desc, view])
     const online = nodes.filter((n) => snapshots[n.id]?.online).length
-    const attention = nodes.filter((n) => needsAttention(n, snapshots[n.id], fed)).length
     const offline = nodes.length - online
+    const issues = useMemo(
+        () =>
+            fed
+                ? nodes
+                      .flatMap((node) => {
+                          const reasons = nodeIssues(node, snapshots[node.id], fed)
+                          return reasons.length ? [{ node, reasons }] : []
+                      })
+                      .sort(
+                          (a, b) =>
+                              Number(b.reasons[0].kind === "offline") -
+                              Number(a.reasons[0].kind === "offline"),
+                      )
+                : [],
+        [nodes, snapshots, fed],
+    )
     const bandwidth = nodes.reduce(
         (sum, n) =>
             sum + (snapshots[n.id]?.online ? snapshots[n.id].netUp + snapshots[n.id].netDown : 0),
@@ -248,16 +262,16 @@ export function HomePage() {
         ? nodes.reduce((sum, n) => sum + (snapshots[n.id]?.online ? snapshots[n.id].cpu : 0), 0) /
           online
         : 0
-    const currency =
-        money.currency === "original"
-            ? sharedCurrency(nodes, snapshots, actual ?? undefined)
-            : money.currency
-    const cost = currency
-        ? onlineMonthlyCost(nodes, snapshots, currency, rates?.rates, actual ?? undefined)
-        : null
+    const cost = onlineMonthlyCost(
+        nodes,
+        snapshots,
+        money.currency,
+        rates?.rates,
+        actual ?? undefined,
+    )
     const costValue =
-        cost?.amount !== null && cost?.amount !== undefined
-            ? formatMoney(cost.amount * (money.period === "year" ? 12 : 1), currency!)
+        cost.amount !== null
+            ? formatMoney(cost.amount * (money.period === "year" ? 12 : 1), money.currency)
             : "—"
     const midnight = new Date().setHours(0, 0, 0, 0)
     const { amount: traffic, included } = summariseFleetDay(nodes, snapshots, daily, midnight)
@@ -274,6 +288,9 @@ export function HomePage() {
                 }
             })
         return {
+            online: aggregate(
+                nodes.map((n) => recentBuckets(getSpark(n.id), () => 1, 30, 15, now)),
+            ),
             network: aggregate(
                 nodes.map((n) =>
                     recentBuckets(getSpark(n.id), (p) => p.netUp + p.netDown, 30, 15, now),
@@ -327,22 +344,62 @@ export function HomePage() {
         sort,
         desc,
     )
-    const headline = !fed
-        ? t("status.connecting")
-        : !nodes.length
-          ? t("status.noNodes")
-          : offline
-            ? t("status.someOffline", { count: offline })
-            : attention
-              ? t("status.attention", { count: attention })
-              : t("status.allOnline")
+    const formatReason = (r: IssueReason) =>
+        r.kind === "cpu" || r.kind === "memory" || r.kind === "disk"
+            ? `${t(`metric.${r.kind}`)} ${r.percent}%`
+            : t(`status.${r.kind === "quota" ? "quotaExceeded" : r.kind}`)
+    const nodesSub = !fed ? (
+        t("status.connecting")
+    ) : !nodes.length ? (
+        t("status.noNodes")
+    ) : issues.length ? (
+        <DropdownMenu>
+            <DropdownMenu.Trigger>
+                <button
+                    type="button"
+                    className="status-trigger"
+                    data-level={offline ? "danger" : "warn"}
+                >
+                    <span>
+                        {offline
+                            ? t("status.someOffline", { count: offline })
+                            : t("status.attention", { count: issues.length })}
+                    </span>
+                    <CaretDownIcon size={12} />
+                </button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content align="start" className="attention-menu">
+                {issues.map(({ node, reasons }) => (
+                    <DropdownMenu.Item
+                        key={node.id}
+                        className="attention-item"
+                        render={
+                            <Link href={adapter.nodePath(node.id)}>
+                                <span className="attention-name" title={node.name}>
+                                    {stripFlag(node.name)}
+                                </span>
+                                <span
+                                    className="attention-reason num"
+                                    data-level={reasons[0].kind === "offline" ? "danger" : "warn"}
+                                >
+                                    {reasons.map(formatReason).join(" · ")}
+                                </span>
+                            </Link>
+                        }
+                    />
+                ))}
+            </DropdownMenu.Content>
+        </DropdownMenu>
+    ) : (
+        t("status.allNormal")
+    )
     const groupTitle =
         groups.length === 1 ? groups[0] || t("toolbar.ungrouped") : groups.join(" · ")
     const costLabel = t(money.period === "year" ? "overview.costYear" : "overview.cost")
     const costHint =
-        cost?.amount === null || !currency
+        cost.amount === null
             ? t(rateError ? "overview.costUnavailable" : "overview.costLoading")
-            : t("overview.costNodes", { count: cost?.paid ?? 0 })
+            : t("overview.costNodes", { count: cost.paid })
     return (
         <Page
             title={groups.length ? groupTitle : t("ui.overview")}
@@ -359,27 +416,12 @@ export function HomePage() {
                         </DropdownMenu.Trigger>
                         <DropdownMenu.Content align="end" className="min-w-40">
                             <DropdownMenu.Group>
-                                <DropdownMenu.Label>{t("money.currency")}</DropdownMenu.Label>
-                                <DropdownMenu.RadioGroup
-                                    value={money.currency}
-                                    onValueChange={(v: string) => setMoneyCurrency(v)}
-                                >
-                                    {CURRENCIES.map((c) => (
-                                        <DropdownMenu.RadioItem key={c} value={c}>
-                                            {c === "original" ? t("money.original") : c}
-                                            <DropdownMenu.RadioItemIndicator />
-                                        </DropdownMenu.RadioItem>
-                                    ))}
-                                </DropdownMenu.RadioGroup>
-                            </DropdownMenu.Group>
-                            <DropdownMenu.Separator />
-                            <DropdownMenu.Group>
                                 <DropdownMenu.Label>{t("money.period")}</DropdownMenu.Label>
                                 <DropdownMenu.RadioGroup
                                     value={money.period}
                                     onValueChange={(v: string) => setMoneyPeriod(v as MoneyPeriod)}
                                 >
-                                    {(["original", "month", "year"] as const).map((p) => (
+                                    {(["month", "year"] as const).map((p) => (
                                         <DropdownMenu.RadioItem key={p} value={p}>
                                             {t(`money.${p}`)}
                                             <DropdownMenu.RadioItemIndicator />
@@ -390,14 +432,6 @@ export function HomePage() {
                         </DropdownMenu.Content>
                     </DropdownMenu>
                 )
-            }
-            description={
-                <span
-                    className="status-headline"
-                    data-level={offline ? "danger" : attention ? "warn" : "good"}
-                >
-                    {headline}
-                </span>
             }
         >
             {settings.showOverview && (
@@ -413,8 +447,10 @@ export function HomePage() {
                                 <span className="tile-denominator"> / {nodes.length}</span>
                             </span>
                         }
-                        sub={t("status.summary", { online, count: nodes.length })}
-                    />
+                        sub={nodesSub}
+                    >
+                        <Spark buckets={sparks.online} />
+                    </Tile>
                     <Tile
                         label={t("overview.bandwidth")}
                         value={fed ? formatSpeed(bandwidth) : "—"}

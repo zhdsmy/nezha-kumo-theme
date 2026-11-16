@@ -16,7 +16,10 @@ import zhTW from "../src/i18n/locales/zh-TW.json"
 const privateBilling = vi.hoisted(() => ({
     loggedIn: false,
     actualCosts: null as Record<string, { amount: number; currency: string }> | null,
-    exchangeRates: { date: "2026-11-04", rates: { USD: 1, CNY: 7, EUR: 0.9, AUD: 1.5 } } as {
+    exchangeRates: {
+        date: "2026-11-04",
+        rates: { USD: 1, CNY: 7, HKD: 7.8, JPY: 150, EUR: 0.9, AUD: 1.5 },
+    } as {
         date: string
         rates: Record<string, number>
     } | null,
@@ -59,8 +62,12 @@ function Billing({ node }: { node: NodeInfo }) {
     )
 }
 
-function render(note: object) {
-    const node = { ...parsePublicNote(JSON.stringify(note)), id: "sample" } as NodeInfo
+function render(note: object, overrides?: Partial<NodeInfo>) {
+    const node = {
+        ...parsePublicNote(JSON.stringify(note)),
+        id: "sample",
+        ...overrides,
+    } as NodeInfo
     return renderToStaticMarkup(
         createElement(I18nextProvider, { i18n }, createElement(Billing, { node })),
     )
@@ -103,16 +110,21 @@ describe("Nezha billing display", () => {
         privateBilling.loggedIn = false
     })
 
-    it.each(["en", "zh-CN", "zh-TW", "ja"] as const)(
-        "uses the locale currency for both bills and preserves the year cycle in %s",
-        async (locale) => {
+    it.each([
+        ["en", "$0.83", "$0.17"],
+        ["zh-CN", "¥5.83", "¥1.17"],
+        ["zh-TW", "HK$6.50", "HK$1.30"],
+        ["ja", "JP¥125", "JP¥25"],
+    ] as const)(
+        "binds currency to %s and restates recurring bills monthly by default",
+        async (locale, planExpected, actualExpected) => {
             await i18n.changeLanguage(locale)
             privateBilling.loggedIn = true
             privateBilling.actualCosts = { sample: { amount: 14, currency: "CNY" } }
             const html = render({ billingDataMod: { amount: "EUR 9.00", cycle: "Year" } })
-            const unit = resources[locale].translation.unit.perYear
-            expect(html).toContain(`${locale === "zh-CN" ? "¥70.00" : "$10.00"}${unit}`)
-            expect(html).toContain(`${locale === "zh-CN" ? "¥14.00" : "$2.00"}${unit}`)
+            const unit = resources[locale].translation.unit.perMonth
+            expect(html).toContain(`${planExpected}${unit}`)
+            expect(html).toContain(`${actualExpected}${unit}`)
             expect(html).not.toContain("€")
             privateBilling.loggedIn = false
             privateBilling.actualCosts = null
@@ -132,13 +144,13 @@ describe("Nezha billing display", () => {
         privateBilling.actualCosts = null
     })
 
-    it("restates recurring bills per month or year and keeps the original currency on request", async () => {
+    it("restates recurring bills per month or year, keeps one-time cycles, and ignores saved currency", async () => {
         await i18n.changeLanguage("zh-CN")
         privateBilling.exchangeRates = {
             date: "2026-11-04",
-            rates: { USD: 1, CNY: 7, EUR: 0.9, AUD: 1.5 },
+            rates: { USD: 1, CNY: 7, HKD: 7.8, JPY: 150, EUR: 0.9, AUD: 1.5 },
         }
-        const saved: Record<string, string> = {}
+        const saved: Record<string, string> = { "nkt:currency": "EUR" }
         vi.stubGlobal("localStorage", {
             getItem: (k: string) => saved[k] ?? null,
             setItem: (k: string, v: string) => {
@@ -146,15 +158,14 @@ describe("Nezha billing display", () => {
             },
         })
         const yearly = { billingDataMod: { amount: "EUR 9.00", cycle: "Year" } }
-        saved["nkt:period"] = "month"
         expect(render(yearly)).toContain("¥5.83/月")
-        saved["nkt:currency"] = "USD"
         saved["nkt:period"] = "year"
-        expect(render(yearly)).toContain("$10.00/年")
-        saved["nkt:currency"] = "original"
-        expect(render(yearly)).toContain("€9.00/年")
-        saved["nkt:period"] = "original"
-        expect(render({ billingDataMod: { amount: "USD 100", cycle: "-1" } })).not.toContain("/年")
+        expect(render(yearly)).toContain("¥70.00/年")
+        const unset = render({ billingDataMod: { amount: "USD 100", cycle: "-1" } })
+        expect(unset).toContain("¥700.00")
+        expect(unset).not.toContain("/年")
+        const oneTime = render({ billingDataMod: { amount: "USD 100" } }, { billingCycle: -1 })
+        expect(oneTime).toContain("¥700.00 一次性")
         vi.unstubAllGlobals()
     })
 })

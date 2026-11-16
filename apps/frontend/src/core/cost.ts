@@ -61,7 +61,13 @@ export function loadExchangeRates() {
     }))
 }
 
-export const displayCurrency = (locale?: string) => (locale === "zh-CN" ? "CNY" : "USD")
+const LOCALE_CURRENCY: Record<string, string> = {
+    "zh-CN": "CNY",
+    "zh-TW": "HKD",
+    ja: "JPY",
+}
+
+export const displayCurrency = (locale?: string) => (locale && LOCALE_CURRENCY[locale]) || "USD"
 
 export function convertAmount(
     amount: number,
@@ -106,24 +112,4 @@ export function onlineMonthlyCost(
         else amount += converted
     }
     return { amount: complete ? amount : null, paid }
-}
-
-/** The one currency every online paid node bills in, or null when they differ. */
-export function sharedCurrency(
-    nodes: readonly NodeInfo[],
-    snapshots: Record<string, Snapshot>,
-    actualCosts?: Record<string, ActualCost>,
-) {
-    const codes = new Set<string | null>()
-    for (const node of nodes) {
-        const actual = actualCosts?.[node.id]
-        if (
-            !snapshots[node.id]?.online ||
-            monthlyCost(actual?.amount ?? node.price, node.billingCycle) <= 0
-        )
-            continue
-        codes.add(currencyCode(actual?.currency ?? node.currency))
-    }
-    const [only] = codes
-    return codes.size === 1 ? only : null
 }
