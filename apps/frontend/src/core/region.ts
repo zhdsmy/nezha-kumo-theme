@@ -1,4 +1,6 @@
 // Adapted from zool-theme/src/core/region.ts (MIT, luoleiorg).
+import { FLAG_CODES } from "./flags.manifest"
+
 const FLAG = /^\s*([\u{1F1E6}-\u{1F1FF}]{2})\s*/u
 const A = 0x1f1e6
 
@@ -44,4 +46,15 @@ const REGION_NAME_OVERRIDES: Record<string, string> = {
     "zh-TW": "中國台灣",
     ja: "中国台湾",
     en: "Taiwan, China",
+}
+
+/**
+ * The flag file for a region code, or `null` for anything that is not a two-letter ASCII code
+ * present in `FLAG_CODES`.
+ */
+export function regionFlagCode(code: string, loggedIn: boolean): string | null {
+    if (!/^[A-Za-z]{2}$/.test(code)) return null
+    const lower = code.toLowerCase()
+    const cc = lower === "tw" && !loggedIn ? "cn" : lower
+    return FLAG_CODES.has(cc) ? cc : null
 }

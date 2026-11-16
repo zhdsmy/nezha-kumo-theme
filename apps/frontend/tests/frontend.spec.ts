@@ -27,7 +27,7 @@ test("fleet views, search shortcut and two-second data", async ({ page }) => {
     await expect(dialog).toBeVisible()
     await dialog.getByRole("textbox").fill("Server 03")
     await dialog.getByRole("textbox").press("Enter")
-    await expect(page.getByRole("heading", { name: "Server 03", exact: true })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "China Server 03", exact: true })).toBeVisible()
     await expect(page.locator(".chart svg")).toHaveCount(6)
     await expect(page.locator(".tile-value").first()).toContainText("%")
 })

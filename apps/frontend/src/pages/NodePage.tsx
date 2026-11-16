@@ -4,6 +4,7 @@ import { SECTIONS, type Section } from "@/app/sections"
 import { adapter, backfillLive, getLive, getSpark, useStore, useVisibleNodes } from "@/app/store"
 import { HourGrid } from "@/components/HourGrid"
 import { LoadCharts, PingChart } from "@/components/NodeCharts"
+import { RegionFlag } from "@/components/RegionFlag"
 import { useBilling } from "@/components/billing"
 import { CHART_PALETTE, Info, Loading, NoData, Spark, Status, Tile } from "@/components/ui"
 import { formatBytes, formatPercent, formatSpeed, quotaUsage, ratio } from "@/core/format"
@@ -25,6 +26,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
     const snap = useStore((s) => s.snapshots[id])
     const recordHours = useStore((s) => s.site?.recordHours ?? 0)
     const showBilling = useStore((s) => s.settings.showBilling)
+    const showRegions = useStore((s) => s.settings.showRegions)
     const title = useStore((s) => s.settings.siteTitle || s.site?.name || "Nezha")
     const [range, setRange] = useState(0)
     const liveVersion = useStore((s) => (section === "overview" ? s.liveVersion : -1))
@@ -171,7 +173,16 @@ export default function NodePage({ id, section }: { id: string; section: Section
     return (
         <Page
             maxWidth={1100}
-            title={stripFlag(node.name)}
+            title={
+                showRegions && node.region ? (
+                    <>
+                        <RegionFlag code={node.region} className="mr-2" />
+                        {stripFlag(node.name)}
+                    </>
+                ) : (
+                    stripFlag(node.name)
+                )
+            }
             eyebrow={[node.region, node.os].filter(Boolean).join(" · ")}
             description={<Status snapshot={snap} />}
             aside={system}

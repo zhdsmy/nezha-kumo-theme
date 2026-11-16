@@ -525,3 +525,20 @@
 .hour-grid-cell {
     height: 8px;
 }
+
+/* region flags */
+.region-flag {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 16px;
+    height: 12px;
+    border-radius: 2px;
+    object-fit: cover;
+    vertical-align: calc(0.36em - 6px);
+    outline: 1px solid light-dark(rgb(0 0 0 / 0.12), rgb(255 255 255 / 0.18));
+    outline-offset: -1px;
+}
+svg.region-flag {
+    color: var(--text-color-kumo-subtle);
+    outline: none;
+}
