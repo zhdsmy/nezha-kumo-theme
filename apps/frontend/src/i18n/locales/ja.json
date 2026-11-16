@@ -36,7 +36,7 @@
         "searchHint": "Enter で開く",
         "noResults": "一致するノードはありません",
         "sort": "並べ替え",
-        "clear": "絞り込みを解除",
+        "regions": "地域",
         "empty": "条件に一致するノードはありません。",
         "ascending": "昇順",
         "descending": "降順",
