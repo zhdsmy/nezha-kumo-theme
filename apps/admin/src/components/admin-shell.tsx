@@ -8,8 +8,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import UserMenu from "@/components/user-menu"
 import { useAuth } from "@/hooks/useAuth"
+import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { nezhaLang } from "@/types/settings"
-import { AppShell, NavSection, ShellLinkProps } from "@nezha-kumo/ui"
+import { AppShell, BREAKPOINTS, NavSection, ShellLinkProps } from "@nezha-kumo/ui"
 import {
     Activity,
     Bell,
@@ -49,6 +50,7 @@ export default function AdminShell({
 }) {
     const { t } = useTranslation()
     const { profile } = useAuth()
+    const sidebarShown = useMediaQuery(`(min-width: ${BREAKPOINTS.sidebar}px)`)
     const { pathname } = useLocation()
     const isAdmin = profile?.role === 0
     const nav: NavSection[] = [
@@ -208,10 +210,14 @@ export default function AdminShell({
             nav={nav}
             activeId={activeId}
             linkComponent={RouterLink}
+            // The sidebar brand shows the site name from BREAKPOINTS.sidebar up; the top bar
+            // repeats it only while the sidebar is a drawer (same rule as the frontend).
             topbar={
-                <span className="truncate" title={siteName}>
-                    {siteName}
-                </span>
+                sidebarShown ? undefined : (
+                    <span className="truncate" title={siteName}>
+                        {siteName}
+                    </span>
+                )
             }
             actions={<AdminActions />}
             footer={
