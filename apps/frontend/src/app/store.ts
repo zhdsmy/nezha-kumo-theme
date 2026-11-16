@@ -16,6 +16,9 @@ import { useMemo, useSyncExternalStore } from "react"
 
 export { adapter }
 
+export const nodeHref = (id: string, u: Pick<URL | Location, "pathname" | "hash">) =>
+    `${adapter.nodePath(id)}${adapter.matchNodePath(u.pathname) ? u.hash : ""}`
+
 interface State {
     phase: "loading" | "ready" | "error"
     site: SiteInfo | null

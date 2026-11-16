@@ -1,6 +1,6 @@
 import { setAppearance, useAppearance } from "@/app/prefs"
-import { Link, navigate } from "@/app/router"
-import { adapter, refresh, useStore, useVisibleNodes } from "@/app/store"
+import { Link, navigate, usePathname } from "@/app/router"
+import { adapter, nodeHref, refresh, useStore, useVisibleNodes } from "@/app/store"
 import { stripFlag } from "@/core/region"
 import { LOCALES, type Locale, setLocale } from "@/i18n"
 import { Button, Dialog, DropdownMenu, Input, Loader } from "@cloudflare/kumo"
@@ -12,7 +12,7 @@ import {
     UserIcon,
     XIcon,
 } from "@phosphor-icons/react"
-import { type FormEvent, useEffect, useState } from "react"
+import { type FormEvent, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Status } from "./ui"
@@ -109,16 +109,21 @@ export function Actions() {
     const nodes = useVisibleNodes()
     const session = useStore((s) => s.session)
     const hidden = useStore((s) => s.settings.hideAdminEntry)
+    const url = new URL(usePathname(), window.location.origin)
+    const toggleSearch = useCallback((open?: boolean) => {
+        setSearch((v) => open ?? !v)
+        setQuery("")
+    }, [])
     useEffect(() => {
         const key = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
                 e.preventDefault()
-                setSearch((v) => !v)
+                toggleSearch()
             }
         }
         window.addEventListener("keydown", key)
         return () => window.removeEventListener("keydown", key)
-    }, [])
+    }, [toggleSearch])
     const matches = nodes.filter((n) =>
         `${n.name} ${n.region} ${n.groups.join(" ")}`.toLowerCase().includes(query.toLowerCase()),
     )
@@ -129,7 +134,7 @@ export function Actions() {
                 size="sm"
                 aria-label={t("toolbar.search")}
                 title={`${t("toolbar.search")} (⌘K / Ctrl+K)`}
-                onClick={() => setSearch(true)}
+                onClick={() => toggleSearch(true)}
             >
                 <MagnifyingGlassIcon size={16} />
                 <span className="action-label">{t("toolbar.search")}</span>
@@ -216,7 +221,7 @@ export function Actions() {
                     {login && <LoginForm close={() => setLogin(false)} />}
                 </Dialog>
             </Dialog.Root>
-            <Dialog.Root open={search} onOpenChange={setSearch}>
+            <Dialog.Root open={search} onOpenChange={toggleSearch}>
                 <Dialog size="lg" className="p-5">
                     <Dialog.Title className="dialog-title">{t("toolbar.search")}</Dialog.Title>
                     <Dialog.Description className="muted mb-4">
@@ -229,11 +234,9 @@ export function Actions() {
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                                if (matches[0]) {
-                                    navigate(adapter.nodePath(matches[0].id))
-                                    setSearch(false)
-                                }
+                            if (e.key === "Enter" && matches[0]) {
+                                navigate(nodeHref(matches[0].id, url))
+                                toggleSearch(false)
                             }
                         }}
                     />
@@ -243,8 +246,8 @@ export function Actions() {
                                 <Link
                                     className="search-result"
                                     key={n.id}
-                                    href={adapter.nodePath(n.id)}
-                                    onClick={() => setSearch(false)}
+                                    href={nodeHref(n.id, url)}
+                                    onClick={() => toggleSearch(false)}
                                 >
                                     <span className="truncate" title={n.name}>
                                         {stripFlag(n.name)}
@@ -256,7 +259,7 @@ export function Actions() {
                             <p className="muted p-4">{t("toolbar.noResults")}</p>
                         )}
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => setSearch(false)}>
+                    <Button variant="ghost" size="sm" onClick={() => toggleSearch(false)}>
                         {t("auth.close")}
                     </Button>
                 </Dialog>

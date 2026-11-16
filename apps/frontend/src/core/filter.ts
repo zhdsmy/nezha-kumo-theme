@@ -4,8 +4,7 @@ import type { NodeInfo } from "./model"
 /**
  * The home page filter: which groups and which region the visitor has picked.
  *
- * It lives in the query string first, so a filtered page can be shared and survives a reload,
- * and in localStorage second, so coming back to the bare address keeps the last choice.
+ * It lives in the query string, so a filtered page can be shared and survives a reload.
  * Groups are repeated parameters (`?group=a&group=b`) rather than one joined value: group
  * names are free text and may contain any separator we could pick.
  */

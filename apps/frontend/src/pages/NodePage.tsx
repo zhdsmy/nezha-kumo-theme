@@ -33,12 +33,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
     const showRegions = useStore((s) => s.settings.showRegions)
     const title = useStore((s) => s.settings.siteTitle || s.site?.name || "Nezha")
     const hash = new URL(usePathname(), window.location.origin).hash
-    const [subTab, setSubTab] = useState<SubTab>(() => (hash === "#billing" ? "billing" : "system"))
-    const [prevHash, setPrevHash] = useState(hash)
-    if (hash !== prevHash) {
-        setPrevHash(hash)
-        if (hash === "#billing") setSubTab("billing")
-    }
+    const [subTab, setSubTab] = useState<"system" | "network">("system")
     const [range, setRange] = useState(0)
     const ranges = adapter.historyRanges.filter((h) => h === 0 || h <= recordHours)
     const activeRange = ranges.includes(range) ? range : 0
@@ -163,7 +158,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
         disk = snap?.diskTotal || node.diskTotal
     const used = quotaUsage(node, snap),
         expiry = billing.expiry(node)
-    const activeSub: SubTab = subTab === "billing" && !showBilling ? "system" : subTab
+    const activeSub: SubTab = hash === "#billing" && showBilling ? "billing" : subTab
     const subTabs: SubTab[] = showBilling ? ["system", "network", "billing"] : ["system", "network"]
     return (
         <Page
@@ -258,7 +253,18 @@ export default function NodePage({ id, section }: { id: string; section: Section
                             <Tabs
                                 variant="segmented"
                                 value={activeSub}
-                                onValueChange={(v) => setSubTab(v as SubTab)}
+                                onValueChange={(v) => {
+                                    if (v === "billing") {
+                                        navigate(`${adapter.nodePath(id)}#billing`, {
+                                            replace: true,
+                                        })
+                                    } else {
+                                        setSubTab(v as "system" | "network")
+                                        if (hash === "#billing") {
+                                            navigate(adapter.nodePath(id), { replace: true })
+                                        }
+                                    }
+                                }}
                                 tabs={subTabs.map((k) => ({
                                     value: k,
                                     label: t(`node.${k}`),

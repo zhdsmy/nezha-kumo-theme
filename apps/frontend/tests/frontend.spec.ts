@@ -29,14 +29,54 @@ test("fleet views, search shortcut and two-second data", async ({ page }) => {
         .getByRole("textbox", { name: "Search" })
         .fill("Server 02")
     await expect(page.locator("[data-server]")).toHaveCount(1)
+    // Sidebar group links keep inline search query; sidebar Overview resets it and restores full list
+    await page.setViewportSize({ width: 1024, height: 900 })
+    await page.locator('nav a[href^="/?group="]').first().click()
+    await expect(
+        page.locator(".section-heading").getByRole("textbox", { name: "Search" }),
+    ).toHaveValue("Server 02")
+    await page.locator('nav a[href="/"]').click()
+    await expect(
+        page.locator(".section-heading").getByRole("textbox", { name: "Search" }),
+    ).toHaveCount(0)
+    await expect(page.locator("[data-server]")).toHaveCount(20)
     await page.keyboard.press("Control+k")
     const dialog = page.getByRole("dialog")
     await expect(dialog).toBeVisible()
     await dialog.getByRole("textbox").fill("Server 03")
     await dialog.getByRole("textbox").press("Enter")
+    await expect(page).toHaveURL(/\/server\/19$/)
     await expect(page.getByRole("heading", { name: "China Server 03", exact: true })).toBeVisible()
     await expect(page.locator(".node-live-strip .meter")).toHaveCount(3)
     await expect(page.locator(".node-live-strip .meter .num").first()).toContainText("%")
+    // Global search on a node tab preserves hash on Enter & click, and clears query after close
+    await page.getByRole("tab", { name: "Latency", exact: true }).click()
+    await expect(page).toHaveURL(/\/server\/19#latency$/)
+    await page.keyboard.press("Control+k")
+    await expect(dialog.getByRole("textbox")).toHaveValue("")
+    await dialog.getByRole("textbox").fill("Server 12")
+    await dialog.getByRole("textbox").press("Enter")
+    await expect(page).toHaveURL(/\/server\/32#latency$/)
+    await page.keyboard.press("Control+k")
+    await expect(dialog.getByRole("textbox")).toHaveValue("")
+    await dialog.getByRole("textbox").fill("Server 13")
+    await dialog.locator(".search-result").first().click()
+    await expect(page).toHaveURL(/\/server\/35#latency$/)
+    await page.keyboard.press("Control+k")
+    await expect(dialog.getByRole("textbox")).toHaveValue("")
+    await dialog.getByRole("textbox").fill("stale")
+    await page.keyboard.press("Escape")
+    await page.keyboard.press("Control+k")
+    await expect(dialog.getByRole("textbox")).toHaveValue("")
+    await dialog.getByRole("textbox").fill("stale")
+    await page.keyboard.press("Control+k")
+    await page.keyboard.press("Control+k")
+    await expect(dialog.getByRole("textbox")).toHaveValue("")
+    await dialog.getByRole("textbox").fill("stale")
+    await dialog.getByRole("button", { name: "Close", exact: true }).click()
+    await page.keyboard.press("Control+k")
+    await expect(dialog.getByRole("textbox")).toHaveValue("")
+    await dialog.getByRole("button", { name: "Close", exact: true }).click()
 })
 
 test("node tabs hash navigation, overview responsive panels, #billing link and load charts", async ({
@@ -84,8 +124,9 @@ test("node tabs hash navigation, overview responsive panels, #billing link and l
     await page.getByRole("tab", { name: "Overview", exact: true }).click()
     await expect(page).toHaveURL(/\/server\/6#overview$/)
 
-    // 375 narrow: secondary tabs switch System / Network / Billing without mutating URL
+    // 375 narrow: secondary tabs sync two-way with #billing via replace without adding history
     await page.setViewportSize({ width: 375, height: 900 })
+    const historyBefore = await page.evaluate(() => history.length)
     await expect(page.locator(".node-subtabs")).toBeVisible()
     await expect(page.getByRole("heading", { name: "System", exact: true })).toBeVisible()
     await expect(page.getByRole("heading", { name: "Network", exact: true })).toBeHidden()
@@ -97,14 +138,21 @@ test("node tabs hash navigation, overview responsive panels, #billing link and l
     await expect(page.getByRole("heading", { name: "System", exact: true })).toBeHidden()
 
     await page.locator(".node-subtabs").getByRole("tab", { name: "Billing", exact: true }).click()
-    await expect(page).toHaveURL(/\/server\/6#overview$/)
+    await expect(page).toHaveURL(/\/server\/6#billing$/)
     await expect(page.getByRole("heading", { name: "Billing", exact: true })).toBeVisible()
     await expect(page.getByText("Public server information")).toBeVisible()
     await expect(page.getByRole("heading", { name: "Network", exact: true })).toBeHidden()
 
-    // Legacy #billing hash opens Overview and selects Billing
+    await page.locator(".node-subtabs").getByRole("tab", { name: "System", exact: true }).click()
+    await expect(page).toHaveURL(/\/server\/6$/)
+    await expect(page.getByRole("heading", { name: "System", exact: true })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Billing", exact: true })).toBeHidden()
+    expect(await page.evaluate(() => history.length)).toBe(historyBefore)
+
+    // #billing hash opens Overview and selects Billing, survives reload, and leaves Billing when hash changes
     await page.goto("/server/6#load")
     await page.goto("/server/6#billing")
+    await page.reload()
     await expect(page.getByRole("tab", { name: "Overview", exact: true })).toHaveAttribute(
         "aria-selected",
         "true",
@@ -114,6 +162,13 @@ test("node tabs hash navigation, overview responsive panels, #billing link and l
     ).toHaveAttribute("aria-selected", "true")
     await expect(page.getByRole("heading", { name: "Billing", exact: true })).toBeVisible()
     await expect(page.getByRole("heading", { name: "System", exact: true })).toBeHidden()
+    await page.goBack()
+    await expect(page).toHaveURL(/\/server\/6#load$/)
+    await page.getByRole("tab", { name: "Overview", exact: true }).click()
+    await expect(page).toHaveURL(/\/server\/6#overview$/)
+    await expect(
+        page.locator(".node-subtabs").getByRole("tab", { name: "Billing", exact: true }),
+    ).toHaveAttribute("aria-selected", "false")
 
     // Failed reports request on Overview leaves Today's traffic and Peak as "—" without blocking
     await page.setViewportSize({ width: 1024, height: 900 })

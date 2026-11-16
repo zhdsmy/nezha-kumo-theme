@@ -10,7 +10,7 @@ import { resolveLocale, setLocale } from "@/i18n"
 import { HomePage } from "@/pages/HomePage"
 import { Button } from "@cloudflare/kumo"
 import { useSidebar } from "@cloudflare/kumo/components/sidebar"
-import { AppShell, Page } from "@nezha-kumo/ui"
+import { AppShell, Page, type ShellLinkProps } from "@nezha-kumo/ui"
 import { FolderSimpleIcon, GaugeIcon, GlobeIcon, HardDrivesIcon } from "@phosphor-icons/react"
 import { Component, type ReactNode, Suspense, lazy, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -20,9 +20,18 @@ import { responsive } from "./layout"
 import { setDefaultAppearance } from "./prefs"
 import { Link, useLastListHref, usePathname } from "./router"
 import { SECTIONS } from "./sections"
-import { adapter, setExchangeRates, start, useStore, useVisibleNodes } from "./store"
+import { adapter, nodeHref, setExchangeRates, start, useStore, useVisibleNodes } from "./store"
 
 const NodePage = lazy(() => import("@/pages/NodePage"))
+
+function ShellLink(props: ShellLinkProps) {
+    return (
+        <Link
+            {...props}
+            reset={props.href === "/" && !adapter.matchNodePath(window.location.pathname)}
+        />
+    )
+}
 
 function BrandLink({ title }: { title: string }) {
     const { setOpenMobile } = useSidebar()
@@ -178,7 +187,7 @@ export function App() {
             <style>{responsive}</style>
             <AppShell
                 brand={<BrandLink title={siteTitle} />}
-                linkComponent={Link}
+                linkComponent={ShellLink}
                 activeId={
                     nodeId ? `peer:${nodeId}` : picked.length === 1 ? `group:${picked[0]}` : "fleet"
                 }
@@ -207,7 +216,7 @@ export function App() {
                                       return {
                                           id: `peer:${p.id}`,
                                           label: stripFlag(p.name),
-                                          href: `${adapter.nodePath(p.id)}${url.hash}`,
+                                          href: nodeHref(p.id, url),
                                           icon: settings.showRegions ? (
                                               p.region ? (
                                                   <RegionFlag code={p.region} />
