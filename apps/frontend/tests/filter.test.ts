@@ -5,6 +5,8 @@ import {
     groupCounts,
     matchGroups,
     parseFilterQuery,
+    regionCounts,
+    resolveRegion,
     serializeFilterQuery,
 } from "../src/core/filter"
 import type { NodeInfo } from "../src/core/model"
@@ -156,5 +158,50 @@ describe("groupCounts", () => {
 
     it("returns no counts for no nodes", () => {
         expect(groupCounts([])).toEqual([])
+    })
+})
+
+describe("regionCounts and resolveRegion", () => {
+    it("counts non-empty regions and sorts by count descending then code ascending", () => {
+        const counts = regionCounts([
+            makeNode({ id: "1", region: "US" }),
+            makeNode({ id: "2", region: "HK" }),
+            makeNode({ id: "3", region: "CN" }),
+            makeNode({ id: "4", region: "HK" }),
+            makeNode({ id: "5", region: "CN" }),
+            makeNode({ id: "6", region: "" }),
+            makeNode({ id: "7", region: "JP" }),
+        ])
+        expect(counts).toEqual([
+            ["CN", 2],
+            ["HK", 2],
+            ["JP", 1],
+            ["US", 1],
+        ])
+    })
+
+    it("falls back to null when switching to a group without the picked region or with fewer than two regions", () => {
+        const fullFleet = regionCounts([
+            makeNode({ id: "1", region: "HK", groups: ["asia"] }),
+            makeNode({ id: "2", region: "JP", groups: ["asia"] }),
+            makeNode({ id: "3", region: "US", groups: ["americas"] }),
+            makeNode({ id: "4", region: "BR", groups: ["americas"] }),
+        ])
+        expect(resolveRegion("HK", fullFleet)).toBe("HK")
+
+        // Switching to americas group: HK is absent -> falls back to All (null)
+        const americasRegions = regionCounts([
+            makeNode({ id: "3", region: "US", groups: ["americas"] }),
+            makeNode({ id: "4", region: "BR", groups: ["americas"] }),
+        ])
+        expect(resolveRegion("HK", americasRegions)).toBeNull()
+        expect(resolveRegion("US", americasRegions)).toBe("US")
+
+        // Switching to single-region group: < 2 regions -> falls back to null
+        const singleRegion = regionCounts([makeNode({ id: "3", region: "US" })])
+        expect(resolveRegion("US", singleRegion)).toBeNull()
+
+        // showRegions disabled -> falls back to null
+        expect(resolveRegion("HK", fullFleet, false)).toBeNull()
     })
 })

@@ -1,11 +1,19 @@
+// Region filter and strip adapted from zool-theme/src/pages/HomePage.tsx (MIT, luoleiorg).
 import { useDailyCounters } from "@/app/history"
 import { type MoneyPeriod, setMoneyPeriod, useMoney } from "@/app/money"
 import { Link, navigate, usePathname } from "@/app/router"
 import { adapter, getLive, getSpark, seedLive, useStore, useVisibleNodes } from "@/app/store"
+import { RegionFlag } from "@/components/RegionFlag"
 import { useBilling } from "@/components/billing"
 import { Meter, NoData, Spark, Status, Tile } from "@/components/ui"
 import { onlineMonthlyCost } from "@/core/cost"
-import { matchGroups, parseFilterQuery } from "@/core/filter"
+import {
+    matchGroups,
+    parseFilterQuery,
+    regionCounts,
+    resolveRegion,
+    serializeFilterQuery,
+} from "@/core/filter"
 import { type IssueReason, SORT_KEYS, type SortKey, nodeIssues, sortNodes } from "@/core/fleet"
 import {
     duration,
@@ -17,19 +25,21 @@ import {
 } from "@/core/format"
 import { recentBuckets } from "@/core/live"
 import type { NodeInfo, Snapshot } from "@/core/model"
-import { stripFlag } from "@/core/region"
+import { regionName, stripFlag } from "@/core/region"
 import { readStorage, writeStorage } from "@/core/storage"
 import { summariseFleetDay } from "@/core/summary"
-import { Button, DropdownMenu, Input, Select, Table } from "@cloudflare/kumo"
+import { Button, DropdownMenu, Input, Table, Tabs } from "@cloudflare/kumo"
 import { Page } from "@nezha-kumo/ui"
 import {
     ArrowDownIcon,
     ArrowUpIcon,
     CaretDownIcon,
+    MagnifyingGlassIcon,
     RowsIcon,
     SquaresFourIcon,
+    XIcon,
 } from "@phosphor-icons/react"
-import { type ReactNode, memo, useEffect, useMemo, useState } from "react"
+import { type ReactNode, memo, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 function readPreference<T>(key: string, fallback: T): T {
@@ -104,14 +114,13 @@ const ServerCard = memo(function ServerCard({ node, snap, showBilling, showRegio
     const { t } = useTranslation()
     const memTotal = snap?.memTotal || node.memTotal
     const diskTotal = snap?.diskTotal || node.diskTotal
-    const meta = [showRegions && node.region, node.os, node.arch, ...node.groups]
-        .filter(Boolean)
-        .join(" · ")
+    const meta = [node.os, node.arch, ...node.groups].filter(Boolean).join(" · ")
     return (
         <article className="server-card" data-server={node.id}>
             <header className="card-head">
                 <div className="min-w-0">
                     <Link className="card-name" href={adapter.nodePath(node.id)} title={node.name}>
+                        {showRegions && <RegionFlag code={node.region} className="mr-1.5" />}
                         {stripFlag(node.name)}
                     </Link>
                     <span className="card-meta muted" title={meta}>
@@ -157,10 +166,10 @@ const ServerRow = memo(function ServerRow({ node, snap, showRegions }: RowProps)
         <Table.Row className="server-row" data-server={node.id}>
             <Table.Cell className="server-name">
                 <Link href={adapter.nodePath(node.id)} title={node.name}>
+                    {showRegions && <RegionFlag code={node.region} className="mr-1.5" />}
                     {stripFlag(node.name)}
                 </Link>
                 <span className="muted truncate" title={`${node.os} · ${node.groups.join(" · ")}`}>
-                    {showRegions && node.region ? `${node.region} · ` : ""}
                     {node.os || node.groups.join(" · ")}
                 </span>
             </Table.Cell>
@@ -198,7 +207,7 @@ const ServerRow = memo(function ServerRow({ node, snap, showRegions }: RowProps)
 type View = "cards" | "compact"
 
 export function HomePage() {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const all = useVisibleNodes()
     const snapshots = useStore((s) => s.snapshots)
     const fed = useStore((s) => s.fed)
@@ -208,14 +217,28 @@ export function HomePage() {
     const actual = useStore((s) => s.actualCosts)
     const version = useStore((s) => s.liveVersion)
     const [query, setQuery] = useState("")
-    // The sidebar's group links are the filter: it lives in the address only.
+    const [searchOpen, setSearchOpen] = useState(false)
+    const searchInputRef = useRef<HTMLInputElement>(null)
+    // Group and region filters live in the address so a filtered view survives reload and sharing.
     const search = new URL(usePathname(), location.origin).search
+    const parsedFilter = useMemo(() => parseFilterQuery(search), [search])
     const groups = useMemo(
-        () => (settings.showGroups ? (parseFilterQuery(search).groups ?? []) : []),
-        [search, settings.showGroups],
+        () => (settings.showGroups ? (parsedFilter.groups ?? []) : []),
+        [parsedFilter.groups, settings.showGroups],
     )
+    const rawRegion = parsedFilter.region ?? null
     // A picked group scopes the whole page, overview included.
     const nodes = useMemo(() => all.filter((n) => matchGroups(n, groups)), [all, groups])
+    const listed = useMemo(
+        () =>
+            settings.showOffline
+                ? nodes
+                : nodes.filter((n) => snapshots[n.id]?.online || (!fed && !snapshots[n.id])),
+        [nodes, snapshots, fed, settings.showOffline],
+    )
+    const regions = useMemo(() => regionCounts(listed), [listed])
+    const offerRegions = settings.showRegions && regions.length > 1
+    const pickedRegion = resolveRegion(rawRegion, regions, settings.showRegions)
     const [view, setView] = useState<View>(() =>
         readPreference<string>("nkt:view", "cards") === "compact" ? "compact" : "cards",
     )
@@ -235,6 +258,15 @@ export function HomePage() {
         writeStorage("nkt:desc", JSON.stringify(desc))
         writeStorage("nkt:view", JSON.stringify(view))
     }, [sort, desc, view])
+    useEffect(() => {
+        if (!all.length || !rawRegion || pickedRegion === rawRegion) return
+        navigate(`/${serializeFilterQuery(search, { groups, region: pickedRegion })}`, {
+            replace: true,
+        })
+    }, [all.length, rawRegion, pickedRegion, search, groups])
+    useEffect(() => {
+        if (searchOpen) searchInputRef.current?.focus()
+    }, [searchOpen])
     const online = nodes.filter((n) => snapshots[n.id]?.online).length
     const offline = nodes.length - online
     const issues = useMemo(
@@ -332,13 +364,15 @@ export function HomePage() {
             ),
         }
     }, [nodes, version, daily, midnight])
+    const needle = query.toLowerCase()
     const visible = sortNodes(
-        nodes.filter(
+        listed.filter(
             (n) =>
-                (settings.showOffline || snapshots[n.id]?.online) &&
-                `${n.name} ${n.os} ${n.region} ${n.groups.join(" ")}`
-                    .toLowerCase()
-                    .includes(query.toLowerCase()),
+                (!pickedRegion || n.region === pickedRegion) &&
+                (!needle ||
+                    `${n.name} ${n.os} ${n.region} ${n.groups.join(" ")}`
+                        .toLowerCase()
+                        .includes(needle)),
         ),
         snapshots,
         sort,
@@ -481,65 +515,166 @@ export function HomePage() {
                 </section>
             )}
             <section className="servers-section" aria-label={t("ui.servers")}>
-                <div className="section-heading">
+                <div
+                    className="section-heading"
+                    data-search-open={searchOpen || query.length > 0 ? "true" : undefined}
+                >
                     <h2>
                         {t("ui.servers")}{" "}
-                        <span className="muted font-normal">{visible.length}</span>
+                        <span className="muted font-normal num">{visible.length}</span>
                     </h2>
-                </div>
-                <div className="list-toolbar">
-                    <Input
-                        aria-label={t("toolbar.search")}
-                        placeholder={t("toolbar.searchPlaceholder")}
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                    />
-                    <Select
-                        aria-label={t("toolbar.sort")}
-                        value={sort}
-                        onValueChange={(v) => v && setSort(v as SortKey)}
-                        items={Object.fromEntries(SORT_KEYS.map((k) => [k, t(`sort.${k}`)]))}
-                    />
-                    <Button
-                        variant="secondary"
-                        shape="square"
-                        aria-label={t(desc ? "toolbar.ascending" : "toolbar.descending")}
-                        onClick={() => setDesc(!desc)}
-                    >
-                        {desc ? <ArrowDownIcon size={16} /> : <ArrowUpIcon size={16} />}
-                    </Button>
-                    <div className="view-switch" role="group" aria-label={t("toolbar.view")}>
-                        {(
-                            [
-                                ["cards", <SquaresFourIcon size={16} />],
-                                ["compact", <RowsIcon size={16} />],
-                            ] as const
-                        ).map(([v, icon]) => (
+                    <div className="section-controls">
+                        {searchOpen || query.length > 0 ? (
+                            <div className="inline-search">
+                                <Input
+                                    ref={searchInputRef}
+                                    autoFocus
+                                    aria-label={t("toolbar.search")}
+                                    placeholder={t("toolbar.searchPlaceholder")}
+                                    value={query}
+                                    onChange={(e) => setQuery(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Escape") {
+                                            e.preventDefault()
+                                            setQuery("")
+                                            setSearchOpen(false)
+                                        }
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    className="search-clear"
+                                    aria-label={t("auth.close")}
+                                    title={t("auth.close")}
+                                    onClick={() => {
+                                        setQuery("")
+                                        setSearchOpen(false)
+                                    }}
+                                >
+                                    <XIcon size={14} />
+                                </button>
+                            </div>
+                        ) : (
                             <Button
-                                key={v}
-                                variant={view === v ? "secondary" : "ghost"}
+                                variant="secondary"
                                 shape="square"
-                                aria-pressed={view === v}
-                                aria-label={t(`toolbar.${v}`)}
-                                title={t(`toolbar.${v}`)}
-                                onClick={() => setView(v)}
+                                aria-label={t("toolbar.search")}
+                                title={t("toolbar.search")}
+                                onClick={() => setSearchOpen(true)}
                             >
-                                {icon}
+                                <MagnifyingGlassIcon size={16} />
                             </Button>
-                        ))}
+                        )}
+                        <DropdownMenu>
+                            <DropdownMenu.Trigger>
+                                <Button
+                                    variant="secondary"
+                                    className="sort-button"
+                                    aria-label={t("toolbar.sort")}
+                                    title={`${t("toolbar.sort")}: ${t(`sort.${sort}`)} (${t(desc ? "toolbar.descending" : "toolbar.ascending")})`}
+                                >
+                                    <span>{t(`sort.${sort}`)}</span>
+                                    {desc ? <ArrowDownIcon size={14} /> : <ArrowUpIcon size={14} />}
+                                </Button>
+                            </DropdownMenu.Trigger>
+                            <DropdownMenu.Content align="end" className="min-w-44">
+                                <DropdownMenu.Group>
+                                    <DropdownMenu.Label>{t("toolbar.sort")}</DropdownMenu.Label>
+                                    <DropdownMenu.RadioGroup
+                                        value={sort}
+                                        onValueChange={(v: string) => setSort(v as SortKey)}
+                                    >
+                                        {SORT_KEYS.map((k) => (
+                                            <DropdownMenu.RadioItem key={k} value={k}>
+                                                {t(`sort.${k}`)}
+                                                <DropdownMenu.RadioItemIndicator />
+                                            </DropdownMenu.RadioItem>
+                                        ))}
+                                    </DropdownMenu.RadioGroup>
+                                </DropdownMenu.Group>
+                                <DropdownMenu.Separator />
+                                <DropdownMenu.Group>
+                                    <DropdownMenu.RadioGroup
+                                        value={desc ? "desc" : "asc"}
+                                        onValueChange={(v: string) => setDesc(v === "desc")}
+                                    >
+                                        <DropdownMenu.RadioItem value="asc">
+                                            {t("toolbar.ascending")}
+                                            <DropdownMenu.RadioItemIndicator />
+                                        </DropdownMenu.RadioItem>
+                                        <DropdownMenu.RadioItem value="desc">
+                                            {t("toolbar.descending")}
+                                            <DropdownMenu.RadioItemIndicator />
+                                        </DropdownMenu.RadioItem>
+                                    </DropdownMenu.RadioGroup>
+                                </DropdownMenu.Group>
+                            </DropdownMenu.Content>
+                        </DropdownMenu>
+                        <div className="view-switch" role="group" aria-label={t("toolbar.view")}>
+                            {(
+                                [
+                                    ["cards", <SquaresFourIcon size={16} />],
+                                    ["compact", <RowsIcon size={16} />],
+                                ] as const
+                            ).map(([v, icon]) => (
+                                <Button
+                                    key={v}
+                                    variant={view === v ? "secondary" : "ghost"}
+                                    shape="square"
+                                    aria-pressed={view === v}
+                                    aria-label={t(`toolbar.${v}`)}
+                                    title={t(`toolbar.${v}`)}
+                                    onClick={() => setView(v)}
+                                >
+                                    {icon}
+                                </Button>
+                            ))}
+                        </div>
                     </div>
-                    {query || groups.length ? (
-                        <Button
-                            variant="ghost"
-                            onClick={() => {
-                                setQuery("")
-                                if (groups.length) navigate("/")
-                            }}
-                        >
-                            {t("toolbar.clear")}
-                        </Button>
-                    ) : null}
                 </div>
+                {offerRegions && (
+                    <div aria-label={t("toolbar.regions")}>
+                        <Tabs
+                            variant="segmented"
+                            className="region-tabs"
+                            value={pickedRegion ?? "all"}
+                            onValueChange={(v) =>
+                                navigate(
+                                    `/${serializeFilterQuery(search, {
+                                        groups,
+                                        region: v === "all" ? null : v,
+                                    })}`,
+                                )
+                            }
+                            tabs={[
+                                {
+                                    value: "all",
+                                    className: "region-tab",
+                                    label: (
+                                        <>
+                                            <span>{t("toolbar.all")}</span>
+                                            <span className="num muted">{listed.length}</span>
+                                        </>
+                                    ),
+                                },
+                                ...regions.map(([code, count]) => ({
+                                    value: code,
+                                    className: "region-tab",
+                                    label: (
+                                        <span
+                                            className="region-tab-inner"
+                                            title={regionName(code, i18n.language)}
+                                        >
+                                            <RegionFlag code={code} />
+                                            <span className="region-code">{code}</span>
+                                            <span className="num muted">{count}</span>
+                                        </span>
+                                    ),
+                                })),
+                            ]}
+                        />
+                    </div>
+                )}
                 {!visible.length ? (
                     <NoData title={t("toolbar.empty")} />
                 ) : view === "cards" ? (

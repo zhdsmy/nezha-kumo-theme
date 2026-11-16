@@ -79,7 +79,7 @@ export const responsive = `
  .hour-grid-rows { margin-top:12px; gap:3px; }
  .hour-grid-cell { height:10px; }
  .action-label { display:inline; }
- .list-toolbar > input { flex-basis:220px; }
+ .section-heading[data-search-open="true"] .sort-button { display:inline-flex; }
  .fleet-table thead { display:table-header-group; }
  .fleet-table tbody { display:table-row-group; }
  .fleet-table { display:table; border-collapse:separate; border-spacing:0; overflow:hidden; }

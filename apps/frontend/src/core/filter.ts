@@ -59,3 +59,22 @@ export function groupCounts(nodes: readonly NodeInfo[]): [string, number][] {
         .sort((a, b) => a[1].weight - b[1].weight || a[0].localeCompare(b[0]))
         .map(([g, c]) => [g, c.count])
 }
+
+/** Every non-empty region code in `nodes` with its count, ordered by count desc then code asc. */
+export function regionCounts(nodes: readonly NodeInfo[]): [string, number][] {
+    const counts = new Map<string, number>()
+    for (const n of nodes) {
+        if (n.region) counts.set(n.region, (counts.get(n.region) ?? 0) + 1)
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+}
+
+/** Keeps a picked region only when regions are enabled, offer a choice (>= 2), and include it. */
+export function resolveRegion(
+    region: string | null | undefined,
+    regions: readonly (readonly [string, number])[],
+    showRegions = true,
+): string | null {
+    if (!showRegions || regions.length < 2 || !region) return null
+    return regions.some(([code]) => code === region) ? region : null
+}

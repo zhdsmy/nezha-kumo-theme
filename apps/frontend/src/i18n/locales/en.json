@@ -39,7 +39,7 @@
         "searchHint": "Press Enter to open",
         "noResults": "No matching nodes",
         "sort": "Sort",
-        "clear": "Clear filters",
+        "regions": "Regions",
         "empty": "No nodes match these filters.",
         "ascending": "Ascending",
         "descending": "Descending",

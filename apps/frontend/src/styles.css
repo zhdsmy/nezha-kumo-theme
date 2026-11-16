@@ -200,8 +200,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 16px;
+    gap: 8px;
+    min-height: 36px;
+    margin-bottom: 12px;
 }
 .section-heading h2,
 .info-section h2 {
@@ -209,20 +210,74 @@
     line-height: 24px;
     font-weight: 600;
 }
-.list-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-    margin-bottom: 16px;
+.section-heading h2 {
+    flex-shrink: 0;
+    white-space: nowrap;
 }
-/* Phones: search takes the first row; sort, direction and view share the second. */
-.list-toolbar > input {
-    flex: 1 1 100%;
+.section-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex: 1;
     min-width: 0;
 }
-.list-toolbar > button {
+.inline-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1 1 180px;
+    max-width: 260px;
+    min-width: 0;
+}
+.inline-search input {
+    width: 100%;
+    min-width: 0;
+    padding-right: 30px;
+}
+.search-clear {
+    position: absolute;
+    right: 4px;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-color-kumo-subtle);
+    cursor: pointer;
+}
+.search-clear:hover {
+    color: var(--text-color-kumo-default);
+    background: var(--color-kumo-tint);
+}
+.sort-button {
+    gap: 6px;
+    flex-shrink: 0;
+}
+.section-heading[data-search-open="true"] .sort-button {
+    display: none;
+}
+.region-tabs {
+    width: fit-content;
     max-width: 100%;
+    margin-bottom: 16px;
+}
+.region-tab {
+    gap: 6px;
+    font-size: 13px;
+}
+.region-tab-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.region-code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    letter-spacing: 0.02em;
 }
 .server-list {
     min-width: 0;
@@ -320,7 +375,7 @@
 }
 .view-switch {
     display: flex;
-    margin-left: auto;
+    flex-shrink: 0;
     gap: 2px;
 }
 .meter > .meter-detail {
