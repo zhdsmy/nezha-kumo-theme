@@ -35,3 +35,15 @@ class TestIntersectionObserver implements IntersectionObserver {
 globalThis.Worker = TestWorker
 globalThis.ResizeObserver = TestResizeObserver
 globalThis.IntersectionObserver = TestIntersectionObserver
+
+// jsdom has no viewport media queries; existing route tests use the desktop layout.
+globalThis.matchMedia = (media: string) => ({
+    media,
+    matches: media.startsWith("(min-width:") && 1440 >= Number(media.match(/\d+/)?.[0]),
+    onchange: null,
+    addEventListener() {},
+    removeEventListener() {},
+    addListener() {},
+    removeListener() {},
+    dispatchEvent: () => true,
+})

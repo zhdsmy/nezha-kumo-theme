@@ -40,10 +40,12 @@ export function ThemeProvider({
                 ? "dark"
                 : "light"
 
+            root.dataset.mode = systemTheme
             root.classList.add(systemTheme)
             return
         }
 
+        root.dataset.mode = theme
         root.classList.add(theme)
     }, [theme])
 

@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
 import { IconButton } from "@/components/xui/icon-button"
 import { ModelServerTaskResponse } from "@/types"
@@ -70,7 +69,7 @@ export const ServerConfigCardBatch: React.FC<ServerConfigCardBatchProps> = ({ si
                 <IconButton {...props} icon="cog" />
             </DialogTrigger>
             <DialogContent className="sm:max-w-xl">
-                <ScrollArea className="max-h-[calc(100dvh-1.5rem)] p-1 sm:max-h-[calc(100dvh-5rem)] sm:p-3">
+                <div className="nkt-dialog-form">
                     <div className="items-center mx-1">
                         <DialogHeader>
                             <DialogTitle>{t("EditServerConfig")}</DialogTitle>
@@ -107,7 +106,7 @@ export const ServerConfigCardBatch: React.FC<ServerConfigCardBatchProps> = ({ si
                             </DialogFooter>
                         </div>
                     </div>
-                </ScrollArea>
+                </div>
             </DialogContent>
         </Dialog>
     )

@@ -20,6 +20,7 @@ import {
     ModelServerTransferStatusTimeout,
     ModelServerTransferStatusVerified,
 } from "@/types"
+import { Page } from "@nezha-kumo/ui"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
@@ -177,21 +178,31 @@ export default function TransferPage() {
     const rows = useMemo(() => data ?? [], [data])
 
     return (
-        <div className="px-3">
-            <h1 className="mt-6 text-2xl font-semibold">{t("Transfer.Title")}</h1>
-            <p className="text-sm text-muted-foreground mt-1 max-w-2xl">{t("Transfer.PageHint")}</p>
-            <Table className="mt-6">
+        <Page title={t("Transfer.Title")} description={t("Transfer.PageHint")}>
+            <Table
+                primaryColumn="id"
+                columnPriority={[
+                    ["id", 160],
+                    ["server", 90],
+                    ["status", 100],
+                    ["from", 90],
+                    ["to", 90],
+                    ["created", 150],
+                    ["initiator", 90],
+                    ["error", 160],
+                ]}
+            >
                 <TableHeader>
                     <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>{t("ServerID")}</TableHead>
-                        <TableHead>{t("Transfer.From")}</TableHead>
-                        <TableHead>{t("Transfer.To")}</TableHead>
-                        <TableHead>{t("Transfer.Initiator")}</TableHead>
-                        <TableHead>{t("Status")}</TableHead>
-                        <TableHead>{t("Transfer.LastError")}</TableHead>
-                        <TableHead>{t("CreatedAt")}</TableHead>
-                        <TableHead>{t("Actions")}</TableHead>
+                        <TableHead data-col="id">ID</TableHead>
+                        <TableHead data-col="server">{t("ServerID")}</TableHead>
+                        <TableHead data-col="from">{t("Transfer.From")}</TableHead>
+                        <TableHead data-col="to">{t("Transfer.To")}</TableHead>
+                        <TableHead data-col="initiator">{t("Transfer.Initiator")}</TableHead>
+                        <TableHead data-col="status">{t("Status")}</TableHead>
+                        <TableHead data-col="error">{t("Transfer.LastError")}</TableHead>
+                        <TableHead data-col="created">{t("CreatedAt")}</TableHead>
+                        <TableHead data-col="actions">{t("Actions")}</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -211,21 +222,25 @@ export default function TransferPage() {
                                 row.status === ModelServerTransferStatusCancelled
                             return (
                                 <TableRow key={row.id}>
-                                    <TableCell>{row.id}</TableCell>
-                                    <TableCell>{row.server_id}</TableCell>
-                                    <TableCell>{row.from_user_id}</TableCell>
-                                    <TableCell>{row.to_user_id}</TableCell>
-                                    <TableCell>{row.initiator_id}</TableCell>
-                                    <TableCell>
+                                    <TableCell data-col="id">{row.id}</TableCell>
+                                    <TableCell data-col="server">{row.server_id}</TableCell>
+                                    <TableCell data-col="from">{row.from_user_id}</TableCell>
+                                    <TableCell data-col="to">{row.to_user_id}</TableCell>
+                                    <TableCell data-col="initiator">{row.initiator_id}</TableCell>
+                                    <TableCell data-col="status">
                                         <Badge variant={meta.variant}>{t(meta.key)}</Badge>
                                     </TableCell>
-                                    <TableCell className="max-w-xs truncate" title={row.last_error}>
+                                    <TableCell
+                                        data-col="error"
+                                        className="max-w-xs truncate"
+                                        title={row.last_error}
+                                    >
                                         {row.last_error || "-"}
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell data-col="created">
                                         {new Date(row.created_at).toLocaleString()}
                                     </TableCell>
-                                    <TableCell className="space-x-2">
+                                    <TableCell data-col="actions" className="space-x-2">
                                         {isPending &&
                                             (isAdmin || row.from_user_id === callerID) && (
                                                 <Button
@@ -252,6 +267,6 @@ export default function TransferPage() {
                     )}
                 </TableBody>
             </Table>
-        </div>
+        </Page>
     )
 }

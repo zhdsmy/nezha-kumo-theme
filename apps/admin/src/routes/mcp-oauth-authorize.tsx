@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useAuth } from "@/hooks/useAuth"
 import { followMCPOAuthCallback } from "@/lib/mcp-oauth-navigation"
+import { Page } from "@nezha-kumo/ui"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
@@ -66,10 +67,9 @@ export default function MCPOAuthAuthorizePage() {
     }
 
     return (
-        <div className="mx-auto max-w-2xl px-3 py-8">
+        <Page title={t("MCPOAuth.Title")} maxWidth={1000}>
             <Card>
                 <CardContent className="space-y-6 pt-6">
-                    <h1 className="text-xl font-semibold">{t("MCPOAuth.Title")}</h1>
                     {error && (
                         <p role="alert" className="text-destructive">
                             {error}
@@ -173,6 +173,6 @@ export default function MCPOAuthAuthorizePage() {
                     )}
                 </CardContent>
             </Card>
-        </div>
+        </Page>
     )
 }

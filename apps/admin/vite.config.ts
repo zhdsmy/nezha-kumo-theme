@@ -2,6 +2,8 @@ import react from "@vitejs/plugin-react"
 import path from "path"
 import { defineConfig } from "vite"
 
+const backend = process.env.NEZHA_DEV_BACKEND || "http://127.0.0.1:8008"
+
 export default defineConfig({
     base: "/dashboard",
     plugins: [react()],
@@ -12,18 +14,18 @@ export default defineConfig({
         host: "127.0.0.1",
         proxy: {
             "^/api/v1/ws/.*": {
-                target: "ws://127.0.0.1:8008",
+                target: backend.replace(/^http/, "ws"),
                 // Preserve the browser host for login and WebSocket same-origin checks.
                 changeOrigin: false,
                 ws: true,
             },
             "/api": {
-                target: "http://127.0.0.1:8008",
+                target: backend,
                 // Preserve the browser host for login and WebSocket same-origin checks.
                 changeOrigin: false,
             },
             "/mcp": {
-                target: "http://127.0.0.1:8008",
+                target: backend,
                 // Preserve the browser host for login and WebSocket same-origin checks.
                 changeOrigin: false,
             },

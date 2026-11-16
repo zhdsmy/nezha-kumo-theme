@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/hooks/useAuth"
+import { Page } from "@nezha-kumo/ui"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import useSWR, { useSWRConfig } from "swr"
@@ -93,44 +94,58 @@ function OAuthGrants({ all, userID }: { all: boolean; userID: number }) {
                     {actionError || errorMessage(error)}
                 </p>
             )}
-            <Table>
+            <Table
+                columnPriority={[
+                    ["user", 100],
+                    ["permissions", 170],
+                    ["servers", 110],
+                    ["lifetime", 150],
+                    ["lastUsed", 150],
+                ]}
+            >
                 <TableHeader>
                     <TableRow>
-                        <TableHead>{t("MCPOAuthManager.Application")}</TableHead>
-                        {all && <TableHead>{t("User")}</TableHead>}
-                        <TableHead>{t("MCPOAuth.Permissions")}</TableHead>
-                        <TableHead>{t("MCPOAuth.Servers")}</TableHead>
-                        <TableHead>{t("MCPOAuthManager.Lifetime")}</TableHead>
-                        <TableHead>{t("ApiTokenLastUsed")}</TableHead>
-                        <TableHead>{t("Actions")}</TableHead>
+                        <TableHead data-col="name">{t("MCPOAuthManager.Application")}</TableHead>
+                        {all && <TableHead data-col="user">{t("User")}</TableHead>}
+                        <TableHead data-col="permissions">{t("MCPOAuth.Permissions")}</TableHead>
+                        <TableHead data-col="servers">{t("MCPOAuth.Servers")}</TableHead>
+                        <TableHead data-col="lifetime">{t("MCPOAuthManager.Lifetime")}</TableHead>
+                        <TableHead data-col="lastUsed">{t("ApiTokenLastUsed")}</TableHead>
+                        <TableHead data-col="actions">{t("Actions")}</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {(data?.items ?? []).map((grant) => (
                         <TableRow key={grant.id}>
-                            <TableCell className="max-w-64 break-all whitespace-normal">
+                            <TableCell
+                                data-col="name"
+                                className="max-w-64 break-all whitespace-normal"
+                            >
                                 <p>{grant.client_name || grant.client_id}</p>
                                 <p className="text-xs text-muted-foreground">{grant.client_id}</p>
                                 <p>{t(`MCPOAuthManager.Status.${grant.status}`)}</p>
                             </TableCell>
                             {all && (
-                                <TableCell>
+                                <TableCell data-col="user">
                                     {grant.username} (#{grant.user_id})
                                 </TableCell>
                             )}
-                            <TableCell className="whitespace-normal">
+                            <TableCell data-col="permissions" className="whitespace-normal">
                                 {grant.scopes.map((scope) => (
                                     <div key={scope} className="text-xs">
                                         {scope}
                                     </div>
                                 ))}
                             </TableCell>
-                            <TableCell className="max-w-48 break-words whitespace-normal">
+                            <TableCell
+                                data-col="servers"
+                                className="max-w-48 break-words whitespace-normal"
+                            >
                                 {grant.server_ids.length
                                     ? grant.server_ids.join(", ")
                                     : t("MCPOAuth.AllServers")}
                             </TableCell>
-                            <TableCell className="text-xs">
+                            <TableCell data-col="lifetime" className="text-xs">
                                 <p>
                                     {t("MCPOAuthManager.AuthorizedAt")}:{" "}
                                     {displayTime(grant.created_at)}
@@ -139,13 +154,13 @@ function OAuthGrants({ all, userID }: { all: boolean; userID: number }) {
                                     {t("ApiTokenExpiresAt")}: {displayTime(grant.expires_at)}
                                 </p>
                             </TableCell>
-                            <TableCell className="text-xs">
+                            <TableCell data-col="lastUsed" className="text-xs">
                                 <p>{displayTime(grant.last_used_at)}</p>
                                 <p>{grant.last_used_ip}</p>
                             </TableCell>
-                            <TableCell>
+                            <TableCell data-col="actions">
                                 <Button
-                                    variant="destructive"
+                                    variant="outline"
                                     disabled={busy}
                                     onClick={() =>
                                         revoke(grant.id, grant.client_name || grant.client_id)
@@ -215,20 +230,29 @@ function OAuthClients({ userID }: { userID: number }) {
                     {actionError || errorMessage(error)}
                 </p>
             )}
-            <Table>
+            <Table
+                columnPriority={[
+                    ["callback", 180],
+                    ["grants", 90],
+                    ["lastUsed", 150],
+                ]}
+            >
                 <TableHeader>
                     <TableRow>
-                        <TableHead>{t("MCPOAuthManager.Application")}</TableHead>
-                        <TableHead>{t("MCPOAuth.Callback")}</TableHead>
-                        <TableHead>{t("MCPOAuthManager.GrantCount")}</TableHead>
-                        <TableHead>{t("ApiTokenLastUsed")}</TableHead>
-                        <TableHead>{t("Actions")}</TableHead>
+                        <TableHead data-col="name">{t("MCPOAuthManager.Application")}</TableHead>
+                        <TableHead data-col="callback">{t("MCPOAuth.Callback")}</TableHead>
+                        <TableHead data-col="grants">{t("MCPOAuthManager.GrantCount")}</TableHead>
+                        <TableHead data-col="lastUsed">{t("ApiTokenLastUsed")}</TableHead>
+                        <TableHead data-col="actions">{t("Actions")}</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {(data?.items ?? []).map((client) => (
                         <TableRow key={client.id}>
-                            <TableCell className="max-w-64 break-all whitespace-normal">
+                            <TableCell
+                                data-col="name"
+                                className="max-w-64 break-all whitespace-normal"
+                            >
                                 <p>{client.name}</p>
                                 <p className="text-xs text-muted-foreground">{client.id}</p>
                                 <p>
@@ -239,18 +263,23 @@ function OAuthClients({ userID }: { userID: number }) {
                                     )}
                                 </p>
                             </TableCell>
-                            <TableCell className="max-w-96 break-all whitespace-normal">
+                            <TableCell
+                                data-col="callback"
+                                className="max-w-96 break-all whitespace-normal"
+                            >
                                 {client.redirect_uris.map((uri) => (
                                     <div key={uri} className="text-xs">
                                         {uri}
                                     </div>
                                 ))}
                             </TableCell>
-                            <TableCell>{client.grant_count}</TableCell>
-                            <TableCell>{displayTime(client.last_used_at)}</TableCell>
-                            <TableCell>
+                            <TableCell data-col="grants">{client.grant_count}</TableCell>
+                            <TableCell data-col="lastUsed">
+                                {displayTime(client.last_used_at)}
+                            </TableCell>
+                            <TableCell data-col="actions">
                                 <Button
-                                    variant={client.disabled ? "outline" : "destructive"}
+                                    variant="outline"
                                     disabled={busy}
                                     onClick={() =>
                                         changeClient(client.id, client.name, !client.disabled)
@@ -292,10 +321,11 @@ export default function MCPOAuthManagementPage() {
     const isAdmin = profile?.role === 0
     const selected = isAdmin ? view : "mine"
     return (
-        <div className="px-3">
-            <SettingsTab className="mt-6 w-full" />
-            <h2 className="mt-4 text-lg font-semibold">{t("MCPOAuthManager.Title")}</h2>
-            <p className="my-3 text-sm text-muted-foreground">{t("MCPOAuthManager.Description")}</p>
+        <Page
+            title={t("MCPOAuthManager.Title")}
+            description={t("MCPOAuthManager.Description")}
+            tabs={<SettingsTab />}
+        >
             {loading || !profile ? (
                 <p role="status">{t("Loading")}</p>
             ) : (
@@ -324,6 +354,6 @@ export default function MCPOAuthManagementPage() {
                     )}
                 </>
             )}
-        </div>
+        </Page>
     )
 }

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table"
 import { selectableTableFeatures } from "@/lib/table"
 import { ModelNAT } from "@/types"
+import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender, useTable } from "@tanstack/react-table"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -130,9 +131,9 @@ export default function NATPage() {
     const selectedRows = table.getSelectedRowModel().rows
 
     return (
-        <div className="px-3">
-            <div className="flex mt-6 mb-4">
-                <h1 className="flex-1 text-3xl font-bold tracking-tight"> {t("NATT")}</h1>
+        <Page
+            title={t("NATT")}
+            actions={
                 <HeaderButtonGroup
                     className="flex ml-auto self-end sm:self-auto gap-2 flex-wrap shrink-0"
                     delete={{
@@ -143,9 +144,17 @@ export default function NATPage() {
                 >
                     <NATCard mutate={mutate} />
                 </HeaderButtonGroup>
-            </div>
-
-            <Table>
+            }
+        >
+            <Table
+                columnPriority={[
+                    ["id", 64],
+                    ["enabled", 80],
+                    ["serverID", 100],
+                    ["domain", 160],
+                    ["host", 160],
+                ]}
+            >
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>
@@ -198,6 +207,6 @@ export default function NATPage() {
                     )}
                 </TableBody>
             </Table>
-        </div>
+        </Page>
     )
 }

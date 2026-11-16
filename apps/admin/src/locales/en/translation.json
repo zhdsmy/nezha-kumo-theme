@@ -1,4 +1,6 @@
 {
+    "Navigation": { "Monitoring": "Monitoring", "Automation": "Automation", "System": "System" },
+    "TableDetails": "Row details",
     "nezha": "Nezha Monitoring",
     "theme": {
         "light": "Light",

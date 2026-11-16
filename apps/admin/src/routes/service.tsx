@@ -17,6 +17,7 @@ import { selectableTableFeatures } from "@/lib/table"
 import { conv } from "@/lib/utils"
 import { ModelService as Service } from "@/types"
 import { serviceTypes } from "@/types"
+import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender, useTable } from "@tanstack/react-table"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -120,6 +121,7 @@ export default function ServicePage() {
             },
         },
         {
+            id: "servers",
             header: t("SpecificServers"),
             cell: ({ row }) => {
                 const s = row.original
@@ -194,9 +196,9 @@ export default function ServicePage() {
     const selectedRows = table.getSelectedRowModel().rows
 
     return (
-        <div className="px-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-3 mt-6 mb-4">
-                <h1 className="text-3xl font-bold tracking-tight">{t("Service")}</h1>
+        <Page
+            title={t("Service")}
+            actions={
                 <HeaderButtonGroup
                     className="flex gap-2 flex-wrap shrink-0"
                     delete={{
@@ -207,9 +209,22 @@ export default function ServicePage() {
                 >
                     <ServiceCard mutate={mutate} />
                 </HeaderButtonGroup>
-            </div>
-
-            <Table>
+            }
+        >
+            <Table
+                columnPriority={[
+                    ["id", 64],
+                    ["type", 90],
+                    ["target", 160],
+                    ["duration", 100],
+                    ["ngroup", 110],
+                    ["cover", 100],
+                    ["servers", 110],
+                    ["triggerTask", 100],
+                    ["failTriggerTasks", 120],
+                    ["recoverTriggerTasks", 120],
+                ]}
+            >
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>
@@ -262,6 +277,6 @@ export default function ServicePage() {
                     )}
                 </TableBody>
             </Table>
-        </div>
+        </Page>
     )
 }

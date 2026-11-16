@@ -45,7 +45,7 @@ import { KeyboardEvent, forwardRef, useState } from "react"
  * Uses class-variance-authority (cva) to define different styles based on "variant" prop.
  */
 const multiSelectVariants = cva(
-    "m-1 transition ease-in-out delay-150 hover:-translate-y-1 duration-300",
+    "m-1 transition-colors duration-150 motion-reduce:transition-none",
     {
         variants: {
             variant: {
@@ -207,10 +207,11 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                 <PopoverTrigger asChild>
                     <Button
                         ref={ref}
+                        variant="outline"
                         {...props}
                         onClick={handleTogglePopover}
                         className={cn(
-                            "flex w-full p-1 rounded-md border min-h-10 h-auto items-center justify-between bg-inherit hover:bg-inherit [&_svg]:pointer-events-auto",
+                            "flex min-w-0 w-full p-1 rounded-lg border min-h-9 h-auto items-center justify-between bg-kumo-control text-foreground hover:bg-accent [&_svg]:pointer-events-auto",
                             className,
                         )}
                     >

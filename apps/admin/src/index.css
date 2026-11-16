@@ -1,3 +1,4 @@
+@import "@nezha-kumo/ui/styles.css";
 @import "tailwindcss";
 @import "@fontsource-variable/inter/wght.css";
 @plugin "tailwindcss-animate";
@@ -45,64 +46,60 @@
     --text-xsm--line-height: 1.25rem;
 }
 
-/* ZOOL palette (zool-theme src/styles/app.css) */
+/* Keep the existing Radix/shadcn API on the shared Kumo semantic palette. */
 :root {
-    --radius: 0.625rem;
-    --background: #f3f5f8;
-    --foreground: #0d1526;
-    --card: #ffffff;
-    --card-foreground: #0d1526;
-    --popover: #ffffff;
-    --popover-foreground: #0d1526;
-    --primary: #1849c6;
-    --primary-foreground: #ffffff;
-    --secondary: #e5ebf3;
-    --secondary-foreground: #0d1526;
-    --muted: #e8edf4;
-    --muted-foreground: #45546a;
-    --accent: #e3ecff;
-    --accent-foreground: #1643b8;
-    --destructive: #bf1b30;
-    --destructive-foreground: #ffffff;
-    --border: #d4dce8;
-    --input: #b5c2d4;
-    --ring: #1849c6;
-    --good: #0a7246;
-    --warn: #8f4b00;
-    --chart-1: #1849c6;
-    --chart-2: #0b877d;
-    --chart-3: #c86400;
-    --chart-4: #8e2de2;
-    --chart-5: #d6336c;
+    --radius: 0.5rem;
+    --background: var(--color-kumo-canvas);
+    --foreground: var(--text-color-kumo-default);
+    --card: var(--color-kumo-base);
+    --card-foreground: var(--text-color-kumo-default);
+    --popover: var(--color-kumo-control);
+    --popover-foreground: var(--text-color-kumo-default);
+    --primary: var(--color-kumo-brand);
+    --primary-foreground: light-dark(
+        var(--text-color-kumo-inverse),
+        var(--text-color-kumo-default)
+    );
+    --secondary: var(--color-kumo-base);
+    --secondary-foreground: var(--text-color-kumo-default);
+    --muted: var(--color-kumo-recessed);
+    --muted-foreground: var(--text-color-kumo-subtle);
+    --accent: var(--color-kumo-tint);
+    --accent-foreground: var(--text-color-kumo-default);
+    --destructive: var(--color-kumo-danger);
+    --destructive-foreground: var(--primary-foreground);
+    --border: var(--color-kumo-line);
+    --input: var(--color-kumo-line);
+    --ring: var(--color-kumo-focus);
+    --good: var(--text-color-kumo-success);
+    --warn: var(--text-color-kumo-warning);
+    --chart-1: var(--color-kumo-brand);
+    --chart-2: var(--color-kumo-success);
+    --chart-3: var(--color-kumo-warning);
+    --chart-4: var(--color-kumo-badge-purple);
+    --chart-5: var(--color-kumo-danger);
 }
 
-.dark {
-    --background: #0a0f1a;
-    --foreground: #f0f4fa;
-    --card: #111827;
-    --card-foreground: #f0f4fa;
-    --popover: #111827;
-    --popover-foreground: #f0f4fa;
-    --primary: #4e86f7;
-    --primary-foreground: #070e1b;
-    --secondary: #1a263b;
-    --secondary-foreground: #f0f4fa;
-    --muted: #172133;
-    --muted-foreground: #97a8c2;
-    --accent: #142442;
-    --accent-foreground: #78a6ff;
-    --destructive: #c81e3a;
-    --destructive-foreground: #ffffff;
-    --border: #23314a;
-    --input: #354868;
-    --ring: #4e86f7;
-    --good: #34d399;
-    --warn: #fbbf24;
-    --chart-1: #5b92ff;
-    --chart-2: #2dd4bf;
-    --chart-3: #fbbf24;
-    --chart-4: #e879f9;
-    --chart-5: #f472b6;
+/* Kumo emphasis gradient also applies to Radix asChild triggers and links. */
+.nkt-emphasis {
+    --nkt-emphasis: var(--primary);
+    background-color: var(--nkt-emphasis);
+    background-image: linear-gradient(
+        to bottom,
+        color-mix(in oklch, var(--nkt-emphasis), var(--primary-foreground) 15%),
+        var(--nkt-emphasis)
+    );
+    box-shadow: inset 0 1px color-mix(in oklch, var(--nkt-emphasis), var(--primary-foreground) 30%);
+}
+.nkt-emphasis:hover:not(:disabled) {
+    background-image: linear-gradient(
+        to bottom,
+        color-mix(in oklch, var(--nkt-emphasis), var(--primary-foreground) 30%),
+        var(--nkt-emphasis)
+    );
+}
+.nkt-emphasis-danger {
+    --nkt-emphasis: var(--destructive);
 }
 
 @layer base {
@@ -111,7 +108,8 @@
     }
 
     body {
-        @apply bg-background text-foreground font-sans antialiased;
+        @apply bg-background text-foreground font-sans text-base antialiased;
+        letter-spacing: -0.01em;
         font-synthesis: none;
     }
     .dark {
@@ -146,7 +144,7 @@ body,
     overflow: hidden;
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    background: #09090b;
+    background: light-dark(var(--color-kumo-contrast), var(--color-kumo-canvas));
 }
 
 .terminal-screen {
@@ -226,224 +224,208 @@ body,
     border-radius: 0;
 }
 
-@media (max-width: 640px) {
-    .terminal-shell {
-        height: var(--terminal-available-height);
-        min-height: 220px;
-    }
-
-    .terminal-keyboard {
-        gap: 2px;
-        padding-inline: 4px;
-    }
-
-    .terminal-key {
-        min-width: 43px;
-        height: 44px;
-        padding-inline: 5px;
-    }
-
-    .terminal-key-arrow {
-        min-width: 36px;
-        padding-inline: 2px;
-    }
-
-    .terminal-key-paste {
-        min-width: 49px;
-    }
+.terminal-shell[data-mobile="true"] {
+    height: var(--terminal-available-height);
+    min-height: 220px;
+}
+.terminal-shell[data-mobile="true"] .terminal-keyboard {
+    gap: 2px;
+    padding-inline: 4px;
+}
+.terminal-shell[data-mobile="true"] .terminal-key {
+    min-width: 43px;
+    height: 44px;
+    padding-inline: 5px;
+}
+.terminal-shell[data-mobile="true"] .terminal-key-arrow {
+    min-width: 36px;
+    padding-inline: 2px;
+}
+.terminal-shell[data-mobile="true"] .terminal-key-paste {
+    min-width: 49px;
 }
 
-/* Admin lists: the select column and the key column stay at the left edge,
-   actions stay at the right edge, so a wide table scrolls only its middle. */
-.zool-table th {
-    white-space: nowrap;
+/* Each visible column owns its space; only hidden fields enter the detail area. */
+.nkt-table :is(table, thead, tbody) {
+    display: block;
 }
-.zool-table :is(th, td)[data-col="select"] {
-    position: sticky;
-    left: 0;
-    z-index: 1;
-    width: 2.5rem;
-    min-width: 2.5rem;
-    background: var(--card);
+.nkt-table tr {
+    display: grid;
+    grid-template-columns: var(--nkt-table-columns);
+    align-items: stretch;
 }
-.zool-table :is(th, td):is([data-col="name"], [data-col="username"], [data-col="ip"]) {
-    position: sticky;
-    left: 2.5rem;
-    z-index: 1;
-    background: var(--card);
-    box-shadow: inset -1px 0 var(--border);
+.nkt-table :is(th, td) {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    height: auto;
+    min-height: 3rem;
+    overflow-wrap: anywhere;
 }
-.zool-table :is(th, td)[data-col="actions"] {
-    position: sticky;
-    right: 0;
-    z-index: 1;
-    width: 1%;
-    background: var(--card);
-    box-shadow: inset 1px 0 var(--border);
+.nkt-table th {
+    min-height: 2.75rem;
 }
-.zool-table tbody tr:hover > td {
-    background: color-mix(in srgb, var(--muted) 55%, var(--card));
+.nkt-table [data-primary] > div,
+.nkt-cell-value {
+    width: 100%;
 }
-.zool-table tbody tr[data-state="selected"] > td {
+.nkt-table .nkt-table-actions {
+    display: flex;
+    width: max-content;
+}
+.nkt-table tbody tr:hover,
+.nkt-table tbody tr[data-state="selected"] {
     background: var(--accent);
 }
+.nkt-cell-value {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+.nkt-cell-value > * {
+    min-width: 0;
+    max-width: 100%;
+}
+.nkt-table [data-hidden] {
+    display: none;
+}
+.nkt-table:not([data-layout="cards"]) :is(th, td):not([data-hidden]) {
+    grid-row: 1;
+}
+.nkt-table[data-layout="cards"] tr {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+.nkt-table[data-layout="cards"] tr:has([data-col="select"]) {
+    grid-template-columns: 3rem minmax(0, 1fr) auto;
+}
+.nkt-table[data-layout="cards"] :is(th, td) {
+    display: none;
+}
+.nkt-table[data-layout="cards"] :is([data-primary], [data-col="select"], [data-col="actions"]) {
+    display: flex;
+    grid-row: 1;
+}
+.nkt-table[data-layout="cards"] [data-col="select"] {
+    grid-column: 1;
+}
+.nkt-table[data-layout="cards"] [data-col="actions"] {
+    grid-column: -2;
+}
+.nkt-table tr[data-open] > td[data-hidden],
+.nkt-table[data-layout="cards"]
+    tr[data-open]
+    > td:not([data-primary], [data-col="select"], [data-col="actions"]) {
+    display: grid;
+    grid-template-columns: minmax(6rem, 1fr) minmax(0, 2fr);
+    grid-column: 1 / -1;
+    align-items: center;
+    gap: 1rem;
+    min-height: 2.5rem;
+    border-top: 1px solid var(--border);
+}
+.nkt-table tr[data-open] > td[data-hidden]::before,
+.nkt-table[data-layout="cards"]
+    td[data-label]:not([data-primary], [data-col="select"], [data-col="actions"])::before {
+    content: attr(data-label);
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+}
+.nkt-table td[colspan] {
+    display: block;
+    grid-column: 1 / -1;
+}
+.nkt-table[data-layout="cards"] {
+    border: 0;
+    background: transparent;
+}
+.nkt-table[data-layout="cards"] thead tr {
+    border: 0;
+}
+.nkt-table[data-layout="cards"] thead th:not([data-col="select"]) {
+    display: none;
+}
+.nkt-table[data-layout="cards"] thead th[data-col="select"] {
+    height: 2.5rem;
+}
+.nkt-table[data-layout="cards"] tbody tr {
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+}
+.nkt-table[data-layout="cards"] td {
+    padding: 0.5rem;
+}
+.nkt-table[data-layout="cards"] [data-primary] {
+    font-weight: 500;
+}
+.nkt-row-actions > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.nkt-row-actions button {
+    width: 100%;
+    justify-content: flex-start;
+    padding-inline: 0.75rem;
+}
+.nkt-row-actions button[aria-label]::after {
+    content: attr(aria-label);
+}
 
-/* Narrow screens: rows become cards with the key column and actions; tap a card to show the other columns. */
-@media (width < 640px) {
-    .zool-table {
-        overflow: visible;
-        border: 0;
-        background: transparent;
-    }
-    /* card rows: borderless row actions, so each card is not a row of boxes */
-    .zool-table td[data-col="actions"] button {
-        border-color: transparent;
-        background: transparent;
-    }
-    .zool-table table,
-    .zool-table tbody {
-        display: block;
-    }
-    .zool-table thead {
-        display: none;
-    }
-    .zool-table tbody tr {
-        display: grid;
-        grid-template-columns: auto minmax(0, 1fr) auto;
-        align-items: center;
-        column-gap: 0.625rem;
-        margin-bottom: 0.5rem;
-        padding: 0.5rem 0.625rem 0.5rem 0.75rem;
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        background: var(--card);
-        cursor: pointer;
-    }
-    .zool-table tbody tr[data-state="selected"] {
-        border-color: var(--ring);
-        background: var(--accent);
-    }
-    .zool-table tbody td {
-        display: none;
-        position: static !important;
-        width: auto !important;
-        min-width: 0 !important;
-        padding: 0 !important;
-        background: transparent !important;
-        box-shadow: none !important;
-    }
-    .zool-table tbody :is(td[data-col="select"], td[data-col="actions"]) {
-        display: block;
-    }
-    .zool-table tbody td[data-col="actions"] button {
-        width: 2.25rem;
-        height: 2.25rem;
-    }
-    .zool-table tbody td[data-col="actions"] > div {
-        gap: 0.375rem;
-    }
-    /* the key column; tables without name/username/ip use their second column */
-    .zool-table tbody :is(td[data-col="name"], td[data-col="username"], td[data-col="ip"]),
-    .zool-table
-        tbody
-        tr:not(:has(> :is([data-col="name"], [data-col="username"], [data-col="ip"])))
-        > td[data-col]:nth-child(2) {
-        display: flex;
-        align-items: center;
-        gap: 0.375rem;
-        font-weight: 500;
-        overflow-wrap: anywhere;
-    }
-    .zool-table tbody :is(td[data-col="name"], td[data-col="username"], td[data-col="ip"])::after,
-    .zool-table
-        tbody
-        tr:not(:has(> :is([data-col="name"], [data-col="username"], [data-col="ip"])))
-        > td[data-col]:nth-child(2)::after {
-        content: "";
-        flex: none;
-        width: 0.4rem;
-        height: 0.4rem;
-        margin-left: auto;
-        border-right: 1.5px solid var(--muted-foreground);
-        border-bottom: 1.5px solid var(--muted-foreground);
-        transform: rotate(45deg);
-        transition: transform 0.15s;
-    }
-    .zool-table
-        tbody
-        tr[data-open]
-        > :is(td[data-col="name"], td[data-col="username"], td[data-col="ip"])::after,
-    .zool-table
-        tbody
-        tr[data-open]:not(:has(> :is([data-col="name"], [data-col="username"], [data-col="ip"])))
-        > td[data-col]:nth-child(2)::after {
-        transform: rotate(225deg);
-    }
-    /* expanded details, and every cell of untagged tables / loading rows */
-    .zool-table tbody tr[data-open] > td[data-col],
-    .zool-table tbody td:not([data-col]) {
-        display: flex;
-        grid-column: 1 / -1;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1rem;
-        min-height: 1.75rem;
-        text-align: right;
-    }
-    .zool-table tbody tr[data-open] > td[data-col] {
-        padding-top: 0.25rem !important;
-        border-top: 1px solid var(--border);
-    }
-    .zool-table tbody tr[data-open] > td[data-col][data-label]::before,
-    .zool-table tbody td:not([data-col])[data-label]::before {
-        content: attr(data-label);
-        flex: none;
-        color: var(--muted-foreground);
-        text-align: left;
-    }
-    .zool-table tbody td > * {
-        max-width: none;
-        min-width: 0;
-        overflow-wrap: anywhere;
-    }
-    .zool-table
-        tbody
-        tr[data-open]
-        > td[data-col]:not([data-col="select"], [data-col="actions"])
-        button {
-        width: 2rem;
-        height: 2rem;
-    }
-    /* keep the summary row (select, key, actions) on top when expanded */
-    .zool-table.zool-table
-        tbody
-        tr[data-open]
-        > :is(
-            td[data-col="select"],
-            td[data-col="actions"],
-            td[data-col="name"],
-            td[data-col="username"],
-            td[data-col="ip"]
-        ) {
-        display: flex;
-        grid-column: auto;
-        grid-row: 1;
-        min-height: 0;
-        margin: 0;
-        padding: 0 !important;
-        border: 0;
-        text-align: left;
-    }
-    .zool-table.zool-table
-        tbody
-        tr[data-open]
-        > :is(
-            td[data-col="select"],
-            td[data-col="actions"],
-            td[data-col="name"],
-            td[data-col="username"],
-            td[data-col="ip"]
-        )::before {
-        content: none;
-    }
+/* Radix keeps the existing form API and focus behavior; geometry follows Kumo Dialog. */
+.nkt-dialog {
+    top: 4rem;
+    left: 50%;
+    width: calc(100% - 2rem);
+    max-height: calc(100dvh - 6rem);
+    transform: translateX(-50%);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: 0.75rem;
+}
+.nkt-dialog[data-layout="sheet"] {
+    inset: 0;
+    width: 100%;
+    height: 100dvh;
+    max-width: none !important;
+    max-height: 100dvh;
+    transform: none;
+    border: 0;
+    border-radius: 0;
+    padding-top: max(1.5rem, env(safe-area-inset-top));
+}
+.nkt-dialog > * {
+    flex-shrink: 0;
+    min-width: 0;
+}
+.nkt-dialog-form,
+.nkt-dialog-form > div,
+.nkt-dialog-form form {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    min-width: 0;
+}
+.nkt-dialog-form form > * {
+    flex-shrink: 0;
+}
+.nkt-dialog-footer {
+    bottom: -1.5rem;
+    margin-bottom: -1.5rem;
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+.nkt-dialog-footer > button {
+    margin-block: 0;
+}
+
+.nkt-dialog-form > div {
+    align-items: stretch;
+}
+
+.nk-page-actions > * {
+    min-width: 0;
+    max-width: 100%;
 }

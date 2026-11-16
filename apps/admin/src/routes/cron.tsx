@@ -18,6 +18,7 @@ import { IconButton } from "@/components/xui/icon-button"
 import { selectableTableFeatures } from "@/lib/table"
 import { ModelCron } from "@/types"
 import { cronTypes } from "@/types"
+import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender, useTable } from "@tanstack/react-table"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -211,9 +212,9 @@ export default function CronPage() {
     const selectedRows = table.getSelectedRowModel().rows
 
     return (
-        <div className="px-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-3 mt-6 mb-4">
-                <h1 className="text-3xl font-bold tracking-tight">{t("Task")}</h1>
+        <Page
+            title={t("Task")}
+            actions={
                 <HeaderButtonGroup
                     className="flex gap-2 flex-wrap shrink-0"
                     delete={{
@@ -224,9 +225,22 @@ export default function CronPage() {
                 >
                     <CronCard mutate={mutate} />
                 </HeaderButtonGroup>
-            </div>
-
-            <Table>
+            }
+        >
+            <Table
+                columnPriority={[
+                    ["id", 64],
+                    ["taskType", 100],
+                    ["scheduler", 130],
+                    ["lastResult", 100],
+                    ["lastExecution", 150],
+                    ["servers", 110],
+                    ["command", 150],
+                    ["ngroup", 110],
+                    ["pushSuccessful", 110],
+                    ["cover", 100],
+                ]}
+            >
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>
@@ -279,6 +293,6 @@ export default function CronPage() {
                     )}
                 </TableBody>
             </Table>
-        </div>
+        </Page>
     )
 }

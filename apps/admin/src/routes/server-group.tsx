@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table"
 import { selectableTableFeatures } from "@/lib/table"
 import { ModelServerGroupResponseItem } from "@/types"
+import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender, useTable } from "@tanstack/react-table"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -121,9 +122,10 @@ export default function ServerGroupPage() {
     const selectedRows = table.getSelectedRowModel().rows
 
     return (
-        <div className="px-3">
-            <div className="flex mt-6 mb-4">
-                <GroupTab className="flex-1 mr-4 sm:max-w-[40%]" />
+        <Page
+            title={`${t("Server")} · ${t("Group")}`}
+            tabs={<GroupTab />}
+            actions={
                 <HeaderButtonGroup
                     className="flex ml-auto self-end sm:self-auto gap-2 flex-wrap shrink-0"
                     delete={{
@@ -134,8 +136,14 @@ export default function ServerGroupPage() {
                 >
                     <ServerGroupCard mutate={mutate} />
                 </HeaderButtonGroup>
-            </div>
-            <Table>
+            }
+        >
+            <Table
+                columnPriority={[
+                    ["id", 64],
+                    ["servers", 150],
+                ]}
+            >
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>
@@ -188,6 +196,6 @@ export default function ServerGroupPage() {
                     )}
                 </TableBody>
             </Table>
-        </div>
+        </Page>
     )
 }

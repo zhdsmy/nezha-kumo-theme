@@ -19,7 +19,6 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { IconButton } from "@/components/xui/icon-button"
 import { MultiSelect } from "@/components/xui/multi-select"
 import { useServer } from "@/hooks/useServer"
@@ -93,7 +92,7 @@ export const ServerGroupCard: React.FC<ServerGroupCardProps> = ({ data, mutate }
                 {data ? <IconButton variant="outline" icon="edit" /> : <IconButton icon="plus" />}
             </DialogTrigger>
             <DialogContent className="sm:max-w-xl">
-                <ScrollArea className="max-h-[calc(100dvh-1.5rem)] p-1 sm:max-h-[calc(100dvh-5rem)] sm:p-3">
+                <div className="nkt-dialog-form">
                     <div className="items-center mx-1">
                         <DialogHeader>
                             <DialogTitle>
@@ -149,7 +148,7 @@ export const ServerGroupCard: React.FC<ServerGroupCardProps> = ({ data, mutate }
                             </form>
                         </Form>
                     </div>
-                </ScrollArea>
+                </div>
             </DialogContent>
         </Dialog>
     )

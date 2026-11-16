@@ -21,6 +21,7 @@ import {
     UserPen,
 } from "lucide-react"
 import { forwardRef } from "react"
+import { useTranslation } from "react-i18next"
 
 export interface IconButtonProps extends ButtonProps {
     icon:
@@ -44,14 +45,36 @@ export interface IconButtonProps extends ButtonProps {
         | "more"
 }
 
-// ZOOL: icon buttons are neutral outlines. Only "add" stays accent-filled;
-// destructive ones turn red on hover/focus instead of being red at rest.
+const iconLabels: Record<IconButtonProps["icon"], string> = {
+    clipboard: "Copy",
+    check: "Confirm",
+    edit: "Edit",
+    trash: "Delete",
+    plus: "Create",
+    terminal: "Terminal",
+    update: "ForceUpdate",
+    "folder-closed": "FileManager",
+    play: "Run",
+    download: "Download",
+    upload: "Upload",
+    menu: "Menu",
+    ban: "Block",
+    expand: "Expand",
+    cog: "Settings",
+    minus: "Remove",
+    "user-pen": "ChangeOwner",
+    more: "More",
+}
+
+// Confirmed destructive actions use the filled danger variant in their dialog.
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     ({ variant, className, ...props }, ref) => {
+        const { t } = useTranslation()
         const filled = props.icon === "plus" && (!variant || variant === "default")
         return (
             <Button
                 {...props}
+                aria-label={props["aria-label"] || props.title || t(iconLabels[props.icon])}
                 variant={filled ? "default" : variant === "ghost" ? "ghost" : "outline"}
                 className={cn(
                     "rounded-lg",

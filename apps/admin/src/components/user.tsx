@@ -19,7 +19,6 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import {
     Select,
     SelectContent,
@@ -84,7 +83,7 @@ export const UserCard: React.FC<UserCardProps> = ({ mutate }) => {
                 <IconButton icon="plus" />
             </DialogTrigger>
             <DialogContent className="sm:max-w-xl">
-                <ScrollArea className="max-h-[calc(100dvh-1.5rem)] p-1 sm:max-h-[calc(100dvh-5rem)] sm:p-3">
+                <div className="nkt-dialog-form">
                     <div className="items-center mx-1">
                         <DialogHeader>
                             <DialogTitle>{t("NewUser")}</DialogTitle>
@@ -159,7 +158,7 @@ export const UserCard: React.FC<UserCardProps> = ({ mutate }) => {
                             </form>
                         </Form>
                     </div>
-                </ScrollArea>
+                </div>
             </DialogContent>
         </Dialog>
     )

@@ -31,6 +31,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { useAuth } from "@/hooks/useAuth"
+import { Page } from "@nezha-kumo/ui"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
@@ -70,23 +71,27 @@ export default function ApiTokensPage() {
     }
 
     return (
-        <div className="px-3">
-            <SettingsTab className="mt-6 w-full" />
-
-            <div className="flex mt-4 mb-4 items-center justify-between">
-                <h2 className="text-lg font-semibold">{t("ApiTokens")}</h2>
-                <Button onClick={() => setCreateOpen(true)}>{t("CreateApiToken")}</Button>
-            </div>
-
-            <Table>
+        <Page
+            title={t("ApiTokens")}
+            tabs={<SettingsTab />}
+            actions={<Button onClick={() => setCreateOpen(true)}>{t("CreateApiToken")}</Button>}
+        >
+            <Table
+                columnPriority={[
+                    ["scopes", 170],
+                    ["servers", 100],
+                    ["expires", 150],
+                    ["lastUsed", 150],
+                ]}
+            >
                 <TableHeader>
                     <TableRow>
-                        <TableHead>{t("Name")}</TableHead>
-                        <TableHead>{t("Scopes")}</TableHead>
-                        <TableHead>{t("ApiTokenServers")}</TableHead>
-                        <TableHead>{t("ApiTokenExpiresAt")}</TableHead>
-                        <TableHead>{t("ApiTokenLastUsed")}</TableHead>
-                        <TableHead>{t("Actions")}</TableHead>
+                        <TableHead data-col="name">{t("Name")}</TableHead>
+                        <TableHead data-col="scopes">{t("Scopes")}</TableHead>
+                        <TableHead data-col="servers">{t("ApiTokenServers")}</TableHead>
+                        <TableHead data-col="expires">{t("ApiTokenExpiresAt")}</TableHead>
+                        <TableHead data-col="lastUsed">{t("ApiTokenLastUsed")}</TableHead>
+                        <TableHead data-col="actions">{t("Actions")}</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -108,8 +113,8 @@ export default function ApiTokensPage() {
                     ) : (
                         data.map((tok) => (
                             <TableRow key={tok.id}>
-                                <TableCell>{tok.name}</TableCell>
-                                <TableCell>
+                                <TableCell data-col="name">{tok.name}</TableCell>
+                                <TableCell data-col="scopes">
                                     <div className="flex flex-wrap gap-1">
                                         {(tok.scopes ?? []).map((s) => (
                                             <span
@@ -121,24 +126,24 @@ export default function ApiTokensPage() {
                                         ))}
                                     </div>
                                 </TableCell>
-                                <TableCell className="text-xs">
+                                <TableCell data-col="servers" className="text-xs">
                                     {tok.server_ids?.length
                                         ? tok.server_ids.join(", ")
                                         : t("ApiTokenAllServers")}
                                 </TableCell>
-                                <TableCell className="text-xs">
+                                <TableCell data-col="expires" className="text-xs">
                                     {tok.expires_at
                                         ? new Date(tok.expires_at).toLocaleString()
                                         : t("ApiTokenNever")}
                                 </TableCell>
-                                <TableCell className="text-xs">
+                                <TableCell data-col="lastUsed" className="text-xs">
                                     {tok.last_used_at
                                         ? `${new Date(tok.last_used_at).toLocaleString()} (${tok.last_used_ip ?? "?"})`
                                         : t("ApiTokenNever")}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell data-col="actions">
                                     <Button
-                                        variant="destructive"
+                                        variant="outline"
                                         size="sm"
                                         onClick={() => handleDelete(tok.id, tok.name)}
                                     >
@@ -162,7 +167,7 @@ export default function ApiTokensPage() {
             />
 
             <RevealedTokenDialog token={revealed} onClose={() => setRevealed(null)} />
-        </div>
+        </Page>
     )
 }
 
@@ -323,7 +328,7 @@ function RevealedTokenDialog({
                 </DialogHeader>
                 {token && (
                     <div className="space-y-3">
-                        <div className="rounded border border-amber-500/40 bg-amber-100 dark:bg-amber-950/40 p-3 text-sm">
+                        <div className="rounded border border-kumo-warning/40 bg-kumo-warning-tint text-kumo-warning p-3 text-sm">
                             {t("ApiTokenStoreSafely")}
                         </div>
                         <code className="block break-all rounded bg-muted p-3 font-mono text-xs">

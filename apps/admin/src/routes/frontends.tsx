@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/hooks/useAuth"
 import { safeExternalHref } from "@/lib/utils"
+import { Page } from "@nezha-kumo/ui"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate } from "react-router-dom"
@@ -97,16 +98,13 @@ export default function FrontendsPage() {
         data?.templates.filter((template) => !!template.is_admin === isAdminFrontend) ?? []
 
     return (
-        <div className="px-3">
-            <SettingsTab className="mt-6 mb-4 w-full" />
+        <Page
+            title={t("FrontendManager.Title")}
+            description={t("FrontendManager.Description")}
+            tabs={<SettingsTab />}
+        >
             <Card>
                 <CardContent className="space-y-6 pt-6">
-                    <div>
-                        <h1 className="text-xl font-semibold">{t("FrontendManager.Title")}</h1>
-                        <p className="text-muted-foreground mt-2 text-sm">
-                            {t("FrontendManager.Description")}
-                        </p>
-                    </div>
                     <div className="space-y-2">
                         <Label htmlFor="frontend-role">{t("FrontendManager.Target")}</Label>
                         <select
@@ -234,7 +232,7 @@ export default function FrontendsPage() {
                                         data?.user_template !== template.path &&
                                         data?.admin_template !== template.path && (
                                             <Button
-                                                variant="destructive"
+                                                variant="outline"
                                                 disabled={busy}
                                                 onClick={() => remove(template)}
                                             >
@@ -242,6 +240,7 @@ export default function FrontendsPage() {
                                             </Button>
                                         )}
                                     <Button
+                                        variant="outline"
                                         disabled={busy || selected === template.path}
                                         onClick={() => void activate(template.path)}
                                     >
@@ -255,6 +254,6 @@ export default function FrontendsPage() {
                     </section>
                 </CardContent>
             </Card>
-        </div>
+        </Page>
     )
 }
