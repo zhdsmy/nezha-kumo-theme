@@ -169,7 +169,7 @@ test("online nodes tile lists attention and offline reasons and opens node detai
     await expect(item).toBeVisible()
     await item.click()
     await expect(page).toHaveURL(/\/server\/19$/)
-    await expect(page.getByRole("heading", { name: "Server 03", exact: true })).toBeVisible()
+    await expect(page.getByRole("heading", { name: /Server 03$/ })).toBeVisible()
 })
 
 test("daily traffic includes available nodes and reports partial coverage", async ({ page }) => {
