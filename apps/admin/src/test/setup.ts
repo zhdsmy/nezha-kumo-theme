@@ -47,3 +47,6 @@ globalThis.matchMedia = (media: string) => ({
     removeListener() {},
     dispatchEvent: () => true,
 })
+
+Element.prototype.getAnimations ??= () => []
+

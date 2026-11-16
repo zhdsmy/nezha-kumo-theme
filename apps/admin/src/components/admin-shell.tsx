@@ -200,12 +200,22 @@ export default function AdminShell({
     return (
         <AppShell
             brand={
-                <div className="flex min-w-0 items-center gap-2">
+                <Link
+                    to="/dashboard"
+                    title={siteName}
+                    onClick={(e) => {
+                        e.currentTarget
+                            .closest(".nk-brand-row")
+                            ?.querySelector<HTMLButtonElement>(
+                                'button[aria-label="Close navigation"]',
+                            )
+                            ?.click()
+                    }}
+                    className="flex min-w-0 items-center gap-2 rounded-md py-1 text-inherit no-underline transition-colors hover:bg-muted dark:hover:bg-kumo-control focus-visible:bg-muted dark:focus-visible:bg-kumo-control focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+                >
                     <img className="size-7 shrink-0" src="/dashboard/logo.svg" alt="" />
-                    <span className="truncate" title={siteName}>
-                        {siteName}
-                    </span>
-                </div>
+                    <span className="truncate">{siteName}</span>
+                </Link>
             }
             nav={nav}
             activeId={activeId}
@@ -214,9 +224,13 @@ export default function AdminShell({
             // repeats it only while the sidebar is a drawer (same rule as the frontend).
             topbar={
                 sidebarShown ? undefined : (
-                    <span className="truncate" title={siteName}>
-                        {siteName}
-                    </span>
+                    <Link
+                        to="/dashboard"
+                        title={siteName}
+                        className="inline-flex max-w-full items-center rounded-md py-1 text-inherit no-underline transition-colors hover:bg-muted dark:hover:bg-kumo-control focus-visible:bg-muted dark:focus-visible:bg-kumo-control focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+                    >
+                        <span className="truncate">{siteName}</span>
+                    </Link>
                 )
             }
             actions={<AdminActions />}
