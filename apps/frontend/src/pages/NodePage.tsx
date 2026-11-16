@@ -178,7 +178,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
                     stripFlag(node.name)
                 )
             }
-            eyebrow={[node.region, node.os].filter(Boolean).join(" · ")}
+            eyebrow={node.os}
             description={<Status snapshot={snap} />}
             tabs={
                 <Tabs

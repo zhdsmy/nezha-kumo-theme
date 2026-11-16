@@ -376,8 +376,8 @@
         "Removed": "主題已刪除。"
     },
     "GroupIcon": "圖示",
-    "GroupIconPlaceholder": "Emoji、短文字（≤8 字元）或 https:// 圖片網址",
+    "GroupIconPlaceholder": "一個 Emoji 或單一字元，或 https:// 圖片網址",
     "GroupIconHint": "留空則移除圖示並恢復預設資料夾圖示。",
     "GroupIconLoadError": "圖示圖片載入失敗",
-    "GroupIconInvalid": "請輸入不超過 8 個字元的文字，或有效的 https:// 圖片網址"
+    "GroupIconInvalid": "請輸入一個 Emoji 或單一字元，或有效的 https:// 圖片網址"
 }

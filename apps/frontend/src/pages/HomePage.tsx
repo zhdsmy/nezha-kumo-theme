@@ -285,6 +285,7 @@ export function HomePage() {
                 : [],
         [nodes, snapshots, fed],
     )
+    const attention = issues.filter((i) => i.reasons[0].kind !== "offline").length
     const bandwidth = nodes.reduce(
         (sum, n) =>
             sum + (snapshots[n.id]?.online ? snapshots[n.id].netUp + snapshots[n.id].netDown : 0),
@@ -395,9 +396,12 @@ export function HomePage() {
                     data-level={offline ? "danger" : "warn"}
                 >
                     <span>
-                        {offline
-                            ? t("status.someOffline", { count: offline })
-                            : t("status.attention", { count: issues.length })}
+                        {[
+                            offline && t("status.someOffline", { count: offline }),
+                            attention && t("status.attention", { count: attention }),
+                        ]
+                            .filter(Boolean)
+                            .join(" · ")}
                     </span>
                     <CaretDownIcon size={12} />
                 </button>

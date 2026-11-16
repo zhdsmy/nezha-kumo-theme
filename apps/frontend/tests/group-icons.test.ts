@@ -55,18 +55,18 @@ describe("group-icons shared format", () => {
 
         // Updating icons (even with JS replace special tokens like $1 / $$) preserves prefix & suffix byte-for-byte.
         const updated = updateGroupIconsInCustomCode(initial, {
-            "1": "$1$$",
-            "8": "https://cdn.example.com/hk.png",
+            "1": "$",
+            "8": "https://cdn.example.com/$1$$.png",
         })
         expect(updated.startsWith(prefix)).toBe(true)
         expect(updated.endsWith(suffix)).toBe(true)
         const middle = updated.slice(prefix.length, updated.length - suffix.length)
         expect(middle).toBe(
-            '<script type="application/json" id="nezha-kumo-group-icons">{"1":"$1$$","8":"https://cdn.example.com/hk.png"}</script>',
+            '<script type="application/json" id="nezha-kumo-group-icons">{"1":"$","8":"https://cdn.example.com/$1$$.png"}</script>',
         )
         expect(parseGroupIcons(updated)).toEqual({
-            "1": "$1$$",
-            "8": "https://cdn.example.com/hk.png",
+            "1": "$",
+            "8": "https://cdn.example.com/$1$$.png",
         })
 
         // Removing all icons from the middle keeps both surrounding scripts intact.
@@ -76,7 +76,7 @@ describe("group-icons shared format", () => {
 
     it("escapes </ on serialization so inner content cannot close </script> prematurely", () => {
         const trickyUrl = "https://example.com/icon.svg?tag=</script>&upper=</SCRIPT>"
-        const trickyText = "a</b"
+        const trickyText = "<"
         const block = serializeGroupIconsBlock({
             "1": trickyUrl,
             "2": trickyText,
@@ -94,11 +94,11 @@ describe("group-icons shared format", () => {
         })
     })
 
-    it("accepts emoji/short text (<=8 graphemes) and https:// URLs while rejecting other protocols", () => {
+    it("accepts emoji/a single grapheme and https:// URLs while rejecting other protocols", () => {
         expect(classifyGroupIcon("☁️")).toEqual({ kind: "text", value: "☁️" })
         expect(classifyGroupIcon("🏳️‍🌈")).toEqual({ kind: "text", value: "🏳️‍🌈" })
-        expect(classifyGroupIcon("12345678")).toEqual({ kind: "text", value: "12345678" })
-        expect(classifyGroupIcon("123456789")).toBeNull()
+        expect(classifyGroupIcon("A")).toEqual({ kind: "text", value: "A" })
+        expect(classifyGroupIcon("US")).toBeNull()
         expect(classifyGroupIcon("   ")).toBeNull()
 
         expect(classifyGroupIcon("https://example.com/a.svg")).toEqual({

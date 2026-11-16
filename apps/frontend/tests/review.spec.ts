@@ -160,7 +160,7 @@ test("online nodes tile lists attention and offline reasons and opens node detai
 }) => {
     await page.goto("/")
     const offlineTrigger = page.locator(".metric-tile").first().locator(".status-trigger")
-    await expect(offlineTrigger).toHaveText("1 offline")
+    await expect(offlineTrigger).toHaveText("1 offline · 1 needs attention")
     await expect(offlineTrigger).toHaveAttribute("data-level", "danger")
     await offlineTrigger.click()
     await expect(page.getByRole("menuitem", { name: /Server 20.*Offline/ })).toBeVisible()
