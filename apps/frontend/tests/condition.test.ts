@@ -2,7 +2,8 @@
 import { describe, expect, it } from "vitest"
 
 import { RECENT_MS, STALE_MS, cleanSnapshot, nodeCondition } from "../src/core/condition"
-import { type NodeInfo, type Snapshot, emptySnapshot } from "../src/core/model"
+import { type NodeInfo, type Snapshot } from "../src/core/model"
+import { emptySnapshot } from "./snapshot"
 
 const now = Date.parse("2026-09-17T08:00:00Z")
 const node = (patch: Partial<NodeInfo> = {}) =>

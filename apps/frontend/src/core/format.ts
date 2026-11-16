@@ -3,13 +3,13 @@ import type { NodeInfo, Snapshot, TrafficLimitType } from "./model"
 
 const BYTE_UNITS = ["B", "KB", "MB", "GB", "TB", "PB", "EB"]
 
-export interface Parts {
+interface Parts {
     value: string
     unit: string
 }
 
 /** Binary (1024) byte formatting, split so the unit can be styled on its own. */
-export function splitBytes(bytes: number, digits?: number): Parts {
+function splitBytes(bytes: number, digits?: number): Parts {
     if (!Number.isFinite(bytes) || bytes <= 0) return { value: "0", unit: "B" }
     const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), BYTE_UNITS.length - 1)
     const v = bytes / 1024 ** i
@@ -22,7 +22,7 @@ export const formatBytes = (bytes: number, digits?: number) => {
     return `${p.value} ${p.unit}`
 }
 
-export const splitSpeed = (bytesPerSecond: number): Parts => {
+const splitSpeed = (bytesPerSecond: number): Parts => {
     const p = splitBytes(bytesPerSecond)
     return { value: p.value, unit: `${p.unit}/s` }
 }
@@ -44,7 +44,7 @@ export const formatNumber = (n: number, digits = 2) => {
     return digits > 0 ? s.replace(/\.?0+$/, "") : s
 }
 
-export interface Duration {
+interface Duration {
     days: number
     hours: number
     minutes: number
@@ -59,17 +59,11 @@ export function duration(seconds: number): Duration {
     }
 }
 
-/** Traffic counted against the quota, following Komari's `traffic_limit_type`. */
+/** Nezha public_note supports total or the larger direction. */
 export function trafficUsed(type: TrafficLimitType, up: number, down: number) {
     switch (type) {
         case "sum":
             return up + down
-        case "min":
-            return Math.min(up, down)
-        case "up":
-            return up
-        case "down":
-            return down
         default:
             return Math.max(up, down)
     }

@@ -1,10 +1,10 @@
-import { loadCounters } from "@/adapters/nezha"
+import { HISTORY_CACHE_MS, nezha } from "@/adapters/nezha"
+import { pollVisible } from "@/core/http"
 import type { HistoryPoint, NodeInfo } from "@/core/model"
 import { useEffect, useState } from "react"
 
 import { useStore } from "./store"
 
-// Only counters are needed for the fleet tile; keep concurrency bounded to four servers.
 export function useDailyCounters(nodes: readonly NodeInfo[]) {
     const hours = useStore((s) => s.site?.recordHours ?? 0)
     const key = nodes.map((n) => n.id).join(",")
@@ -15,25 +15,24 @@ export function useDailyCounters(nodes: readonly NodeInfo[]) {
     useEffect(() => {
         if (!hours) return
         let active = true
-        const queue = key.split(",").filter(Boolean)
-        const points: Record<string, HistoryPoint[]> = {}
-        const worker = async () => {
-            for (let id = queue.shift(); id && active; id = queue.shift()) {
-                points[id] = await loadCounters(id).catch(() => [])
-            }
-        }
-        const load = async () => {
-            await Promise.all(Array.from({ length: 4 }, worker))
-            if (active) setResult({ key, points: { ...points } })
-        }
-        void load()
-        const timer = window.setInterval(() => {
-            queue.push(...key.split(",").filter(Boolean))
-            void load()
-        }, 300_000)
+        const stop = pollVisible(async () => {
+            const entries = await Promise.all(
+                key
+                    .split(",")
+                    .filter(Boolean)
+                    .map(
+                        async (id) =>
+                            [
+                                id,
+                                await nezha.loadHistory(id, 24, "counters").catch(() => []),
+                            ] as const,
+                    ),
+            )
+            if (active) setResult({ key, points: Object.fromEntries(entries) })
+        }, HISTORY_CACHE_MS)
         return () => {
             active = false
-            clearInterval(timer)
+            stop()
         }
     }, [key, hours])
     return hours && result.key === key ? result.points : null

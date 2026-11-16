@@ -1,5 +1,6 @@
 // Adapted from zool-theme/src/app/money.ts (MIT, luoleiorg).
 import { displayCurrency } from "@/core/cost"
+import { readStorage, writeStorage } from "@/core/storage"
 import { useSyncExternalStore } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -8,37 +9,26 @@ import { useTranslation } from "react-i18next"
  * node's own currency or billing cycle alone; the default is the locale currency and each
  * node's own cycle, which is how bills read before the choice existed.
  */
-export type MoneyCurrency = "original" | string
+type MoneyCurrency = "original" | string
 export type MoneyPeriod = "original" | "month" | "year"
 
-const KEYS = { currency: "zool:currency", period: "zool:period" } as const
+const KEYS = { currency: "nkt:currency", period: "nkt:period" } as const
 const listeners = new Set<() => void>()
 const subscribe = (l: () => void) => {
     listeners.add(l)
     return () => listeners.delete(l)
 }
-const read = (key: string) => {
-    try {
-        return localStorage.getItem(key)
-    } catch {
-        return null
-    }
-}
 const write = (key: string, value: string) => {
-    try {
-        localStorage.setItem(key, value)
-    } catch {
-        /* private mode */
-    }
+    writeStorage(key, value)
     listeners.forEach((l) => l())
 }
 
 const getCurrency = () => {
-    const v = read(KEYS.currency)
+    const v = readStorage(KEYS.currency)
     return v === "original" || (v && /^[A-Z]{3}$/.test(v)) ? v : null
 }
 const getPeriod = (): MoneyPeriod => {
-    const v = read(KEYS.period)
+    const v = readStorage(KEYS.period)
     return v === "month" || v === "year" ? v : "original"
 }
 

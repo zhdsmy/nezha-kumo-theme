@@ -27,7 +27,7 @@ beforeAll(() => {
     vi.useFakeTimers()
     vi.stubGlobal("window", {
         location: { protocol: "https:", host: "status.test" },
-        ZoolConfig: {},
+        NezhaKumoConfig: {},
     })
     vi.stubGlobal("WebSocket", FakeSocket)
     vi.stubGlobal(

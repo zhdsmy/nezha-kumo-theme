@@ -146,14 +146,14 @@ describe("Nezha billing display", () => {
             },
         })
         const yearly = { billingDataMod: { amount: "EUR 9.00", cycle: "Year" } }
-        saved["zool:period"] = "month"
+        saved["nkt:period"] = "month"
         expect(render(yearly)).toContain("¥5.83/月")
-        saved["zool:currency"] = "USD"
-        saved["zool:period"] = "year"
+        saved["nkt:currency"] = "USD"
+        saved["nkt:period"] = "year"
         expect(render(yearly)).toContain("$10.00/年")
-        saved["zool:currency"] = "original"
+        saved["nkt:currency"] = "original"
         expect(render(yearly)).toContain("€9.00/年")
-        saved["zool:period"] = "original"
+        saved["nkt:period"] = "original"
         expect(render({ billingDataMod: { amount: "USD 100", cycle: "-1" } })).not.toContain("/年")
         vi.unstubAllGlobals()
     })

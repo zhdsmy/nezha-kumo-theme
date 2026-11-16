@@ -1,33 +1,9 @@
 // Adapted from zool-theme/src/app/prefs.ts (MIT, luoleiorg).
 import type { Appearance } from "@/core/settings"
+import { readStorage, writeStorage } from "@/core/storage"
 import { useSyncExternalStore } from "react"
 
-/**
- * Visitor preferences, stored in localStorage. `appearance` and `language` use the
- * key names shared by Komari themes so a visitor's choice survives a theme switch.
- */
-
-const KEYS = {
-    appearance: "appearance",
-    shave: "zool:ping-shave",
-} as const
-
-const read = (key: string) => {
-    try {
-        const v = localStorage.getItem(key)
-        return v && v.charAt(0) === '"' ? (JSON.parse(v) as string) : v
-    } catch {
-        return null
-    }
-}
-
-const write = (key: string, value: string) => {
-    try {
-        localStorage.setItem(key, value)
-    } catch {
-        /* private mode */
-    }
-}
+const KEYS = { appearance: "nkt:appearance", shave: "nkt:ping-shave" } as const
 
 const listeners = new Set<() => void>()
 const emit = () => listeners.forEach((l) => l())
@@ -42,11 +18,11 @@ const media = window.matchMedia("(prefers-color-scheme: dark)")
 let defaultAppearance: Appearance = "system"
 
 const storedAppearance = (): Appearance | null => {
-    const v = read(KEYS.appearance)
+    const v = readStorage(KEYS.appearance)
     return v === "light" || v === "dark" || v === "system" ? v : null
 }
 
-export const getAppearance = (): Appearance => storedAppearance() ?? defaultAppearance
+const getAppearance = (): Appearance => storedAppearance() ?? defaultAppearance
 
 export function applyAppearance() {
     const mode = getAppearance()
@@ -57,7 +33,7 @@ export function applyAppearance() {
 }
 
 export function setAppearance(mode: Appearance) {
-    write(KEYS.appearance, mode)
+    writeStorage(KEYS.appearance, mode)
     applyAppearance()
     emit()
 }
@@ -75,20 +51,12 @@ media.addEventListener("change", () => {
 
 export const useAppearance = () => useSyncExternalStore(subscribe, getAppearance, getAppearance)
 
-/** The resolved scheme, for things like chart colours. */
-export const useScheme = () =>
-    useSyncExternalStore(
-        subscribe,
-        () => (document.documentElement.dataset.mode === "dark" ? "dark" : "light"),
-        () => "light" as const,
-    )
-
 /* ---------- latency spike shaving ---------- */
 
-const getShave = () => read(KEYS.shave) === "1"
+const getShave = () => readStorage(KEYS.shave) === "1"
 
 export function setShave(on: boolean) {
-    write(KEYS.shave, on ? "1" : "0")
+    writeStorage(KEYS.shave, on ? "1" : "0")
     emit()
 }
 

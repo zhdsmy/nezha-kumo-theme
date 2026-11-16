@@ -1,5 +1,5 @@
 import { setAppearance, useAppearance } from "@/app/prefs"
-import { Link } from "@/app/router"
+import { Link, navigate } from "@/app/router"
 import { adapter, refresh, useStore, useVisibleNodes } from "@/app/store"
 import { stripFlag } from "@/core/region"
 import { LOCALES, type Locale, setLocale } from "@/i18n"
@@ -107,7 +107,6 @@ export function Actions() {
     const [login, setLogin] = useState(false)
     const [query, setQuery] = useState("")
     const nodes = useVisibleNodes()
-    const snapshots = useStore((s) => s.snapshots)
     const session = useStore((s) => s.session)
     const hidden = useStore((s) => s.settings.hideAdminEntry)
     useEffect(() => {
@@ -231,7 +230,10 @@ export function Actions() {
                         onChange={(e) => setQuery(e.target.value)}
                         onKeyDown={(e) => {
                             if (e.key === "Enter") {
-                                document.querySelector<HTMLAnchorElement>(".search-result")?.click()
+                                if (matches[0]) {
+                                    navigate(adapter.nodePath(matches[0].id))
+                                    setSearch(false)
+                                }
                             }
                         }}
                     />
@@ -247,7 +249,7 @@ export function Actions() {
                                     <span className="truncate" title={n.name}>
                                         {stripFlag(n.name)}
                                     </span>
-                                    <Status snapshot={snapshots[n.id]} />
+                                    <SearchStatus id={n.id} />
                                 </Link>
                             ))
                         ) : (
@@ -261,4 +263,9 @@ export function Actions() {
             </Dialog.Root>
         </>
     )
+}
+
+function SearchStatus({ id }: { id: string }) {
+    const snapshot = useStore((s) => s.snapshots[id])
+    return <Status snapshot={snapshot} />
 }

@@ -12,8 +12,7 @@
                 var root = document.documentElement
                 var stored = null
                 try {
-                    stored = localStorage.getItem("appearance")
-                    if (stored && stored.charAt(0) === '"') stored = JSON.parse(stored)
+                    stored = localStorage.getItem("nkt:appearance")
                 } catch (e) {}
                 var mode = stored === "light" || stored === "dark" ? stored : "system"
                 var dark =

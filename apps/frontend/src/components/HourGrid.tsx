@@ -12,16 +12,9 @@ const HOUR = 3_600_000
  * is averaged to one point per day, which quietly swallows a real outage. Drawing 90 days
  * from it would be fiction, so this grid stops where the honest data stops.
  */
-export function HourGrid({
-    points,
-    days = 7,
-    now = Date.now(),
-}: {
-    points: readonly HistoryPoint[]
-    days?: number
-    now?: number
-}) {
+export function HourGrid({ points, days = 7 }: { points: readonly HistoryPoint[]; days?: number }) {
     const { t, i18n } = useTranslation()
+    const now = Date.now()
     const cells = days * 24
     // Align to local midnight so a row is a calendar day and a cell is a wall-clock hour;
     // the last row runs to the current hour and the rest of it stays empty.
@@ -56,7 +49,7 @@ export function HourGrid({
                     {t("node.reportedHours", { count: seen, total: elapsed })}
                 </p>
             </div>
-            <div className="mt-2 space-y-[2px] md:mt-3 md:space-y-[3px]">
+            <div className="hour-grid-rows">
                 {rows.map((row, d) => (
                     <div key={d} className="flex items-center gap-2">
                         <span className="num w-10 shrink-0 text-right text-[10px] text-kumo-subtle">
@@ -79,7 +72,7 @@ export function HourGrid({
                                         key={h}
                                         // Hours that have not happened carry no reading, so they carry no tooltip either.
                                         title={at > lastHour ? undefined : stamp}
-                                        className={`h-[8px] flex-1 rounded-[1px] md:h-[10px] ${state === "up" ? "bg-kumo-success" : state === "down" ? "bg-kumo-danger" : "cell-empty"}`}
+                                        className={`hour-grid-cell flex-1 rounded-[1px] ${state === "up" ? "bg-kumo-success" : state === "down" ? "bg-kumo-danger" : "cell-empty"}`}
                                     />
                                 )
                             })}

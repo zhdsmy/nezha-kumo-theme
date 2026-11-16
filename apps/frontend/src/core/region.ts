@@ -45,13 +45,3 @@ const REGION_NAME_OVERRIDES: Record<string, string> = {
     ja: "中国台湾",
     en: "Taiwan, China",
 }
-
-/**
- * The flag file for a region code, or `null` for anything that is not a two-letter code we
- * ship. Only ASCII letters are accepted, so no input can turn into an arbitrary path.
- */
-export function regionFlagCode(code: string, available: ReadonlySet<string>): string | null {
-    if (!/^[A-Za-z]{2}$/.test(code)) return null
-    const cc = code.toLowerCase() === "tw" ? "cn" : code.toLowerCase()
-    return available.has(cc) ? cc : null
-}

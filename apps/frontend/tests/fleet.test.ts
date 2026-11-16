@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest"
 
 import { levelFor, needsAttention, sortNodes } from "../src/core/fleet"
-import { type NodeInfo, emptySnapshot } from "../src/core/model"
+import { type NodeInfo } from "../src/core/model"
+import { emptySnapshot } from "./snapshot"
 
 const nodes = [
     {

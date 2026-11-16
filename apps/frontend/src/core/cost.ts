@@ -1,3 +1,5 @@
+import { readStorage, writeStorage } from "@/core/storage"
+
 // Adapted from zool-theme/src/core/cost.ts (MIT, luoleiorg).
 import { currencyCode, monthlyCost } from "./format"
 import { request } from "./http"
@@ -9,7 +11,7 @@ export interface ExchangeRates {
     stale?: boolean
 }
 
-const CACHE_KEY = "zool:exchange-rates"
+const CACHE_KEY = "nkt:exchange-rates"
 let loading: Promise<ExchangeRates> | undefined
 
 function parseRates(data: unknown): ExchangeRates {
@@ -31,7 +33,7 @@ function parseRates(data: unknown): ExchangeRates {
 async function fetchRates(): Promise<ExchangeRates> {
     let cached: ExchangeRates | undefined
     try {
-        const saved = JSON.parse(localStorage.getItem(CACHE_KEY) ?? "null")
+        const saved = JSON.parse(readStorage(CACHE_KEY) ?? "null")
         if (saved && Number.isFinite(saved.savedAt)) {
             cached = parseRates(saved.data)
             const age = Date.now() - saved.savedAt
@@ -45,11 +47,7 @@ async function fetchRates(): Promise<ExchangeRates> {
             credentials: "omit",
         })
         const result = parseRates(data)
-        try {
-            localStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), data }))
-        } catch {
-            /* A successful conversion does not require persistent storage. */
-        }
+        writeStorage(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), data }))
         return result
     } catch (error) {
         if (cached) return { ...cached, stale: true }

@@ -5,7 +5,7 @@ import { mockNezha } from "./mock"
 
 test.beforeEach(async ({ page }) => {
     await mockNezha(page)
-    await page.addInitScript(() => localStorage.setItem("language", "en"))
+    await page.addInitScript(() => localStorage.setItem("nkt:language", "en"))
 })
 
 test("fleet filters, expanding rows, search shortcut and two-second data", async ({ page }) => {
@@ -97,10 +97,11 @@ test("responsive boundaries keep a single table/card tree and no overflow", asyn
         1440,
     ]) {
         await page.setViewportSize({ width, height: 900 })
-        expect(
-            await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
-            `width ${width}`,
-        ).toBe(true)
+        await expect
+            .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), {
+                message: `width ${width}`,
+            })
+            .toBe(true)
         expect(
             await page.locator(".fleet-table").evaluate((e) => getComputedStyle(e).display),
         ).toBe(width < BREAKPOINTS.gutter ? "block" : "table")

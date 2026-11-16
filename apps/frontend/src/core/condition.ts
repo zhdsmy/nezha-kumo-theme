@@ -9,13 +9,12 @@ import type { NodeInfo, Snapshot } from "./model"
  * - `online`: reporting normally.
  * - `stale`: marked online, but its last report is older than STALE_MS.
  * - `recent`: offline, last seen within RECENT_MS — often a restart or a network blip.
- * - `offline`: offline for longer, or offline with no known last report (Komari does not send
- *   one for nodes that were already down when the page loaded).
+ * - `offline`: offline for longer, or offline with no known last report.
  * - `never`: the backend says it has never reported.
  */
-export type ConditionKind = "pending" | "online" | "stale" | "recent" | "offline" | "never"
+type ConditionKind = "pending" | "online" | "stale" | "recent" | "offline" | "never"
 
-export interface Condition {
+interface Condition {
     kind: ConditionKind
     /** Epoch ms of the last report, when known. */
     lastSeen: number | null
@@ -28,7 +27,7 @@ export interface Condition {
 export const STALE_MS = 5 * 60_000
 export const RECENT_MS = 10 * 60_000
 
-export const hasReadings = (s: Snapshot | undefined) =>
+const hasReadings = (s: Snapshot | undefined) =>
     Boolean(s && (s.memTotal > 0 || s.diskTotal > 0 || s.uptime > 0))
 
 export function nodeCondition(

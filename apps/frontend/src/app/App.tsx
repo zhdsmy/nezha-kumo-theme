@@ -1,11 +1,12 @@
 import { Actions } from "@/components/Actions"
 import { Loading, NoData } from "@/components/ui"
 import { loadExchangeRates } from "@/core/cost"
+import { pollVisible } from "@/core/http"
 import { stripFlag } from "@/core/region"
 import { resolveLocale, setLocale } from "@/i18n"
 import { HomePage } from "@/pages/HomePage"
 import { Button } from "@cloudflare/kumo"
-import { AppShell, BREAKPOINTS, Page } from "@nezha-kumo/ui"
+import { AppShell, Page } from "@nezha-kumo/ui"
 import {
     ChartLineIcon,
     ClockIcon,
@@ -16,49 +17,19 @@ import {
 import { Component, type ReactNode, Suspense, lazy, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 
+import { responsive } from "./layout"
 import { setDefaultAppearance } from "./prefs"
 import { Link, usePathname } from "./router"
+import { SECTIONS } from "./sections"
 import { adapter, setExchangeRates, start, useStore, useVisibleNodes } from "./store"
 
 const NodePage = lazy(() => import("@/pages/NodePage"))
-const sections = ["overview", "latency", "billing", "history"] as const
 const icons = [
     <GaugeIcon size={16} />,
     <ChartLineIcon size={16} />,
     <CreditCardIcon size={16} />,
     <ClockIcon size={16} />,
 ]
-const responsive = `
-@media (min-width:${BREAKPOINTS.gutter}px) {
- .metric-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
- .action-label { display:inline; }
- .fleet-table { display:table; }
- .fleet-table thead { display:table-header-group; }
- .fleet-table tbody { display:table-row-group; }
- .fleet-table .server-row { display:table-row; }
- .fleet-table .server-row > td { display:table-cell; padding:12px 10px; }
- .fleet-table .wide-cell { display:none !important; }
- .fleet-table .server-name { width:29%; }
- .fleet-table .server-status { width:17%; }
- .fleet-table .server-network { width:23%; }
- .fleet-table .row-expand { width:38px; }
- .fleet-table .server-name > a { font-size:14px; }
- .fleet-table .meter-label,.fleet-table .cell-label { display:none; }
- .fleet-table .server-row { border-bottom:1px solid var(--color-kumo-line); border-radius:0; }
- .fleet-table .expanded-row { display:table-row; }
- .fleet-table .expanded-row > td { display:table-cell; }
-}
-@media (min-width:${BREAKPOINTS.wide}px) {
- .metric-grid { grid-template-columns:repeat(5,minmax(0,1fr)); }
- .node-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
- .chart-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
- .fleet-table .wide-cell { display:table-cell !important; }
- .fleet-table .server-name { width:22%; }
- .fleet-table .server-status { width:12%; }
- .fleet-table .server-network { width:19%; }
- .fleet-table .server-row > .row-expand,.fleet-table thead .row-expand,.fleet-table .expanded-row { display:none; }
-}
-`
 
 class ErrorBoundary extends Component<
     { children: ReactNode; fallback: ReactNode },
@@ -84,7 +55,7 @@ export function App() {
     const nodeId = adapter.matchNodePath(url.pathname)
     const nodes = useVisibleNodes()
     const node = nodes.find((n) => n.id === nodeId)
-    const section = sections.find((s) => url.hash === `#${s}`) ?? "overview"
+    const section = SECTIONS.find((s) => url.hash === `#${s}`) ?? "overview"
     useEffect(() => {
         void start()
     }, [])
@@ -101,7 +72,7 @@ export function App() {
             )
     }, [site, settings.defaultLanguage])
     useEffect(() => {
-        if (!settings.showCost && !settings.showBilling) return
+        if (phase !== "ready" || (!settings.showCost && !settings.showBilling)) return
         let active = true
         const load = () =>
             loadExchangeRates()
@@ -111,13 +82,12 @@ export function App() {
                 .catch(() => {
                     if (active) setExchangeRates(null, true)
                 })
-        void load()
-        const timer = window.setInterval(() => void load(), 86_400_000)
+        const stop = pollVisible(load, 86_400_000)
         return () => {
             active = false
-            clearInterval(timer)
+            stop()
         }
-    }, [settings.showCost, settings.showBilling])
+    }, [phase, settings.showCost, settings.showBilling])
     const siteTitle = settings.siteTitle || site?.name || "Nezha"
     useEffect(() => {
         if (!nodeId) document.title = siteTitle
@@ -153,7 +123,7 @@ export function App() {
                     {
                         id: "main",
                         items: nodeId
-                            ? sections.map((s, i) => ({
+                            ? SECTIONS.map((s, i) => ({
                                   id: s,
                                   label: t(`ui.${s}`),
                                   href: `${adapter.nodePath(nodeId)}#${s}`,
@@ -171,8 +141,8 @@ export function App() {
                     },
                 ]}
                 topbar={
-                    <span className="topbar-title" title={node ? stripFlag(node.name) : siteTitle}>
-                        {node ? stripFlag(node.name) : siteTitle}
+                    <span className="topbar-title" title={siteTitle}>
+                        {siteTitle}
                     </span>
                 }
                 actions={<Actions />}

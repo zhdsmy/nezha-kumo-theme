@@ -1,28 +1,8 @@
 // Adapted from zool-theme/src/core/model.ts (MIT, luoleiorg).
-/**
- * The unified data model. Everything in `src/core`, `src/components` and `src/pages`
- * only speaks this model; each backend has an adapter in `src/adapters/*` that maps
- * its own API onto it.
- */
-
-export type Target = "nezha"
-
-export type TrafficLimitType = "sum" | "max" | "min" | "up" | "down"
-
-export interface Capabilities {
-    /** Price, billing cycle and expiry are available. */
-    billing: boolean
-    /** A per-node traffic quota is available. */
-    trafficLimit: boolean
-    /** Server-side history beyond the live buffer. */
-    history: boolean
-    /** Latency / ping monitoring. */
-    ping: boolean
-}
+export type TrafficLimitType = "sum" | "max"
 
 export interface SiteInfo {
     name: string
-    description: string
     /** Backend default language, e.g. `zh-CN`. */
     language?: string
     /** Raw theme settings as provided by the backend; see `normalizeSettings`. */
@@ -30,17 +10,13 @@ export interface SiteInfo {
     /** Longest history range the backend keeps, in hours. */
     recordHours: number
     oauth: boolean
-    oauthProvider?: string
     oauthProviders?: string[]
-    /** False when the backend only allows OAuth sign-in. */
-    passwordLogin: boolean
 }
 
 export interface NodeInfo {
     id: string
     name: string
     groups: string[]
-    tags: string[]
     /** ISO 3166-1 alpha-2, upper case. Empty when unknown. */
     region: string
     os: string
@@ -51,7 +27,6 @@ export interface NodeInfo {
     gpuName: string
     bootTime?: number
     agentVersion?: string
-    kernel: string
     memTotal: number
     swapTotal: number
     diskTotal: number
@@ -124,20 +99,15 @@ export interface HistoryPoint {
     totalDown?: number
 }
 
-export interface PingTask {
+interface PingTask {
     id: number
     name: string
-    /** Seconds between probes. */
-    interval: number
-    /** 0–100. */
-    /** Percent; unset when the backend does not measure loss. */
-    loss?: number
     avg: number
     min: number
     max: number
 }
 
-export interface PingPoint {
+interface PingPoint {
     at: number
     task: number
     /** Milliseconds; negative means the probe was lost. */
@@ -161,8 +131,7 @@ export interface ActualCost {
 }
 
 export type LoginResult =
-    | { ok: true }
-    | { ok: false; reason: "need2fa" | "invalid" | "invalid2fa" | "network"; message?: string }
+    { ok: true } | { ok: false; reason: "invalid" | "network"; message?: string }
 
 export type ConnectionStatus = "connecting" | "open" | "closed"
 
@@ -171,57 +140,3 @@ export interface LiveEvent {
     /** Some backends (Nezha) push node metadata over the same socket. */
     nodes?: NodeInfo[]
 }
-
-export interface MonitorAdapter {
-    readonly target: Target
-    readonly capabilities: Capabilities
-    /** Where the built-in admin panel lives. */
-    readonly adminUrl: string
-    readonly poweredBy: { name: string; url: string }
-    /** History ranges in hours offered on the node page; 0 = live buffer. */
-    readonly historyRanges: number[]
-    /** True when the login form needs a 2FA field up-front. */
-    readonly supportsTwoFactor: boolean
-    loadSite(): Promise<SiteInfo>
-    loadNodes(): Promise<NodeInfo[]>
-    loadSession(): Promise<Session>
-    /** Authenticated metadata only; never loaded for guests or persisted in browser storage. */
-    loadActualCosts?(): Promise<Record<string, ActualCost>>
-    subscribe(
-        listener: (event: LiveEvent) => void,
-        onStatus?: (status: ConnectionStatus) => void,
-    ): () => void
-    /** Drop any cached connection or frame so the next load and subscribe start fresh. */
-    reset?(): void
-    loadHistory(id: string, hours: number): Promise<HistoryPoint[]>
-    /** Network speed for the last `minutes`, to fill the ledger sparks before live frames do. */
-    loadRecent?(id: string, minutes: number): Promise<HistoryPoint[]>
-    loadPing(id: string, hours: number): Promise<PingData>
-    login(username: string, password: string, code?: string): Promise<LoginResult>
-    oauthUrl(site: SiteInfo, provider?: string): string | null | Promise<string | null>
-    nodePath(id: string): string
-    matchNodePath(pathname: string): string | null
-}
-
-export const emptySnapshot = (online = false): Snapshot => ({
-    online,
-    at: 0,
-    cpu: 0,
-    memUsed: 0,
-    memTotal: 0,
-    swapUsed: 0,
-    swapTotal: 0,
-    diskUsed: 0,
-    diskTotal: 0,
-    netUp: 0,
-    netDown: 0,
-    totalUp: 0,
-    totalDown: 0,
-    load1: 0,
-    load5: 0,
-    load15: 0,
-    tcp: 0,
-    udp: 0,
-    process: 0,
-    uptime: 0,
-})

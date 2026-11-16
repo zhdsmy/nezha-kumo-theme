@@ -1,7 +1,7 @@
 // Adapted from zool-theme/src/app/router.tsx (MIT, luoleiorg).
 import { type AnchorHTMLAttributes, type MouseEvent, useSyncExternalStore } from "react"
 
-const EVENT = "zool:navigate"
+const EVENT = "nkt:navigate"
 const scrollPositions = new Map<string, number>()
 
 if ("scrollRestoration" in history) history.scrollRestoration = "manual"

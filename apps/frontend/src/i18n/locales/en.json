@@ -1,13 +1,9 @@
 {
     "_source": "zool-theme/src/i18n/locales/en.json (MIT, luoleiorg)",
     "app": {
-        "skip": "Skip to content",
         "loadError": "Could not reach the monitor.",
         "loadErrorHint": "The backend did not answer. Check the connection and try again.",
-        "retry": "Try again",
-        "poweredBy": "Powered by <link />",
-        "theme": "ZOOL theme {{version}}",
-        "productBy": "A theme by <link />"
+        "retry": "Try again"
     },
     "status": {
         "allOnline": "All systems operational.",
@@ -22,57 +18,31 @@
         "connecting": "Connecting",
         "reconnecting": "Reconnecting",
         "online": "Online",
-        "offline": "Offline",
-        "lastSeen": "Last seen {{time}}",
-        "offlineSince": "Offline · last report {{time}}",
-        "noReports": "No reports yet",
-        "reportedAt": "Reported {{time}}",
-        "expired": "Expired",
-        "shown_one": "Showing {{shown}} of {{count}} node",
-        "shown_other": "Showing {{shown}} of {{count}} nodes"
+        "offline": "Offline"
     },
     "overview": {
         "nodes": "Nodes online",
         "bandwidth": "Bandwidth",
-        "traffic": "Total traffic",
         "cost": "Monthly fees",
         "costYear": "Yearly fees",
-        "attention": "Needs attention",
-        "allClear": "Nothing near a limit",
         "costNodes_one": "across {{count}} online paid node",
         "costNodes_other": "across {{count}} online paid nodes",
-        "costRates": "Reference rates",
-        "costCachedRates": "Cached rates",
         "costLoading": "Loading exchange rates…",
-        "costUnavailable": "Exchange rates unavailable",
-        "regions_one": "{{count}} region",
-        "regions_other": "{{count}} regions",
-        "actualCost": "Monthly cost",
-        "actualCostYear": "Yearly cost",
-        "actualCostUnavailable": "Actual costs are unavailable"
+        "costUnavailable": "Exchange rates unavailable"
     },
     "toolbar": {
         "all": "All",
         "groups": "Groups",
-        "grouped": "Show by group",
-        "regions": "Regions",
         "search": "Search",
         "searchPlaceholder": "Search nodes, regions, groups…",
         "searchHint": "Press Enter to open",
         "noResults": "No matching nodes",
         "sort": "Sort",
-        "view": "View",
-        "grid": "Cards",
-        "list": "List",
         "clear": "Clear filters",
         "empty": "No nodes match these filters.",
         "ascending": "Ascending",
         "descending": "Descending",
-        "density": "Density",
-        "comfortable": "Comfortable",
-        "compact": "Compact",
-        "ungrouped": "Ungrouped",
-        "showAll": "Show all groups"
+        "ungrouped": "Ungrouped"
     },
     "sort": {
         "default": "Default",
@@ -109,21 +79,13 @@
         "cores_other": "{{count}} cores",
         "payAsYouGo": "Pay as you go",
         "unknown": "Unknown",
-        "actualCost": "Actual cost",
-        "listPriceShort": "Fee",
-        "actualCostShort": "Cost"
+        "actualCost": "Actual cost"
     },
     "unit": {
-        "days_one": "{{count}} day",
-        "days_other": "{{count}} days",
-        "hourShort": "h",
-        "minuteShort": "m",
         "perMonth": "/mo",
         "perYear": "/yr",
         "perDays": "/{{count}}d",
-        "oneTime": "one-time",
-        "nodes_one": "{{count}} node",
-        "nodes_other": "{{count}} nodes"
+        "oneTime": "one-time"
     },
     "expiry": {
         "inDays_one": "in {{count}} day",
@@ -134,7 +96,6 @@
     },
     "node": {
         "back": "All nodes",
-        "switch": "Switch node",
         "system": "System",
         "network": "Network",
         "billing": "Billing",
@@ -143,18 +104,13 @@
         "cpu": "Processor",
         "virtualization": "Virtualization",
         "gpu": "GPU",
-        "kernel": "Kernel",
         "region": "Region",
         "group": "Group",
-        "speed": "Speed",
         "totals": "Totals",
-        "today": "Today",
         "peak": "Peak (24 h)",
         "uptimeGrid": "Reporting history",
         "reportedHours": "{{count}} of {{total}} hours reported",
         "notFound": "This node does not exist or is hidden.",
-        "charts": "Charts",
-        "tabLoad": "Load",
         "tabPing": "Latency",
         "rangeLive": "Live",
         "rangeHours": "{{count}} h",
@@ -162,7 +118,6 @@
         "noHistory": "No data for this range yet.",
         "liveOnly": "This dashboard keeps no server-side history. Charts fill in while the page is open.",
         "noPing": "No latency monitors are set up for this node.",
-        "loss": "Loss",
         "avg": "Avg",
         "min": "Min",
         "max": "Max",
@@ -182,18 +137,13 @@
         "subtitle": "Sign in to manage {{site}}.",
         "username": "Username",
         "password": "Password",
-        "code": "Two-factor code",
         "submit": "Sign in",
         "submitting": "Signing in…",
         "oauth": "Continue with {{provider}}",
-        "or": "or",
         "invalid": "The username or password is incorrect.",
-        "invalid2fa": "That code did not work. Try the latest one.",
-        "need2fa": "Enter the 6-digit code from your authenticator app.",
         "network": "Could not reach the server. Try again.",
         "wafHint": "Repeated failed attempts may temporarily block your IP.",
-        "close": "Close",
-        "success": "Signed in. Opening the dashboard…"
+        "close": "Close"
     },
     "prefs": {
         "appearance": "Appearance",
@@ -226,6 +176,7 @@
         "agentVersion": "Agent version",
         "quotaUsed": "Quota used",
         "historyHint": "Cells show whether a report was recorded in each hour. Unobserved and future hours stay empty.",
-        "notFound": "Page not found"
+        "notFound": "Page not found",
+        "dailyIncluded": "Since midnight · {{count}}/{{total}} nodes"
     }
 }

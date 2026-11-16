@@ -5,7 +5,6 @@ import {
     groupCounts,
     matchGroups,
     parseFilterQuery,
-    sectionize,
     serializeFilterQuery,
 } from "../src/core/filter"
 import type { NodeInfo } from "../src/core/model"
@@ -14,7 +13,6 @@ const makeNode = (partial: Partial<NodeInfo> = {}): NodeInfo => ({
     id: "node-1",
     name: "Test node",
     groups: [],
-    tags: [],
     region: "US",
     os: "Linux",
     arch: "amd64",
@@ -22,7 +20,6 @@ const makeNode = (partial: Partial<NodeInfo> = {}): NodeInfo => ({
     cpuCores: 2,
     virtualization: "kvm",
     gpuName: "",
-    kernel: "6.1",
     memTotal: 2 * 1024 ** 3,
     swapTotal: 0,
     diskTotal: 20 * 1024 ** 3,
@@ -124,105 +121,6 @@ describe("matchGroups", () => {
         expect(matchGroups(node, ["a", ""])).toBe(true)
         expect(matchGroups(node, ["a", "b"])).toBe(false)
     })
-})
-
-describe("sectionize", () => {
-    it("puts all nodes in one untitled section with no selection and grouping disabled", () => {
-        const nodes = [
-            makeNode({ id: "a", groups: ["a"], weight: 20 }),
-            makeNode({ id: "ungrouped", weight: 10 }),
-        ]
-        expect(sectionize(nodes, [], false)).toEqual([{ name: "", titled: false, nodes }])
-    })
-
-    it("groups by the first membership when enabled and orders sections by their lightest node", () => {
-        const heavyA = makeNode({ id: "heavy-a", groups: ["a"], weight: 100 })
-        const sharedB = makeNode({ id: "shared-b", groups: ["b", "a"], weight: 20 })
-        const lightA = makeNode({ id: "light-a", groups: ["a"], weight: 5 })
-        const ungrouped = makeNode({ id: "ungrouped", weight: 10 })
-
-        expect(sectionize([heavyA, sharedB, lightA, ungrouped], [], true)).toEqual([
-            { name: "a", titled: true, nodes: [heavyA, lightA] },
-            { name: "", titled: true, nodes: [ungrouped] },
-            { name: "b", titled: true, nodes: [sharedB] },
-        ])
-    })
-
-    it.each([false, true])("keeps a single selected group flat with grouped=%s", (grouped) => {
-        const a = makeNode({ id: "a", groups: ["a"] })
-        const shared = makeNode({ id: "shared", groups: ["b", "a"] })
-        const b = makeNode({ id: "b", groups: ["b"] })
-        expect(sectionize([a, b, shared, makeNode()], ["a"], grouped)).toEqual([
-            { name: "", titled: false, nodes: [a, shared] },
-        ])
-    })
-
-    it("keeps only the selected union in one untitled section when grouping is disabled", () => {
-        const a = makeNode({ id: "a", groups: ["a"] })
-        const shared = makeNode({ id: "shared", groups: ["b", "a"] })
-        const b = makeNode({ id: "b", groups: ["b"] })
-        const excluded = makeNode({ id: "excluded", groups: ["other"] })
-        expect(sectionize([a, shared, excluded, b, makeNode()], ["b", "a"], false)).toEqual([
-            { name: "", titled: false, nodes: [a, shared, b] },
-        ])
-    })
-
-    it("selects only ungrouped nodes for the empty group", () => {
-        const ungrouped = makeNode()
-        expect(sectionize([makeNode({ groups: ["a"] }), ungrouped], [""], true)).toEqual([
-            { name: "", titled: false, nodes: [ungrouped] },
-        ])
-    })
-
-    it.each([
-        ["heavy", "middle", "light"],
-        ["middle", "light", "heavy"],
-    ])("assigns shared nodes once in page order for selection %j, %j, %j", (...picked) => {
-        const shared = makeNode({ id: "shared", groups: ["heavy", "light"], weight: 30 })
-        const heavy = makeNode({ id: "heavy", groups: ["heavy"], weight: 40 })
-        const middle = makeNode({ id: "middle", groups: ["middle"], weight: 20 })
-        const light = makeNode({ id: "light", groups: ["light"], weight: 10 })
-        const excluded = makeNode({ id: "excluded", groups: ["other"], weight: 1 })
-        const sections = sectionize([shared, heavy, excluded, middle, light], picked, true)
-
-        expect(sections).toEqual([
-            { name: "light", titled: true, nodes: [shared, light] },
-            { name: "middle", titled: true, nodes: [middle] },
-            { name: "heavy", titled: true, nodes: [heavy] },
-        ])
-        expect(
-            sections.flatMap((section) => section.nodes).filter((node) => node.id === "shared"),
-        ).toHaveLength(1)
-    })
-
-    it("draws no heading when several picked groups collapse into one section", () => {
-        const both = makeNode({ id: "both", weight: 1, groups: ["main", "side"] })
-        const main = makeNode({ id: "main", weight: 2, groups: ["main"] })
-        expect(sectionize([both, main], ["main", "side"], true)).toEqual([
-            { name: "main", titled: false, nodes: [both, main] },
-        ])
-    })
-
-    it("includes the ungrouped section alongside other selected groups", () => {
-        const ungrouped = makeNode({ id: "ungrouped", weight: 1 })
-        const a = makeNode({ id: "a", groups: ["a"], weight: 2 })
-        expect(sectionize([a, ungrouped], ["a", ""], true)).toEqual([
-            { name: "", titled: true, nodes: [ungrouped] },
-            { name: "a", titled: true, nodes: [a] },
-        ])
-    })
-
-    it.each([false, true])(
-        "returns no sections for unmatched or empty input with grouped=%s",
-        (grouped) => {
-            const nodes = [makeNode({ groups: ["a"] })]
-            expect(sectionize(nodes, ["missing"], grouped)).toEqual([])
-            expect(sectionize(nodes, ["missing", "also missing"], grouped)).toEqual([])
-            expect(sectionize([], [], grouped)).toEqual([])
-            expect(sectionize([], ["a"], grouped)).toEqual([])
-            expect(sectionize([], ["a", "b"], grouped)).toEqual([])
-        },
-    )
 })
 
 describe("groupCounts", () => {

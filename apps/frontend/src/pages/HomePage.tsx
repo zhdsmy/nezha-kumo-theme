@@ -1,7 +1,7 @@
 import { useDailyCounters } from "@/app/history"
 import { type MoneyPeriod, setMoneyCurrency, setMoneyPeriod, useMoney } from "@/app/money"
 import { Link } from "@/app/router"
-import { adapter, getSpark, useStore, useVisibleNodes } from "@/app/store"
+import { adapter, getLive, getSpark, seedLive, useStore, useVisibleNodes } from "@/app/store"
 import { useBilling } from "@/components/billing"
 import { Meter, NoData, Spark, Status, Tile } from "@/components/ui"
 import { onlineMonthlyCost, sharedCurrency } from "@/core/cost"
@@ -18,7 +18,8 @@ import {
 import { recentBuckets } from "@/core/live"
 import type { NodeInfo, Snapshot } from "@/core/model"
 import { regionName, stripFlag } from "@/core/region"
-import { summariseDay } from "@/core/summary"
+import { readStorage, writeStorage } from "@/core/storage"
+import { summariseFleetDay } from "@/core/summary"
 import { Button, Input, Select, Table } from "@cloudflare/kumo"
 import { Page } from "@nezha-kumo/ui"
 import { ArrowDownIcon, ArrowUpIcon, CaretDownIcon, CaretUpIcon } from "@phosphor-icons/react"
@@ -27,7 +28,7 @@ import { useTranslation } from "react-i18next"
 
 function readPreference<T>(key: string, fallback: T): T {
     try {
-        return JSON.parse(localStorage.getItem(key) ?? "null") ?? fallback
+        return JSON.parse(readStorage(key) ?? "null") ?? fallback
     } catch {
         return fallback
     }
@@ -99,10 +100,10 @@ const ServerRow = memo(function ServerRow({
                 </Table.Cell>
                 {showBilling && (
                     <Table.Cell className="wide-cell billing-cell">
-                        <span className="truncate" title={billing.price(node)}>
+                        <span className="numeric-text" title={billing.price(node)}>
                             {billing.price(node) || "—"}
                         </span>
-                        <span className="muted truncate text-xs" title={expiry?.text}>
+                        <span className="muted numeric-text text-xs" title={expiry?.text}>
                             {expiry?.text || "—"}
                         </span>
                     </Table.Cell>
@@ -180,7 +181,6 @@ export function HomePage() {
     const snapshots = useStore((s) => s.snapshots)
     const fed = useStore((s) => s.fed)
     const settings = useStore((s) => s.settings)
-    const site = useStore((s) => s.site)
     const rates = useStore((s) => s.exchangeRates)
     const rateError = useStore((s) => s.exchangeRateError)
     const actual = useStore((s) => s.actualCosts)
@@ -202,12 +202,15 @@ export function HomePage() {
     })
     const [desc, setDesc] = useState(() => readPreference<boolean>("nkt:desc", false) === true)
     const money = useMoney()
-    const daily = useDailyCounters(nodes)
+    const daily = useDailyCounters(settings.showOverview ? nodes : [])
+    useEffect(() => {
+        if (settings.showOverview) void seedLive(nodes)
+    }, [nodes, settings.showOverview])
     useEffect(() => {
         try {
-            localStorage.setItem("nkt:groups", JSON.stringify(groups))
-            localStorage.setItem("nkt:sort", JSON.stringify(sort))
-            localStorage.setItem("nkt:desc", JSON.stringify(desc))
+            writeStorage("nkt:groups", JSON.stringify(groups))
+            writeStorage("nkt:sort", JSON.stringify(sort))
+            writeStorage("nkt:desc", JSON.stringify(desc))
         } catch {
             /* private mode */
         }
@@ -241,34 +244,61 @@ export function HomePage() {
             ? formatMoney(cost.amount * (money.period === "year" ? 12 : 1), currency!)
             : "—"
     const midnight = new Date().setHours(0, 0, 0, 0)
-    const dailyComplete =
-        daily &&
-        nodes.length &&
-        nodes.every(
-            (n) =>
-                daily[n.id]?.some(
-                    (p) => p.at >= midnight && p.totalUp !== undefined && p.totalDown !== undefined,
-                ) && snapshots[n.id],
-        )
-    const traffic = dailyComplete
-        ? nodes.reduce((sum, n) => {
-              const d = summariseDay(daily[n.id], snapshots[n.id], midnight)
-              return sum + d.todayUp + d.todayDown
-          }, 0)
-        : null
-    const fleetSpark = useMemo(() => {
+    const { amount: traffic, included } = summariseFleetDay(nodes, snapshots, daily, midnight)
+    const sparks = useMemo(() => {
         const now = Date.now()
-        const buckets = nodes.map((n) =>
-            recentBuckets(getSpark(n.id), (p) => p.netUp + p.netDown, 80, 15, now),
-        )
-        return Array.from({ length: 80 }, (_, i) => ({
-            at: buckets[0]?.[i].at ?? now,
-            value: buckets.some((b) => b[i].value !== null)
-                ? buckets.reduce((sum, b) => sum + (b[i].value ?? 0), 0)
-                : null,
-        }))
-        // Buffers live outside React; their version invalidates this aggregate once per frame.
-    }, [nodes, version])
+        const aggregate = (series: ReturnType<typeof recentBuckets>[], average = false) =>
+            Array.from({ length: 30 }, (_, i) => {
+                const values = series.flatMap((b) => (b[i].value === null ? [] : [b[i].value!]))
+                return {
+                    at: now - 15 * 60_000 + i * 30_000,
+                    value: values.length
+                        ? values.reduce((a, b) => a + b, 0) / (average ? values.length : 1)
+                        : null,
+                }
+            })
+        return {
+            network: aggregate(
+                nodes.map((n) =>
+                    recentBuckets(getSpark(n.id), (p) => p.netUp + p.netDown, 30, 15, now),
+                ),
+            ),
+            cpu: aggregate(
+                nodes.map((n) => recentBuckets(getSpark(n.id), (p) => p.cpu, 30, 15, now)),
+                true,
+            ),
+            traffic: aggregate(
+                nodes.flatMap((n) => {
+                    const baselinePoints = daily?.[n.id]?.filter(
+                        (p) =>
+                            p.at >= midnight &&
+                            p.totalUp !== undefined &&
+                            p.totalDown !== undefined,
+                    )
+                    if (!baselinePoints?.length) return []
+                    const current = getLive(n.id)
+                    const points = [
+                        ...baselinePoints.filter((p) => p.at < (current[0]?.at ?? Infinity)),
+                        ...current,
+                    ]
+                    const baseline = baselinePoints[0].totalUp! + baselinePoints[0].totalDown!
+                    return [
+                        recentBuckets(
+                            points,
+                            (p) =>
+                                Math.max(
+                                    0,
+                                    (p.totalUp ?? baseline) + (p.totalDown ?? 0) - baseline,
+                                ),
+                            30,
+                            15,
+                            now,
+                        ),
+                    ]
+                }),
+            ),
+        }
+    }, [nodes, version, daily, midnight])
     const visible = sortNodes(
         nodes.filter(
             (n) =>
@@ -294,7 +324,39 @@ export function HomePage() {
     return (
         <Page
             title={t("ui.overview")}
-            eyebrow={settings.siteTitle || site?.name}
+            actions={
+                settings.showCost && (
+                    <div className="money-controls">
+                        <Select
+                            size="sm"
+                            aria-label={t("money.currency")}
+                            value={money.currency}
+                            onValueChange={(v) => v && setMoneyCurrency(v)}
+                            items={{
+                                original: t("money.original"),
+                                CNY: "CNY",
+                                USD: "USD",
+                                EUR: "EUR",
+                                GBP: "GBP",
+                                JPY: "JPY",
+                                TWD: "TWD",
+                                HKD: "HKD",
+                            }}
+                        />
+                        <Select
+                            size="sm"
+                            aria-label={t("money.period")}
+                            value={money.period}
+                            onValueChange={(v) => v && setMoneyPeriod(v as MoneyPeriod)}
+                            items={{
+                                original: t("money.original"),
+                                month: t("money.month"),
+                                year: t("money.year"),
+                            }}
+                        />
+                    </div>
+                )
+            }
             description={
                 <span
                     className="status-headline"
@@ -324,18 +386,28 @@ export function HomePage() {
                         value={fed ? formatSpeed(bandwidth) : "—"}
                         sub={t("node.rangeLive")}
                     >
-                        <Spark buckets={fleetSpark} />
+                        <Spark buckets={sparks.network} />
                     </Tile>
                     <Tile
                         label={t("ui.todayTraffic")}
                         value={traffic === null ? "—" : formatBytes(traffic)}
-                        sub={traffic === null ? t("ui.dailyUnavailable") : t("ui.sinceMidnight")}
-                    />
+                        sub={
+                            traffic === null
+                                ? t("ui.dailyUnavailable")
+                                : included < nodes.length
+                                  ? t("ui.dailyIncluded", { count: included, total: nodes.length })
+                                  : t("ui.sinceMidnight")
+                        }
+                    >
+                        <Spark buckets={sparks.traffic} />
+                    </Tile>
                     <Tile
                         label={t("ui.averageCpu")}
                         value={fed ? `${formatPercent(avgCpu)}%` : "—"}
                         sub={t("ui.onlineOnly")}
-                    />
+                    >
+                        <Spark buckets={sparks.cpu} />
+                    </Tile>
                     {settings.showCost && (
                         <Tile
                             label={t(
@@ -354,43 +426,6 @@ export function HomePage() {
                         />
                     )}
                 </section>
-            )}
-            {settings.showCost && (
-                <div className="money-controls">
-                    <Select
-                        size="sm"
-                        aria-label={t("money.currency")}
-                        value={money.currency}
-                        onValueChange={(v) => v && setMoneyCurrency(v)}
-                        items={{
-                            original: t("money.original"),
-                            CNY: "CNY",
-                            USD: "USD",
-                            EUR: "EUR",
-                            GBP: "GBP",
-                            JPY: "JPY",
-                            TWD: "TWD",
-                            HKD: "HKD",
-                        }}
-                    />
-                    <Select
-                        size="sm"
-                        aria-label={t("money.period")}
-                        value={money.period}
-                        onValueChange={(v) => v && setMoneyPeriod(v as MoneyPeriod)}
-                        items={{
-                            original: t("money.original"),
-                            month: t("money.month"),
-                            year: t("money.year"),
-                        }}
-                    />
-                    {rates && (
-                        <span className="muted text-xs">
-                            {t(rates.stale ? "overview.costCachedRates" : "overview.costRates")} ·{" "}
-                            {rates.date}
-                        </span>
-                    )}
-                </div>
             )}
             <section className="servers-section" aria-label={t("ui.servers")}>
                 <div className="section-heading">

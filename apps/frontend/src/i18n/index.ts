@@ -1,3 +1,4 @@
+import { readStorage, writeStorage } from "@/core/storage"
 // Adapted from zool-theme/src/i18n/index.ts (MIT, luoleiorg).
 import i18n from "i18next"
 import { initReactI18next } from "react-i18next"
@@ -16,9 +17,9 @@ export const LOCALES = [
 
 export type Locale = (typeof LOCALES)[number]["code"]
 
-const STORAGE_KEY = "language"
+const STORAGE_KEY = "nkt:language"
 
-export function matchLocale(input: string | null | undefined): Locale | null {
+function matchLocale(input: string | null | undefined): Locale | null {
     if (!input) return null
     const v = input.replace("_", "-").toLowerCase()
     if (v.startsWith("zh")) return /tw|hk|mo|hant/.test(v) ? "zh-TW" : "zh-CN"
@@ -27,12 +28,8 @@ export function matchLocale(input: string | null | undefined): Locale | null {
     return null
 }
 
-export function storedLocale(): Locale | null {
-    try {
-        return matchLocale(localStorage.getItem(STORAGE_KEY))
-    } catch {
-        return null
-    }
+function storedLocale(): Locale | null {
+    return matchLocale(readStorage(STORAGE_KEY))
 }
 
 /** Visitor choice → site default → browser → English. */
@@ -46,13 +43,7 @@ export function resolveLocale(siteDefault?: string | null): Locale {
 }
 
 export function setLocale(locale: Locale, persist = true) {
-    if (persist) {
-        try {
-            localStorage.setItem(STORAGE_KEY, locale)
-        } catch {
-            /* private mode */
-        }
-    }
+    if (persist) writeStorage(STORAGE_KEY, locale)
     document.documentElement.lang = locale
     return i18n.changeLanguage(locale)
 }

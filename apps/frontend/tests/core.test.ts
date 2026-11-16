@@ -1,14 +1,7 @@
 // Adapted from zool-theme/tests/core.test.ts (MIT, luoleiorg).
 import { describe, expect, it } from "vitest"
 
-import {
-    daysUntil,
-    formatBytes,
-    formatNumber,
-    monthlyCost,
-    splitSpeed,
-    trafficUsed,
-} from "../src/core/format"
+import { daysUntil, formatBytes, formatNumber, monthlyCost, trafficUsed } from "../src/core/format"
 import { flagToRegion, stripFlag } from "../src/core/region"
 import { DEFAULT_SETTINGS, normalizeSettings } from "../src/core/settings"
 import { spikeLimit, summariseDay } from "../src/core/summary"
@@ -19,7 +12,6 @@ describe("format", () => {
         expect(formatBytes(512)).toBe("512 B")
         expect(formatBytes(1536)).toBe("1.50 KB")
         expect(formatBytes(125 * 1024 ** 4)).toBe("125 TB")
-        expect(splitSpeed(3.11 * 1024 ** 2)).toEqual({ value: "3.11", unit: "MB/s" })
     })
 
     it("trims only decimal zeros", () => {
@@ -32,9 +24,6 @@ describe("format", () => {
     it("follows the traffic limit type", () => {
         expect(trafficUsed("sum", 3, 4)).toBe(7)
         expect(trafficUsed("max", 3, 4)).toBe(4)
-        expect(trafficUsed("min", 3, 4)).toBe(3)
-        expect(trafficUsed("up", 3, 4)).toBe(3)
-        expect(trafficUsed("down", 3, 4)).toBe(4)
     })
 
     it("normalises prices to a month", () => {
@@ -133,5 +122,29 @@ describe("spikeLimit", () => {
         expect(spikeLimit([2, 3, 2, 3, 2, 2, 3, 4, 2, 16])).toBeGreaterThanOrEqual(4)
         expect(spikeLimit([2, 3, 2, 3, 2, 2, 3, 4, 2, 16])).toBeLessThan(16)
         expect(spikeLimit([1, 500])).toBe(Infinity)
+    })
+})
+
+describe("partial fleet daily counters", () => {
+    it("sums only nodes with a current-day baseline and labels the coverage", async () => {
+        const { summariseFleetDay } = await import("../src/core/summary")
+        const { emptySnapshot } = await import("./snapshot")
+        const nodes = [
+            { id: "a" },
+            { id: "b" },
+            { id: "c" },
+        ] as import("../src/core/model").NodeInfo[]
+        const snapshots = Object.fromEntries(
+            nodes.map((n) => [n.id, { ...emptySnapshot(), totalUp: 100, totalDown: 80 }]),
+        )
+        const point = { ...emptySnapshot(), at: 1000, totalUp: 50, totalDown: 40 }
+        const result = summariseFleetDay(
+            nodes,
+            snapshots,
+            { a: [point], b: [], c: [{ ...point, at: 999 }] },
+            1000,
+        )
+        expect(result).toEqual({ amount: 90, included: 1 })
+        expect(summariseFleetDay(nodes, snapshots, {}, 1000)).toEqual({ amount: null, included: 0 })
     })
 })

@@ -1,6 +1,6 @@
 // Adapted from zool-theme/src/core/settings.ts (MIT, luoleiorg).
 export type Appearance = "system" | "light" | "dark"
-export type LanguagePreference = "auto" | "en" | "zh-CN" | "zh-TW" | "ja"
+type LanguagePreference = "auto" | "en" | "zh-CN" | "zh-TW" | "ja"
 
 /** Optional site-owner settings from config.js. Layout follows the shared responsive contract. */
 export interface ThemeSettings {

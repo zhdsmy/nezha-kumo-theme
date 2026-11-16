@@ -1,7 +1,7 @@
 // Adapted from zool-theme/src/core/summary.ts (MIT, luoleiorg).
-import type { HistoryPoint } from "./model"
+import type { HistoryPoint, NodeInfo, Snapshot } from "./model"
 
-export interface DaySummary {
+interface DaySummary {
     todayUp: number
     todayDown: number
     peakUp: number
@@ -57,4 +57,28 @@ export function spikeLimit(values: number[]): number {
     const s = [...values].sort((a, b) => a - b)
     const q = (f: number) => s[Math.floor((s.length - 1) * f)]
     return Math.max(q(0.75) + 3 * (q(0.75) - q(0.25)), q(0.5) * 1.5)
+}
+
+export function summariseFleetDay(
+    nodes: readonly NodeInfo[],
+    snapshots: Record<string, Snapshot>,
+    counters: Record<string, HistoryPoint[]> | null,
+    midnight: number,
+) {
+    let amount = 0,
+        included = 0
+    for (const n of nodes) {
+        const points = counters?.[n.id]
+        if (
+            !snapshots[n.id] ||
+            !points?.some(
+                (p) => p.at >= midnight && p.totalUp !== undefined && p.totalDown !== undefined,
+            )
+        )
+            continue
+        const day = summariseDay(points, snapshots[n.id], midnight)
+        amount += day.todayUp + day.todayDown
+        included++
+    }
+    return { amount: included ? amount : null, included }
 }

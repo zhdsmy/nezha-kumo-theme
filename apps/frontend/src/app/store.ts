@@ -2,7 +2,6 @@
 import { nezha as adapter } from "@/adapters/nezha"
 import { cleanSnapshot } from "@/core/condition"
 import type { ExchangeRates } from "@/core/cost"
-import { type BlindWindow, blindNow, noteFrame } from "@/core/live"
 import type {
     ActualCost,
     ConnectionStatus,
@@ -17,7 +16,7 @@ import { useMemo, useSyncExternalStore } from "react"
 
 export { adapter }
 
-export interface State {
+interface State {
     phase: "loading" | "ready" | "error"
     site: SiteInfo | null
     settings: ThemeSettings
@@ -99,19 +98,6 @@ export function getSpark(id: string) {
     return seed.length ? [...seed, ...buf] : buf
 }
 
-/**
- * Frames arrive about every two seconds. Four times that with nothing means we stopped
- * seeing the fleet — a closed socket, a backgrounded tab that stopped asking, a sleeping
- * machine — and none of those are the node's fault.
- */
-const BLIND_GAP_MS = 8_000
-
-let blindWindows: BlindWindow[] = []
-let lastFrameAt: number | null = null
-
-export const getBlindWindows = (): readonly BlindWindow[] =>
-    blindNow(blindWindows, lastFrameAt, Date.now(), BLIND_GAP_MS)
-
 function pushLive(snapshots: Record<string, Snapshot>) {
     let changed = false
     const receivedAt = Date.now()
@@ -133,6 +119,8 @@ function pushLive(snapshots: Record<string, Snapshot>) {
             diskUsed: s.diskUsed,
             netUp: s.netUp,
             netDown: s.netDown,
+            totalUp: s.totalUp,
+            totalDown: s.totalDown,
             load1: s.load1,
             tcp: s.tcp,
             udp: s.udp,
@@ -167,14 +155,12 @@ let unsubscribe: (() => void) | null = null
 let refreshTimer: ReturnType<typeof setTimeout> | undefined
 
 const load = async () => {
-    const [site, nodes, session] = await Promise.all([
-        adapter.loadSite(),
+    const session = await adapter.loadSession()
+    const [site, nodes] = await Promise.all([
+        adapter.loadSite(session.loggedIn),
         adapter.loadNodes(),
-        adapter.loadSession(),
     ])
-    const actualCosts = session.loggedIn
-        ? await (adapter.loadActualCosts?.() ?? Promise.resolve({})).catch(() => null)
-        : null
+    const actualCosts = session.loggedIn ? await adapter.loadActualCosts().catch(() => null) : null
     set({
         site,
         nodes,
@@ -189,16 +175,29 @@ function connect() {
     unsubscribe?.()
     unsubscribe = adapter.subscribe(
         (event) => {
-            const receivedAt = Date.now()
-            blindWindows = noteFrame(blindWindows, lastFrameAt, receivedAt, BLIND_GAP_MS)
-            lastFrameAt = receivedAt
             // Frames carry the whole fleet. A node that was reporting and is now missing from one has
             // gone offline: keep its last readings and report time, and say so.
             const snapshots: Record<string, Snapshot> = {}
             for (const [id, prev] of Object.entries(state.snapshots))
-                snapshots[id] = prev.online ? { ...prev, online: false } : prev
-            for (const [id, s] of Object.entries(event.snapshots)) snapshots[id] = cleanSnapshot(s)
-            const patch: Partial<State> = { snapshots, fed: true, refreshing: false }
+                if (!event.snapshots[id])
+                    snapshots[id] = prev.online ? { ...prev, online: false } : prev
+            for (const [id, incoming] of Object.entries(event.snapshots)) {
+                const next = cleanSnapshot(incoming),
+                    prev = state.snapshots[id]
+                snapshots[id] =
+                    prev &&
+                    (Object.keys(next) as (keyof Snapshot)[]).every((k) => next[k] === prev[k])
+                        ? prev
+                        : next
+            }
+            const stable =
+                Object.keys(snapshots).length === Object.keys(state.snapshots).length &&
+                Object.keys(snapshots).every((id) => snapshots[id] === state.snapshots[id])
+            const patch: Partial<State> = {
+                snapshots: stable ? state.snapshots : snapshots,
+                fed: true,
+                refreshing: false,
+            }
             if (event.nodes && !sameNodes(event.nodes, state.nodes)) patch.nodes = event.nodes
             if (pushLive(snapshots)) patch.liveVersion = state.liveVersion + 1
             clearTimeout(refreshTimer)
@@ -212,13 +211,12 @@ function connect() {
  * Backfill the ledger sparks from server history so they are full on arrival instead of
  * drawing a sliver at the right edge for the first minutes.
  */
-async function seedLive() {
-    const { site, nodes } = state
-    if (!adapter.loadRecent || !site?.recordHours) return
+export async function seedLive(nodes: readonly NodeInfo[]) {
+    if (!state.site?.recordHours) return
     const queue = nodes.map((n) => n.id)
     const worker = async () => {
         for (let id = queue.shift(); id; id = queue.shift()) {
-            const seed = await adapter.loadRecent!(id, 15).catch(() => [])
+            const seed = await adapter.loadHistory(id, 0.25, "spark").catch(() => [])
             if (!seed.length) continue
             sparkSeeds.set(id, seed)
             set({ liveVersion: state.liveVersion + 1 })
@@ -229,7 +227,7 @@ async function seedLive() {
 
 /** Fill the 15 minutes before the page opened with complete history points, for the node page. */
 export async function backfillLive(id: string) {
-    if (!adapter.capabilities.history || !state.site?.recordHours) return
+    if (!state.site?.recordHours) return
     const points = await adapter.loadHistory(id, 1).catch(() => [])
     const buf = getLive(id)
     const first = buf[0]?.at ?? Infinity
@@ -249,7 +247,6 @@ export async function start() {
         return
     }
     connect()
-    void seedLive()
 }
 
 /**
@@ -263,7 +260,7 @@ export async function refresh() {
     refreshTimer = setTimeout(() => set({ refreshing: false }), 10_000)
     unsubscribe?.()
     unsubscribe = null
-    adapter.reset?.()
+    adapter.reset()
     await load().catch((err) => console.error("[nezha-kumo] refresh failed", err))
     connect()
 }

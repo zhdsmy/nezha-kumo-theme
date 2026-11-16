@@ -1,5 +1,5 @@
 // Adapted from zool-theme/src/core/http.ts (MIT, luoleiorg).
-export class HttpError extends Error {
+class HttpError extends Error {
     constructor(
         public status: number,
         public body: unknown,
@@ -8,7 +8,63 @@ export class HttpError extends Error {
     }
 }
 
-export async function request<T>(
+// All HTTP work shares one queue; hidden tabs never start queued refreshes.
+const MAX_REQUESTS = 4
+let running = 0
+const queue: (() => void)[] = []
+const visible = () => typeof document === "undefined" || document.visibilityState !== "hidden"
+function pump() {
+    while (running < MAX_REQUESTS && queue.length && visible()) queue.shift()!()
+}
+if (typeof document !== "undefined") document.addEventListener("visibilitychange", pump)
+
+export function request<T>(url: string, init: RequestInit = {}, timeoutMs = 15_000): Promise<T> {
+    return new Promise((resolve, reject) => {
+        queue.push(() => {
+            running++
+            void fetchRequest<T>(url, init, timeoutMs)
+                .then(resolve, reject)
+                .finally(() => {
+                    running--
+                    pump()
+                })
+        })
+        pump()
+    })
+}
+
+/** Poll only while visible, without overlapping slow requests or accumulating hidden work. */
+export function pollVisible(load: () => Promise<unknown>, interval: number) {
+    let stopped = false,
+        busy = false,
+        due = 0
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const tick = async () => {
+        clearTimeout(timer)
+        if (stopped || busy || !visible()) return
+        if (Date.now() < due) {
+            timer = setTimeout(() => void tick(), due - Date.now())
+            return
+        }
+        busy = true
+        try {
+            await load()
+        } finally {
+            busy = false
+            due = Date.now() + interval
+            if (!stopped && visible()) timer = setTimeout(() => void tick(), interval)
+        }
+    }
+    document.addEventListener("visibilitychange", tick)
+    void tick()
+    return () => {
+        stopped = true
+        clearTimeout(timer)
+        document.removeEventListener("visibilitychange", tick)
+    }
+}
+
+async function fetchRequest<T>(
     url: string,
     init: RequestInit = {},
     timeoutMs = 15_000,
@@ -45,7 +101,7 @@ export const wsUrl = (path: string) => {
     return `${protocol === "https:" ? "wss" : "ws"}://${host}${path}`
 }
 
-/** A WebSocket that reconnects with capped backoff and pauses while the tab is hidden. */
+/** A WebSocket that reconnects with capped backoff. */
 export function resilientSocket(opts: {
     url: () => string
     onOpen?: (ws: WebSocket) => void

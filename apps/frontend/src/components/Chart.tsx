@@ -1,7 +1,7 @@
 // Adapted from zool-theme/src/components/Chart.tsx (MIT, luoleiorg).
 import { type PointerEvent, useId, useLayoutEffect, useMemo, useRef, useState } from "react"
 
-export interface ChartPoint {
+interface ChartPoint {
     t: number
     v: number | null
 }
@@ -28,6 +28,10 @@ interface Props {
     /** Key of a series to emphasise; the others fade. */
     focus?: string | null
 }
+
+// Container widths, not viewport breakpoints: reserve space for 12px axis labels.
+const COMPACT_AXES_WIDTH = 400
+const FOUR_TIME_LABELS_WIDTH = 210
 
 const PAD = { l: 48, r: 6, t: 10, b: 24 }
 const MOBILE_PAD = { l: 46, r: 4, t: 6, b: 18 }
@@ -94,7 +98,7 @@ export function Chart({
     const box = useRef<HTMLDivElement>(null)
     const [width, setWidth] = useState(0)
     // Choose padding from the plot container, which can be narrower than the viewport.
-    const isMobile = width < 400
+    const isMobile = width < COMPACT_AXES_WIDTH
     const [hoverT, setHoverT] = useState<number | null>(null)
     const uid = useId().replace(/:/g, "")
 
@@ -168,7 +172,7 @@ export function Chart({
     })
 
     const yTicks = [0, max / 2, max]
-    const tickCount = plotW > 0 && plotW < 210 ? 3 : 4
+    const tickCount = plotW > 0 && plotW < FOUR_TIME_LABELS_WIDTH ? 3 : 4
     const xTicks =
         width > 0 && all.length
             ? Array.from({ length: tickCount }, (_, i) => t0 + (span * i) / (tickCount - 1))
@@ -343,8 +347,10 @@ export function Chart({
                                 className="h-[2px] w-3 rounded-full"
                                 style={{ background: s.color }}
                             />
-                            <span className="text-kumo-subtle">{s.label}</span>
-                            <span className="num ml-auto pl-3">
+                            <span className="chart-series-label text-kumo-subtle" title={s.label}>
+                                {s.label}
+                            </span>
+                            <span className="num ml-auto shrink-0 pl-3">
                                 {p && p.v !== null ? format(p.v) : "—"}
                             </span>
                         </p>

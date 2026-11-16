@@ -1,8 +1,8 @@
 // Chart composition adapted from zool-theme/src/pages/NodePage.tsx (MIT, luoleiorg).
 import { formatBytes, formatClock, formatNumber, formatPercent, formatSpeed } from "@/core/format"
-import type { HistoryPoint, NodeInfo, PingData, Snapshot } from "@/core/model"
+import type { HistoryPoint, NodeInfo, PingData } from "@/core/model"
 import { spikeLimit } from "@/core/summary"
-import { type ReactNode, useState } from "react"
+import { type ReactNode, memo, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Chart, type ChartSeries } from "./Chart"
@@ -44,7 +44,7 @@ function ChartCard({
                 <h3>{title}</h3>
                 {value && (
                     <p
-                        className="num truncate"
+                        className="num numeric-text"
                         title={typeof value === "string" ? value : undefined}
                     >
                         {value}
@@ -66,23 +66,23 @@ function SeriesDot({ color }: { color: string }) {
     )
 }
 
-export function LoadCharts({
+export const LoadCharts = memo(function LoadCharts({
     node,
     points,
     hours,
     height,
-    snap,
+    memTotal,
+    diskTotal,
 }: {
     node: NodeInfo
     points: HistoryPoint[]
     hours: number
     height: number
-    snap?: Snapshot
+    memTotal: number
+    diskTotal: number
 }) {
     const { t } = useTranslation()
     const fmt = useTimeFormats(hours)
-    const memTotal = snap?.memTotal || node.memTotal
-    const diskTotal = snap?.diskTotal || node.diskTotal
     const s = (
         key: string,
         label: string,
@@ -204,11 +204,9 @@ export function LoadCharts({
             </ChartCard>
         </div>
     )
-}
+})
 
-const PING_COLORS = CHART_PALETTE
-
-export function PingChart({
+export const PingChart = memo(function PingChart({
     data,
     hours,
     height,
@@ -225,7 +223,7 @@ export function PingChart({
     // and removing the last one (or adding the last missing one) goes back to every line.
     const [shown, setShown] = useState<Set<number> | null>(null)
     const [focus, setFocus] = useState<number | null>(null)
-    const color = (i: number) => PING_COLORS[i % PING_COLORS.length]
+    const color = (i: number) => CHART_PALETTE[i % CHART_PALETTE.length]
     const visible = (id: number) => shown === null || shown.has(id)
     const toggle = (id: number) =>
         setShown((prev) => {
@@ -235,18 +233,22 @@ export function PingChart({
             return next.size === 0 || next.size === data.tasks.length ? null : next
         })
     const solo = shown?.size === 1 ? data.tasks.find((task) => shown.has(task.id)) : undefined
-    const series: ChartSeries[] = data.tasks.flatMap((task, i) => {
-        if (!visible(task.id)) return []
-        let points = data.points
-            .filter((p) => p.task === task.id)
-            .map((p) => ({ t: p.at, v: p.value >= 0 ? p.value : null }))
-        if (shave) {
-            // spikes are dropped, not blanked, so the line runs straight through them
-            const limit = spikeLimit(points.flatMap((p) => (p.v === null ? [] : [p.v])))
-            points = points.filter((p) => p.v === null || p.v <= limit)
-        }
-        return [{ key: String(task.id), label: task.name, color: color(i), points }]
-    })
+    const series: ChartSeries[] = useMemo(
+        () =>
+            data.tasks.flatMap((task, i) => {
+                if (!visible(task.id)) return []
+                let points = data.points
+                    .filter((p) => p.task === task.id)
+                    .map((p) => ({ t: p.at, v: p.value >= 0 ? p.value : null }))
+                if (shave) {
+                    // spikes are dropped, not blanked, so the line runs straight through them
+                    const limit = spikeLimit(points.flatMap((p) => (p.v === null ? [] : [p.v])))
+                    points = points.filter((p) => p.v === null || p.v <= limit)
+                }
+                return [{ key: String(task.id), label: task.name, color: color(i), points }]
+            }),
+        [data, shown, shave],
+    )
 
     return (
         <div className="chart-card latency-card">
@@ -305,14 +307,8 @@ export function PingChart({
                     <span className="text-kumo-default">{formatNumber(solo.avg, 1)} ms</span> ·{" "}
                     {t("node.min")} {formatNumber(solo.min, 0)} · {t("node.max")}{" "}
                     {formatNumber(solo.max, 0)}
-                    {solo.loss !== undefined && (
-                        <span className={solo.loss > 5 ? "text-kumo-danger" : ""}>
-                            {" "}
-                            · {t("node.loss")} {formatNumber(solo.loss, 1)}%
-                        </span>
-                    )}
                 </p>
             )}
         </div>
     )
-}
+})

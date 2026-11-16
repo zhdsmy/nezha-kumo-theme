@@ -59,14 +59,18 @@
 }
 .metric-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+.metric-grid > :last-child:nth-child(odd) {
+    grid-column: 1/-1;
 }
 .metric-tile {
     position: relative;
-    height: 128px;
+    display: flex;
+    flex-direction: column;
+    min-height: 134px;
     min-width: 0;
-    overflow: hidden;
     background: var(--color-kumo-base);
     border: 1px solid var(--color-kumo-line);
     border-radius: 8px;
@@ -74,7 +78,7 @@
 .tile-heading {
     position: relative;
     z-index: 1;
-    padding: 12px 16px;
+    padding: 10px 12px 0;
 }
 .tile-label {
     overflow: hidden;
@@ -88,12 +92,10 @@
 .tile-value {
     display: block;
     margin-top: 4px;
-    font-size: 24px;
-    line-height: 30px;
+    font-size: 20px;
+    line-height: 26px;
     font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
 }
 .tile-denominator {
     color: var(--text-color-kumo-subtle);
@@ -104,17 +106,15 @@
     margin-top: 4px;
     font-size: 12px;
     line-height: 16px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
     color: var(--text-color-kumo-subtle);
 }
 .spark {
-    position: absolute;
+    flex-shrink: 0;
+    margin-top: auto;
     width: 100%;
     height: 56px;
-    bottom: 0;
-    left: 0;
+    border-radius: 0 0 8px 8px;
 }
 .status-number[data-level="good"],
 .status-headline[data-level="good"] {
@@ -132,10 +132,6 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
-    margin-top: 12px;
-}
-.servers-section {
-    margin-top: 32px;
 }
 .section-heading {
     display: flex;
@@ -166,96 +162,6 @@
 }
 .server-list {
     min-width: 0;
-}
-.fleet-table {
-    display: block;
-    width: 100%;
-}
-.fleet-table thead {
-    display: none;
-}
-.fleet-table tbody {
-    display: block;
-}
-.fleet-table .server-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 32px;
-    align-items: center;
-    gap: 12px 8px;
-    margin-bottom: 12px;
-    padding: 14px;
-    background: var(--color-kumo-base);
-    border: 1px solid var(--color-kumo-line);
-    border-radius: 8px;
-}
-.fleet-table .server-row > td {
-    display: block;
-    padding: 0;
-    min-width: 0;
-}
-.fleet-table .server-name {
-    grid-column: 1/3;
-}
-.fleet-table .server-name > a {
-    display: block;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text-color-kumo-link);
-}
-.fleet-table .server-name > span {
-    display: block;
-    font-size: 12px;
-    line-height: 18px;
-}
-.fleet-table .server-status {
-    grid-row: 2;
-    grid-column: 1/3;
-}
-.fleet-table .server-cpu {
-    grid-row: 3;
-    grid-column: 1;
-}
-.fleet-table .server-memory {
-    grid-row: 3;
-    grid-column: 2;
-}
-.fleet-table .server-network {
-    grid-row: 4;
-    grid-column: 1/3;
-}
-.fleet-table .row-expand {
-    grid-row: 1;
-    grid-column: 3;
-}
-.fleet-table .wide-cell {
-    display: none !important;
-}
-.fleet-table .billing-cell > span {
-    display: block;
-}
-.fleet-table .expanded-row {
-    display: block;
-    border: 1px solid var(--color-kumo-line);
-    border-radius: 8px;
-    margin-top: -5px;
-    margin-bottom: 12px;
-    background: var(--color-kumo-base);
-}
-.fleet-table .expanded-row > td {
-    display: block;
-    padding: 16px;
-}
-.fleet-table td,
-.fleet-table th {
-    vertical-align: middle;
-    overflow: hidden;
-}
-.fleet-table .server-row > td {
-    padding: 0;
 }
 .net-rates {
     display: flex;
@@ -403,6 +309,10 @@
 }
 .chart-tooltip > p {
     min-width: 0;
+    overflow-wrap: anywhere;
+}
+.chart-series-label {
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -429,10 +339,6 @@
     color: var(--text-color-kumo-subtle);
 }
 .info-section dd {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
     overflow-wrap: anywhere;
     text-align: right;
 }
@@ -523,4 +429,18 @@
 }
 .search-result:hover {
     background: var(--color-kumo-tint);
+}
+
+.numeric-text {
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+.hour-grid-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 8px;
+}
+.hour-grid-cell {
+    height: 8px;
 }

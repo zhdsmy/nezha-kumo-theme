@@ -22,8 +22,6 @@ const fake = vi.hoisted(() => {
 
 vi.mock("@/adapters/nezha", () => ({
     nezha: {
-        target: "nezha",
-        capabilities: {},
         loadSite: async () => ({
             name: "x",
             description: "",
@@ -196,4 +194,20 @@ describe("store: fed and refresh", () => {
         fake.loggedIn = false
         fake.failPrivateLoad = false
     })
+})
+
+it("retains unchanged snapshot references while another row changes", async () => {
+    const { getState } = await import("../src/app/store")
+    fake.listeners.forEach((l) => l({ snapshots: { a: snap, b: snap } }))
+    const before = getState().snapshots
+    fake.listeners.forEach((l) =>
+        l({ snapshots: { a: structuredClone(snap), b: { ...snap, cpu: 25 } } }),
+    )
+    expect(getState().snapshots.a).toBe(before.a)
+    expect(getState().snapshots.b).not.toBe(before.b)
+    const stable = getState().snapshots
+    fake.listeners.forEach((l) =>
+        l({ snapshots: { a: structuredClone(snap), b: { ...snap, cpu: 25 } } }),
+    )
+    expect(getState().snapshots).toBe(stable)
 })

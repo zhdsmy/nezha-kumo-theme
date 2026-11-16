@@ -2,10 +2,10 @@
 import { request, resilientSocket, wsUrl } from "@/core/http"
 import type {
     ActualCost,
+    ConnectionStatus,
     HistoryPoint,
     LiveEvent,
     LoginResult,
-    MonitorAdapter,
     NodeInfo,
     PingData,
     Session,
@@ -22,7 +22,7 @@ interface Common<T> {
     error?: string
 }
 
-export interface NezhaServer {
+interface NezhaServer {
     id: number
     name: string
     public_note?: string
@@ -78,7 +78,7 @@ interface NezhaSetting {
 }
 
 /** Older dashboards send `service_*`; current ones (monitor.example.com, 2026-11) send `monitor_*`. */
-export interface NezhaServiceInfo {
+interface NezhaServiceInfo {
     monitor_id?: number
     monitor_name?: string
     service_id?: number
@@ -87,7 +87,7 @@ export interface NezhaServiceInfo {
     avg_delay: number[] | null
 }
 
-/** Nezha reports average delay per probe window and no loss, so `loss` stays unset. */
+/** Nezha reports the average delay per probe window. */
 export function mapServices(services: NezhaServiceInfo[], since = 0): PingData {
     const tasks: PingData["tasks"] = []
     const points: PingData["points"] = []
@@ -102,7 +102,6 @@ export function mapServices(services: NezhaServiceInfo[], since = 0): PingData {
         tasks.push({
             id,
             name: s.monitor_name ?? s.service_name ?? "",
-            interval: 0,
             avg: values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0,
             min: values.length ? Math.min(...values) : 0,
             max: values.length ? Math.max(...values) : 0,
@@ -249,7 +248,7 @@ function splitCpu(cpu = ""): [string, number] {
     return m ? [m[1], Number(m[2])] : [cpu, 0]
 }
 
-export function mapServer(s: NezhaServer, groups: Map<number, string[]>, note?: string): NodeInfo {
+function mapServer(s: NezhaServer, groups: Map<number, string[]>, note?: string): NodeInfo {
     const h = s.host ?? {}
     const [cpuName, cores] = splitCpu(h.cpu?.[0])
     const billing = parsePublicNote(note ?? s.public_note)
@@ -257,7 +256,6 @@ export function mapServer(s: NezhaServer, groups: Map<number, string[]>, note?: 
         id: String(s.id),
         name: s.name,
         groups: groups.get(s.id) ?? [],
-        tags: [],
         region: (s.country_code ?? "").toUpperCase() || flagToRegion(s.name),
         os: [prettyPlatform(h.platform), h.platform_version].filter(Boolean).join(" "),
         arch: h.arch ?? "",
@@ -265,7 +263,6 @@ export function mapServer(s: NezhaServer, groups: Map<number, string[]>, note?: 
         cpuCores: cores * Math.max(1, h.cpu?.length ?? 1),
         virtualization: h.virtualization ?? "",
         gpuName: (h.gpu ?? []).join(", "),
-        kernel: "",
         bootTime: h.boot_time ? h.boot_time * 1000 : undefined,
         agentVersion: h.version,
         memTotal: h.mem_total ?? 0,
@@ -486,38 +483,61 @@ export function mergeMetrics(
     return [...byTs.values()].sort((a, b) => a.at - b.at)
 }
 
+// The API exposes one series per GET. Cache raw periods so ranges and tabs share requests.
+export const HISTORY_CACHE_MS = 10 * 60_000
+const METRIC_SETS = {
+    spark: ["cpu", "net_out_speed", "net_in_speed"],
+    counters: ["net_out_transfer", "net_in_transfer"],
+    billing: ["net_out_speed", "net_in_speed", "net_out_transfer", "net_in_transfer"],
+    reports: ["cpu"],
+    overview: [
+        "cpu",
+        "memory",
+        "swap",
+        "disk",
+        "net_out_speed",
+        "net_in_speed",
+        "load1",
+        "tcp_conn",
+        "udp_conn",
+        "process_count",
+    ],
+} as const
+const historyCache = new Map<string, { at: number; promise: Promise<unknown> }>()
+function cached<T>(key: string, load: () => Promise<T>, ttl = HISTORY_CACHE_MS): Promise<T> {
+    const saved = historyCache.get(key)
+    if (saved && Date.now() - saved.at < ttl) return saved.promise as Promise<T>
+    const entry = {
+        at: Date.now(),
+        promise: load().catch((error) => {
+            if (historyCache.get(key) === entry) historyCache.delete(key)
+            throw error
+        }),
+    }
+    historyCache.set(key, entry)
+    return entry.promise
+}
+
 /* ---------- adapter ---------- */
 
-export const nezha: MonitorAdapter = {
-    target: "nezha",
-    capabilities: { billing: true, trafficLimit: true, history: true, ping: true },
+export const nezha = {
     adminUrl: "/dashboard",
-    poweredBy: { name: "Nezha", url: "https://github.com/nezhahq/nezha" },
     historyRanges: [0, 1, 4, 24, 168, 720],
-    supportsTwoFactor: false,
 
-    async loadSite(): Promise<SiteInfo> {
-        const [res, loggedIn] = await Promise.all([
-            request<Common<NezhaSetting>>("/api/v1/setting").catch(() => null),
-            request<Common<unknown>>("/api/v1/profile").then(
-                (r) => r.success,
-                () => false,
-            ),
-        ])
+    async loadSite(loggedIn = false): Promise<SiteInfo> {
+        const res = await request<Common<NezhaSetting>>("/api/v1/setting").catch(() => null)
         const cfg = res?.data?.config ?? {}
         const oauthProviders = (cfg.oauth2_providers ?? []).filter(
             (provider) => typeof provider === "string" && provider.trim(),
         )
         return {
             name: (cfg.site_name ?? "").trim() || "Nezha",
-            description: "",
             language: cfg.language?.replace("_", "-"),
-            settings: window.NezhaKumoConfig ?? window.ZoolConfig ?? {},
+            settings: window.NezhaKumoConfig ?? {},
             // Guests may only read one day of TSDB history; signed-in users get the full 30 days.
             recordHours: res?.data?.tsdb_enabled ? (loggedIn ? 720 : 24) : 0,
             oauth: oauthProviders.length > 0,
             oauthProviders,
-            passwordLogin: true,
         }
     },
 
@@ -550,7 +570,7 @@ export const nezha: MonitorAdapter = {
         return costs
     },
 
-    subscribe(listener, onStatus) {
+    subscribe(listener: (event: LiveEvent) => void, onStatus?: (status: ConnectionStatus) => void) {
         loadGroups()
         return hub.listen((frame) => listener(mapFrame(frame, groupsCache)), onStatus)
     },
@@ -558,43 +578,45 @@ export const nezha: MonitorAdapter = {
     reset() {
         hub.reset()
         groupsPromise = null
+        historyCache.clear()
     },
 
-    async loadHistory(id, hours) {
-        const base = `/api/v1/server/${encodeURIComponent(id)}/metrics?period=${period(hours)}&metric=`
-        const names = Object.keys(METRICS) as (keyof typeof METRICS)[]
-        const results = await Promise.all(
-            names.map((m) =>
-                request<Common<NezhaMetricSeries>>(base + m, {}, 60_000).catch(() => null),
-            ),
+    async loadHistory(id: string, hours: number, kind: keyof typeof METRIC_SETS = "overview") {
+        const names = METRIC_SETS[kind]
+        const series = await Promise.all(
+            names.map(async (metric) => {
+                const url = `/api/v1/server/${encodeURIComponent(id)}/metrics?period=${period(hours)}&metric=${metric}`
+                const data = await cached(url, async () => {
+                    const res = await request<Common<NezhaMetricSeries>>(url, {}, 60_000)
+                    if (!res.success) throw new Error("Nezha history unavailable")
+                    return res.data ?? {}
+                })
+                return [metric, data] as const
+            }),
         )
-        if (!results[0]?.success) throw new Error("Nezha history unavailable")
-        return mergeMetrics(
-            Object.fromEntries(names.map((m, i) => [m, results[i]?.data])),
-            Date.now() - hours * 3_600_000,
-        )
+        return mergeMetrics(Object.fromEntries(series), Date.now() - hours * 3_600_000)
     },
 
-    async loadRecent(id, minutes) {
-        const base = `/api/v1/server/${encodeURIComponent(id)}/metrics?period=1d&metric=`
-        const [up, down] = await Promise.all([
-            request<Common<NezhaMetricSeries>>(base + "net_out_speed"),
-            request<Common<NezhaMetricSeries>>(base + "net_in_speed"),
-        ])
-        return mergeMetrics(
-            { net_out_speed: up.data, net_in_speed: down.data },
-            Date.now() - minutes * 60_000,
-        )
+    clearHistory(id: string) {
+        const prefix = `/api/v1/server/${encodeURIComponent(id)}/`
+        for (const key of historyCache.keys()) if (key.startsWith(prefix)) historyCache.delete(key)
     },
 
-    async loadPing(id, hours): Promise<PingData> {
-        const res = await request<Common<NezhaServiceInfo[]>>(
-            `/api/v1/server/${encodeURIComponent(id)}/service?period=${period(hours)}`,
+    async loadPing(id: string, hours: number): Promise<PingData> {
+        const url = `/api/v1/server/${encodeURIComponent(id)}/service?period=${period(hours)}`
+        const data = await cached(
+            url,
+            async () => {
+                const res = await request<Common<NezhaServiceInfo[]>>(url)
+                if (!res.success) throw new Error("Nezha latency unavailable")
+                return res.data ?? []
+            },
+            hours < 1 ? 30_000 : HISTORY_CACHE_MS,
         )
-        return mapServices(res.data ?? [], Date.now() - hours * 3_600_000)
+        return mapServices(data, Date.now() - hours * 3_600_000)
     },
 
-    async login(username, password): Promise<LoginResult> {
+    async login(username: string, password: string): Promise<LoginResult> {
         try {
             const res = await request<Common<unknown>>("/api/v1/login", {
                 method: "POST",
@@ -608,7 +630,7 @@ export const nezha: MonitorAdapter = {
         }
     },
 
-    async oauthUrl(site, provider = site.oauthProviders?.[0]) {
+    async oauthUrl(site: SiteInfo, provider = site.oauthProviders?.[0]) {
         if (!site.oauth || !provider || !site.oauthProviders?.includes(provider)) return null
         const res = await request<Common<{ redirect: string }>>(
             `/api/v1/oauth2/${encodeURIComponent(provider)}?type=1`,
@@ -619,23 +641,7 @@ export const nezha: MonitorAdapter = {
             throw new Error("Invalid OAuth redirect")
         return url.href
     },
-    nodePath: (id) => `/server/${encodeURIComponent(id)}`,
+    nodePath: (id: string) => `/server/${encodeURIComponent(id)}`,
     // Nezha only serves the SPA for `/` and `/server/:id`.
-    matchNodePath: (pathname) => /^\/server\/(\d+)/.exec(pathname)?.[1] ?? null,
-}
-
-export default nezha
-
-/** Fleet daily traffic needs the two cumulative counters, not all twelve metrics. */
-export async function loadCounters(id: string): Promise<HistoryPoint[]> {
-    const base = `/api/v1/server/${encodeURIComponent(id)}/metrics?period=1d&metric=`
-    const [up, down] = await Promise.all([
-        request<Common<NezhaMetricSeries>>(base + "net_out_transfer"),
-        request<Common<NezhaMetricSeries>>(base + "net_in_transfer"),
-    ])
-    if (!up.success || !down.success) throw new Error("Counters unavailable")
-    return mergeMetrics(
-        { net_out_transfer: up.data, net_in_transfer: down.data },
-        new Date().setHours(0, 0, 0, 0),
-    )
+    matchNodePath: (pathname: string) => /^\/server\/(\d+)/.exec(pathname)?.[1] ?? null,
 }

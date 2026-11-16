@@ -5,8 +5,16 @@ import groups from "./fixtures/nezha-groups.json" with { type: "json" }
 
 export async function mockNezha(
     page: Page,
-    { loggedIn = false, empty = false, fail = false, noHistory = false } = {},
+    {
+        loggedIn = false,
+        empty = false,
+        fail = false,
+        noHistory = false,
+        stableNode = false,
+        price = "USD 12.00",
+    } = {},
 ) {
+    const startedAt = Date.now()
     let signedIn = loggedIn
     const metricNow = Math.floor(Date.now() / 30_000) * 30_000
     const servers = structuredClone(original.servers)
@@ -18,7 +26,7 @@ export async function mockNezha(
         Object.assign(s, {
             public_note: JSON.stringify({
                 billingDataMod: {
-                    amount: i === 1 ? "0" : "USD 12.00",
+                    amount: i === 1 ? "0" : price,
                     cycle: "Year",
                     endDate: "2031-05-01T00:00:00+08:00",
                     autoRenewal: "1",
@@ -139,11 +147,14 @@ export async function mockNezha(
                           count === 0
                               ? (s as typeof s & { public_note: string }).public_note
                               : undefined,
-                      last_active: new Date(now - (i === 19 ? 100000 : 0)).toISOString(),
+                      last_active: new Date(
+                          (stableNode && i === 1 ? startedAt : now) - (i === 19 ? 100000 : 0),
+                      ).toISOString(),
                       state: {
                           ...s.state,
-                          net_in_speed: (s.state?.net_in_speed ?? 0) + count,
-                          cpu: 12 + i + (count % 4),
+                          net_in_speed:
+                              (s.state?.net_in_speed ?? 0) + (stableNode && i === 1 ? 0 : count),
+                          cpu: 12 + i + (stableNode && i === 1 ? 0 : count % 4),
                       },
                   }))
             ws.send(JSON.stringify({ now, servers: active }))

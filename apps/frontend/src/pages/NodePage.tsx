@@ -1,11 +1,13 @@
 import { setShave, useShave } from "@/app/prefs"
 import { navigate } from "@/app/router"
+import { SECTIONS, type Section } from "@/app/sections"
 import { adapter, backfillLive, getLive, getSpark, useStore, useVisibleNodes } from "@/app/store"
 import { HourGrid } from "@/components/HourGrid"
 import { LoadCharts, PingChart } from "@/components/NodeCharts"
 import { useBilling } from "@/components/billing"
 import { CHART_PALETTE, Info, Loading, NoData, Spark, Status, Tile } from "@/components/ui"
 import { formatBytes, formatPercent, formatSpeed, quotaUsage, ratio } from "@/core/format"
+import { pollVisible } from "@/core/http"
 import { recentBuckets } from "@/core/live"
 import type { HistoryPoint, PingData } from "@/core/model"
 import { regionName, stripFlag } from "@/core/region"
@@ -16,9 +18,6 @@ import { ArrowClockwiseIcon } from "@phosphor-icons/react"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-export const SECTIONS = ["overview", "latency", "billing", "history"] as const
-export type Section = (typeof SECTIONS)[number]
-
 export default function NodePage({ id, section }: { id: string; section: Section }) {
     const { t, i18n } = useTranslation()
     const nodes = useVisibleNodes()
@@ -28,11 +27,13 @@ export default function NodePage({ id, section }: { id: string; section: Section
     const showBilling = useStore((s) => s.settings.showBilling)
     const title = useStore((s) => s.settings.siteTitle || s.site?.name || "Nezha")
     const [range, setRange] = useState(0)
-    const liveVersion = useStore((s) => (range === 0 ? s.liveVersion : -1))
+    const liveVersion = useStore((s) => (section === "overview" ? s.liveVersion : -1))
     const [nonce, setNonce] = useState(0)
     const [history, setHistory] = useState<{ key: string; points: HistoryPoint[] } | null>(null)
     const [ping, setPing] = useState<{ key: string; data: PingData } | null>(null)
-    const [reports, setReports] = useState<HistoryPoint[] | null>(null)
+    const [reportResult, setReports] = useState<{ key: string; points: HistoryPoint[] } | null>(
+        null,
+    )
     const [historyError, setHistoryError] = useState("")
     const [pingError, setPingError] = useState("")
     const [reportError, setReportError] = useState(false)
@@ -40,17 +41,23 @@ export default function NodePage({ id, section }: { id: string; section: Section
     const billing = useBilling()
     const ranges = adapter.historyRanges.filter((h) => h === 0 || h <= recordHours)
     const activeRange = ranges.includes(range) ? range : 0
-    const historyKey = `${id}:${activeRange}:${nonce}`
+    const dataKey = `${id}:${activeRange}:${nonce}`
     const reportHours = recordHours >= 168 ? 168 : 24
-    const pingKey = `${id}:${activeRange}:${nonce}`
+    const reportKey = `${id}:${section}:${reportHours}:${nonce}`
+    const reports = reportResult?.key === reportKey ? reportResult.points : null
     const live = useMemo(() => [...getLive(id)], [id, liveVersion])
-    const spark = useMemo(
-        () => recentBuckets(getSpark(id), (p) => p.netUp + p.netDown, 80, 15),
-        [id, liveVersion],
+    const sparks = useMemo(
+        () => ({
+            cpu: recentBuckets(live, (p) => p.cpu, 30, 15),
+            memory: recentBuckets(live, (p) => p.memUsed, 30, 15),
+            disk: recentBuckets(live, (p) => p.diskUsed, 30, 15),
+            network: recentBuckets(getSpark(id), (p) => p.netUp + p.netDown, 30, 15),
+        }),
+        [id, live, liveVersion],
     )
     useEffect(() => {
-        void backfillLive(id)
-    }, [id])
+        if (section === "overview") void backfillLive(id)
+    }, [id, section])
     useEffect(() => {
         if (node) document.title = `${stripFlag(node.name)} · ${title}`
     }, [node, title])
@@ -62,16 +69,16 @@ export default function NodePage({ id, section }: { id: string; section: Section
             .then((points) => {
                 if (active) {
                     setHistoryError("")
-                    setHistory({ key: historyKey, points })
+                    setHistory({ key: dataKey, points })
                 }
             })
             .catch(() => {
-                if (active) setHistoryError(historyKey)
+                if (active) setHistoryError(dataKey)
             })
         return () => {
             active = false
         }
-    }, [id, activeRange, section, historyKey])
+    }, [id, activeRange, section, dataKey])
     useEffect(() => {
         if (section !== "latency" || !recordHours) return
         let active = true
@@ -81,28 +88,31 @@ export default function NodePage({ id, section }: { id: string; section: Section
                 .then((data) => {
                     if (active) {
                         setPingError("")
-                        setPing({ key: pingKey, data })
+                        setPing({ key: dataKey, data })
                     }
                 })
                 .catch(() => {
-                    if (active) setPingError(pingKey)
+                    if (active) setPingError(dataKey)
                 })
-        void load()
-        const timer = activeRange === 0 ? window.setInterval(() => void load(), 30_000) : undefined
+        const stop = activeRange === 0 ? pollVisible(load, 30_000) : (void load(), () => {})
         return () => {
             active = false
-            clearInterval(timer)
+            stop()
         }
-    }, [id, activeRange, section, recordHours, pingKey])
+    }, [id, activeRange, section, recordHours, dataKey])
     useEffect(() => {
         if (!recordHours || (section !== "history" && section !== "billing")) return
         let active = true
         setReportError(false)
         setReports(null)
         adapter
-            .loadHistory(id, reportHours)
+            .loadHistory(
+                id,
+                section === "billing" ? 24 : reportHours,
+                section === "billing" ? "billing" : "reports",
+            )
             .then((p) => {
-                if (active) setReports(p)
+                if (active) setReports({ key: reportKey, points: p })
             })
             .catch(() => {
                 if (active) setReportError(true)
@@ -110,15 +120,15 @@ export default function NodePage({ id, section }: { id: string; section: Section
         return () => {
             active = false
         }
-    }, [id, recordHours, reportHours, section, nonce])
+    }, [id, recordHours, reportHours, section, nonce, reportKey])
     if (!node)
         return (
             <Page title={t("node.notFound")}>
                 <NoData title={t("node.notFound")} />
             </Page>
         )
-    const points = activeRange === 0 ? live : history?.key === historyKey ? history.points : null
-    const pingData = ping?.key === pingKey ? ping.data : null
+    const points = activeRange === 0 ? live : history?.key === dataKey ? history.points : null
+    const pingData = ping?.key === dataKey ? ping.data : null
     const labelRange = (h: number) =>
         h === 0
             ? t("node.rangeLive")
@@ -145,7 +155,6 @@ export default function NodePage({ id, section }: { id: string; section: Section
                 [t("metric.swap"), node.swapTotal ? formatBytes(node.swapTotal) : ""],
                 [t("node.virtualization"), node.virtualization],
                 [t("node.gpu"), node.gpuName],
-                [t("node.kernel"), node.kernel],
                 [
                     t("ui.bootTime"),
                     node.bootTime ? new Date(node.bootTime).toLocaleString(i18n.language) : "",
@@ -197,6 +206,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
                             shape="square"
                             aria-label={t("node.refresh")}
                             onClick={() => {
+                                adapter.clearHistory(id)
                                 setNonce((v) => v + 1)
                                 if (!activeRange) void backfillLive(id)
                             }}
@@ -212,27 +222,33 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                 label={t("metric.cpu")}
                                 value={`${formatPercent(snap?.cpu ?? 0)}%`}
                                 sub={t("metric.cores", { count: node.cpuCores })}
-                            />
+                            >
+                                <Spark buckets={sparks.cpu} />
+                            </Tile>
                             <Tile
                                 label={t("metric.memory")}
                                 value={`${formatPercent(ratio(snap?.memUsed ?? 0, mem))}%`}
                                 sub={`${formatBytes(snap?.memUsed ?? 0)} / ${formatBytes(mem)}`}
-                            />
+                            >
+                                <Spark buckets={sparks.memory} color={CHART_PALETTE[1]} />
+                            </Tile>
                             <Tile
                                 label={t("metric.disk")}
                                 value={`${formatPercent(ratio(snap?.diskUsed ?? 0, disk))}%`}
                                 sub={`${formatBytes(snap?.diskUsed ?? 0)} / ${formatBytes(disk)}`}
-                            />
+                            >
+                                <Spark buckets={sparks.disk} color={CHART_PALETTE[2]} />
+                            </Tile>
                             <Tile
                                 label={t("metric.network")}
                                 value={formatSpeed((snap?.netUp ?? 0) + (snap?.netDown ?? 0))}
                                 sub={`↑ ${formatSpeed(snap?.netUp ?? 0)} · ↓ ${formatSpeed(snap?.netDown ?? 0)}`}
                             >
-                                <Spark buckets={spark} color={CHART_PALETTE[0]} />
+                                <Spark buckets={sparks.network} color={CHART_PALETTE[0]} />
                             </Tile>
                         </div>
                         {!recordHours && <p className="notice">{t("node.liveOnly")}</p>}
-                        {historyError === historyKey ? (
+                        {historyError === dataKey ? (
                             <NoData
                                 title={t("app.loadError")}
                                 retry={() => setNonce((v) => v + 1)}
@@ -240,14 +256,21 @@ export default function NodePage({ id, section }: { id: string; section: Section
                         ) : points === null ? (
                             <Loading />
                         ) : points.length < 2 ? (
-                            <NoData title={t("node.noHistory")} />
+                            <>
+                                {activeRange === 0 ? (
+                                    <Loading />
+                                ) : (
+                                    <NoData title={t("node.noHistory")} />
+                                )}
+                            </>
                         ) : (
                             <LoadCharts
                                 node={node}
                                 points={points}
                                 hours={activeRange || 0.25}
                                 height={150}
-                                snap={snap}
+                                memTotal={mem}
+                                diskTotal={disk}
                             />
                         )}
                     </>
@@ -268,7 +291,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
                         </div>
                         {!recordHours ? (
                             <NoData title={t("node.liveOnly")} />
-                        ) : pingError === pingKey ? (
+                        ) : pingError === dataKey ? (
                             <NoData
                                 title={t("app.loadError")}
                                 retry={() => setNonce((v) => v + 1)}
