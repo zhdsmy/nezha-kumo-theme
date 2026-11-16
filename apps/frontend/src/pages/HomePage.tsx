@@ -92,6 +92,11 @@ const ServerRow = memo(function ServerRow({
                     </span>
                     <span className="muted block text-xs">{t("node.totals")}</span>
                 </Table.Cell>
+                <Table.Cell className="wide-cell">
+                    <span className="num text-xs">
+                        {snap?.online ? `${days.days}d ${days.hours}h` : "—"}
+                    </span>
+                </Table.Cell>
                 {showBilling && (
                     <Table.Cell className="wide-cell billing-cell">
                         <span className="truncate" title={billing.price(node)}>
@@ -117,7 +122,7 @@ const ServerRow = memo(function ServerRow({
             </Table.Row>
             {expanded && (
                 <Table.Row className="expanded-row">
-                    <Table.Cell colSpan={showBilling ? 9 : 8}>
+                    <Table.Cell colSpan={showBilling ? 10 : 9}>
                         <dl className="expanded-info">
                             <div>
                                 <dt>{t("metric.disk")}</dt>
@@ -463,6 +468,9 @@ export function HomePage() {
                                     </Table.Head>
                                     <Table.Head className="wide-cell">
                                         {t("metric.traffic")}
+                                    </Table.Head>
+                                    <Table.Head className="wide-cell">
+                                        {t("metric.uptime")}
                                     </Table.Head>
                                     {settings.showBilling && (
                                         <Table.Head className="wide-cell">

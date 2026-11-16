@@ -109,39 +109,19 @@ describe("region", () => {
 })
 
 describe("settings", () => {
-    it("defaults to a flat home page when defaultGrouped is omitted", () => {
-        expect(DEFAULT_SETTINGS.defaultGrouped).toBe(false)
-        expect(normalizeSettings(undefined).defaultGrouped).toBe(false)
-        expect(normalizeSettings({}).defaultGrouped).toBe(false)
-    })
-
-    it.each([
-        [true, true],
-        [false, false],
-        ["true", true],
-        ["false", false],
-        ["invalid", false],
-    ])("normalises defaultGrouped %j to %j", (value, expected) => {
-        expect(normalizeSettings({ defaultGrouped: value }).defaultGrouped).toBe(expected)
-    })
-
     it("fills every key when the backend sends nothing", () => {
         expect(normalizeSettings(undefined)).toEqual(DEFAULT_SETTINGS)
         expect(
-            normalizeSettings({ defaultDensity: "nope", showCost: "false", hiddenNodes: "a, b" }),
+            normalizeSettings({
+                defaultAppearance: "nope",
+                showCost: "false",
+                hiddenNodes: "a, b",
+            }),
         ).toMatchObject({
-            defaultDensity: "comfortable",
+            defaultAppearance: "system",
             showCost: false,
             hiddenNodes: ["a", "b"],
         })
-    })
-
-    it("reads a saved pre-0.2 view setting as the view it named", () => {
-        expect(normalizeSettings({ defaultView: "grid" }).defaultView).toBe("cards")
-        // v0.2 briefly read `list` as a row height; the key means a view again, so it maps to one.
-        expect(normalizeSettings({ defaultView: "list" }).defaultView).toBe("ledger")
-        expect(normalizeSettings({ defaultView: "list" }).defaultDensity).toBe("comfortable")
-        expect(normalizeSettings({ defaultView: "cards" }).defaultView).toBe("cards")
     })
 })
 

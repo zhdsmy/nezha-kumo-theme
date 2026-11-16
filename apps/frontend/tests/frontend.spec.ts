@@ -15,6 +15,7 @@ test("fleet filters, expanding rows, search shortcut and two-second data", async
     const first = page.locator("[data-server]").first()
     await first.getByRole("button", { name: /Details/ }).click()
     await expect(page.locator(".expanded-info")).toBeVisible()
+    await expect(page.locator(".expanded-row > td")).toHaveCSS("display", "table-cell")
     await page.locator(".list-toolbar").getByRole("textbox", { name: "Search" }).fill("Server 02")
     await expect(page.locator("[data-server]")).toHaveCount(1)
     await page.keyboard.press("Control+k")

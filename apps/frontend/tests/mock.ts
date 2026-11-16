@@ -8,6 +8,7 @@ export async function mockNezha(
     { loggedIn = false, empty = false, fail = false, noHistory = false } = {},
 ) {
     let signedIn = loggedIn
+    const metricNow = Math.floor(Date.now() / 30_000) * 30_000
     const servers = structuredClone(original.servers)
     servers.forEach((s, i) => {
         s.name =
@@ -34,6 +35,8 @@ export async function mockNezha(
         })
         if (s.state && s.host) {
             s.state.cpu = 12 + i
+            s.state.net_out_transfer = 100 * 1024 ** 3 + 2881 * 1024 ** 2
+            s.state.net_in_transfer = 100 * 1024 ** 3 + 2881 * 1024 ** 2
             s.state.disk_used = (s.host.disk_total ?? 0) * (i === 2 ? 0.8 : 0.35)
         }
     })
@@ -79,10 +82,10 @@ export async function mockNezha(
             const metric = url.searchParams.get("metric")
             const period = url.searchParams.get("period")
             const hours = period === "30d" ? 720 : period === "7d" ? 168 : 24
-            const now = Date.now(),
-                start = now - hours * 3_600_000
-            const data_points = Array.from({ length: 361 }, (_, i) => {
-                const ts = start + (i * hours * 3_600_000) / 360
+            const start = metricNow - hours * 3_600_000
+            const count = hours === 24 ? 2881 : hours === 168 ? 1009 : 721
+            const data_points = Array.from({ length: count }, (_, i) => {
+                const ts = start + (i * hours * 3_600_000) / (count - 1)
                 const wave = 20 + Math.sin(i / 13) * 10 + Math.cos(i / 7) * 4
                 const value =
                     metric === "memory"
@@ -148,6 +151,7 @@ export async function mockNezha(
         }
         frame()
         const timer = setInterval(frame, 2000)
+        timer.unref()
         ws.onClose(() => clearInterval(timer))
     })
 }

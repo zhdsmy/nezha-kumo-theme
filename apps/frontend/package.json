@@ -8,7 +8,7 @@
         "typecheck": "tsc --noEmit",
         "build": "tsc --noEmit && vite build",
         "test": "vitest run && playwright test",
-        "lint": "cd ../.. && oxlint packages/ui/src apps/frontend/src apps/frontend/tests apps/frontend/vite.config.ts apps/frontend/playwright.config.ts",
+        "lint": "cd ../.. && oxlint packages/ui/src apps/frontend/src apps/frontend/tests apps/frontend/scripts apps/frontend/vite.config.ts apps/frontend/playwright.config.ts",
         "format:check": "prettier --check --config .prettierrc.json . ../../packages/ui/src/shell.tsx ../../packages/ui/src/page.tsx ../../packages/ui/src/styles.css",
         "test:unit": "vitest run",
         "test:e2e": "playwright test",

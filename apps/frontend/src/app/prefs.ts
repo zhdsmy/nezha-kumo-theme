@@ -9,9 +9,6 @@ import { useSyncExternalStore } from "react"
 
 const KEYS = {
     appearance: "appearance",
-    density: "zool:density",
-    view: "zool:view",
-    grouping: "zool:grouped",
     shave: "zool:ping-shave",
 } as const
 

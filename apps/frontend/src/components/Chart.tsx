@@ -9,7 +9,7 @@ export interface ChartPoint {
 export interface ChartSeries {
     key: string
     label: string
-    /** Any CSS colour, typically `var(--chart-1)`. */
+    /** A colour from the measured chart palette. */
     color: string
     points: ChartPoint[]
     area?: boolean
@@ -93,7 +93,7 @@ export function Chart({
 }: Props) {
     const box = useRef<HTMLDivElement>(null)
     const [width, setWidth] = useState(0)
-    // three charts to a row on a tablet are narrower than one on a phone; both get the compact axes
+    // Choose padding from the plot container, which can be narrower than the viewport.
     const isMobile = width < 400
     const [hoverT, setHoverT] = useState<number | null>(null)
     const uid = useId().replace(/:/g, "")

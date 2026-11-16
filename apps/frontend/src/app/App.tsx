@@ -46,6 +46,7 @@ const responsive = `
  .fleet-table .meter-label,.fleet-table .cell-label { display:none; }
  .fleet-table .server-row { border-bottom:1px solid var(--color-kumo-line); border-radius:0; }
  .fleet-table .expanded-row { display:table-row; }
+ .fleet-table .expanded-row > td { display:table-cell; }
 }
 @media (min-width:${BREAKPOINTS.wide}px) {
  .metric-grid { grid-template-columns:repeat(5,minmax(0,1fr)); }
