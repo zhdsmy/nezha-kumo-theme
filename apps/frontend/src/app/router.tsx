@@ -2,9 +2,29 @@
 import { type AnchorHTMLAttributes, type MouseEvent, useSyncExternalStore } from "react"
 
 const EVENT = "nkt:navigate"
+export const RESET_EVENT = "nkt:reset"
 const scrollPositions = new Map<string, number>()
 
-if ("scrollRestoration" in history) history.scrollRestoration = "manual"
+const pageKey = (u: Pick<Location | URL, "pathname" | "search">) => u.pathname + u.search
+let lastListHref =
+    typeof window !== "undefined" && window.location.pathname === "/"
+        ? pageKey(window.location)
+        : "/"
+
+if (typeof history !== "undefined" && "scrollRestoration" in history) {
+    history.scrollRestoration = "manual"
+}
+
+const syncLastList = () => {
+    if (window.location.pathname === "/") lastListHref = pageKey(window.location)
+}
+
+const restoreScroll = (y: number) => {
+    window.scrollTo({ top: y })
+    if (y > 0) {
+        requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo({ top: y })))
+    }
+}
 
 const subscribe = (l: () => void) => {
     window.addEventListener("popstate", l)
@@ -24,24 +44,63 @@ export const usePathname = () =>
         () => "/",
     )
 
-export function navigate(to: string, { replace = false } = {}) {
-    if (to === window.location.pathname + window.location.search + window.location.hash) return
-    scrollPositions.set(window.location.pathname, window.scrollY)
-    history[replace ? "replaceState" : "pushState"](null, "", to)
-    window.dispatchEvent(new Event(EVENT))
-    window.scrollTo({ top: 0 })
+export const useLastListHref = () =>
+    useSyncExternalStore(
+        subscribe,
+        () => lastListHref,
+        () => "/",
+    )
+
+export interface NavigateOptions {
+    replace?: boolean
+    reset?: boolean
 }
 
-window.addEventListener("popstate", () => {
-    const y = scrollPositions.get(window.location.pathname) ?? 0
-    requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo({ top: y })))
-})
+export function navigate(to: string, opts: NavigateOptions = {}) {
+    const currentFull = window.location.pathname + window.location.search + window.location.hash
+    if (opts.reset) window.dispatchEvent(new Event(RESET_EVENT))
+    if (to === currentFull) {
+        if (opts.reset) window.scrollTo({ top: 0 })
+        return
+    }
+    const fromPath = window.location.pathname
+    const fromKey = pageKey(window.location)
+    const target = new URL(to, window.location.origin)
+    const toKey = pageKey(target)
+    const inPage =
+        opts.replace ?? (!opts.reset && toKey === fromKey && target.hash !== window.location.hash)
+    if (inPage) {
+        history.replaceState(null, "", to)
+        syncLastList()
+        window.dispatchEvent(new Event(EVENT))
+        return
+    }
+    const returningToList = !opts.reset && fromPath !== "/" && toKey === lastListHref
+    scrollPositions.set(fromKey, window.scrollY)
+    history.pushState(null, "", to)
+    syncLastList()
+    window.dispatchEvent(new Event(EVENT))
+    restoreScroll(returningToList ? (scrollPositions.get(toKey) ?? 0) : 0)
+}
+
+if (typeof window !== "undefined") {
+    window.addEventListener("popstate", () => {
+        syncLastList()
+        restoreScroll(scrollPositions.get(pageKey(window.location)) ?? 0)
+    })
+}
 
 export function Link({
     href,
+    replace,
+    reset,
     onClick,
     ...rest
-}: AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) {
+}: AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string
+    replace?: boolean
+    reset?: boolean
+}) {
     const handle = (e: MouseEvent<HTMLAnchorElement>) => {
         onClick?.(e)
         if (
@@ -55,7 +114,7 @@ export function Link({
             return
         if (rest.target && rest.target !== "_self") return
         e.preventDefault()
-        navigate(href)
+        navigate(href, { replace, reset })
     }
     return <a href={href} onClick={handle} {...rest} />
 }

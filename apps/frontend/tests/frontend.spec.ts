@@ -380,3 +380,107 @@ test("sidebar groups follow server-group ID order rather than API order or node 
     await page.goto("/server/4")
     await expect(page.getByText("Tencent · Azure", { exact: true })).toBeVisible()
 })
+
+test("navigation: clickable brand/topbar reset filters, back link preserves list URL and scroll, and in-page tabs replace history without scroll jump", async ({
+    page,
+    browser,
+}) => {
+    // 1. Mobile topbar-title from node page -> "/", and mobile drawer brand closes drawer + clears group/region/search
+    await page.setViewportSize({ width: 375, height: 640 })
+    await page.goto("/?region=HK")
+    await expect(page.locator("[data-server]")).toHaveCount(6)
+    await page.locator("[data-server] a").first().click()
+    await expect(page).toHaveURL(/\/server\/\d+$/)
+    await page.locator(".topbar-title").click()
+    await expect(page).toHaveURL(/\/$/)
+    await expect(page.locator("[data-server]")).toHaveCount(20)
+
+    await page.goto("/?region=HK")
+    await page
+        .locator(".section-heading")
+        .getByRole("button", { name: "Search", exact: true })
+        .click()
+    await page.locator(".section-heading").getByRole("textbox", { name: "Search" }).fill("Server")
+    await page.getByRole("button", { name: "Open navigation" }).click()
+    await expect(page.locator(".nk-sidebar")).toHaveAttribute("data-state", "expanded")
+    await page.locator(".nk-sidebar .brand").click()
+    await expect(page.locator(".nk-sidebar")).toHaveAttribute("data-state", "collapsed")
+    await expect(page.locator(".nk-sidebar")).toHaveAttribute("aria-hidden", "true")
+    await expect(page).toHaveURL(/\/$/)
+    await expect(
+        page.locator(".section-heading").getByRole("textbox", { name: "Search" }),
+    ).toHaveCount(0)
+    await expect(page.locator("[data-server]")).toHaveCount(20)
+
+    // 2. HomePage scroll behavior: region tab keeps scrollY > 0, sidebar group resets scrollY to 0
+    await page.setViewportSize({ width: 1024, height: 640 })
+    await page.goto("/")
+    await expect(page.locator("[data-server]")).toHaveCount(20)
+    await page.evaluate(() => window.scrollTo({ top: 220 }))
+    const beforeTabScroll = await page.evaluate(() => window.scrollY)
+    expect(beforeTabScroll).toBeGreaterThan(150)
+    await page.locator(".region-tabs").getByRole("tab", { name: /HK/ }).click()
+    await expect(page).toHaveURL(/\/\?region=HK$/)
+    expect(await page.evaluate(() => window.scrollY)).toBe(beforeTabScroll)
+
+    await page.locator('nav a[href^="/?group="]').first().click()
+    await expect(page).toHaveURL(/\/\?group=/)
+    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+
+    // 3. Filtered list (?group=...&region=...) -> node -> Back link & Browser Back after 3 tab switches
+    const listQuery = new URLSearchParams({ group: "🇺🇸 美国", region: "US" }).toString()
+    await page.setViewportSize({ width: 1024, height: 420 })
+    await page.goto(`/?${listQuery}`)
+    await expect(page.locator("[data-server]")).toHaveCount(2)
+    const cardLink = page.locator("[data-server] a").last()
+    await cardLink.scrollIntoViewIfNeeded()
+    const savedY = await page.evaluate(() => window.scrollY)
+    expect(savedY).toBeGreaterThan(100)
+
+    await cardLink.click()
+    await expect(page).toHaveURL(/\/server\/\d+$/)
+
+    const backLink = page.locator(".nk-context a")
+    await expect(backLink).toContainText("Back to list")
+    await expect(backLink).toHaveAttribute("href", `/?${listQuery}`)
+
+    // Switch 3 tabs on node page: scroll stays > 0 and history is replaced, so 1 Back returns to list
+    await expect(page.locator(".node-live-strip")).toBeVisible()
+    await page.evaluate(() => window.scrollTo({ top: 55 }))
+    const nodeScrollY = await page.evaluate(() => window.scrollY)
+    expect(nodeScrollY).toBeGreaterThan(40)
+    await page.getByRole("tab", { name: "Load", exact: true }).click()
+    await expect(page.locator(".chart svg")).toHaveCount(6)
+    expect(await page.evaluate(() => window.scrollY)).toBe(nodeScrollY)
+    await page.getByRole("tab", { name: "Latency", exact: true }).click()
+    await page.getByRole("tab", { name: "Reporting history", exact: true }).click()
+    await expect(page).toHaveURL(/#history$/)
+
+    await page.goBack()
+    await expect(page).toHaveURL(
+        new RegExp(`\\/\\?${listQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`),
+    )
+    await expect
+        .poll(() => page.evaluate(() => Math.round(window.scrollY)))
+        .toBeCloseTo(Math.round(savedY), -1)
+
+    // Clicking Back to list link also returns to the same filtered list and restores scrollY
+    await cardLink.click()
+    await expect(page).toHaveURL(/\/server\/\d+$/)
+    await page.locator(".nk-context a").click()
+    await expect(page).toHaveURL(
+        new RegExp(`\\/\\?${listQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`),
+    )
+    await expect
+        .poll(() => page.evaluate(() => Math.round(window.scrollY)))
+        .toBeCloseTo(Math.round(savedY), -1)
+
+    // 4. Direct entry to node page without prior list history falls back to "/"
+    const directCtx = await browser.newContext({ viewport: { width: 1440, height: 700 } })
+    const directPage = await directCtx.newPage()
+    await mockNezha(directPage)
+    await directPage.addInitScript(() => localStorage.setItem("nkt:language", "en"))
+    await directPage.goto("/server/6")
+    await expect(directPage.locator(".nk-context a")).toHaveAttribute("href", "/")
+    await directCtx.close()
+})

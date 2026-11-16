@@ -6,7 +6,10 @@
     align-items: center;
     gap: 12px;
     min-width: 0;
+    border-radius: 6px;
+    color: inherit;
     font-weight: 600;
+    text-decoration: none;
 }
 .brand svg {
     flex-shrink: 0;
@@ -14,11 +17,23 @@
 }
 .topbar-title {
     display: block;
+    width: fit-content;
     max-width: 28vw;
     overflow: hidden;
+    border-radius: 6px;
+    color: inherit;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-weight: 500;
+    text-decoration: none;
+}
+.brand:hover,
+.topbar-title:hover {
+    opacity: 0.75;
+}
+.brand:focus-visible,
+.topbar-title:focus-visible {
+    outline-offset: -2px;
 }
 .action-label {
     display: none;

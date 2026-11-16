@@ -7,6 +7,7 @@ import { stripFlag } from "@/core/region"
 import { resolveLocale, setLocale } from "@/i18n"
 import { HomePage } from "@/pages/HomePage"
 import { Button } from "@cloudflare/kumo"
+import { useSidebar } from "@cloudflare/kumo/components/sidebar"
 import { AppShell, Page } from "@nezha-kumo/ui"
 import {
     ChartLineIcon,
@@ -22,7 +23,7 @@ import { useTranslation } from "react-i18next"
 import { classifyGroupIcon } from "../../../../packages/shared/group-icons"
 import { responsive } from "./layout"
 import { setDefaultAppearance } from "./prefs"
-import { Link, usePathname } from "./router"
+import { Link, useLastListHref, usePathname } from "./router"
 import { SECTIONS } from "./sections"
 import { adapter, setExchangeRates, start, useStore, useVisibleNodes } from "./store"
 
@@ -33,6 +34,18 @@ const icons = [
     <ChartLineIcon size={16} />,
     <ClockIcon size={16} />,
 ]
+
+function BrandLink({ title }: { title: string }) {
+    const { setOpenMobile } = useSidebar()
+    return (
+        <Link className="brand" href="/" reset onClick={() => setOpenMobile(false)}>
+            <HardDrivesIcon size={24} />
+            <span className="truncate" title={title}>
+                {title}
+            </span>
+        </Link>
+    )
+}
 
 function GroupNavIcon({ icon }: { icon?: string }) {
     const [failedSrc, setFailedSrc] = useState<string | null>(null)
@@ -79,6 +92,7 @@ export function App() {
     const groupIcons = useStore((s) => s.groupIcons)
     const connection = useStore((s) => s.connection)
     const location = usePathname()
+    const lastListHref = useLastListHref()
     const url = new URL(location, window.location.origin)
     const nodeId = adapter.matchNodePath(url.pathname)
     const nodes = useVisibleNodes()
@@ -126,21 +140,14 @@ export function App() {
         <>
             <style>{responsive}</style>
             <AppShell
-                brand={
-                    <span className="brand">
-                        <HardDrivesIcon size={24} />
-                        <span className="truncate" title={siteTitle}>
-                            {siteTitle}
-                        </span>
-                    </span>
-                }
+                brand={<BrandLink title={siteTitle} />}
                 linkComponent={Link}
                 activeId={nodeId ? section : picked.length === 1 ? `group:${picked[0]}` : "fleet"}
                 context={
                     nodeId
                         ? {
                               backLabel: t("node.back"),
-                              backHref: "/",
+                              backHref: lastListHref,
                               title: (
                                   <span title={node?.name}>
                                       {node ? stripFlag(node.name) : nodeId}
@@ -186,9 +193,9 @@ export function App() {
                         : []),
                 ]}
                 topbar={
-                    <span className="topbar-title" title={siteTitle}>
+                    <Link className="topbar-title" href="/" reset title={siteTitle}>
                         {siteTitle}
-                    </span>
+                    </Link>
                 }
                 actions={<Actions />}
                 footer={

@@ -183,7 +183,9 @@ export default function NodePage({ id, section }: { id: string; section: Section
                 <Tabs
                     variant="underline"
                     value={section}
-                    onValueChange={(s) => navigate(`${adapter.nodePath(id)}#${s}`)}
+                    onValueChange={(s) =>
+                        navigate(`${adapter.nodePath(id)}#${s}`, { replace: true })
+                    }
                     tabs={SECTIONS.map((s) => ({ value: s, label: t(`ui.${s}`) }))}
                 />
             }

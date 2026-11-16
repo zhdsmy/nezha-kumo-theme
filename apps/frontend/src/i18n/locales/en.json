@@ -99,7 +99,7 @@
         "longTerm": "long-term"
     },
     "node": {
-        "back": "All nodes",
+        "back": "Back to list",
         "system": "System",
         "network": "Network",
         "billing": "Billing",

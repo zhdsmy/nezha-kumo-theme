@@ -1,7 +1,7 @@
 // Region filter and strip adapted from zool-theme/src/pages/HomePage.tsx (MIT, luoleiorg).
 import { useDailyCounters } from "@/app/history"
 import { type MoneyPeriod, setMoneyPeriod, useMoney } from "@/app/money"
-import { Link, navigate, usePathname } from "@/app/router"
+import { Link, RESET_EVENT, navigate, usePathname } from "@/app/router"
 import { adapter, getLive, getSpark, seedLive, useStore, useVisibleNodes } from "@/app/store"
 import { RegionFlag } from "@/components/RegionFlag"
 import { useBilling } from "@/components/billing"
@@ -267,6 +267,14 @@ export function HomePage() {
     useEffect(() => {
         if (searchOpen) searchInputRef.current?.focus()
     }, [searchOpen])
+    useEffect(() => {
+        const clear = () => {
+            setQuery("")
+            setSearchOpen(false)
+        }
+        window.addEventListener(RESET_EVENT, clear)
+        return () => window.removeEventListener(RESET_EVENT, clear)
+    }, [])
     const online = nodes.filter((n) => snapshots[n.id]?.online).length
     const offline = nodes.length - online
     const issues = useMemo(
@@ -648,6 +656,7 @@ export function HomePage() {
                                         groups,
                                         region: v === "all" ? null : v,
                                     })}`,
+                                    { replace: true },
                                 )
                             }
                             tabs={[
