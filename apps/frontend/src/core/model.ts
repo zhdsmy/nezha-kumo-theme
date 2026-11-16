@@ -7,6 +7,8 @@ export interface SiteInfo {
     language?: string
     /** Raw theme settings as provided by the backend; see `normalizeSettings`. */
     settings: unknown
+    /** Group name -> icon value (emoji/short text or https:// image URL). */
+    groupIcons?: Record<string, string>
     /** Longest history range the backend keeps, in hours. */
     recordHours: number
     oauth: boolean

@@ -16,9 +16,10 @@ import {
     GaugeIcon,
     HardDrivesIcon,
 } from "@phosphor-icons/react"
-import { Component, type ReactNode, Suspense, lazy, useEffect } from "react"
+import { Component, type ReactNode, Suspense, lazy, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { classifyGroupIcon } from "../../../../packages/shared/group-icons"
 import { responsive } from "./layout"
 import { setDefaultAppearance } from "./prefs"
 import { Link, usePathname } from "./router"
@@ -32,6 +33,29 @@ const icons = [
     <CreditCardIcon size={16} />,
     <ClockIcon size={16} />,
 ]
+
+function GroupNavIcon({ icon }: { icon?: string }) {
+    const [failedSrc, setFailedSrc] = useState<string | null>(null)
+    const parsed = icon ? classifyGroupIcon(icon) : null
+    if (!parsed || (parsed.kind === "image" && failedSrc === parsed.value)) {
+        return <FolderSimpleIcon size={16} />
+    }
+    if (parsed.kind === "text") {
+        return <span className="group-icon-text">{parsed.value}</span>
+    }
+    return (
+        <img
+            className="group-icon-img"
+            src={parsed.value}
+            alt=""
+            width={16}
+            height={16}
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            onError={() => setFailedSrc(parsed.value)}
+        />
+    )
+}
 
 class ErrorBoundary extends Component<
     { children: ReactNode; fallback: ReactNode },
@@ -51,6 +75,7 @@ export function App() {
     const phase = useStore((s) => s.phase)
     const site = useStore((s) => s.site)
     const settings = useStore((s) => s.settings)
+    const groupIcons = useStore((s) => s.groupIcons)
     const connection = useStore((s) => s.connection)
     const location = usePathname()
     const url = new URL(location, window.location.origin)
@@ -152,7 +177,7 @@ export function App() {
                                       id: `group:${g}`,
                                       label: g || t("toolbar.ungrouped"),
                                       href: `/?${new URLSearchParams({ group: g })}`,
-                                      icon: <FolderSimpleIcon size={16} />,
+                                      icon: <GroupNavIcon icon={g ? groupIcons[g] : undefined} />,
                                       badge: count,
                                   })),
                               },

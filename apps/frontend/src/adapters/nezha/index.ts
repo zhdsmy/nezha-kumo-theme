@@ -14,6 +14,8 @@ import type {
 } from "@/core/model"
 import { flagToRegion } from "@/core/region"
 
+import { parseGroupIcons } from "../../../../../packages/shared/group-icons"
+
 /* ---------- API shapes (Nezha dashboard v1, tested on v2.0.13) ---------- */
 
 interface Common<T> {
@@ -73,7 +75,12 @@ export interface NezhaGroup {
 }
 
 interface NezhaSetting {
-    config?: { site_name?: string; language?: string; oauth2_providers?: string[] | null }
+    config?: {
+        site_name?: string
+        language?: string
+        oauth2_providers?: string[] | null
+        custom_code?: string
+    }
     tsdb_enabled?: boolean
 }
 
@@ -415,12 +422,27 @@ const hub = (() => {
 })()
 
 // Module-level so socket frames replayed synchronously on subscribe already see the groups.
+let rawGroupsCache: NezhaGroup[] = []
 let groupsCache = new Map<number, string[]>()
 let groupsPromise: Promise<Map<number, string[]>> | null = null
 const loadGroups = () =>
     (groupsPromise ??= request<Common<NezhaGroup[]>>("/api/v1/server-group")
-        .then((r) => (groupsCache = groupIndex(r.data ?? [])))
+        .then((r) => {
+            rawGroupsCache = r.data ?? []
+            return (groupsCache = groupIndex(rawGroupsCache))
+        })
         .catch(() => groupsCache))
+
+export function mapGroupIcons(groups: NezhaGroup[], customCode?: string): Record<string, string> {
+    const byId = parseGroupIcons(customCode)
+    if (!Object.keys(byId).length) return {}
+    const byName: Record<string, string> = {}
+    for (const { group } of groups) {
+        const icon = byId[String(group.id)]
+        if (group.name && icon) byName[group.name] = icon
+    }
+    return byName
+}
 
 const FIRST_FRAME_TIMEOUT_MS = 15_000
 
@@ -527,6 +549,9 @@ export const nezha = {
     async loadSite(loggedIn = false): Promise<SiteInfo> {
         const res = await request<Common<NezhaSetting>>("/api/v1/setting").catch(() => null)
         const cfg = res?.data?.config ?? {}
+        const hasGroupIcons = Object.keys(parseGroupIcons(cfg.custom_code)).length > 0
+        if (hasGroupIcons) await loadGroups()
+        const groupIcons = hasGroupIcons ? mapGroupIcons(rawGroupsCache, cfg.custom_code) : {}
         const oauthProviders = (cfg.oauth2_providers ?? []).filter(
             (provider) => typeof provider === "string" && provider.trim(),
         )
@@ -534,6 +559,7 @@ export const nezha = {
             name: (cfg.site_name ?? "").trim() || "Nezha",
             language: cfg.language?.replace("_", "-"),
             settings: window.NezhaKumoConfig ?? {},
+            groupIcons,
             // Guests may only read one day of TSDB history; signed-in users get the full 30 days.
             recordHours: res?.data?.tsdb_enabled ? (loggedIn ? 720 : 24) : 0,
             oauth: oauthProviders.length > 0,

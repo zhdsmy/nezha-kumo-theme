@@ -173,3 +173,48 @@ test("startup timeout offers retry after a loading state", async ({ page }) => {
     await page.clock.fastForward(16_000)
     await expect(page.getByRole("button", { name: "Try again", exact: true })).toBeVisible()
 })
+
+test("sidebar group icons show emoji, https img, and fall back to folder on 404 or non-https", async ({
+    page,
+}) => {
+    await page.route("https://icons.example.test/ok.svg", (route) =>
+        route.fulfill({
+            status: 200,
+            contentType: "image/svg+xml",
+            body: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" rx="3" fill="#0052d9"/></svg>',
+        }),
+    )
+    await page.route("https://icons.example.test/missing.png", (route) =>
+        route.fulfill({ status: 404, body: "Not Found" }),
+    )
+    await mockNezha(page, {
+        customCode:
+            '<script type="application/json" id="nezha-kumo-group-icons">{"1":"https://icons.example.test/ok.svg","2":"☁️","3":"https://icons.example.test/missing.png","4":"http://icons.example.test/insecure.svg"}</script>',
+    })
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto("/")
+    await expect(page.locator("[data-server]")).toHaveCount(20)
+
+    const groupItem = (name: string) =>
+        page.locator("nav a").filter({ has: page.locator(`.nk-nav-label[title="${name}"]`) })
+
+    const imgItem = groupItem("🛜 宽带")
+    const img = imgItem.locator("img.group-icon-img")
+    await expect(img).toBeVisible()
+    await expect(img).toHaveAttribute("src", "https://icons.example.test/ok.svg")
+    await expect(img).toHaveAttribute("alt", "")
+    await expect(img).toHaveAttribute("loading", "lazy")
+    await expect(img).toHaveAttribute("referrerpolicy", "no-referrer")
+
+    const emojiItem = groupItem("🏠 HomeLab")
+    await expect(emojiItem.locator(".group-icon-text")).toHaveText("☁️")
+    await expect(emojiItem.locator("svg")).toHaveCount(0)
+
+    const brokenItem = groupItem("🇺🇸 美国")
+    await expect(brokenItem.locator("img")).toHaveCount(0)
+    await expect(brokenItem.locator(".nk-nav-icon svg")).toHaveCount(1)
+
+    const insecureItem = groupItem("🇨🇳 中国")
+    await expect(insecureItem.locator("img")).toHaveCount(0)
+    await expect(insecureItem.locator(".nk-nav-icon svg")).toHaveCount(1)
+})

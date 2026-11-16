@@ -24,5 +24,10 @@
     "Copy": "Copy",
     "Copied": "Copied to clipboard",
     "Done": "Done",
-    "Scopes": "Scopes"
+    "Scopes": "Scopes",
+    "GroupIcon": "アイコン",
+    "GroupIconPlaceholder": "絵文字・短い文字（8文字以内）または https:// 画像URL",
+    "GroupIconHint": "空欄にするとアイコンを削除し、標準のフォルダに戻します。",
+    "GroupIconLoadError": "アイコン画像を読み込めませんでした",
+    "GroupIconInvalid": "8文字以内のテキスト、または有効な https:// URLを入力してください"
 }
