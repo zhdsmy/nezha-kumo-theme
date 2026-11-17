@@ -58,3 +58,12 @@ test("non-string tags remain unknown and unchanged until replacement", () => {
     fireEvent.blur(screen.getByRole("textbox", { name: "备注" }))
     expect(change).not.toHaveBeenCalled()
 })
+
+test("Kumo tag draft shares its frame with chips and uses the hint as placeholder", () => {
+    render(<TagInput label="Tags" value="A,A" onChange={vi.fn()} />)
+    const input = screen.getByRole("textbox", { name: "Tags" }) as HTMLInputElement
+    expect(input.placeholder).toBe(i18n.t("PublicNote.TagsHint"))
+    expect(screen.queryByText(i18n.t("PublicNote.TagsHint"))).toBeNull()
+    expect(screen.getAllByText("A")).toHaveLength(2)
+    expect(input.parentElement?.textContent).toContain("A")
+})

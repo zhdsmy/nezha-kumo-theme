@@ -49,6 +49,7 @@ export function TagInput({
                 value={tags}
                 onValueChange={save}
                 aria-label={label}
+                placeholder={t("PublicNote.TagsHint")}
                 list={suggestions.length ? listId : undefined}
                 labels={{ removeValue: (tag) => t("PublicNote.RemoveTag", { tag }) }}
                 onChange={(event) => {
@@ -81,7 +82,6 @@ export function TagInput({
                     )
                 }}
             />
-            <p className="text-xs text-muted-foreground">{t("PublicNote.TagsHint")}</p>
             {suggestions.length > 0 && (
                 <datalist id={listId}>
                     {[...new Set(suggestions)]
