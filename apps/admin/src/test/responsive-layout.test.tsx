@@ -1,5 +1,5 @@
 import { Checkbox } from "@/components/ui/checkbox"
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { TablePagination } from "@/components/ui/pagination"
 import {
     Table,
@@ -14,6 +14,9 @@ import { useState } from "react"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
 
 let width = 1440
+vi.mock("@/hooks/useMediaQuery", () => ({
+    useMediaQuery: (query: string) => width >= Number(query.match(/\d+/)?.[0]),
+}))
 let containerWidth = 360
 let resize: (width: number) => void
 const translate = vi.hoisted(
@@ -23,6 +26,11 @@ const translate = vi.hoisted(
 vi.mock("@/lib/i18n", () => ({ default: { t: translate } }))
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: translate }) }))
 beforeEach(() => {
+    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+        callback(0)
+        return 0
+    })
+    vi.stubGlobal("cancelAnimationFrame", vi.fn())
     vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(containerWidth)
     vi.stubGlobal(
         "ResizeObserver",
@@ -354,3 +362,45 @@ test.each([
         expect(onPageChange).toHaveBeenCalledWith(501)
     },
 )
+
+function RowEditor() {
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <button>Edit draft</button>
+            </DialogTrigger>
+            <DialogContent aria-describedby={undefined}>
+                <DialogTitle>Draft</DialogTitle>
+                <input aria-label="Draft name" defaultValue="Original" />
+            </DialogContent>
+        </Dialog>
+    )
+}
+function EditableRows() {
+    return (
+        <Table>
+            <TableBody>
+                <TableRow>
+                    <TableCell data-col="name">Row</TableCell>
+                    <TableCell data-col="actions">
+                        <RowEditor />
+                    </TableCell>
+                </TableRow>
+            </TableBody>
+        </Table>
+    )
+}
+test("ADM-02: folding keeps the same editor and unsaved input mounted", async () => {
+    width = 375
+    const { rerender } = render(<EditableRows />)
+    fireEvent.click(screen.getByRole("button", { name: "Actions" }))
+    fireEvent.click(await screen.findByRole("button", { name: "Edit draft" }))
+    const input = screen.getByLabelText("Draft name")
+    fireEvent.change(input, { target: { value: "UNSAVED_REVIEW" } })
+    for (const value of [952, 375]) {
+        width = value
+        rerender(<EditableRows />)
+        expect(screen.getByLabelText("Draft name")).toBe(input)
+        expect((input as HTMLInputElement).value).toBe("UNSAVED_REVIEW")
+    }
+})

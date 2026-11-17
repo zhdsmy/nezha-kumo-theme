@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { cn } from "@/lib/utils"
 import { BREAKPOINTS } from "@nezha-kumo/ui"
@@ -11,6 +10,8 @@ import {
     createContext,
     forwardRef,
     useContext,
+    useEffect,
+    useId,
     useLayoutEffect,
     useRef,
     useState,
@@ -151,11 +152,16 @@ const Table = forwardRef<
                     update(container.clientWidth)
                 }
             })
-            const observer = new ResizeObserver(([entry]) => update(entry.contentRect.width))
+            let frame = 0
+            const observer = new ResizeObserver(([entry]) => {
+                cancelAnimationFrame(frame)
+                frame = requestAnimationFrame(() => update(entry.contentRect.width))
+            })
             observer.observe(container)
             return () => {
                 active = false
                 observer.disconnect()
+                cancelAnimationFrame(frame)
                 selectionObserver?.disconnect()
             }
         }, [children, columnPriority, primaryColumn, tableWidth])
@@ -298,6 +304,57 @@ const TableHead = forwardRef<
 })
 TableHead.displayName = "TableHead"
 
+function RowActions({ children }: { children: React.ReactNode }) {
+    const { t } = useTranslation()
+    const [open, setOpen] = useState(false)
+    const id = useId()
+    const root = useRef<HTMLDivElement>(null)
+    const trigger = useRef<HTMLButtonElement>(null)
+    useEffect(() => {
+        if (!open) return
+        const closeOutside = (event: PointerEvent) => {
+            if (!root.current?.contains(event.target as Node)) setOpen(false)
+        }
+        document.addEventListener("pointerdown", closeOutside)
+        return () => document.removeEventListener("pointerdown", closeOutside)
+    }, [open])
+    return (
+        <div
+            ref={root}
+            className="nkt-action-disclosure"
+            onKeyDown={(event) => {
+                if (event.key === "Escape" && root.current?.contains(event.target as Node)) {
+                    setOpen(false)
+                    trigger.current?.focus()
+                }
+            }}
+        >
+            <Button
+                ref={trigger}
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="nkt-actions-toggle"
+                aria-label={t("Actions")}
+                aria-expanded={open}
+                aria-controls={id}
+                onClick={() => setOpen(!open)}
+            >
+                <MoreHorizontal />
+            </Button>
+            <div
+                id={id}
+                className="nkt-table-actions"
+                data-open={open}
+                role="group"
+                aria-label={t("Actions")}
+            >
+                {children}
+            </div>
+        </div>
+    )
+}
+
 const TableCell = forwardRef<
     HTMLTableCellElement,
     TdHTMLAttributes<HTMLTableCellElement> & ColumnAttribute
@@ -316,29 +373,7 @@ const TableCell = forwardRef<
             {...props}
         >
             {actions ? (
-                table.layout === "cards" ? (
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                aria-label={t("Actions")}
-                            >
-                                <MoreHorizontal />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                            align="end"
-                            className="nkt-row-actions w-auto p-2"
-                            aria-label={t("Actions")}
-                        >
-                            {children}
-                        </PopoverContent>
-                    </Popover>
-                ) : (
-                    <div className="nkt-table-actions">{children}</div>
-                )
+                <RowActions>{children}</RowActions>
             ) : primary ? (
                 <div className="flex min-w-0 items-center gap-2">
                     <div className="nkt-cell-value min-w-0 flex-1">{children}</div>
