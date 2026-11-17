@@ -31,6 +31,7 @@ import { IconButton } from "@/components/xui/icon-button"
 import { useNotification } from "@/hooks/useNotfication"
 import { useServer } from "@/hooks/useServer"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { withArrayDefaults } from "@/lib/form"
 import { asOptionalField, conv, errorMessage } from "@/lib/utils"
 import { ModelService } from "@/types"
 import { serviceCoverageTypes, serviceTypes } from "@/types"
@@ -73,6 +74,7 @@ const serviceFormSchema = z.object({
 })
 
 export const ServiceCard: React.FC<ServiceCardProps> = ({ data, mutate }) => {
+    data = data && withArrayDefaults(data, ["fail_trigger_tasks", "recover_trigger_tasks"])
     const { t } = useTranslation()
     const form = useForm({
         resolver: zodResolver(serviceFormSchema) as any,
@@ -219,7 +221,11 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ data, mutate }) => {
                                             >
                                                 <FormControl>
                                                     <SelectTrigger>
-                                                        <SelectValue placeholder={t("Placeholders.SelectServiceType")} />
+                                                        <SelectValue
+                                                            placeholder={t(
+                                                                "Placeholders.SelectServiceType",
+                                                            )}
+                                                        />
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>

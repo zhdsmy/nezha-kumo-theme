@@ -23,6 +23,7 @@ import { IconButton } from "@/components/xui/icon-button"
 import { MultiSelect } from "@/components/xui/multi-select"
 import { useNotification } from "@/hooks/useNotfication"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { withArrayDefaults } from "@/lib/form"
 import { errorMessage } from "@/lib/utils"
 import { ModelNotificationGroupResponseItem } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -44,6 +45,7 @@ const notificationGroupFormSchema = z.object({
 })
 
 export const NotificationGroupCard: React.FC<NotificationGroupCardProps> = ({ data, mutate }) => {
+    data = data && withArrayDefaults(data, ["notifications"])
     const { t } = useTranslation()
     const form = useForm<z.infer<typeof notificationGroupFormSchema>>({
         resolver: zodResolver(notificationGroupFormSchema),
@@ -112,7 +114,10 @@ export const NotificationGroupCard: React.FC<NotificationGroupCardProps> = ({ da
                                         <FormItem>
                                             <FormLabel>{t("Name")}</FormLabel>
                                             <FormControl>
-                                                <Input placeholder={t("Placeholders.GroupName")} {...field} />
+                                                <Input
+                                                    placeholder={t("Placeholders.GroupName")}
+                                                    {...field}
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

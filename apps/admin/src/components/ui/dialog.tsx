@@ -1,3 +1,4 @@
+import { FormErrors } from "@/components/ui/form"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { cn } from "@/lib/utils"
 import { BREAKPOINTS } from "@nezha-kumo/ui"
@@ -68,14 +69,17 @@ const DialogHeader = ({ className, ...props }: HTMLAttributes<HTMLDivElement>) =
 )
 DialogHeader.displayName = "DialogHeader"
 
-const DialogFooter = ({ className, ...props }: HTMLAttributes<HTMLDivElement>) => (
+const DialogFooter = ({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) => (
     <div
         className={cn(
-            "nkt-dialog-footer sticky z-10 mt-auto flex shrink-0 flex-row justify-end gap-2 border-t bg-card pt-3",
+            "nkt-dialog-footer sticky z-10 mt-auto flex shrink-0 flex-row flex-wrap justify-end gap-2 border-t bg-card pt-3",
             className,
         )}
         {...props}
-    />
+    >
+        <FormErrors />
+        {children}
+    </div>
 )
 DialogFooter.displayName = "DialogFooter"
 

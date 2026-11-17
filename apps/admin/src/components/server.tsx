@@ -33,6 +33,9 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { IconButton } from "@/components/xui/icon-button"
+import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { withArrayDefaults } from "@/lib/form"
+import i18n from "@/lib/i18n"
 import {
     type PublicNote,
     PublicNoteSchema,
@@ -44,8 +47,6 @@ import {
     toggleEndNoExpiry,
     validatePublicNote,
 } from "@/lib/public-note"
-import { useSubmitLock } from "@/hooks/useSubmitLock"
-import i18n from "@/lib/i18n"
 import { asOptionalField, conv, errorMessage } from "@/lib/utils"
 import { ModelServer } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -106,6 +107,7 @@ const serverFormSchema = z.object({
 })
 
 export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
+    data = withArrayDefaults(data, ["ddns_profiles"])
     const { t } = useTranslation()
     const form = useForm({
         resolver: zodResolver(serverFormSchema) as any,
@@ -265,7 +267,10 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                     {t("Name")}
                                                 </FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder={t("Placeholders.ServerName")} {...field} />
+                                                    <Input
+                                                        placeholder={t("Placeholders.ServerName")}
+                                                        {...field}
+                                                    />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -728,7 +733,11 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                             }
                                                         >
                                                             <SelectTrigger>
-                                                                <SelectValue placeholder={t("Placeholders.SelectCycle")} />
+                                                                <SelectValue
+                                                                    placeholder={t(
+                                                                        "Placeholders.SelectCycle",
+                                                                    )}
+                                                                />
                                                             </SelectTrigger>
                                                             <SelectContent>
                                                                 <SelectItem value="Day">
@@ -846,7 +855,9 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                         <Input
                                                             id="public-note-traffic-vol"
                                                             aria-labelledby="public-note-traffic-vol-label"
-                                                            placeholder={t("Placeholders.TrafficVolume")}
+                                                            placeholder={t(
+                                                                "Placeholders.TrafficVolume",
+                                                            )}
                                                             value={
                                                                 publicNoteObj.planDataMod
                                                                     ?.trafficVol ?? ""
@@ -891,7 +902,11 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                             }
                                                         >
                                                             <SelectTrigger>
-                                                                <SelectValue placeholder={t("Placeholders.SelectType")} />
+                                                                <SelectValue
+                                                                    placeholder={t(
+                                                                        "Placeholders.SelectType",
+                                                                    )}
+                                                                />
                                                             </SelectTrigger>
                                                             <SelectContent>
                                                                 <SelectItem value="1">
