@@ -20,9 +20,8 @@ import type { HistoryPoint, PingData } from "@/core/model"
 import { regionName, stripFlag } from "@/core/region"
 import { summariseDay } from "@/core/summary"
 import { uiLabels } from "@/i18n"
-import { Button, Tabs } from "@cloudflare/kumo"
+import { Button, RefreshButton, Tabs } from "@cloudflare/kumo"
 import { Page } from "@nezha-kumo/ui"
-import { ArrowClockwiseIcon } from "@phosphor-icons/react"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -47,12 +46,24 @@ export default function NodePage({ id, section }: { id: string; section: Section
     const liveVersion = useStore((s) => (section === "load" && !activeRange ? s.liveVersion : -1))
     const [nonce, setNonce] = useState(0)
     const [liveBackfilledKey, setLiveBackfilledKey] = useState("")
-    const [history, setHistory] = useState<{ key: string; points: HistoryPoint[] } | null>(null)
-    const [ping, setPing] = useState<{ key: string; data: PingData } | null>(null)
+    const [history, setHistory] = useState<{
+        id: string
+        key: string
+        hours: number
+        points: HistoryPoint[]
+    } | null>(null)
+    const [ping, setPing] = useState<{
+        id: string
+        key: string
+        hours: number
+        data: PingData
+    } | null>(null)
     const [dayResult, setDayResult] = useState<{ key: string; points: HistoryPoint[] } | null>(null)
-    const [reportResult, setReports] = useState<{ key: string; points: HistoryPoint[] } | null>(
-        null,
-    )
+    const [reportResult, setReports] = useState<{
+        id: string
+        key: string
+        points: HistoryPoint[]
+    } | null>(null)
     const [historyError, setHistoryError] = useState("")
     const [pingError, setPingError] = useState("")
     const [reportError, setReportError] = useState("")
@@ -90,7 +101,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
             .then((points) => {
                 if (active) {
                     setHistoryError("")
-                    setHistory({ key: dataKey, points })
+                    setHistory({ id, key: dataKey, hours: activeRange, points })
                 }
             })
             .catch(() => {
@@ -103,13 +114,14 @@ export default function NodePage({ id, section }: { id: string; section: Section
     useEffect(() => {
         if (section !== "latency" || !recordHours) return
         let active = true
+        const hours = activeRange || 0.25
         const load = () =>
             adapter
-                .loadPing(id, activeRange || 0.25)
+                .loadPing(id, hours)
                 .then((data) => {
                     if (active) {
                         setPingError("")
-                        setPing({ key: dataKey, data })
+                        setPing({ id, key: dataKey, hours, data })
                     }
                 })
                 .catch(() => {
@@ -142,7 +154,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
             .then((p) => {
                 if (active) {
                     setReportError("")
-                    setReports({ key: reportKey, points: p })
+                    setReports({ id, key: reportKey, points: p })
                 }
             })
             .catch(() => {
@@ -163,6 +175,29 @@ export default function NodePage({ id, section }: { id: string; section: Section
         )
     const points = activeRange === 0 ? live : history?.key === dataKey ? history.points : null
     const pingData = ping?.key === dataKey ? ping.data : null
+    const loadPending = activeRange
+        ? history?.key !== dataKey && historyError !== dataKey
+        : recordHours > 0 && liveBackfilledKey !== dayKey
+    const pingPending = recordHours > 0 && ping?.key !== dataKey && pingError !== dataKey
+    const reportPending =
+        recordHours > 0 && reportResult?.key !== reportKey && reportError !== reportKey
+    const staleLoad = loadPending
+        ? history?.id === id && history.points.length >= 2
+            ? { points: history.points, hours: history.hours }
+            : (() => {
+                  const buf = getLive(id)
+                  return buf.length >= 2 ? { points: [...buf], hours: 0.25 } : null
+              })()
+        : null
+    const stalePing = pingPending && ping?.id === id && ping.data.tasks.length ? ping : null
+    const staleReports =
+        reportPending && reportResult?.id === id && reportResult.points.length
+            ? reportResult.points
+            : null
+    const triggerRefresh = () => {
+        adapter.clearHistory(id)
+        setNonce((v) => v + 1)
+    }
     const labelRange = (h: number) =>
         h === 0
             ? t("node.rangeLive")
@@ -224,18 +259,13 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                 }))}
                             />
                         </div>
-                        <Button
+                        <RefreshButton
                             size="sm"
-                            variant="secondary"
-                            shape="square"
                             aria-label={t("node.refresh")}
-                            onClick={() => {
-                                adapter.clearHistory(id)
-                                setNonce((v) => v + 1)
-                            }}
-                        >
-                            <ArrowClockwiseIcon size={16} />
-                        </Button>
+                            title={t("node.refresh")}
+                            loading={section === "load" ? loadPending : pingPending}
+                            onClick={triggerRefresh}
+                        />
                     </div>
                 )}
                 {section === "overview" && (
@@ -433,29 +463,43 @@ export default function NodePage({ id, section }: { id: string; section: Section
                     <>
                         {!recordHours && <p className="notice">{t("node.liveOnly")}</p>}
                         {historyError === dataKey ? (
-                            <NoData
-                                title={t("app.loadError")}
-                                retry={() => setNonce((v) => v + 1)}
-                            />
-                        ) : points === null ? (
+                            <NoData title={t("app.loadError")} retry={triggerRefresh} />
+                        ) : points !== null && points.length >= 2 ? (
+                            <div
+                                className={
+                                    loadPending
+                                        ? "opacity-50 transition-opacity"
+                                        : "transition-opacity"
+                                }
+                                aria-busy={loadPending || undefined}
+                            >
+                                <LoadCharts
+                                    node={node}
+                                    points={points}
+                                    hours={activeRange || 0.25}
+                                    height={150}
+                                    memTotal={mem}
+                                    diskTotal={disk}
+                                />
+                            </div>
+                        ) : staleLoad ? (
+                            <div className="opacity-50 transition-opacity" aria-busy="true">
+                                <LoadCharts
+                                    node={node}
+                                    points={staleLoad.points}
+                                    hours={staleLoad.hours}
+                                    height={150}
+                                    memTotal={mem}
+                                    diskTotal={disk}
+                                />
+                            </div>
+                        ) : points === null ||
+                          (activeRange === 0 &&
+                              ((recordHours > 0 && liveBackfilledKey !== dayKey) ||
+                                  (!recordHours && (!fed || snap?.online)))) ? (
                             <Loading variant="charts" />
-                        ) : points.length < 2 ? (
-                            activeRange === 0 &&
-                            ((recordHours > 0 && liveBackfilledKey !== dayKey) ||
-                                (!recordHours && (!fed || snap?.online))) ? (
-                                <Loading variant="charts" />
-                            ) : (
-                                <NoData title={t("node.noHistory")} />
-                            )
                         ) : (
-                            <LoadCharts
-                                node={node}
-                                points={points}
-                                hours={activeRange || 0.25}
-                                height={150}
-                                memTotal={mem}
-                                diskTotal={disk}
-                            />
+                            <NoData title={t("node.noHistory")} />
                         )}
                     </>
                 )}
@@ -476,22 +520,31 @@ export default function NodePage({ id, section }: { id: string; section: Section
                         {!recordHours ? (
                             <NoData title={t("node.liveOnly")} />
                         ) : pingError === dataKey ? (
-                            <NoData
-                                title={t("app.loadError")}
-                                retry={() => setNonce((v) => v + 1)}
-                            />
+                            <NoData title={t("app.loadError")} retry={triggerRefresh} />
+                        ) : pingData !== null && pingData.tasks.length > 0 ? (
+                            <div className="transition-opacity">
+                                <PingChart
+                                    key={id}
+                                    data={pingData}
+                                    hours={activeRange || 0.25}
+                                    height={280}
+                                    shave={shave}
+                                />
+                            </div>
+                        ) : stalePing ? (
+                            <div className="opacity-50 transition-opacity" aria-busy="true">
+                                <PingChart
+                                    key={id}
+                                    data={stalePing.data}
+                                    hours={stalePing.hours}
+                                    height={280}
+                                    shave={shave}
+                                />
+                            </div>
                         ) : pingData === null ? (
                             <Loading variant="ping" />
-                        ) : !pingData.tasks.length ? (
-                            <NoData title={t("node.noPing")} />
                         ) : (
-                            <PingChart
-                                key={id}
-                                data={pingData}
-                                hours={activeRange || 0.25}
-                                height={280}
-                                shave={shave}
-                            />
+                            <NoData title={t("node.noPing")} />
                         )}
                     </>
                 )}
@@ -499,30 +552,35 @@ export default function NodePage({ id, section }: { id: string; section: Section
                     <>
                         <div className="section-heading">
                             <h2>{t("ui.history")}</h2>
-                            <Button
+                            <RefreshButton
                                 size="sm"
-                                variant="secondary"
-                                onClick={() => setNonce((v) => v + 1)}
-                            >
-                                {t("node.refresh")}
-                            </Button>
+                                aria-label={t("node.refresh")}
+                                title={t("node.refresh")}
+                                loading={reportPending}
+                                onClick={triggerRefresh}
+                            />
                         </div>
                         {!recordHours ? (
                             <NoData title={t("node.liveOnly")} />
                         ) : reportError === reportKey ? (
-                            <NoData
-                                title={t("app.loadError")}
-                                retry={() => setNonce((v) => v + 1)}
-                            />
-                        ) : reports === null ? (
-                            <Loading variant="history" />
-                        ) : !reports.length ? (
-                            <NoData title={t("node.noHistory")} />
-                        ) : (
-                            <div className="chart-card">
+                            <NoData title={t("app.loadError")} retry={triggerRefresh} />
+                        ) : reports !== null && reports.length > 0 ? (
+                            <div className="chart-card transition-opacity">
                                 <HourGrid points={reports} days={reportHours / 24} />
                                 <p className="muted mt-4 text-xs">{t("ui.historyHint")}</p>
                             </div>
+                        ) : staleReports ? (
+                            <div
+                                className="chart-card opacity-50 transition-opacity"
+                                aria-busy="true"
+                            >
+                                <HourGrid points={staleReports} days={reportHours / 24} />
+                                <p className="muted mt-4 text-xs">{t("ui.historyHint")}</p>
+                            </div>
+                        ) : reports === null ? (
+                            <Loading variant="history" />
+                        ) : (
+                            <NoData title={t("node.noHistory")} />
                         )}
                     </>
                 )}
