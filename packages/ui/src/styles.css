@@ -114,6 +114,7 @@
     display: none;
 }
 .nk-main {
+    container-type: inline-size;
     min-width: 0;
 }
 .nk-sidebar [data-sidebar="viewport"] {

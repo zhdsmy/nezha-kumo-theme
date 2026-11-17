@@ -155,3 +155,35 @@ test("mobile topbar site name and drawer brand both navigate to /dashboard and c
     expect(openBtn.getAttribute("aria-expanded")).toBe("false")
 })
 
+test.each([
+    [767, true],
+    [768, false],
+    [867, false],
+])("AdminShell switches from drawer to persistent sidebar at 767/768 (%s)", (w, isDrawer) => {
+    stubViewport(w)
+    auth.profile = { id: 1, username: "admin", role: 0 }
+    render(
+        <MemoryRouter initialEntries={["/dashboard"]}>
+            <Routes>
+                <Route
+                    path="/dashboard"
+                    element={
+                        <AdminShell siteName="Demo Fleet" version="v1.0.0">
+                            <p>dashboard home</p>
+                        </AdminShell>
+                    }
+                />
+            </Routes>
+        </MemoryRouter>,
+    )
+
+    if (isDrawer) {
+        expect(screen.queryByRole("button", { name: "Open navigation" })).not.toBeNull()
+        expect(document.querySelector(".nk-topbar-content a")).not.toBeNull()
+    } else {
+        expect(screen.queryByRole("button", { name: "Open navigation" })).toBeNull()
+        expect(screen.queryByRole("button", { name: "Collapse navigation" })).not.toBeNull()
+        expect(document.querySelector(".nk-topbar-content a")).toBeNull()
+    }
+})
+

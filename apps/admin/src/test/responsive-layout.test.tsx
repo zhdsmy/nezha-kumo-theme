@@ -315,29 +315,41 @@ test("table expands ID and whitespace-nowrap columns to fit intrinsic content wi
 })
 
 test.each([
-    [375, ["1", "500", "1235"]],
-    [1024, ["1", "499", "500", "501", "1235"]],
-])("TablePagination localizes Previous/Next, keeps Total nowrap, and fits viewport %s", (w, pages) => {
-    width = Number(w)
-    const onPageChange = vi.fn()
-    render(<TablePagination page={500} pageSize={10} total={12345} onPageChange={onPageChange} />)
+    [375, 343, true, ["1", "500", "1235"]],
+    [768, 444, true, ["1", "500", "1235"]],
+    [768, 647, false, ["1", "499", "500", "501", "1235"]],
+    [1024, 700, false, ["1", "499", "500", "501", "1235"]],
+])(
+    "TablePagination localizes Previous/Next, keeps Total nowrap, and adapts at viewport %s / container %s",
+    (w, available, expectedCompact, pages) => {
+        width = Number(w)
+        containerWidth = Number(available)
+        vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(containerWidth)
+        const onPageChange = vi.fn()
+        render(
+            <TablePagination page={500} pageSize={10} total={12345} onPageChange={onPageChange} />,
+        )
 
-    const totalEl = screen.getByText("Total: 12345")
-    expect(totalEl.className).toContain("whitespace-nowrap")
-    expect(totalEl.className).toContain("shrink-0")
+        const totalEl = screen.getByText("Total: 12345")
+        expect(totalEl.className).toContain("whitespace-nowrap")
+        expect(totalEl.className).toContain("shrink-0")
 
-    const prev = screen.getByLabelText("MCPOAuthManager.Previous")
-    const next = screen.getByLabelText("MCPOAuthManager.Next")
-    expect(prev.textContent).toBe("MCPOAuthManager.Previous")
-    expect(next.textContent).toBe("MCPOAuthManager.Next")
+        const nav = document.querySelector("nav[aria-label='pagination']")
+        expect(nav?.hasAttribute("data-compact")).toBe(expectedCompact)
 
-    const renderedPages = Array.from(
-        document.querySelectorAll("nav[aria-label='pagination'] a"),
-        (a) => a.textContent,
-    ).filter((txt) => txt && /^\d+$/.test(txt))
-    expect(renderedPages).toEqual(pages)
+        const prev = screen.getByLabelText("MCPOAuthManager.Previous")
+        const next = screen.getByLabelText("MCPOAuthManager.Next")
+        expect(prev.textContent).toBe("MCPOAuthManager.Previous")
+        expect(next.textContent).toBe("MCPOAuthManager.Next")
 
-    fireEvent.click(next)
-    expect(onPageChange).toHaveBeenCalledWith(501)
-})
+        const renderedPages = Array.from(
+            document.querySelectorAll("nav[aria-label='pagination'] a"),
+            (a) => a.textContent,
+        ).filter((txt) => txt && /^\d+$/.test(txt))
+        expect(renderedPages).toEqual(pages)
+
+        fireEvent.click(next)
+        expect(onPageChange).toHaveBeenCalledWith(501)
+    },
+)
 
