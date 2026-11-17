@@ -119,8 +119,10 @@ const ServerCard = memo(function ServerCard({ node, snap, showBilling, showRegio
             <header className="card-head">
                 <div className="min-w-0">
                     <Link className="card-name" href={adapter.nodePath(node.id)} title={node.name}>
-                        {showRegions && <RegionFlag code={node.region} className="mr-1.5" />}
-                        {stripFlag(node.name)}
+                        <span className="card-name-text">
+                            {showRegions && <RegionFlag code={node.region} className="mr-1.5" />}
+                            {stripFlag(node.name)}
+                        </span>
                     </Link>
                     <span className="card-meta muted" title={meta}>
                         {meta || "—"}
@@ -165,8 +167,10 @@ const ServerRow = memo(function ServerRow({ node, snap, showRegions }: RowProps)
         <Table.Row className="server-row" data-server={node.id}>
             <Table.Cell className="server-name">
                 <Link href={adapter.nodePath(node.id)} title={node.name}>
-                    {showRegions && <RegionFlag code={node.region} className="mr-1.5" />}
-                    {stripFlag(node.name)}
+                    <span className="block truncate">
+                        {showRegions && <RegionFlag code={node.region} className="mr-1.5" />}
+                        {stripFlag(node.name)}
+                    </span>
                 </Link>
                 <span className="muted truncate" title={`${node.os} · ${node.groups.join(" · ")}`}>
                     {node.os || node.groups.join(" · ")}

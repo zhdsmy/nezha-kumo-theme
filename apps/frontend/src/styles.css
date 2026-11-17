@@ -6,10 +6,15 @@
     align-items: center;
     gap: 12px;
     min-width: 0;
+    min-height: 32px;
     border-radius: 6px;
     color: inherit;
     font-weight: 600;
     text-decoration: none;
+}
+.nk-sidebar[data-mobile] .brand,
+.nk-sidebar:not([data-state="collapsed"]) .brand {
+    min-width: 32px;
 }
 .brand svg {
     flex-shrink: 0;
@@ -18,7 +23,10 @@
 .topbar-title {
     display: block;
     width: fit-content;
+    min-width: 32px;
     max-width: 28vw;
+    min-height: 32px;
+    line-height: 32px;
     overflow: hidden;
     border-radius: 6px;
     color: inherit;
@@ -26,6 +34,10 @@
     white-space: nowrap;
     font-weight: 500;
     text-decoration: none;
+}
+.nk-topbar-actions > a {
+    height: 32px;
+    min-width: 32px;
 }
 .brand:hover,
 .topbar-title:hover {
@@ -251,6 +263,7 @@
     color: var(--text-color-kumo-warning);
 }
 .status-trigger {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -263,6 +276,17 @@
     line-height: inherit;
     cursor: pointer;
     text-align: left;
+}
+.status-trigger::after,
+.card-name::after,
+.fleet-table .server-name > a::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 32px);
+    height: max(100%, 32px);
+    transform: translate(-50%, -50%);
 }
 .status-trigger:hover {
     text-decoration: underline;
@@ -488,18 +512,22 @@
     border-radius: 4px;
 }
 .card-name {
+    position: relative;
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    border-radius: 4px;
+    color: var(--text-color-kumo-link);
+}
+.card-name-text {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
-    width: fit-content;
-    max-width: 100%;
     overflow: hidden;
-    border-radius: 4px;
     overflow-wrap: anywhere;
     font-size: 15px;
     line-height: 20px;
     font-weight: 500;
-    color: var(--text-color-kumo-link);
 }
 .card-meta {
     display: block;
@@ -551,6 +579,23 @@
     justify-content: space-between;
     gap: 8px;
     margin-bottom: 24px;
+}
+.chart-toolbar > button,
+.section-heading > button {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+}
+@media (max-width: 767px) {
+    .chart-toolbar [data-kumo-component="Tabs"] > div:first-child,
+    .chart-toolbar .kumo-tabs-list {
+        height: 36px;
+    }
+    .chart-toolbar [role="tab"] {
+        min-width: 32px;
+        justify-content: center;
+    }
 }
 .chart-grid {
     display: grid;
@@ -622,6 +667,16 @@
 }
 .nk-page:has(.nk-page-title-row > .nk-page-actions > .status) .nk-page-tabs {
     margin-top: -12px;
+}
+.nk-page-tabs .kumo-tabs-list {
+    margin: -8px -2px 0;
+    padding: 2px 2px 4px;
+    height: 38px;
+}
+.nk-page-tabs [role="tab"] {
+    min-width: 32px;
+    justify-content: center;
+    padding-block: 0;
 }
 .node-live-strip {
     display: grid;
@@ -737,8 +792,16 @@
 }
 .dialog-close {
     position: absolute;
-    top: 16px;
-    right: 16px;
+    top: 14px;
+    right: 14px;
+}
+.dialog-close,
+.dialog-close-btn,
+.nk-sidebar [data-sidebar="close"] {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
 }
 .login-form {
     display: flex;

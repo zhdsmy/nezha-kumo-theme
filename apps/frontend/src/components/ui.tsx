@@ -233,7 +233,7 @@ export function Loading({ variant = "home" }: { variant?: LoadingVariant } = {})
                         )}
                         {compact ? (
                             <div className="server-list">
-                                <table className="fleet-table">
+                                <table className="fleet-table-skeleton">
                                     <thead>
                                         <tr>
                                             {[
@@ -402,7 +402,7 @@ export function Loading({ variant = "home" }: { variant?: LoadingVariant } = {})
                             </div>
                         )}
                     </div>
-                    <PageFootnote />
+                    <div className="mt-8 h-[18px]" aria-hidden="true" />
                 </div>
             )}
             {variant === "node" && (
@@ -456,7 +456,7 @@ export function Loading({ variant = "home" }: { variant?: LoadingVariant } = {})
                             </div>
                         )}
                     </div>
-                    <PageFootnote />
+                    <div className="mt-8 h-[18px]" aria-hidden="true" />
                 </div>
             )}
             {variant === "charts" && (

@@ -1,6 +1,6 @@
 import { Actions, SidebarSearch } from "@/components/Actions"
 import { RegionFlag } from "@/components/RegionFlag"
-import { ErrorBanner, Loading, PageFootnote, Status } from "@/components/ui"
+import { ErrorBanner, Loading, Status } from "@/components/ui"
 import { loadExchangeRates } from "@/core/cost"
 import { groupCounts, parseFilterQuery, resolvePeerGroup } from "@/core/filter"
 import { peerNodes } from "@/core/fleet"
@@ -152,7 +152,7 @@ function NodeLoadingShell({
                                   : "history"
                         }
                     />
-                    <PageFootnote />
+                    <div className="mt-8 h-[18px]" aria-hidden="true" />
                 </>
             )}
         </Page>
