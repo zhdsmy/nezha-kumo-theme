@@ -32,6 +32,7 @@
         "all": "すべて",
         "groups": "グループ",
         "search": "検索",
+        "clear": "クリア",
         "searchPlaceholder": "ノード、地域、グループを検索…",
         "searchHint": "Enter で開く",
         "noResults": "一致するノードはありません",

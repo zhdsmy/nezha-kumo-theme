@@ -22,13 +22,13 @@ export const formatBytes = (bytes: number, digits?: number) => {
     return `${p.value} ${p.unit}`
 }
 
-const splitSpeed = (bytesPerSecond: number): Parts => {
-    const p = splitBytes(bytesPerSecond)
+const splitSpeed = (bytesPerSecond: number, digits?: number): Parts => {
+    const p = splitBytes(bytesPerSecond, digits)
     return { value: p.value, unit: `${p.unit}/s` }
 }
 
-export const formatSpeed = (bytesPerSecond: number) => {
-    const p = splitSpeed(bytesPerSecond)
+export const formatSpeed = (bytesPerSecond: number, digits?: number) => {
+    const p = splitSpeed(bytesPerSecond, digits)
     return `${p.value} ${p.unit}`
 }
 

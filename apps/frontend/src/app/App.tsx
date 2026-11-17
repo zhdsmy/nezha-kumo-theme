@@ -20,7 +20,15 @@ import { responsive } from "./layout"
 import { setDefaultAppearance } from "./prefs"
 import { Link, useLastListHref, usePathname } from "./router"
 import { SECTIONS } from "./sections"
-import { adapter, nodeHref, setExchangeRates, start, useStore, useVisibleNodes } from "./store"
+import {
+    adapter,
+    nodeHref,
+    setExchangeRates,
+    start,
+    useSiteTitle,
+    useStore,
+    useVisibleNodes,
+} from "./store"
 
 const NodePage = lazy(() => import("@/pages/NodePage"))
 
@@ -38,7 +46,7 @@ function BrandLink({ title }: { title: string }) {
     return (
         <Link className="brand" href="/" reset onClick={() => setOpenMobile(false)}>
             <HardDrivesIcon size={24} />
-            <span className="truncate" title={title}>
+            <span className="truncate" title={title || undefined}>
                 {title}
             </span>
         </Link>
@@ -94,6 +102,9 @@ export function App() {
     const groupOrder = useStore((s) => s.groupOrder)
     const groupIcons = useStore((s) => s.groupIcons)
     const connection = useStore((s) => s.connection)
+    const everConnected = useStore((s) => s.everConnected)
+    const connectionState =
+        connection === "open" ? "live" : everConnected ? "reconnecting" : "connecting"
     const location = usePathname()
     const lastListHref = useLastListHref()
     const url = new URL(location, window.location.origin)
@@ -157,9 +168,9 @@ export function App() {
             stop()
         }
     }, [phase, settings.showCost, settings.showBilling])
-    const siteTitle = settings.siteTitle || site?.name || "Nezha"
+    const siteTitle = useSiteTitle()
     useEffect(() => {
-        if (!nodeId) document.title = siteTitle
+        if (!nodeId && siteTitle) document.title = siteTitle
     }, [nodeId, siteTitle])
     useEffect(() => {
         if (!nodeId) return
@@ -203,54 +214,59 @@ export function App() {
                 }
                 nav={
                     nodeId
-                        ? [
-                              {
-                                  id: "peers",
-                                  title: `${peerGroup ?? t("node.allNodes")} (${peers.length})`,
-                                  items: peers.map((p) => {
-                                      const kind = !fedForPeers
-                                          ? "connecting"
-                                          : offlineIds.has(p.id)
-                                            ? "offline"
-                                            : "online"
-                                      const statusText = t(`status.${kind}`)
-                                      return {
-                                          id: `peer:${p.id}`,
-                                          label: stripFlag(p.name),
-                                          href: nodeHref(p.id, url),
-                                          icon: settings.showRegions ? (
-                                              p.region ? (
-                                                  <RegionFlag code={p.region} />
-                                              ) : (
-                                                  <GlobeIcon
-                                                      width={16}
-                                                      height={12}
-                                                      className="region-flag"
-                                                  />
-                                              )
-                                          ) : (
-                                              <i className="peer-dot" data-status={kind} />
-                                          ),
-                                          badge: (
-                                              <span
-                                                  className="peer-badge"
-                                                  data-status={kind}
-                                                  title={statusText}
-                                              >
-                                                  {settings.showRegions && (
-                                                      <i
-                                                          className="peer-dot"
-                                                          data-status={kind}
-                                                          aria-hidden="true"
+                        ? phase === "loading"
+                            ? []
+                            : [
+                                  {
+                                      id: "peers",
+                                      title: `${peerGroup ?? t("node.allNodes")} (${peers.length})`,
+                                      items: peers.map((p) => {
+                                          const kind = !fedForPeers
+                                              ? "connecting"
+                                              : offlineIds.has(p.id)
+                                                ? "offline"
+                                                : "online"
+                                          const statusText = t(`status.${kind}`)
+                                          return {
+                                              id: `peer:${p.id}`,
+                                              label: stripFlag(p.name),
+                                              href: nodeHref(p.id, url),
+                                              icon: settings.showRegions ? (
+                                                  p.region ? (
+                                                      <RegionFlag code={p.region} />
+                                                  ) : (
+                                                      <GlobeIcon
+                                                          width={16}
+                                                          height={12}
+                                                          className="region-flag"
                                                       />
-                                                  )}
-                                                  <span className="sr-only"> ({statusText})</span>
-                                              </span>
-                                          ),
-                                      }
-                                  }),
-                              },
-                          ]
+                                                  )
+                                              ) : (
+                                                  <i className="peer-dot" data-status={kind} />
+                                              ),
+                                              badge: (
+                                                  <span
+                                                      className="peer-badge"
+                                                      data-status={kind}
+                                                      title={statusText}
+                                                  >
+                                                      {settings.showRegions && (
+                                                          <i
+                                                              className="peer-dot"
+                                                              data-status={kind}
+                                                              aria-hidden="true"
+                                                          />
+                                                      )}
+                                                      <span className="sr-only">
+                                                          {" "}
+                                                          ({statusText})
+                                                      </span>
+                                                  </span>
+                                              ),
+                                          }
+                                      }),
+                                  },
+                              ]
                         : [
                               {
                                   id: "main",
@@ -286,15 +302,19 @@ export function App() {
                           ]
                 }
                 topbar={
-                    <Link className="topbar-title" href="/" reset title={siteTitle}>
+                    <Link className="topbar-title" href="/" reset title={siteTitle || undefined}>
                         {siteTitle}
                     </Link>
                 }
                 actions={<Actions />}
                 footer={
-                    <span className="connection" data-open={connection === "open"}>
+                    <span
+                        className="connection"
+                        data-open={connection === "open"}
+                        data-status={connectionState}
+                    >
                         <i />
-                        {t(connection === "open" ? "status.live" : "status.reconnecting")}
+                        {t(`status.${connectionState}`)}
                     </span>
                 }
             >
@@ -310,7 +330,10 @@ export function App() {
                     }
                 >
                     {phase === "loading" ? (
-                        <Page title={t("ui.overview")}>
+                        <Page
+                            maxWidth={nodeId ? 1100 : undefined}
+                            title={nodeId ? null : t("ui.overview")}
+                        >
                             <Loading />
                         </Page>
                     ) : phase === "error" ? (
@@ -322,7 +345,7 @@ export function App() {
                     ) : nodeId ? (
                         <Suspense
                             fallback={
-                                <Page title={t("ui.overview")}>
+                                <Page maxWidth={1100} title={node ? stripFlag(node.name) : null}>
                                     <Loading />
                                 </Page>
                             }

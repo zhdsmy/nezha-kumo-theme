@@ -32,6 +32,7 @@
         "all": "全部",
         "groups": "分組",
         "search": "搜尋",
+        "clear": "清除",
         "searchPlaceholder": "搜尋節點、地區、分組…",
         "searchHint": "按 Enter 開啟",
         "noResults": "沒有符合的節點",

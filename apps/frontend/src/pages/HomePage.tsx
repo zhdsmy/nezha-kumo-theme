@@ -28,7 +28,7 @@ import type { NodeInfo, Snapshot } from "@/core/model"
 import { regionName, stripFlag } from "@/core/region"
 import { readStorage, writeStorage } from "@/core/storage"
 import { summariseFleetDay } from "@/core/summary"
-import { Button, DropdownMenu, Input, Table, Tabs } from "@cloudflare/kumo"
+import { Button, DropdownMenu, Input, Table, Tabs, Tooltip } from "@cloudflare/kumo"
 import { Page } from "@nezha-kumo/ui"
 import {
     ArrowDownIcon,
@@ -247,6 +247,9 @@ export function HomePage() {
         return SORT_KEYS.includes(v as SortKey) ? (v as SortKey) : "default"
     })
     const [desc, setDesc] = useState(() => readPreference<boolean>("nkt:desc", false) === true)
+    const [sortTipOpen, setSortTipOpen] = useState(false)
+    const sortMenuOpen = useRef(false)
+    const suppressSortTip = useRef(false)
     const money = useMoney()
     // Counters and live seeds cover every node, so switching groups refetches nothing.
     const daily = useDailyCounters(settings.showOverview ? all : [])
@@ -556,8 +559,8 @@ export function HomePage() {
                                 <button
                                     type="button"
                                     className="search-clear"
-                                    aria-label={t("auth.close")}
-                                    title={t("auth.close")}
+                                    aria-label={t("toolbar.clear")}
+                                    title={t("toolbar.clear")}
                                     onClick={() => {
                                         setQuery("")
                                         setSearchOpen(false)
@@ -577,18 +580,45 @@ export function HomePage() {
                                 <MagnifyingGlassIcon size={16} />
                             </Button>
                         )}
-                        <DropdownMenu>
-                            <DropdownMenu.Trigger>
-                                <Button
-                                    variant="secondary"
-                                    className="sort-button"
-                                    aria-label={t("toolbar.sort")}
-                                    title={`${t("toolbar.sort")}: ${t(`sort.${sort}`)} (${t(desc ? "toolbar.descending" : "toolbar.ascending")})`}
-                                >
-                                    <span>{t(`sort.${sort}`)}</span>
-                                    {desc ? <ArrowDownIcon size={14} /> : <ArrowUpIcon size={14} />}
-                                </Button>
-                            </DropdownMenu.Trigger>
+                        <DropdownMenu
+                            onOpenChange={(open) => {
+                                sortMenuOpen.current = open
+                                suppressSortTip.current = true
+                                setSortTipOpen(false)
+                            }}
+                        >
+                            <Tooltip
+                                content={`${t("toolbar.sort")}: ${t(`sort.${sort}`)} (${t(desc ? "toolbar.descending" : "toolbar.ascending")})`}
+                                open={sortTipOpen}
+                                onOpenChange={(open) => {
+                                    if (open && suppressSortTip.current) return
+                                    setSortTipOpen(open)
+                                }}
+                                className="cursor-pointer"
+                                render={
+                                    <DropdownMenu.Trigger>
+                                        <Button
+                                            variant="secondary"
+                                            className="sort-button"
+                                            aria-label={t("toolbar.sort")}
+                                            onBlur={() => {
+                                                suppressSortTip.current = false
+                                            }}
+                                            onPointerEnter={() => {
+                                                if (!sortMenuOpen.current)
+                                                    suppressSortTip.current = false
+                                            }}
+                                        >
+                                            <span>{t(`sort.${sort}`)}</span>
+                                            {desc ? (
+                                                <ArrowDownIcon size={14} />
+                                            ) : (
+                                                <ArrowUpIcon size={14} />
+                                            )}
+                                        </Button>
+                                    </DropdownMenu.Trigger>
+                                }
+                            />
                             <DropdownMenu.Content align="end" className="min-w-44">
                                 <DropdownMenu.Group>
                                     <DropdownMenu.Label>{t("toolbar.sort")}</DropdownMenu.Label>

@@ -12,9 +12,12 @@ import type {
     Snapshot,
 } from "@/core/model"
 import { DEFAULT_SETTINGS, type ThemeSettings, normalizeSettings } from "@/core/settings"
+import { readStorage, writeStorage } from "@/core/storage"
 import { useMemo, useSyncExternalStore } from "react"
 
 export { adapter }
+
+const SITE_TITLE_KEY = "nkt:site-title"
 
 export const nodeHref = (id: string, u: Pick<URL | Location, "pathname" | "hash">) =>
     `${adapter.nodePath(id)}${adapter.matchNodePath(u.pathname) ? u.hash : ""}`
@@ -33,6 +36,8 @@ interface State {
     exchangeRates: ExchangeRates | null
     exchangeRateError: boolean
     connection: ConnectionStatus
+    /** True once the live WebSocket has opened or delivered a frame at least once in this session. */
+    everConnected: boolean
     /**
      * At least one live frame has arrived. Until then a node with no snapshot is waiting, not
      * offline: showing every machine as down for the second it takes the socket to answer is
@@ -58,6 +63,7 @@ let state: State = {
     exchangeRates: null,
     exchangeRateError: false,
     connection: "connecting",
+    everConnected: false,
     fed: false,
     refreshing: false,
     liveVersion: 0,
@@ -169,6 +175,9 @@ const load = async () => {
         adapter.loadGroupOrder(),
     ])
     const actualCosts = session.loggedIn ? await adapter.loadActualCosts().catch(() => null) : null
+    const settings = normalizeSettings(site.settings)
+    const resolvedTitle = settings.siteTitle || site.name
+    if (resolvedTitle) writeStorage(SITE_TITLE_KEY, resolvedTitle)
     set({
         site,
         nodes,
@@ -176,7 +185,7 @@ const load = async () => {
         session,
         actualCosts,
         groupIcons: site.groupIcons ?? {},
-        settings: normalizeSettings(site.settings),
+        settings,
         phase: "ready",
     })
 }
@@ -205,6 +214,7 @@ function connect() {
                 Object.keys(snapshots).every((id) => snapshots[id] === state.snapshots[id])
             const patch: Partial<State> = {
                 snapshots: stable ? state.snapshots : snapshots,
+                everConnected: true,
                 fed: true,
                 refreshing: false,
             }
@@ -213,7 +223,8 @@ function connect() {
             clearTimeout(refreshTimer)
             set(patch)
         },
-        (connection) => set({ connection }),
+        (connection) =>
+            set(connection === "open" ? { connection, everConnected: true } : { connection }),
     )
 }
 
@@ -273,6 +284,13 @@ export async function refresh() {
     adapter.reset()
     await load().catch((err) => console.error("[nezha-kumo] refresh failed", err))
     connect()
+}
+
+/** Resolved site title from theme settings, backend site info, or cached localStorage (never a fake placeholder). */
+export function useSiteTitle() {
+    return useStore(
+        (s) => s.settings.siteTitle || s.site?.name || readStorage(SITE_TITLE_KEY) || "",
+    )
 }
 
 /** Nodes after the "hidden nodes" setting; memoised so selectors stay stable. */

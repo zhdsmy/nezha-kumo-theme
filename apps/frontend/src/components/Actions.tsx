@@ -109,6 +109,7 @@ function LoginForm({ close }: { close: () => void }) {
             </Dialog.Description>
             <form onSubmit={submit} className="login-form">
                 <Input
+                    autoFocus
                     label={t("auth.username")}
                     autoComplete="username"
                     required
@@ -170,6 +171,7 @@ export function Actions() {
     useEffect(() => () => setSearchDialogOpen(false), [])
     useEffect(() => {
         const key = (e: KeyboardEvent) => {
+            if (login) return
             if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
                 e.preventDefault()
                 toggleSearch()
@@ -177,7 +179,7 @@ export function Actions() {
         }
         window.addEventListener("keydown", key)
         return () => window.removeEventListener("keydown", key)
-    }, [toggleSearch])
+    }, [login, toggleSearch])
     const matches = nodes.filter((n) =>
         `${n.name} ${n.region} ${n.groups.join(" ")}`.toLowerCase().includes(query.toLowerCase()),
     )

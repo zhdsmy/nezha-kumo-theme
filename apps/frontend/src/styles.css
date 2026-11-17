@@ -66,6 +66,10 @@
 .connection[data-open="true"] i {
     background: var(--color-kumo-success);
 }
+.connection[data-status="connecting"] i {
+    background: var(--text-color-kumo-subtle);
+    opacity: 0.55;
+}
 /* sidebar search & peer switcher */
 .sidebar-search {
     display: flex;

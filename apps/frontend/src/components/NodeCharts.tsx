@@ -5,7 +5,7 @@ import { spikeLimit } from "@/core/summary"
 import { type ReactNode, memo, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Chart, type ChartSeries } from "./Chart"
+import { Chart, type ChartSeries, stepDigits } from "./Chart"
 import { CHART_PALETTE } from "./ui"
 
 function useTimeFormats(hours: number) {
@@ -109,7 +109,8 @@ export const LoadCharts = memo(function LoadCharts({
                     {...common}
                     label={t("metric.cpu")}
                     yMax={100}
-                    format={(v) => `${formatNumber(v, 0)}%`}
+                    format={(v) => `${formatPercent(v)}%`}
+                    formatTick={(v, step) => `${formatNumber(v, stepDigits(step))}%`}
                     series={[s("cpu", t("metric.cpu"), CHART_PALETTE[0], (p) => p.cpu, true)]}
                 />
             </ChartCard>
@@ -120,8 +121,10 @@ export const LoadCharts = memo(function LoadCharts({
                 <Chart
                     {...common}
                     label={t("metric.memory")}
+                    scale="binary"
                     yMax={memTotal || undefined}
-                    format={(v) => formatBytes(v, 1)}
+                    format={(v) => formatBytes(v)}
+                    formatTick={(v) => formatBytes(v, 0)}
                     series={[
                         s("mem", t("metric.memory"), CHART_PALETTE[1], (p) => p.memUsed, true),
                         ...(node.swapTotal
@@ -139,8 +142,10 @@ export const LoadCharts = memo(function LoadCharts({
                 <Chart
                     {...common}
                     label={t("metric.disk")}
+                    scale="binary"
                     yMax={diskTotal || undefined}
-                    format={(v) => formatBytes(v, 0)}
+                    format={(v) => formatBytes(v)}
+                    formatTick={(v) => formatBytes(v, 0)}
                     series={[
                         s("disk", t("metric.disk"), CHART_PALETTE[2], (p) => p.diskUsed, true),
                     ]}
@@ -160,7 +165,9 @@ export const LoadCharts = memo(function LoadCharts({
                 <Chart
                     {...common}
                     label={t("metric.network")}
+                    scale="binary"
                     format={(v) => formatSpeed(v)}
+                    formatTick={(v) => formatSpeed(v, 0)}
                     series={[
                         s("up", t("metric.upload"), CHART_PALETTE[0], (p) => p.netUp, true),
                         s("down", t("metric.download"), CHART_PALETTE[1], (p) => p.netDown),
@@ -173,8 +180,8 @@ export const LoadCharts = memo(function LoadCharts({
                     last ? (
                         <>
                             <SeriesDot color={CHART_PALETTE[0]} />
-                            TCP {last.tcp} · <SeriesDot color={CHART_PALETTE[3]} />
-                            UDP {last.udp}
+                            TCP {formatNumber(last.tcp, 0)} · <SeriesDot color={CHART_PALETTE[3]} />
+                            UDP {formatNumber(last.udp, 0)}
                         </>
                     ) : undefined
                 }
@@ -182,7 +189,9 @@ export const LoadCharts = memo(function LoadCharts({
                 <Chart
                     {...common}
                     label={t("metric.connections")}
+                    minStep={1}
                     format={(v) => formatNumber(v, 0)}
+                    formatTick={(v) => formatNumber(v, 0)}
                     series={[
                         s("tcp", t("metric.tcp"), CHART_PALETTE[0], (p) => p.tcp, true),
                         s("udp", t("metric.udp"), CHART_PALETTE[3], (p) => p.udp),
@@ -191,14 +200,17 @@ export const LoadCharts = memo(function LoadCharts({
             </ChartCard>
             <ChartCard
                 title={`${t("metric.load")} · ${t("metric.process")}`}
-                value={last ? `${formatNumber(last.load1)} · ${last.process}` : undefined}
+                value={
+                    last
+                        ? `${formatNumber(last.load1)} · ${formatNumber(last.process, 0)}`
+                        : undefined
+                }
             >
                 <Chart
                     {...common}
                     label={t("metric.load")}
-                    format={(v) =>
-                        formatNumber(v, v > 0 && v < 1 && Math.round(v * 100) % 10 !== 0 ? 2 : 1)
-                    }
+                    format={(v) => formatNumber(v, 2)}
+                    formatTick={(v, step) => formatNumber(v, stepDigits(step))}
                     series={[s("load", t("metric.load"), CHART_PALETTE[1], (p) => p.load1, true)]}
                 />
             </ChartCard>
@@ -257,7 +269,8 @@ export const PingChart = memo(function PingChart({
                 height={height}
                 robust
                 focus={focus !== null && visible(focus) ? String(focus) : null}
-                format={(v) => `${formatNumber(v, 0)} ms`}
+                format={(v) => `${formatNumber(v, v > 0 && v < 10 ? 1 : 0)} ms`}
+                formatTick={(v, step) => `${formatNumber(v, stepDigits(step))} ms`}
                 formatTime={fmt.axis}
                 formatTooltipTime={fmt.tooltip}
                 label={t("node.tabPing")}

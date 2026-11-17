@@ -18,6 +18,9 @@ export interface ChartSeries {
 interface Props {
     series: ChartSeries[]
     format: (v: number) => string
+    formatTick?: (v: number, step: number) => string
+    scale?: ChartScale
+    minStep?: number
     formatTime: (t: number) => string
     formatTooltipTime?: (t: number) => string
     yMax?: number
@@ -29,19 +32,130 @@ interface Props {
     focus?: string | null
 }
 
+export type ChartScale = "decimal" | "binary"
+
+export interface YTickOptions {
+    scale?: ChartScale
+    yMax?: number
+    minStep?: number
+}
+
+export interface YAxisScale {
+    max: number
+    step: number
+    ticks: number[]
+}
+
 // Container widths, not viewport breakpoints: reserve space for 12px axis labels.
 const COMPACT_AXES_WIDTH = 400
 const FOUR_TIME_LABELS_WIDTH = 210
 
-const PAD = { l: 48, r: 6, t: 10, b: 24 }
-const MOBILE_PAD = { l: 46, r: 4, t: 6, b: 18 }
+const PAD = { l: 44, r: 6, t: 10, b: 24 }
+const MOBILE_PAD = { l: 40, r: 4, t: 6, b: 18 }
 
-function niceMax(v: number) {
-    if (!(v > 0)) return 1
-    const exp = 10 ** Math.floor(Math.log10(v))
-    const f = v / exp
-    const nf = f <= 1 ? 1 : f <= 1.5 ? 1.5 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10
-    return nf * exp
+const DEC_MULTS = [1, 2, 5]
+const DEC_COUNTS = [2, 3]
+const BIN_MULTS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
+const BIN_COUNTS = [2, 3]
+const MAX_BIN_UNIT = 6
+
+export function stepDigits(step: number): number {
+    if (!Number.isFinite(step) || step <= 0) return 0
+    for (let d = 0; d < 6; d++) {
+        const scaled = step * 10 ** d
+        if (Math.abs(Math.round(scaled) - scaled) < 1e-6) return d
+    }
+    return 6
+}
+
+export function buildYTicks(dataMax: number, opts: YTickOptions = {}): YAxisScale {
+    const safeData = Number.isFinite(dataMax) && dataMax > 0 ? dataMax : 0
+    const safeCap = opts.yMax && Number.isFinite(opts.yMax) && opts.yMax > 0 ? opts.yMax : 0
+    const target = Math.max(safeData, safeCap)
+
+    if (opts.scale === "binary") {
+        if (target <= 0) return { max: 2, step: 1, ticks: [0, 1, 2] }
+        const u0 = Math.max(
+            0,
+            Math.min(MAX_BIN_UNIT, Math.floor(Math.log(target) / Math.log(1024)) - 1),
+        )
+        let best: { max: number; step: number; count: number } | null = null
+        for (let u = u0; u <= MAX_BIN_UNIT; u++) {
+            const unit = 1024 ** u
+            for (const m of BIN_MULTS) {
+                const step = m * unit
+                for (const count of BIN_COUNTS) {
+                    if (u < MAX_BIN_UNIT && count * m > 1024) continue
+                    const max = count * step
+                    if (max < target) continue
+                    if (!best || max < best.max || (max === best.max && count < best.count)) {
+                        best = { max, step, count }
+                    }
+                }
+            }
+            if (best) break
+        }
+        if (!best) {
+            const step = 2 ** Math.ceil(Math.log2(target / 2))
+            best = { max: step * 2, step, count: 2 }
+        }
+        const { max, step, count } = best
+        return { max, step, ticks: Array.from({ length: count + 1 }, (_, i) => i * step) }
+    }
+
+    const minStep =
+        opts.minStep && Number.isFinite(opts.minStep) && opts.minStep > 0 ? opts.minStep : 0
+    if (target <= 0) {
+        const step = Math.max(1, minStep)
+        return { max: step * 2, step, ticks: [0, step, step * 2] }
+    }
+    const expStart = Math.max(
+        Math.floor(Math.log10(target)) - 1,
+        minStep > 0 ? Math.floor(Math.log10(minStep)) - 1 : -Infinity,
+    )
+    let best: { max: number; step: number; count: number } | null = null
+    for (let exp = expStart; exp <= expStart + 4; exp++) {
+        const base = 10 ** exp
+        for (const m of DEC_MULTS) {
+            const step = Number((m * base).toPrecision(12))
+            if (step < minStep) continue
+            for (const count of DEC_COUNTS) {
+                const max = Number((count * step).toPrecision(12))
+                if (max < target) continue
+                if (!best || max < best.max || (max === best.max && count < best.count)) {
+                    best = { max, step, count }
+                }
+            }
+        }
+    }
+    if (!best) {
+        const step = Math.max(minStep, 10 ** Math.ceil(Math.log10(target)))
+        best = { max: step * 2, step, count: 2 }
+    }
+    const { max, step, count } = best
+    return {
+        max,
+        step,
+        ticks: Array.from({ length: count + 1 }, (_, i) => Number((i * step).toPrecision(12))),
+    }
+}
+
+let measureCtx: CanvasRenderingContext2D | null | undefined
+function estimateLabelWidth(text: string): number {
+    const tabular = text.replace(/\d/g, "0")
+    if (typeof document !== "undefined" && measureCtx === undefined) {
+        try {
+            measureCtx = document.createElement("canvas").getContext("2d")
+        } catch {
+            measureCtx = null
+        }
+    }
+    if (measureCtx) {
+        measureCtx.font = '12px "Inter Variable", ui-sans-serif, system-ui, sans-serif'
+        const w = measureCtx.measureText(tabular).width
+        if (w > 0) return w
+    }
+    return tabular.length * 7.2
 }
 
 /** Averages points into at most `buckets` buckets so long ranges stay light. */
@@ -87,6 +201,9 @@ function nearest(points: ChartPoint[], t: number) {
 export function Chart({
     series,
     format,
+    formatTick,
+    scale = "decimal",
+    minStep,
     formatTime,
     formatTooltipTime = formatTime,
     yMax,
@@ -96,7 +213,11 @@ export function Chart({
     focus,
 }: Props) {
     const box = useRef<HTMLDivElement>(null)
+    const yTicksRef = useRef<SVGGElement>(null)
+    const tipRef = useRef<HTMLDivElement>(null)
     const [width, setWidth] = useState(0)
+    const [domPad, setDomPad] = useState<{ key: string; l: number } | null>(null)
+    const [tipW, setTipW] = useState(180)
     // Choose padding from the plot container, which can be narrower than the viewport.
     const isMobile = width < COMPACT_AXES_WIDTH
     const [hoverT, setHoverT] = useState<number | null>(null)
@@ -111,17 +232,17 @@ export function Chart({
         return () => ro.disconnect()
     }, [])
 
-    const pad = isMobile ? MOBILE_PAD : PAD
-    const plotW = Math.max(0, width - pad.l - pad.r)
-    const plotH = height - pad.t - pad.b
+    const basePad = isMobile ? MOBILE_PAD : PAD
+    const gap = isMobile ? 6 : 8
+    const sampleBuckets = Math.max(40, Math.floor(Math.max(0, width - basePad.l - basePad.r) / 2))
 
     const prepared = useMemo(
         () =>
             series.map((s) => ({
                 ...s,
-                points: downsample(s.points, Math.max(40, Math.floor(plotW / 2))),
+                points: downsample(s.points, sampleBuckets),
             })),
-        [series, plotW],
+        [series, sampleBuckets],
     )
 
     const all = prepared.flatMap((s) => s.points)
@@ -134,20 +255,40 @@ export function Chart({
         vals.sort((a, b) => a - b)
         dataMax = Math.min(dataMax, vals[Math.floor((vals.length - 1) * 0.99)] * 1.25)
     }
-    const max = yMax && yMax > 0 ? yMax : niceMax(dataMax * 1.1)
+    const { max, step, ticks: yTicks } = buildYTicks(dataMax, { scale, yMax, minStep })
+    const yLabels = yTicks.map((v) => (formatTick ? formatTick(v, step) : format(v)))
+    const labelKey = `${isMobile ? 1 : 0}:${yLabels.join("\n")}`
+    const estPadL = Math.ceil(Math.max(0, ...yLabels.map(estimateLabelWidth))) + gap + 4
+    const padL = Math.max(basePad.l, estPadL, domPad?.key === labelKey ? domPad.l : 0)
+    const pad = { ...basePad, l: padL }
+    const plotW = Math.max(0, width - pad.l - pad.r)
+    const plotH = height - pad.t - pad.b
+
+    useLayoutEffect(() => {
+        if (width <= 0 || !yTicksRef.current) return
+        const texts = yTicksRef.current.querySelectorAll("text")
+        let maxLen = 0
+        texts.forEach((el) => {
+            const len =
+                typeof el.getComputedTextLength === "function" ? el.getComputedTextLength() : 0
+            if (len > maxLen) maxLen = len
+        })
+        const needed = Math.ceil(maxLen) + gap + 2
+        if (needed > padL) setDomPad({ key: labelKey, l: needed })
+    }, [width, labelKey, gap, padL])
 
     const x = (t: number) => pad.l + ((t - t0) / span) * plotW
     const y = (v: number) => pad.t + plotH - (Math.min(v, max) / max) * plotH
 
     const paths = prepared.map((s) => {
-        const gap = medianStep(s.points) * 4
+        const gapStep = medianStep(s.points) * 4
         let line = ""
         let area = ""
         let segStart: number | null = null
         let prevT = -Infinity
         let lastX = 0
         for (const p of s.points) {
-            if (p.v === null || p.t - prevT > gap) {
+            if (p.v === null || p.t - prevT > gapStep) {
                 if (segStart !== null)
                     area += `L${lastX},${pad.t + plotH}L${segStart},${pad.t + plotH}Z`
                 segStart = null
@@ -171,7 +312,6 @@ export function Chart({
         return { key: s.key, color: s.color, line, area: s.area ? area : "" }
     })
 
-    const yTicks = [0, max / 2, max]
     const tickCount = plotW > 0 && plotW < FOUR_TIME_LABELS_WIDTH ? 3 : 4
     const xTicks =
         width > 0 && all.length
@@ -186,13 +326,25 @@ export function Chart({
                   const i = s.points.length ? nearest(s.points, hoverT) : -1
                   return { s, p: i >= 0 ? s.points[i] : null }
               })
+    const hasHover = Boolean(hover && hover.some((h) => h.p))
     const hoverX = hoverT === null ? 0 : x(hover?.find((h) => h.p)?.p?.t ?? hoverT)
+
+    useLayoutEffect(() => {
+        if (!hasHover || !tipRef.current) return
+        const nextW = tipRef.current.offsetWidth
+        if (nextW > 0 && nextW !== tipW) setTipW(nextW)
+    })
+
+    const clampedTipW = Math.min(tipW, width)
+    const flipLeft = hoverX > pad.l + plotW / 2
+    const desiredTipLeft = flipLeft ? hoverX - 12 - clampedTipW : hoverX + 12
+    const tipLeft = Math.max(0, Math.min(Math.max(0, width - clampedTipW), desiredTipLeft))
 
     const onMove = (e: PointerEvent<SVGSVGElement>) => {
         const rect = e.currentTarget.getBoundingClientRect()
         const px = e.clientX - rect.left
-        if (px < pad.l || !all.length) return setHoverT(null)
-        setHoverT(t0 + ((px - pad.l) / plotW) * span)
+        if (px < pad.l || plotW <= 0 || !all.length) return setHoverT(null)
+        setHoverT(t0 + (Math.min(plotW, px - pad.l) / plotW) * span)
     }
 
     const empty = all.every((p) => p.v === null)
@@ -234,27 +386,29 @@ export function Chart({
                             </linearGradient>
                         ))}
                     </defs>
-                    {yTicks.map((v, i) => (
-                        <g key={i}>
-                            <line
-                                x1={pad.l}
-                                x2={width - pad.r}
-                                y1={y(v)}
-                                y2={y(v)}
-                                style={{ stroke: "var(--color-kumo-line)" }}
-                                strokeDasharray={i === 0 ? undefined : "2 4"}
-                            />
-                            <text
-                                x={pad.l - (isMobile ? 6 : 8)}
-                                y={y(v)}
-                                dy="0.32em"
-                                textAnchor="end"
-                                className={tickTextClass}
-                            >
-                                {format(v)}
-                            </text>
-                        </g>
-                    ))}
+                    <g ref={yTicksRef}>
+                        {yTicks.map((v, i) => (
+                            <g key={i}>
+                                <line
+                                    x1={pad.l}
+                                    x2={width - pad.r}
+                                    y1={y(v)}
+                                    y2={y(v)}
+                                    style={{ stroke: "var(--color-kumo-line)" }}
+                                    strokeDasharray={i === 0 ? undefined : "2 4"}
+                                />
+                                <text
+                                    x={pad.l - gap}
+                                    y={y(v)}
+                                    dy="0.32em"
+                                    textAnchor="end"
+                                    className={tickTextClass}
+                                >
+                                    {yLabels[i]}
+                                </text>
+                            </g>
+                        ))}
+                    </g>
                     {xTicks.map((t, i) => (
                         <text
                             key={i}
@@ -330,11 +484,12 @@ export function Chart({
                     —
                 </div>
             )}
-            {hover && hover.some((h) => h.p) && (
+            {hover && hasHover && (
                 <div
+                    ref={tipRef}
                     className="chart-tooltip pointer-events-none absolute top-1 z-10 px-3 py-2 text-[12px]"
                     style={{
-                        left: Math.max(0, Math.min(width - 220, hoverX + 12)),
+                        left: tipLeft,
                         maxWidth: width,
                     }}
                 >

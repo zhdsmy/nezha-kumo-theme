@@ -5,17 +5,19 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="description" content="Live server status and performance" />
-        <title>Nezha</title>
+        <title></title>
         <link rel="icon" href="/assets/apple-touch-icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" sizes="512x512" href="/assets/apple-touch-icon-512.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
         <script>
-            // Resolve appearance before first paint to avoid a light flash in dark mode.
+            // Resolve appearance and cached site title before first paint.
             ;(function () {
                 var root = document.documentElement
                 var stored = null
                 try {
                     stored = localStorage.getItem("nkt:appearance")
+                    var title = localStorage.getItem("nkt:site-title")
+                    if (title) document.title = title
                 } catch (e) {}
                 var mode = stored === "light" || stored === "dark" ? stored : "system"
                 var dark =
