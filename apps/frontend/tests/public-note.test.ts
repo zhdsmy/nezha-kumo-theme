@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest"
 
 import { parseActualCost, parsePublicNote } from "../src/adapters/nezha"
 import { trafficUsed } from "../src/core/format"
-import syntheticNotes from "./fixtures/public-notes-synthetic.json"
 import legacyNotes from "./fixtures/public-notes-legacy.json"
+import syntheticNotes from "./fixtures/public-notes-synthetic.json"
 
 describe("shared public-note compatibility", () => {
     it.each([

@@ -74,7 +74,7 @@ for (const [engine, driver] of Object.entries({ chromium, webkit }))
                         await route.fulfill({ json: { success: true, data } })
                     })
                     const open = async () => {
-                        await page.goto(`${baseURL}/dashboard`)
+                        await page.goto(`${baseURL}/dashboard/`)
                         if (width === 375)
                             await page
                                 .getByRole("button", { name: "操作", exact: true })

@@ -36,7 +36,7 @@ test("a real agent reports to the dashboard and is selectable in the server tabl
         )
         .toBe(true)
 
-    await page.goto("/dashboard")
+    await page.goto("/dashboard/")
 
     const row = page.getByRole("row").filter({
         has: page.getByText(agentServer!.name, { exact: true }),

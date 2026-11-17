@@ -1,7 +1,7 @@
 import i18n from "@/lib/i18n"
 import { expect, test } from "vitest"
 
-test.each(["en-US", "zh-CN", "zh-TW", "ja-JP"])(
+test.each(["en", "zh-CN", "zh-TW", "ja"])(
     "note form labels and errors resolve in %s",
     (language) => {
         for (const key of [
