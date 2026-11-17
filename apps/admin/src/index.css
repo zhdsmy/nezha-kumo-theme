@@ -698,7 +698,7 @@ body,
     width: 100%;
 }
 .nkt-note-editor [data-note-field] input[list],
-.nkt-note-editor [data-note-field="extra"] input {
+.nkt-note-editor [data-note-field="extra"] input[aria-label] {
     min-width: 8rem;
 }
 .nkt-note-editor [data-note-field] span:has(> button[aria-label]) {
