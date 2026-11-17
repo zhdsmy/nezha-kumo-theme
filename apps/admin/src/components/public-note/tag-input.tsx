@@ -13,6 +13,7 @@ export function TagInput({
 }: Omit<NoteControlProps, "value"> & { value?: unknown; suggestions?: string[] }) {
     const { t } = useTranslation()
     const listId = useId()
+    const hintId = useId()
     const input = useRef<HTMLInputElement>(null)
     const [revision, resetDraft] = useState(0)
     const restoreFocus = useRef(false)
@@ -49,7 +50,8 @@ export function TagInput({
                 value={tags}
                 onValueChange={save}
                 aria-label={label}
-                placeholder={t("PublicNote.TagsHint")}
+                aria-describedby={hintId}
+                placeholder={t("PublicNote.TagsPlaceholder")}
                 list={suggestions.length ? listId : undefined}
                 labels={{ removeValue: (tag) => t("PublicNote.RemoveTag", { tag }) }}
                 onChange={(event) => {
@@ -82,6 +84,9 @@ export function TagInput({
                     )
                 }}
             />
+            <span id={hintId} className="sr-only">
+                {t("PublicNote.TagsHint")}
+            </span>
             {suggestions.length > 0 && (
                 <datalist id={listId}>
                     {[...new Set(suggestions)]

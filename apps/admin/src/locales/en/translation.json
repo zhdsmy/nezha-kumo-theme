@@ -262,6 +262,7 @@
             "max": "Larger direction"
         },
         "RemoveTag": "Remove {{tag}}",
+        "TagsPlaceholder": "Enter to add",
         "TagsHint": "Press Enter or comma to add a tag.",
         "Time": "Time"
     },

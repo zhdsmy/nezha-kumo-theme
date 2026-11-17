@@ -262,6 +262,7 @@
             "max": "取较大"
         },
         "RemoveTag": "删除 {{tag}}",
+        "TagsPlaceholder": "回车添加",
         "TagsHint": "按 Enter 或输入逗号添加标签。",
         "Time": "时间"
     },

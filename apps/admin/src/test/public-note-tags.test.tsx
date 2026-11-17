@@ -59,11 +59,19 @@ test("non-string tags remain unknown and unchanged until replacement", () => {
     expect(change).not.toHaveBeenCalled()
 })
 
-test("Kumo tag draft shares its frame with chips and uses the hint as placeholder", () => {
+test("Kumo tag draft shares its frame with chips and preserves duplicate display", () => {
     render(<TagInput label="Tags" value="A,A" onChange={vi.fn()} />)
     const input = screen.getByRole("textbox", { name: "Tags" }) as HTMLInputElement
-    expect(input.placeholder).toBe(i18n.t("PublicNote.TagsHint"))
-    expect(screen.queryByText(i18n.t("PublicNote.TagsHint"))).toBeNull()
+    expect(input.placeholder).toBe(i18n.t("PublicNote.TagsPlaceholder"))
     expect(screen.getAllByText("A")).toHaveLength(2)
     expect(input.parentElement?.textContent).toContain("A")
+})
+
+test("tags use a short placeholder and retain full screen reader instructions", () => {
+    render(<TagInput label="routes" value="CN2" onChange={vi.fn()} />)
+    const input = screen.getByRole("textbox", { name: "routes" })
+    expect(input.getAttribute("placeholder")).toBe(i18n.t("PublicNote.TagsPlaceholder"))
+    expect(document.getElementById(input.getAttribute("aria-describedby")!)?.textContent).toBe(
+        i18n.t("PublicNote.TagsHint"),
+    )
 })

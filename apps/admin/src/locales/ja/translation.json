@@ -262,6 +262,7 @@
             "max": "大きい方"
         },
         "RemoveTag": "{{tag}} を削除",
+        "TagsPlaceholder": "Enterで追加",
         "TagsHint": "Enter またはカンマでタグを追加します。",
         "Time": "時刻"
     },
