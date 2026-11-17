@@ -1,8 +1,8 @@
 let receivedLength = 0
 let expectedLength = 0
-let root: FileSystemDirectoryHandle
+let downloads: FileSystemDirectoryHandle | undefined
 let draftHandle: FileSystemFileHandle
-let accessHandle: FileSystemSyncAccessHandle
+let accessHandle: FileSystemSyncAccessHandle | undefined
 
 enum Operation {
     WriteHeader = 1,
@@ -21,9 +21,13 @@ onmessage = async function (event) {
                 receivedLength = 0
 
                 // Create a new temporary file
-                root = await navigator.storage.getDirectory()
-                draftHandle = await root.getFileHandle(fileName, { create: true })
+                accessHandle?.close()
+                accessHandle = undefined
+                const root = await navigator.storage.getDirectory()
+                downloads = await root.getDirectoryHandle("nezha-fm-downloads", { create: true })
+                draftHandle = await downloads.getFileHandle(fileName, { create: true })
                 accessHandle = await draftHandle.createSyncAccessHandle()
+                accessHandle.truncate(0)
 
                 // Inform that file handle is created
                 const dataChunk = arrayBuffer.slice(12)
@@ -44,6 +48,7 @@ onmessage = async function (event) {
                 if (receivedLength === expectedLength) {
                     accessHandle.flush()
                     accessHandle.close()
+                    accessHandle = undefined
 
                     const fileBlob = await draftHandle.getFile()
                     const blob = new Blob([fileBlob], { type: "application/octet-stream" })
@@ -53,12 +58,11 @@ onmessage = async function (event) {
                 break
             }
             case Operation.DeleteFiles: {
-                for await (const [name, handle] of root.entries()) {
-                    if (handle.kind === "file") {
-                        await root.removeEntry(name)
-                    } else if (handle.kind === "directory") {
-                        await root.removeEntry(name, { recursive: true })
-                    }
+                accessHandle?.close()
+                accessHandle = undefined
+                if (!downloads) break
+                for await (const [name] of downloads.entries()) {
+                    await downloads.removeEntry(name, { recursive: true })
                 }
                 break
             }
@@ -67,3 +71,5 @@ onmessage = async function (event) {
         if (error instanceof Error) postMessage({ type: 0, error: error.message })
     }
 }
+
+export {}
