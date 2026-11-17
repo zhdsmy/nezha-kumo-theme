@@ -2,7 +2,8 @@
 import { formatBytes, formatClock, formatNumber, formatPercent, formatSpeed } from "@/core/format"
 import type { HistoryPoint, NodeInfo, PingData } from "@/core/model"
 import { spikeLimit } from "@/core/summary"
-import { type ReactNode, memo, useMemo, useState } from "react"
+import { Switch } from "@cloudflare/kumo/components/switch"
+import { type ReactNode, memo, useId, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Chart, type ChartSeries, stepDigits } from "./Chart"
@@ -60,19 +61,22 @@ function useTimeFormats(hours: number) {
     }
 }
 
-function ChartCard({
+export function ChartCard({
     title,
     value,
+    action,
     children,
 }: {
     title: string
     value?: ReactNode
+    action?: ReactNode
     children: ReactNode
 }) {
+    const headingId = useId()
     return (
-        <div className="chart-card">
+        <section className="chart-card" aria-labelledby={headingId}>
             <div className="chart-heading">
-                <h3>{title}</h3>
+                <h3 id={headingId}>{title}</h3>
                 {value && (
                     <p
                         className="num numeric-text"
@@ -81,9 +85,10 @@ function ChartCard({
                         {value}
                     </p>
                 )}
+                {action}
             </div>
             {children}
-        </div>
+        </section>
     )
 }
 
@@ -254,11 +259,13 @@ export const PingChart = memo(function PingChart({
     hours,
     height,
     shave,
+    onShaveChange,
 }: {
     data: PingData
     hours: number
     height: number
     shave: boolean
+    onShaveChange: (on: boolean) => void
 }) {
     const { t } = useTranslation()
     const fmt = useTimeFormats(hours)
@@ -294,7 +301,18 @@ export const PingChart = memo(function PingChart({
     )
 
     return (
-        <div className="chart-card latency-card">
+        <ChartCard
+            title={t("node.pingLines", { count: data.tasks.length })}
+            action={
+                <Switch
+                    size="sm"
+                    checked={shave}
+                    onCheckedChange={onShaveChange}
+                    label={t("node.shave")}
+                    labelTooltip={t("node.shaveHint")}
+                />
+            }
+        >
             <Chart
                 series={series}
                 height={height}
@@ -304,7 +322,7 @@ export const PingChart = memo(function PingChart({
                 formatTick={(v, step) => `${formatNumber(v, stepDigits(step))} ms`}
                 formatTime={fmt.axis}
                 formatTooltipTime={fmt.tooltip}
-                label={t("node.tabPing")}
+                label={t("ui.latency")}
             />
             {/* chips, not a table: a line's colour, name and average; the full figures show when it is the only line */}
             <div
@@ -353,6 +371,6 @@ export const PingChart = memo(function PingChart({
                     {formatNumber(solo.max, 0)}
                 </p>
             )}
-        </div>
+        </ChartCard>
     )
 })

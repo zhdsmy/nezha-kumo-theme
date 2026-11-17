@@ -381,8 +381,8 @@ test.describe("Native Kumo parts & mobile/WebKit polish", () => {
         await assertHitAreaAtLeast32(page, ".node-ping-row", "Latency line filter button")
 
         await page.goto("/server/6#history")
-        await expect(page.locator(".section-heading > button")).toBeVisible()
-        await assertHitAreaAtLeast32(page, ".section-heading > button", "Section RefreshButton")
+        await expect(page.locator(".chart-toolbar > button")).toBeVisible()
+        await assertHitAreaAtLeast32(page, ".chart-toolbar > button", "History RefreshButton")
     })
 
     test("10 & Gate 3. WebKit rapid range/page navigation has 0 unhandled rejections and foldable 867/952/zoomed layouts hold", async ({

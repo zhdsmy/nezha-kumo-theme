@@ -149,7 +149,7 @@ export type LoadingVariant = "home" | "node" | "charts" | "ping" | "history"
 function InfoPanelSkeleton({ rows }: { rows: number }) {
     return (
         <div className="info-section">
-            <div className="mb-2 flex items-center" style={{ height: 24 }}>
+            <div className="info-heading-skeleton">
                 <SkeletonLine minWidth={28} maxWidth={42} className="h-3.5" />
             </div>
             <dl>
@@ -493,13 +493,19 @@ export function Loading({ variant = "home" }: { variant?: LoadingVariant } = {})
                 </div>
             )}
             {variant === "ping" && (
-                <div className="chart-card latency-card" aria-hidden="true">
+                <div className="chart-card" aria-hidden="true">
+                    <div className="chart-heading">
+                        <div className="flex flex-1 items-center" style={{ height: 21 }}>
+                            <SkeletonLine minWidth={20} maxWidth={35} className="h-3.5" />
+                        </div>
+                        <SkeletonLine minWidth={22} maxWidth={30} className="h-4 rounded-full" />
+                    </div>
                     <div className="flex flex-col justify-between" style={{ height: 280 }}>
                         {Array.from({ length: 5 }, (_, r) => (
                             <SkeletonLine key={r} minWidth={100} maxWidth={100} />
                         ))}
                     </div>
-                    <div className="mt-2 flex items-center gap-2" style={{ minHeight: 28 }}>
+                    <div className="mt-2 flex items-center gap-2" style={{ minHeight: 32 }}>
                         <SkeletonLine minWidth={16} maxWidth={22} className="h-5 rounded-full" />
                         <SkeletonLine minWidth={16} maxWidth={22} className="h-5 rounded-full" />
                         <SkeletonLine minWidth={16} maxWidth={22} className="h-5 rounded-full" />
@@ -508,8 +514,10 @@ export function Loading({ variant = "home" }: { variant?: LoadingVariant } = {})
             )}
             {variant === "history" && (
                 <div className="chart-card" aria-hidden="true">
-                    <div className="flex items-center justify-between" style={{ height: 21 }}>
-                        <SkeletonLine minWidth={25} maxWidth={40} className="h-3.5" />
+                    <div className="chart-heading">
+                        <div className="flex flex-1 items-center" style={{ height: 21 }}>
+                            <SkeletonLine minWidth={25} maxWidth={40} className="h-3.5" />
+                        </div>
                         <SkeletonLine minWidth={20} maxWidth={30} />
                     </div>
                     <div className="hour-grid-rows">
@@ -570,10 +578,19 @@ export function NoData({ title, retry }: { title: string; retry?: () => void }) 
     )
 }
 
-export function Info({ title, rows }: { title: string; rows: [string, ReactNode][] }) {
+export function Info({
+    title,
+    labelId,
+    rows,
+}: {
+    title: string
+    labelId?: string
+    rows: [string, ReactNode][]
+}) {
+    const headingId = useId()
     return (
-        <section className="info-section">
-            <h2>{title}</h2>
+        <section className="info-section" aria-labelledby={labelId ?? headingId}>
+            <h2 id={labelId ? undefined : headingId}>{title}</h2>
             <dl>
                 {rows
                     .filter(([, v]) => v !== undefined && v !== null && v !== "")

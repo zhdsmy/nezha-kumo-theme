@@ -121,34 +121,53 @@ test("node tabs hash navigation, overview responsive panels, #billing link and l
 
     await page.getByRole("tab", { name: "Reporting history", exact: true }).click()
     await expect(page).toHaveURL(/\/server\/6#history$/)
-    await expect(page.getByText(/hours reported/)).toBeVisible()
+    await expect(page.getByText(/\d+(?:\.\d+)?% · \d+\/\d+ hours?/)).toBeVisible()
 
     await page.getByRole("tab", { name: "Overview", exact: true }).click()
     await expect(page).toHaveURL(/\/server\/6#overview$/)
 
-    // 375 narrow: secondary tabs sync two-way with #billing via replace without adding history
+    // 375 narrow: secondary tabs sync two-way with #billing via replace without adding history; card headings hide while regions stay named
     await page.setViewportSize({ width: 375, height: 900 })
     const historyBefore = await page.evaluate(() => history.length)
     await expect(page.locator(".node-subtabs")).toBeVisible()
-    await expect(page.getByRole("heading", { name: "System", exact: true })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "System", exact: true })).toBeHidden()
     await expect(page.getByRole("heading", { name: "Network", exact: true })).toBeHidden()
     await expect(page.getByRole("heading", { name: "Billing", exact: true })).toBeHidden()
+    await expect(page.getByRole("region", { name: "System", exact: true })).toBeVisible()
+    await expect(page.getByRole("region", { name: "Network", exact: true })).toBeHidden()
+    await expect(page.getByRole("region", { name: "Billing", exact: true })).toBeHidden()
+    const panelTop = await page
+        .locator(".node-info-panel[data-active]")
+        .evaluate((el) => Math.round(el.getBoundingClientRect().top))
 
     await page.locator(".node-subtabs").getByRole("tab", { name: "Network", exact: true }).click()
     await expect(page).toHaveURL(/\/server\/6#overview$/)
-    await expect(page.getByRole("heading", { name: "Network", exact: true })).toBeVisible()
-    await expect(page.getByRole("heading", { name: "System", exact: true })).toBeHidden()
+    await expect(page.getByRole("heading", { name: "Network", exact: true })).toBeHidden()
+    await expect(page.getByRole("region", { name: "Network", exact: true })).toBeVisible()
+    await expect(page.getByRole("region", { name: "System", exact: true })).toBeHidden()
+    expect(
+        await page
+            .locator(".node-info-panel[data-active]")
+            .evaluate((el) => Math.round(el.getBoundingClientRect().top)),
+    ).toBe(panelTop)
 
     await page.locator(".node-subtabs").getByRole("tab", { name: "Billing", exact: true }).click()
     await expect(page).toHaveURL(/\/server\/6#billing$/)
-    await expect(page.getByRole("heading", { name: "Billing", exact: true })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Billing", exact: true })).toBeHidden()
+    await expect(page.getByRole("region", { name: "Billing", exact: true })).toBeVisible()
+    await expect(page.getByRole("region", { name: "Network", exact: true })).toBeHidden()
     await expect(page.getByText("Public server information")).toBeVisible()
-    await expect(page.getByRole("heading", { name: "Network", exact: true })).toBeHidden()
+    expect(
+        await page
+            .locator(".node-info-panel[data-active]")
+            .evaluate((el) => Math.round(el.getBoundingClientRect().top)),
+    ).toBe(panelTop)
 
     await page.locator(".node-subtabs").getByRole("tab", { name: "System", exact: true }).click()
     await expect(page).toHaveURL(/\/server\/6$/)
-    await expect(page.getByRole("heading", { name: "System", exact: true })).toBeVisible()
-    await expect(page.getByRole("heading", { name: "Billing", exact: true })).toBeHidden()
+    await expect(page.getByRole("heading", { name: "System", exact: true })).toBeHidden()
+    await expect(page.getByRole("region", { name: "System", exact: true })).toBeVisible()
+    await expect(page.getByRole("region", { name: "Billing", exact: true })).toBeHidden()
     expect(await page.evaluate(() => history.length)).toBe(historyBefore)
 
     // #billing hash opens Overview and selects Billing, survives reload, and leaves Billing when hash changes
@@ -162,8 +181,9 @@ test("node tabs hash navigation, overview responsive panels, #billing link and l
     await expect(
         page.locator(".node-subtabs").getByRole("tab", { name: "Billing", exact: true }),
     ).toHaveAttribute("aria-selected", "true")
-    await expect(page.getByRole("heading", { name: "Billing", exact: true })).toBeVisible()
-    await expect(page.getByRole("heading", { name: "System", exact: true })).toBeHidden()
+    await expect(page.getByRole("heading", { name: "Billing", exact: true })).toBeHidden()
+    await expect(page.getByRole("region", { name: "Billing", exact: true })).toBeVisible()
+    await expect(page.getByRole("region", { name: "System", exact: true })).toBeHidden()
     await page.goBack()
     await expect(page).toHaveURL(/\/server\/6#load$/)
     await page.getByRole("tab", { name: "Overview", exact: true }).click()
@@ -388,7 +408,7 @@ test("768–879 persistent sidebar defaults expanded at 867, collapses to 57px, 
             await expectZeroOverflow(`node latency ${width} ${state}`)
 
             await page.getByRole("tab", { name: "Reporting history", exact: true }).click()
-            await expect(page.getByText(/hours reported/)).toBeVisible()
+            await expect(page.getByText(/\d+(?:\.\d+)?% · \d+\/\d+ hours?/)).toBeVisible()
             await expectZeroOverflow(`node history ${width} ${state}`)
         }
     }

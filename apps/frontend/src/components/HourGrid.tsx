@@ -1,4 +1,6 @@
 // Adapted from zool-theme/src/components/HourGrid.tsx (MIT, luoleiorg).
+import { ChartCard } from "@/components/NodeCharts"
+import { formatNumber, ratio } from "@/core/format"
 import { bucketSeries } from "@/core/live"
 import type { HistoryPoint } from "@/core/model"
 import { useTranslation } from "react-i18next"
@@ -40,15 +42,13 @@ export function HourGrid({ points, days = 7 }: { points: readonly HistoryPoint[]
             month: "numeric",
             day: "numeric",
         })
+    const rate = formatNumber(ratio(seen, elapsed), 1)
 
     return (
-        <section aria-label={t("node.uptimeGrid")}>
-            <div className="flex items-baseline justify-between">
-                <h2 className="font-semibold">{t("node.uptimeGrid")}</h2>
-                <p className="num text-[12px] text-kumo-subtle">
-                    {t("node.reportedHours", { count: seen, total: elapsed })}
-                </p>
-            </div>
+        <ChartCard
+            title={t("node.reportRate")}
+            value={t("node.reportedHours", { rate, seen, count: elapsed })}
+        >
             <div className="hour-grid-rows">
                 {rows.map((row, d) => (
                     <div key={d} className="flex items-center gap-2">
@@ -80,6 +80,7 @@ export function HourGrid({ points, days = 7 }: { points: readonly HistoryPoint[]
                     </div>
                 ))}
             </div>
-        </section>
+            <p className="muted mt-4 text-xs">{t("ui.historyHint")}</p>
+        </ChartCard>
     )
 }

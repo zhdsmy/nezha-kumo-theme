@@ -21,7 +21,6 @@ import { regionName, stripFlag } from "@/core/region"
 import { summariseDay } from "@/core/summary"
 import { uiLabels } from "@/i18n"
 import { Banner, RefreshButton, Tabs } from "@cloudflare/kumo"
-import { Switch } from "@cloudflare/kumo/components/switch"
 import { Page } from "@nezha-kumo/ui"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -237,28 +236,42 @@ export default function NodePage({ id, section }: { id: string; section: Section
             }
         >
             <section aria-label={t(`ui.${section}`)}>
-                {(section === "load" || section === "latency") && (
+                {section !== "overview" && (
                     <div className="chart-toolbar">
-                        <div className="min-w-0" aria-label={t("money.period")}>
-                            <Tabs
-                                variant="segmented"
-                                size="sm"
-                                activateOnFocus
-                                className="w-fit max-w-full"
-                                labels={tabLabels}
-                                value={String(activeRange)}
-                                onValueChange={(v) => setRange(Number(v))}
-                                tabs={ranges.map((h) => ({
-                                    value: String(h),
-                                    label: labelRange(h),
-                                }))}
-                            />
-                        </div>
+                        {section === "history" ? (
+                            <span className="muted num text-sm">
+                                {reportHours > 24
+                                    ? t("node.recentDays", { count: reportHours / 24 })
+                                    : t("node.recentHours", { count: reportHours })}
+                            </span>
+                        ) : (
+                            <div className="min-w-0" aria-label={t("money.period")}>
+                                <Tabs
+                                    variant="segmented"
+                                    size="sm"
+                                    activateOnFocus
+                                    className="w-fit max-w-full"
+                                    labels={tabLabels}
+                                    value={String(activeRange)}
+                                    onValueChange={(v) => setRange(Number(v))}
+                                    tabs={ranges.map((h) => ({
+                                        value: String(h),
+                                        label: labelRange(h),
+                                    }))}
+                                />
+                            </div>
+                        )}
                         <RefreshButton
                             size="sm"
                             aria-label={t("node.refresh")}
                             title={t("node.refresh")}
-                            loading={section === "load" ? loadPending : pingPending}
+                            loading={
+                                section === "load"
+                                    ? loadPending
+                                    : section === "latency"
+                                      ? pingPending
+                                      : reportPending
+                            }
                             onClick={triggerRefresh}
                         />
                     </div>
@@ -317,17 +330,26 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                     value: k,
                                     label: t(`node.${k}`),
                                     className: "flex-1 justify-center",
+                                    render: (
+                                        <button
+                                            id={`node-subtab-${k}`}
+                                            aria-controls={`node-panel-${k}`}
+                                            type="button"
+                                        />
+                                    ),
                                 }))}
                             />
                         </div>
                         <div className="node-info-grid" data-has-billing={showBilling || undefined}>
                             <div
+                                id="node-panel-system"
                                 className="node-info-panel"
                                 data-panel="system"
                                 data-active={activeSub === "system" || undefined}
                             >
                                 <Info
                                     title={t("node.system")}
+                                    labelId="node-subtab-system"
                                     rows={[
                                         [t("node.os"), node.os],
                                         [t("node.arch"), node.arch],
@@ -363,12 +385,14 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                 />
                             </div>
                             <div
+                                id="node-panel-network"
                                 className="node-info-panel"
                                 data-panel="network"
                                 data-active={activeSub === "network" || undefined}
                             >
                                 <Info
                                     title={t("node.network")}
+                                    labelId="node-subtab-network"
                                     rows={[
                                         [t("node.bandwidth"), node.bandwidth],
                                         [
@@ -431,12 +455,14 @@ export default function NodePage({ id, section }: { id: string; section: Section
                             </div>
                             {showBilling && (
                                 <div
+                                    id="node-panel-billing"
                                     className="node-info-panel"
                                     data-panel="billing"
                                     data-active={activeSub === "billing" || undefined}
                                 >
                                     <Info
                                         title={t("node.billing")}
+                                        labelId="node-subtab-billing"
                                         rows={[
                                             [t("metric.price"), billing.price(node) || "—"],
                                             [t("metric.actualCost"), billing.actualPrice(node)],
@@ -516,16 +542,6 @@ export default function NodePage({ id, section }: { id: string; section: Section
                 )}
                 {section === "latency" && (
                     <>
-                        <div className="section-heading">
-                            <h2>{t("node.tabPing")}</h2>
-                            <Switch
-                                size="sm"
-                                checked={shave}
-                                onCheckedChange={setShave}
-                                label={t("node.shave")}
-                                labelTooltip={t("node.shaveHint")}
-                            />
-                        </div>
                         {!recordHours ? (
                             <NoData title={t("node.liveOnly")} />
                         ) : pingError === dataKey ? (
@@ -534,13 +550,21 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                 onRetry={triggerRefresh}
                             />
                         ) : pingData !== null && pingData.tasks.length > 0 ? (
-                            <div className="transition-opacity">
+                            <div
+                                className={
+                                    pingPending
+                                        ? "opacity-50 transition-opacity"
+                                        : "transition-opacity"
+                                }
+                                aria-busy={pingPending || undefined}
+                            >
                                 <PingChart
                                     key={id}
                                     data={pingData}
                                     hours={activeRange || 0.25}
                                     height={280}
                                     shave={shave}
+                                    onShaveChange={setShave}
                                 />
                             </div>
                         ) : stalePing ? (
@@ -551,6 +575,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                     hours={stalePing.hours}
                                     height={280}
                                     shave={shave}
+                                    onShaveChange={setShave}
                                 />
                             </div>
                         ) : pingData === null ? (
@@ -562,16 +587,6 @@ export default function NodePage({ id, section }: { id: string; section: Section
                 )}
                 {section === "history" && (
                     <>
-                        <div className="section-heading">
-                            <h2>{t("ui.history")}</h2>
-                            <RefreshButton
-                                size="sm"
-                                aria-label={t("node.refresh")}
-                                title={t("node.refresh")}
-                                loading={reportPending}
-                                onClick={triggerRefresh}
-                            />
-                        </div>
                         {!recordHours ? (
                             <NoData title={t("node.liveOnly")} />
                         ) : reportError === reportKey ? (
@@ -580,17 +595,19 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                 onRetry={triggerRefresh}
                             />
                         ) : reports !== null && reports.length > 0 ? (
-                            <div className="chart-card transition-opacity">
+                            <div
+                                className={
+                                    reportPending
+                                        ? "opacity-50 transition-opacity"
+                                        : "transition-opacity"
+                                }
+                                aria-busy={reportPending || undefined}
+                            >
                                 <HourGrid points={reports} days={reportHours / 24} />
-                                <p className="muted mt-4 text-xs">{t("ui.historyHint")}</p>
                             </div>
                         ) : staleReports ? (
-                            <div
-                                className="chart-card opacity-50 transition-opacity"
-                                aria-busy="true"
-                            >
+                            <div className="opacity-50 transition-opacity" aria-busy="true">
                                 <HourGrid points={staleReports} days={reportHours / 24} />
-                                <p className="muted mt-4 text-xs">{t("ui.historyHint")}</p>
                             </div>
                         ) : reports === null ? (
                             <Loading variant="history" />

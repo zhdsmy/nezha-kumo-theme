@@ -31,7 +31,7 @@ test("1d load and latency x-axes distinguish dates across midnight without overl
         for (const section of ["load", "latency"] as const) {
             if (section === "latency") {
                 await page.goto("/server/6#latency")
-                await expect(page.locator(".latency-card")).toBeVisible()
+                await expect(page.locator('.chart-card [role="switch"]')).toBeVisible()
                 // Range is shared across load/latency in NodePage; ensure 1d is selected
                 const tabs = page.locator('.chart-toolbar [role="tab"]')
                 if ((await tabs.nth(3).getAttribute("aria-selected")) !== "true") {
@@ -60,7 +60,7 @@ test("1d load and latency x-axes distinguish dates across midnight without overl
                     const cards = Array.from(document.querySelectorAll<HTMLElement>(".chart-card"))
                     return cards.map((card) => {
                         const cardRect = card.getBoundingClientRect()
-                        const svg = card.querySelector("svg")!
+                        const svg = card.querySelector(".chart svg")!
                         const texts = Array.from(
                             svg.querySelectorAll<SVGTextElement>(":scope > text.chart-axis"),
                         )
