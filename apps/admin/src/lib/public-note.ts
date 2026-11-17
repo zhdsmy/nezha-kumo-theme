@@ -19,7 +19,7 @@ interface Member {
 }
 /** JSON.parse validates first; token spans let untouched values keep their exact bytes. */
 function members(raw: string): { fields: Member[]; end: number } {
-    const tokens = [...raw.matchAll(/"(?:\\.|[^"\\])*"|[{}\[\],:]|[^{}\[\],:\s]+/g)]
+    const tokens = [...raw.matchAll(/"(?:\\.|[^"\\])*"|[{}[\],:]|[^{}[\],:\s]+/g)]
     const fields: Member[] = []
     let index = 1
     while (tokens[index][0] !== "}") {
