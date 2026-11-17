@@ -187,3 +187,32 @@ test.each([
     }
 })
 
+test("AdminShell resets .nk-main scrollTop to 0 on route change", () => {
+    stubViewport(1280)
+    auth.profile = { id: 1, username: "admin", role: 0 }
+    render(
+        <MemoryRouter initialEntries={["/dashboard"]}>
+            <Routes>
+                <Route
+                    element={
+                        <AdminShell siteName="Demo Fleet" version="v1.0.0">
+                            <Outlet />
+                        </AdminShell>
+                    }
+                >
+                    <Route path="/dashboard" element={<p>dashboard home</p>} />
+                    <Route path="/dashboard/cron" element={<p>cron page</p>} />
+                </Route>
+            </Routes>
+        </MemoryRouter>,
+    )
+
+    const scroller = document.querySelector<HTMLElement>(".nk-main")!
+    expect(scroller).not.toBeNull()
+    scroller.scrollTop = 280
+    expect(scroller.scrollTop).toBe(280)
+
+    fireEvent.click(screen.getByRole("link", { name: "Task" }))
+    expect(screen.getByText("cron page")).toBeTruthy()
+    expect(scroller.scrollTop).toBe(0)
+})

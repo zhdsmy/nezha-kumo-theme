@@ -43,37 +43,17 @@ body {
 }
 .nk-shell {
     --nk-gutter: 16px;
-    min-height: 100svh;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
 }
 .nk-shell-body {
+    display: flex;
+    flex-direction: column;
     flex: 1;
     min-width: 0;
-    padding-top: var(--nk-topbar-height);
-}
-/*
- * The sidebar and the top bar are pinned with position: fixed, not sticky. Sticky needs the
- * document to be the scroller and a containing block taller than the viewport, and 100svh can be
- * shorter than the visible area; some mobile browsers break one of these and the bars scroll away
- * with the page. Kumo pins the collapsed sidebar the same way. The aside stays in the flow as a
- * spacer that carries the width transition.
- */
-.nk-sidebar[data-mobile] {
-    height: 100svh;
-}
-.nk-sidebar-inner {
-    height: 100svh;
-}
-.nk-sidebar:not([data-mobile]) {
-    /* Kumo sets height: 100% on the aside; with a fixed child that gives it no height at all. */
-    height: auto;
-    align-self: stretch;
-}
-.nk-sidebar:not([data-mobile]) .nk-sidebar-inner {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    height: auto;
+    min-height: 0;
 }
 .nk-brand-row {
     height: var(--nk-topbar-height);
@@ -105,25 +85,14 @@ body {
     padding-top: 8px;
 }
 .nk-topbar {
-    position: fixed;
-    top: 0;
-    right: 0;
-    left: 0;
-    z-index: 20;
     display: flex;
     align-items: center;
+    flex-shrink: 0;
     height: var(--nk-topbar-height);
     gap: 8px;
     padding: 0 16px;
     background: var(--color-kumo-canvas);
     border-bottom: 1px solid var(--color-kumo-line);
-}
-.nk-sidebar:not([data-mobile]) ~ .nk-shell-body > .nk-topbar {
-    left: var(--sidebar-width);
-    transition: left var(--sidebar-animation-duration) var(--sidebar-easing);
-}
-.nk-sidebar:not([data-mobile])[data-state="collapsed"] ~ .nk-shell-body > .nk-topbar {
-    left: var(--sidebar-width-icon);
 }
 .nk-topbar-content {
     flex: 1;
@@ -153,8 +122,12 @@ body {
     display: none;
 }
 .nk-main {
-    container-type: inline-size;
+    flex: 1;
     min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    container-type: inline-size;
 }
 .nk-sidebar [data-sidebar="viewport"] {
     transition-timing-function: var(--sidebar-easing);
