@@ -28,7 +28,7 @@ import { recentBuckets } from "@/core/live"
 import type { NodeInfo, Snapshot } from "@/core/model"
 import { regionName, stripFlag } from "@/core/region"
 import { readStorage, writeStorage } from "@/core/storage"
-import { dailyTraffic, mergeHistoryTail, summariseFleetDay } from "@/core/summary"
+import { dailyTraffic, hasDailyCounters, mergeHistoryTail, summariseFleetDay } from "@/core/summary"
 import { uiLabels } from "@/i18n"
 import { Button, DropdownMenu, InputGroup, Table, Tabs, Tooltip } from "@cloudflare/kumo"
 import { Page } from "@nezha-kumo/ui"
@@ -330,7 +330,7 @@ export function HomePage() {
             Object.fromEntries(
                 nodes.map((n) => [
                     n.id,
-                    daily[n.id]?.length
+                    hasDailyCounters(daily[n.id], midnight)
                         ? mergeHistoryTail(daily[n.id], getTraffic(n.id), midnight)
                         : [],
                 ]),

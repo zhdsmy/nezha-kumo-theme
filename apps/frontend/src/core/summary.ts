@@ -108,6 +108,12 @@ export function spikeLimit(values: number[]): number {
     return Math.max(q(0.75) + 3 * (q(0.75) - q(0.25)), q(0.5) * 1.5)
 }
 
+/** Each direction needs its own recorded baseline; a live snapshot cannot supply it. */
+export const hasDailyCounters = (points: readonly HistoryPoint[] | undefined, midnight: number) =>
+    (["totalUp", "totalDown"] as const).every((key) =>
+        points?.some((p) => (p.reportedAt ?? p.at) >= midnight && Number.isFinite(p[key])),
+    )
+
 export function summariseFleetDay(
     nodes: readonly NodeInfo[],
     snapshots: Record<string, Snapshot>,
@@ -118,13 +124,7 @@ export function summariseFleetDay(
         included = 0
     for (const n of nodes) {
         const points = counters?.[n.id]
-        if (
-            !snapshots[n.id] ||
-            !points?.some(
-                (p) => p.at >= midnight && p.totalUp !== undefined && p.totalDown !== undefined,
-            )
-        )
-            continue
+        if (!snapshots[n.id] || !points || !hasDailyCounters(points, midnight)) continue
         const day = summariseDay(points, snapshots[n.id], midnight)
         amount += day.todayUp + day.todayDown
         included++

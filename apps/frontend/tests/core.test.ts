@@ -11,7 +11,13 @@ import {
 } from "../src/core/format"
 import { flagToRegion, stripFlag } from "../src/core/region"
 import { DEFAULT_SETTINGS, normalizeSettings } from "../src/core/settings"
-import { dailyTraffic, mergeHistoryTail, spikeLimit, summariseDay } from "../src/core/summary"
+import {
+    dailyTraffic,
+    hasDailyCounters,
+    mergeHistoryTail,
+    spikeLimit,
+    summariseDay,
+} from "../src/core/summary"
 
 describe("format", () => {
     it("keeps fractional bytes and rates in base units", () => {
@@ -77,6 +83,14 @@ describe("day summary", () => {
         process: 0,
         totalUp,
         totalDown,
+    })
+
+    it("requires finite daily baselines in both directions, including measured zero", () => {
+        expect(hasDailyCounters([p(1000, 0, 0, 0), p(2000, 0, 0, undefined, 0)], 1000)).toBe(true)
+        expect(hasDailyCounters([p(1000, 0, 0, 0)], 1000)).toBe(false)
+        expect(hasDailyCounters([p(1000, 0, 0, undefined, 0)], 1000)).toBe(false)
+        expect(hasDailyCounters([p(1000, 0, 0, NaN, 0)], 1000)).toBe(false)
+        expect(hasDailyCounters([p(999, 0, 0, 0, 0)], 1000)).toBe(false)
     })
 
     it("uses counter growth since midnight and the highest recorded rates", () => {
