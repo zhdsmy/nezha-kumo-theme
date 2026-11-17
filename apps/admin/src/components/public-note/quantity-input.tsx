@@ -27,14 +27,12 @@ export function NumberInput({
     onChange,
     label,
     min = 0,
-    step = "any",
     placeholder,
 }: {
     value?: number
     onChange: (value: number | undefined) => void
     label: string
     min?: number
-    step?: string
     placeholder?: string
 }) {
     const [draft, setDraft] = useState(value === undefined ? "" : String(value))
@@ -47,20 +45,21 @@ export function NumberInput({
     }, [value])
     return (
         <Input
-            type="number"
-            min={min}
-            step={step}
+            type="text"
+            inputMode="decimal"
             aria-label={label}
             placeholder={placeholder}
             value={draft}
-            onChange={(event) => {
-                setDraft(event.target.value)
-                if (event.target.value === "") onChange(undefined)
-                else if (
-                    Number.isFinite(event.target.valueAsNumber) &&
-                    event.target.valueAsNumber >= min
-                )
-                    onChange(event.target.valueAsNumber)
+            onChange={(event) => setDraft(event.target.value)}
+            onBlur={() => {
+                const number = Number(draft)
+                if (draft.trim() && number === value) return
+                if (!draft.trim()) onChange(undefined)
+                else if (Number.isFinite(number) && number >= min) onChange(number)
+                else setDraft(value === undefined ? "" : String(value))
+            }}
+            onKeyDown={(event) => {
+                if (event.key === "Enter") event.currentTarget.blur()
             }}
         />
     )

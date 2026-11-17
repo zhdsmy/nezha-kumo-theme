@@ -101,7 +101,6 @@ export function AmountInput({ value, onChange, label }: NoteControlProps) {
                     <NumberInput
                         label={label}
                         value={amount?.amount}
-                        step="0.01"
                         placeholder="45.00"
                         onChange={(number) => {
                             setEditingPaid(true)

@@ -12,9 +12,10 @@ test("traffic uses the shared cycle picker and canonical units without normalizi
     const change = vi.fn()
     render(<QuantityInput traffic label="流量配额" value="1TB/月" onChange={change} />)
     expect(change).not.toHaveBeenCalled()
-    fireEvent.change(screen.getByRole("spinbutton", { name: "流量配额" }), {
+    fireEvent.change(screen.getByRole("textbox", { name: "流量配额" }), {
         target: { value: "2.5" },
     })
+    fireEvent.blur(screen.getByRole("textbox", { name: "流量配额" }))
     expect(change).toHaveBeenLastCalledWith("2.5TB/Month")
     fireEvent.click(screen.getByRole("switch", { name: "流量配额 · 不限" }))
     expect(change).toHaveBeenLastCalledWith("Unlimited")

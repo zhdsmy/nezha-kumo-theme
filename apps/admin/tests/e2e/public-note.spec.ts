@@ -171,10 +171,10 @@ for (const [engine, driver] of Object.entries({ chromium, webkit }))
                     await capture("unlimited", '[data-note-field="trafficVol"]')
                     await page.getByRole("button", { name: "付费", exact: true }).click()
                     await page
-                        .getByRole("spinbutton", { name: "金额", exact: true })
+                        .getByRole("textbox", { name: "金额", exact: true })
                         .pressSequentially("0.99")
                     await expect(
-                        page.getByRole("spinbutton", { name: "金额", exact: true }),
+                        page.getByRole("textbox", { name: "金额", exact: true }),
                     ).toHaveValue("0.99")
                     await page.getByRole("button", { name: "提交", exact: true }).click()
                     await expect.poll(() => writes.length).toBe(2)
