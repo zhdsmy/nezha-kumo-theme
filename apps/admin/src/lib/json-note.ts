@@ -92,11 +92,12 @@ function insertMember(raw: string, key: string | number, value: string): string 
     const { fields, end, array } = members(raw)
     const position = fields.at(-1)?.end ?? end
     const gap = fields.length ? raw.slice(raw.search(/[[{]/) + 1, fields[0].start) : ""
+    const colon = fields.length ? raw.slice(fields[0].keyEnd, fields[0].valueStart) : ":"
     return (
         raw.slice(0, position) +
         (fields.length ? "," : "") +
         gap +
-        (array ? "" : JSON.stringify(key) + ":") +
+        (array ? "" : JSON.stringify(key) + colon) +
         value +
         raw.slice(position)
     )
@@ -135,20 +136,21 @@ export function renameJsonKey(raw: string, path: JsonPath, key: string): string 
 export function moveJsonItem(raw: string, path: JsonPath, from: number, to: number): string {
     const source = rawJsonAt(raw, path)
     if (!source || !Array.isArray(parseJsonNote(source))) return raw
-    const { fields, end } = members(source)
+    const { fields } = members(source)
     if (from === to || !fields[from] || !fields[to]) return raw
-    const values = fields.map((field) => source.slice(field.valueStart, field.end))
-    values.splice(to, 0, values.splice(from, 1)[0])
-    const opening = source.slice(0, fields[0].start)
-    const gap = source.slice(source.indexOf("[") + 1, fields[0].start)
-    return patchRaw(
-        raw,
-        path,
-        opening +
-            values.join("," + gap) +
-            source.slice(fields.at(-1)!.end, end) +
-            source.slice(end),
-    )
+    const item = fields[from]
+    const next = fields[from + 1]
+    const separator = next
+        ? source.slice(item.end, next.start)
+        : source.slice(fields[from - 1].end, item.start)
+    const remaining = next
+        ? source.slice(0, item.start) + source.slice(next.start)
+        : source.slice(0, fields[from - 1].end) + source.slice(item.end)
+    const rest = members(remaining).fields
+    const position = rest[to]?.start ?? rest.at(-1)!.end
+    const value = source.slice(item.valueStart, item.end)
+    const insertion = rest[to] ? value + separator : separator + value
+    return patchRaw(raw, path, remaining.slice(0, position) + insertion + remaining.slice(position))
 }
 
 export function appendJsonEntry(raw: string, path: JsonPath, key: string, value: unknown): string {

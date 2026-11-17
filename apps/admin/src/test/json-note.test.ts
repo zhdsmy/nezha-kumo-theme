@@ -13,7 +13,7 @@ test("generic JSON patches preserve untouched bytes through objects and arrays",
     expect(patchJsonNote(raw, ["a", 1, "v"], "new")).toBe(raw.replace('"old"', '"new"'))
     expect(renameJsonKey(raw, [0], "renamed")).toBe(raw.replace('"a"', '"renamed"'))
     expect(rawJsonAt(raw, [0, 0])).toBe("1e+2")
-    expect(patchJsonNote(raw, ["__proto__", "safe"], "yes")).toContain('"__proto__":{"safe":"yes"}')
+    expect(patchJsonNote(raw, ["__proto__", "safe"], "yes")).toContain('"__proto__": {"safe":"yes"}')
     expect(({} as Record<string, unknown>).safe).toBeUndefined()
 })
 test("JSON arrays append, remove, reorder and keep numeric and escaped spellings", () => {
@@ -31,4 +31,11 @@ test("member indices keep duplicate keys editable without hiding earlier values"
     expect(jsonEntries(raw).map((item) => item.key)).toEqual(["x", "x"])
     expect(renameJsonKey(raw, [0], "y")).toBe('{"y":"one", "x":"two"}')
     expect(parseJsonNote("plain text")).toBeUndefined()
+})
+
+test("insertions follow colon spacing and array moves preserve untouched separators", () => {
+    expect(patchJsonNote('{\n  "a": 1\n}', ["b"], 2)).toBe('{\n  "a": 1,\n  "b": 2\n}')
+    expect(moveJsonItem('[1,  2,\n3,   4]', [], 0, 3)).toBe('[2,\n3,   4,  1]')
+    expect(moveJsonItem('[1,  2,\n3,   4]', [], 3, 0)).toBe('[4,   1,  2,\n3]')
+    expect(moveJsonItem('[1,  2,\n3,   4]', [], 1, 2)).toBe('[1,  3,   2,\n4]')
 })
