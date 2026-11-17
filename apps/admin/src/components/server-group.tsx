@@ -24,7 +24,9 @@ import { IconButton } from "@/components/xui/icon-button"
 import { MultiSelect } from "@/components/xui/multi-select"
 import { useServer } from "@/hooks/useServer"
 import useSetting from "@/hooks/useSetting"
+import { useSubmitLock } from "@/hooks/useSubmitLock"
 import { saveServerGroupIcon } from "@/lib/group-icons"
+import { errorMessage } from "@/lib/utils"
 import { ModelServerGroupResponseItem } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { AlertCircle, Folder, ImageOff } from "lucide-react"
@@ -99,7 +101,9 @@ export const ServerGroupCard: React.FC<ServerGroupCardProps> = ({ data, mutate }
         setOpen(nextOpen)
     }
 
-    const onSubmit = async (values: FormValues) => {
+    const { submitting, runSubmit } = useSubmitLock()
+
+    const onSubmit = runSubmit(async (values: FormValues) => {
         let groupId = data?.group.id
         try {
             const payload = { name: values.name, servers: values.servers }
@@ -111,7 +115,7 @@ export const ServerGroupCard: React.FC<ServerGroupCardProps> = ({ data, mutate }
         } catch (e) {
             console.error(e)
             toast(t("Error"), {
-                description: t("Results.UnExpectedError"),
+                description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
         }
@@ -126,7 +130,7 @@ export const ServerGroupCard: React.FC<ServerGroupCardProps> = ({ data, mutate }
                 console.error(e)
                 await mutate()
                 toast(t("Error"), {
-                    description: t("Results.UnExpectedError"),
+                    description: errorMessage(e, t("Results.UnExpectedError")),
                 })
                 return
             }
@@ -135,7 +139,7 @@ export const ServerGroupCard: React.FC<ServerGroupCardProps> = ({ data, mutate }
         setOpen(false)
         await mutate()
         form.reset()
-    }
+    })
 
     const { servers } = useServer()
     const serverList = servers?.map((s) => ({
@@ -266,7 +270,7 @@ export const ServerGroupCard: React.FC<ServerGroupCardProps> = ({ data, mutate }
                                             {t("Close")}
                                         </Button>
                                     </DialogClose>
-                                    <Button type="submit" className="my-2">
+                                    <Button type="submit" className="my-2" loading={submitting}>
                                         {t("Confirm")}
                                     </Button>
                                 </DialogFooter>

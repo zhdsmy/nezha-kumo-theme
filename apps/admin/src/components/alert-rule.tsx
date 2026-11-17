@@ -30,7 +30,8 @@ import {
 } from "@/components/ui/select"
 import { IconButton } from "@/components/xui/icon-button"
 import { useNotification } from "@/hooks/useNotfication"
-import { conv } from "@/lib/utils"
+import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { conv, errorMessage } from "@/lib/utils"
 import { ModelAlertRule } from "@/types"
 import { triggerModes } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -149,13 +150,17 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
 
     const rulesRaw = useWatch({ control: form.control, name: "rules_raw" })
 
-    const onSubmit = async (values: AlertRuleFormData) => {
-        values.rules = z.array(ruleSchema).parse(JSON.parse(values.rules_raw))
-        values.fail_trigger_tasks = conv.strToArr(values.fail_trigger_tasks_raw).map(Number)
-        values.recover_trigger_tasks = conv.strToArr(values.recover_trigger_tasks_raw).map(Number)
-        const requiredFields = { ...values }
-        delete (requiredFields as Record<string, unknown>).rules_raw
+    const { submitting, runSubmit } = useSubmitLock()
+
+    const onSubmit = runSubmit(async (values: AlertRuleFormData) => {
         try {
+            values.rules = z.array(ruleSchema).parse(JSON.parse(values.rules_raw))
+            values.fail_trigger_tasks = conv.strToArr(values.fail_trigger_tasks_raw).map(Number)
+            values.recover_trigger_tasks = conv
+                .strToArr(values.recover_trigger_tasks_raw)
+                .map(Number)
+            const requiredFields = { ...values }
+            delete (requiredFields as Record<string, unknown>).rules_raw
             if (data?.id) {
                 await updateAlertRule(data.id, requiredFields)
             } else {
@@ -164,14 +169,14 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
         } catch (e) {
             console.error(e)
             toast(t("Error"), {
-                description: t("Results.UnExpectedError"),
+                description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
         }
         setOpen(false)
         await mutate()
         form.reset()
-    }
+    })
 
     const { notifierGroup } = useNotification()
     const ngroupList = notifierGroup?.map((ng) => ({
@@ -730,7 +735,7 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                                             {t("Close")}
                                         </Button>
                                     </DialogClose>
-                                    <Button type="submit" className="my-2">
+                                    <Button type="submit" className="my-2" loading={submitting}>
                                         {t("Confirm")}
                                     </Button>
                                 </DialogFooter>

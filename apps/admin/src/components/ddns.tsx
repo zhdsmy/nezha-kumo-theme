@@ -30,8 +30,8 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { IconButton } from "@/components/xui/icon-button"
-import { conv } from "@/lib/utils"
-import { asOptionalField } from "@/lib/utils"
+import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { asOptionalField, conv, errorMessage } from "@/lib/utils"
 import { ModelDDNSProfile } from "@/types"
 import { ddnsRequestTypes, ddnsTypes } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -113,8 +113,9 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
     })
 
     const [open, setOpen] = useState(false)
+    const { submitting, runSubmit } = useSubmitLock()
 
-    const onSubmit = async (values: DDNSFormData) => {
+    const onSubmit = runSubmit(async (values: DDNSFormData) => {
         try {
             values.domains = conv.strToArr(values.domains_raw)
             if (data?.id) {
@@ -125,14 +126,14 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
         } catch (e) {
             console.error(e)
             toast(t("Error"), {
-                description: t("Results.UnExpectedError"),
+                description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
         }
         setOpen(false)
         await mutate()
         form.reset()
-    }
+    })
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -406,7 +407,7 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
                                             {t("Close")}
                                         </Button>
                                     </DialogClose>
-                                    <Button type="submit" className="my-2">
+                                    <Button type="submit" className="my-2" loading={submitting}>
                                         {t("Confirm")}
                                     </Button>
                                 </DialogFooter>

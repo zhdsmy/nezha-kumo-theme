@@ -16,6 +16,16 @@ export function asOptionalField<T extends z.ZodTypeAny>(schema: T) {
     return schema.optional().or(emptyStringToUndefined)
 }
 
+export function errorMessage(error: unknown, fallback: string): string {
+    if (error instanceof Error && error.message.trim().length > 0) {
+        return error.message
+    }
+    if (typeof error === "string" && error.trim().length > 0) {
+        return error
+    }
+    return fallback
+}
+
 export const conv = {
     recordToStr: <T>(rec: Record<string, T>) => {
         const arr: string[] = []

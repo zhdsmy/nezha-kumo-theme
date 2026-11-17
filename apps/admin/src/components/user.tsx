@@ -28,6 +28,8 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { IconButton } from "@/components/xui/icon-button"
+import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { errorMessage } from "@/lib/utils"
 import { ModelUser } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
@@ -62,21 +64,22 @@ export const UserCard: React.FC<UserCardProps> = ({ mutate }) => {
     })
 
     const [open, setOpen] = useState(false)
+    const { submitting, runSubmit } = useSubmitLock()
 
-    const onSubmit = async (values: z.infer<typeof userFormSchema>) => {
+    const onSubmit = runSubmit(async (values: z.infer<typeof userFormSchema>) => {
         try {
             await createUser(values)
         } catch (e) {
             console.error(e)
             toast(t("Error"), {
-                description: t("Results.UnExpectedError"),
+                description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
         }
         setOpen(false)
         await mutate()
         form.reset()
-    }
+    })
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -155,7 +158,7 @@ export const UserCard: React.FC<UserCardProps> = ({ mutate }) => {
                                             {t("Close")}
                                         </Button>
                                     </DialogClose>
-                                    <Button type="submit" className="my-2">
+                                    <Button type="submit" className="my-2" loading={submitting}>
                                         {t("Confirm")}
                                     </Button>
                                 </DialogFooter>

@@ -32,7 +32,8 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { useAuth } from "@/hooks/useAuth"
-import { copyToClipboard } from "@/lib/utils"
+import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { copyToClipboard, errorMessage } from "@/lib/utils"
 import { Page } from "@nezha-kumo/ui"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -193,13 +194,13 @@ function CreateApiTokenDialog({
     const [scopes, setScopes] = useState<string[]>([])
     const [serverIDs, setServerIDs] = useState("")
     const [expiresInDays, setExpiresInDays] = useState<string>("90")
-    const [submitting, setSubmitting] = useState(false)
+    const { submitting, runSubmit } = useSubmitLock()
 
     const toggleScope = (s: string) => {
         setScopes((cur) => (cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s]))
     }
 
-    const submit = async () => {
+    const submit = runSubmit(async () => {
         if (!name.trim()) {
             toast(t("Error"), { description: t("NameRequired") })
             return
@@ -220,7 +221,6 @@ function CreateApiTokenDialog({
             return
         }
         const expDays = expRes.value
-        setSubmitting(true)
         try {
             const res = await createApiToken({
                 name: name.trim(),
@@ -234,12 +234,10 @@ function CreateApiTokenDialog({
             setScopes([])
             setServerIDs("")
             setExpiresInDays("90")
-        } catch (e: any) {
-            toast(t("Error"), { description: e.message })
-        } finally {
-            setSubmitting(false)
+        } catch (e: unknown) {
+            toast(t("Error"), { description: errorMessage(e, t("Results.UnExpectedError")) })
         }
-    }
+    })
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -308,8 +306,8 @@ function CreateApiTokenDialog({
                     <DialogClose asChild>
                         <Button variant="outline">{t("Cancel")}</Button>
                     </DialogClose>
-                    <Button onClick={submit} disabled={submitting}>
-                        {submitting ? t("Loading") + "..." : t("CreateApiToken")}
+                    <Button onClick={submit} loading={submitting}>
+                        {t("CreateApiToken")}
                     </Button>
                 </DialogFooter>
             </DialogContent>

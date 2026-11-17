@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/hooks/useAuth"
 import { useNotification } from "@/hooks/useNotfication"
 import useSetting from "@/hooks/useSetting"
+import { useSubmitLock } from "@/hooks/useSubmitLock"
 import { asOptionalField, safeExternalHref } from "@/lib/utils"
 import { nezhaLang, settingCoverageTypes } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -114,6 +115,8 @@ export default function SettingsPage() {
         }
     }, [config?.config, form])
 
+    const { submitting, runSubmit } = useSubmitLock()
+
     if (authLoading) {
         return null
     }
@@ -121,7 +124,7 @@ export default function SettingsPage() {
         return <Navigate to="/dashboard/settings/api-tokens" replace />
     }
 
-    const onSubmit = async (values: any) => {
+    const onSubmit = runSubmit(async (values: any) => {
         try {
             await updateSettings({
                 ...values,
@@ -145,7 +148,7 @@ export default function SettingsPage() {
             i18n.changeLanguage(values.language)
         }
         toast(t("Success"))
-    }
+    })
 
     return (
         <Page title={t("Settings")} tabs={<SettingsTab />}>
@@ -620,7 +623,9 @@ export default function SettingsPage() {
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit">{t("Confirm")}</Button>
+                        <Button type="submit" loading={submitting}>
+                            {t("Confirm")}
+                        </Button>
                     </form>
                 </Form>
             </div>

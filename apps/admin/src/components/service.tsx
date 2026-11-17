@@ -31,8 +31,8 @@ import {
 import { IconButton } from "@/components/xui/icon-button"
 import { useNotification } from "@/hooks/useNotfication"
 import { useServer } from "@/hooks/useServer"
-import { conv } from "@/lib/utils"
-import { asOptionalField } from "@/lib/utils"
+import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { asOptionalField, conv, errorMessage } from "@/lib/utils"
 import { ModelService } from "@/types"
 import { serviceCoverageTypes, serviceTypes } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -107,14 +107,17 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ data, mutate }) => {
     })
 
     const [open, setOpen] = useState(false)
+    const { submitting, runSubmit } = useSubmitLock()
 
-    const onSubmit = async (values: any) => {
-        values.skip_servers = conv.arrToRecord(values.skip_servers_raw)
-        values.fail_trigger_tasks = conv.strToArr(values.fail_trigger_tasks_raw).map(Number)
-        values.recover_trigger_tasks = conv.strToArr(values.recover_trigger_tasks_raw).map(Number)
-        const requiredFields = { ...values }
-        delete (requiredFields as Record<string, unknown>).skip_servers_raw
+    const onSubmit = runSubmit(async (values: any) => {
         try {
+            values.skip_servers = conv.arrToRecord(values.skip_servers_raw)
+            values.fail_trigger_tasks = conv.strToArr(values.fail_trigger_tasks_raw).map(Number)
+            values.recover_trigger_tasks = conv
+                .strToArr(values.recover_trigger_tasks_raw)
+                .map(Number)
+            const requiredFields = { ...values }
+            delete (requiredFields as Record<string, unknown>).skip_servers_raw
             if (data?.id) {
                 await updateService(data.id, requiredFields)
             } else {
@@ -123,14 +126,14 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ data, mutate }) => {
         } catch (e) {
             console.error(e)
             toast(t("Error"), {
-                description: t("Results.UnExpectedError"),
+                description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
         }
         setOpen(false)
         await mutate()
         form.reset()
-    }
+    })
 
     const { servers } = useServer()
     const serverList = servers?.map((s) => ({
@@ -461,7 +464,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ data, mutate }) => {
                                             {t("Close")}
                                         </Button>
                                     </DialogClose>
-                                    <Button type="submit" className="my-2">
+                                    <Button type="submit" className="my-2" loading={submitting}>
                                         {t("Submit")}
                                     </Button>
                                 </DialogFooter>

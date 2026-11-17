@@ -31,7 +31,8 @@ import {
 import { IconButton } from "@/components/xui/icon-button"
 import { useNotification } from "@/hooks/useNotfication"
 import { useServer } from "@/hooks/useServer"
-import { asOptionalField } from "@/lib/utils"
+import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { asOptionalField, errorMessage } from "@/lib/utils"
 import { ModelCron } from "@/types"
 import { cronCoverageTypes, cronTypes } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -96,8 +97,9 @@ export const CronCard: React.FC<CronCardProps> = ({ data, mutate }) => {
     })
 
     const [open, setOpen] = useState(false)
+    const { submitting, runSubmit } = useSubmitLock()
 
-    const onSubmit = async (values: CronFormData) => {
+    const onSubmit = runSubmit(async (values: CronFormData) => {
         try {
             if (data?.id) {
                 await updateCron(data.id, values)
@@ -107,14 +109,14 @@ export const CronCard: React.FC<CronCardProps> = ({ data, mutate }) => {
         } catch (e) {
             console.error(e)
             toast(t("Error"), {
-                description: t("Results.UnExpectedError"),
+                description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
         }
         setOpen(false)
         await mutate()
         form.reset()
-    }
+    })
 
     const { servers } = useServer()
     const serverList = servers?.map((s) => ({
@@ -304,7 +306,7 @@ export const CronCard: React.FC<CronCardProps> = ({ data, mutate }) => {
                                             {t("Close")}
                                         </Button>
                                     </DialogClose>
-                                    <Button type="submit" className="my-2">
+                                    <Button type="submit" className="my-2" loading={submitting}>
                                         {t("Confirm")}
                                     </Button>
                                 </DialogFooter>

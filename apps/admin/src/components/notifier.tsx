@@ -29,7 +29,8 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { IconButton } from "@/components/xui/icon-button"
-import { asOptionalField } from "@/lib/utils"
+import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { asOptionalField, errorMessage } from "@/lib/utils"
 import { ModelNotification } from "@/types"
 import { nrequestMethods, nrequestTypes } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -98,8 +99,9 @@ export const NotifierCard: React.FC<NotifierCardProps> = ({ data, mutate }) => {
     })
 
     const [open, setOpen] = useState(false)
+    const { submitting, runSubmit } = useSubmitLock()
 
-    const onSubmit = async (values: NotificationFormData) => {
+    const onSubmit = runSubmit(async (values: NotificationFormData) => {
         try {
             if (data?.id) {
                 await updateNotification(data.id, values)
@@ -109,14 +111,14 @@ export const NotifierCard: React.FC<NotifierCardProps> = ({ data, mutate }) => {
         } catch (e) {
             console.error(e)
             toast(t("Error"), {
-                description: t("Results.UnExpectedError"),
+                description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
         }
         setOpen(false)
         await mutate()
         form.reset()
-    }
+    })
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -316,7 +318,7 @@ export const NotifierCard: React.FC<NotifierCardProps> = ({ data, mutate }) => {
                                             {t("Close")}
                                         </Button>
                                     </DialogClose>
-                                    <Button type="submit" className="my-2">
+                                    <Button type="submit" className="my-2" loading={submitting}>
                                         {t("Confirm")}
                                     </Button>
                                 </DialogFooter>

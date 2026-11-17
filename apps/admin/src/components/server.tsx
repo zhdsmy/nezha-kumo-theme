@@ -44,8 +44,8 @@ import {
     toggleEndNoExpiry,
     validatePublicNote,
 } from "@/lib/public-note"
-import { conv } from "@/lib/utils"
-import { asOptionalField } from "@/lib/utils"
+import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { asOptionalField, conv, errorMessage } from "@/lib/utils"
 import { ModelServer } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { HelpCircle } from "lucide-react"
@@ -163,7 +163,9 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
         setPublicNoteObj((prev) => toggleEndNoExpiry(prev))
     }
 
-    const onSubmit = async (values: any) => {
+    const { submitting, runSubmit } = useSubmitLock()
+
+    const onSubmit = runSubmit(async (values: any) => {
         try {
             values.ddns_profiles = values.ddns_profiles_raw
                 ? conv.strToArr(values.ddns_profiles_raw).map(Number)
@@ -206,14 +208,14 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
         } catch (e) {
             console.error(e)
             toast(t("Error"), {
-                description: t("Results.UnExpectedError"),
+                description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
         }
         setOpen(false)
         await mutate()
         form.reset()
-    }
+    })
 
     const handleOpenChange = (v: boolean) => {
         if (v) {
@@ -994,7 +996,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                             {t("Close")}
                                         </Button>
                                     </DialogClose>
-                                    <Button type="submit" className="my-2">
+                                    <Button type="submit" className="my-2" loading={submitting}>
                                         {t("Submit")}
                                     </Button>
                                 </DialogFooter>
