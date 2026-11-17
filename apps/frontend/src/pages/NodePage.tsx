@@ -21,7 +21,6 @@ import { regionName, stripFlag } from "@/core/region"
 import { summariseDay } from "@/core/summary"
 import { uiLabels } from "@/i18n"
 import { Banner, RefreshButton, Tabs } from "@cloudflare/kumo"
-import { Switch } from "@cloudflare/kumo/components/switch"
 import { Page } from "@nezha-kumo/ui"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -529,16 +528,6 @@ export default function NodePage({ id, section }: { id: string; section: Section
                 )}
                 {section === "latency" && (
                     <>
-                        <div className="section-heading">
-                            <h2>{t("node.tabPing")}</h2>
-                            <Switch
-                                size="sm"
-                                checked={shave}
-                                onCheckedChange={setShave}
-                                label={t("node.shave")}
-                                labelTooltip={t("node.shaveHint")}
-                            />
-                        </div>
                         {!recordHours ? (
                             <NoData title={t("node.liveOnly")} />
                         ) : pingError === dataKey ? (
@@ -547,13 +536,21 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                 onRetry={triggerRefresh}
                             />
                         ) : pingData !== null && pingData.tasks.length > 0 ? (
-                            <div className="transition-opacity">
+                            <div
+                                className={
+                                    pingPending
+                                        ? "opacity-50 transition-opacity"
+                                        : "transition-opacity"
+                                }
+                                aria-busy={pingPending || undefined}
+                            >
                                 <PingChart
                                     key={id}
                                     data={pingData}
                                     hours={activeRange || 0.25}
                                     height={280}
                                     shave={shave}
+                                    onShaveChange={setShave}
                                 />
                             </div>
                         ) : stalePing ? (
@@ -564,6 +561,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                     hours={stalePing.hours}
                                     height={280}
                                     shave={shave}
+                                    onShaveChange={setShave}
                                 />
                             </div>
                         ) : pingData === null ? (

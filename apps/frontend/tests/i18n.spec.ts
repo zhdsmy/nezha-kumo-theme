@@ -72,7 +72,7 @@ test("zh-CN interface localizes screen-reader labels, tooltips, placeholders, an
     // Node latency shave Switch tooltip trigger uses localized ui.moreInfo instead of "More information"
     await page.goto("/server/6#latency")
     await expect(page.getByRole("switch")).toBeVisible()
-    const infoTrigger = page.locator('.section-heading button[aria-label="更多信息"]')
+    const infoTrigger = page.locator('.chart-heading button[aria-label="更多信息"]')
     await expect(infoTrigger).toBeVisible()
     await expect(page.locator('[aria-label="More information"]')).toHaveCount(0)
 

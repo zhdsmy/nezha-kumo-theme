@@ -136,7 +136,7 @@ function NodeLoadingShell({
                             <div className="h-6.5 w-6.5 rounded-md border border-kumo-line bg-kumo-control" />
                         </div>
                     )}
-                    {(section === "latency" || section === "history") && (
+                    {section === "history" && (
                         <div className="section-heading" aria-hidden="true">
                             <div className="flex items-center" style={{ height: 24 }}>
                                 <SkeletonLine minWidth={100} maxWidth={100} className="h-4 w-20" />

@@ -623,6 +623,20 @@
     font-size: 14px;
     font-weight: 600;
 }
+.chart-heading:has([role="switch"]) {
+    align-items: center;
+    flex-wrap: nowrap;
+}
+.chart-heading:has([role="switch"]) > h3 {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.chart-heading:has([role="switch"]) > div {
+    flex-shrink: 0;
+    flex-wrap: nowrap;
+}
 .chart-axis {
     font-size: 12px;
     fill: var(--text-color-kumo-subtle);
@@ -647,9 +661,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-.latency-card {
-    padding: 20px 12px;
 }
 /* node page */
 .nk-page-title-row:has(> .nk-page-actions > .status) {

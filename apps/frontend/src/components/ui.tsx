@@ -493,13 +493,19 @@ export function Loading({ variant = "home" }: { variant?: LoadingVariant } = {})
                 </div>
             )}
             {variant === "ping" && (
-                <div className="chart-card latency-card" aria-hidden="true">
+                <div className="chart-card" aria-hidden="true">
+                    <div className="chart-heading">
+                        <div className="flex flex-1 items-center" style={{ height: 21 }}>
+                            <SkeletonLine minWidth={20} maxWidth={35} className="h-3.5" />
+                        </div>
+                        <SkeletonLine minWidth={22} maxWidth={30} className="h-4 rounded-full" />
+                    </div>
                     <div className="flex flex-col justify-between" style={{ height: 280 }}>
                         {Array.from({ length: 5 }, (_, r) => (
                             <SkeletonLine key={r} minWidth={100} maxWidth={100} />
                         ))}
                     </div>
-                    <div className="mt-2 flex items-center gap-2" style={{ minHeight: 28 }}>
+                    <div className="mt-2 flex items-center gap-2" style={{ minHeight: 32 }}>
                         <SkeletonLine minWidth={16} maxWidth={22} className="h-5 rounded-full" />
                         <SkeletonLine minWidth={16} maxWidth={22} className="h-5 rounded-full" />
                         <SkeletonLine minWidth={16} maxWidth={22} className="h-5 rounded-full" />
