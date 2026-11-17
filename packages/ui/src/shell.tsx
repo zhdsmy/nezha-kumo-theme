@@ -283,7 +283,11 @@ function ShellLayout({
 
     return (
         <LinkProvider component={kumoLink}>
-            <Sidebar ref={sidebarRef} className="nk-sidebar">
+            <Sidebar
+                ref={sidebarRef}
+                className="nk-sidebar"
+                aria-label={isMobile ? navLabel : undefined}
+            >
                 <Sidebar.Header className="nk-brand-row">
                     <div className="nk-brand">{brand}</div>
                     {isMobile && (

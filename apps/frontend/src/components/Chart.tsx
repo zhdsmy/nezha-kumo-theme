@@ -21,7 +21,7 @@ interface Props {
     formatTick?: (v: number, step: number) => string
     scale?: ChartScale
     minStep?: number
-    formatTime: (t: number) => string
+    formatTime: (t: number, index: number, ticks: readonly number[]) => string
     formatTooltipTime?: (t: number) => string
     yMax?: number
     height?: number
@@ -155,7 +155,53 @@ function estimateLabelWidth(text: string): number {
         const w = measureCtx.measureText(tabular).width
         if (w > 0) return w
     }
-    return tabular.length * 7.2
+    let est = 0
+    for (const ch of tabular) {
+        est += /[\u3000-\u9fff]/.test(ch) ? 12 : /[0-9A-Za-z]/.test(ch) ? 7.2 : 3.8
+    }
+    return est
+}
+
+const MIN_X_LABEL_GAP = 6
+
+function xLabelsFit(
+    plotW: number,
+    labels: readonly string[],
+    measure: (text: string) => number,
+): boolean {
+    const n = labels.length
+    if (n < 2) return true
+    let prevRight = -Infinity
+    for (let i = 0; i < n; i++) {
+        const w = measure(labels[i])
+        const cx = (plotW * i) / (n - 1)
+        const left = i === 0 ? 0 : i === n - 1 ? plotW - w : cx - w / 2
+        const right = left + w
+        if (left < -0.5 || right > plotW + 0.5) return false
+        if (i > 0 && left - prevRight < MIN_X_LABEL_GAP) return false
+        prevRight = right
+    }
+    return true
+}
+
+export function buildXTicks(
+    t0: number,
+    t1: number,
+    plotW: number,
+    formatTime: Props["formatTime"],
+    measure: (text: string) => number = estimateLabelWidth,
+): { ticks: number[]; labels: string[] } {
+    if (!(plotW > 0)) return { ticks: [], labels: [] }
+    const span = t1 - t0 || 1
+    const candidates = plotW < FOUR_TIME_LABELS_WIDTH ? [3, 2] : [4, 3, 2]
+    for (const count of candidates) {
+        const ticks = Array.from({ length: count }, (_, i) => t0 + (span * i) / (count - 1))
+        const labels = ticks.map((t, i) => formatTime(t, i, ticks))
+        if (count === 2 || xLabelsFit(plotW, labels, measure)) {
+            return { ticks, labels }
+        }
+    }
+    return { ticks: [], labels: [] }
 }
 
 /** Averages points into at most `buckets` buckets so long ranges stay light. */
@@ -205,13 +251,14 @@ export function Chart({
     scale = "decimal",
     minStep,
     formatTime,
-    formatTooltipTime = formatTime,
+    formatTooltipTime,
     yMax,
     height = 150,
     label,
     robust,
     focus,
 }: Props) {
+    const tooltipTime = formatTooltipTime ?? ((t: number) => formatTime(t, 0, [t]))
     const box = useRef<HTMLDivElement>(null)
     const yTicksRef = useRef<SVGGElement>(null)
     const tipRef = useRef<HTMLDivElement>(null)
@@ -312,11 +359,8 @@ export function Chart({
         return { key: s.key, color: s.color, line, area: s.area ? area : "" }
     })
 
-    const tickCount = plotW > 0 && plotW < FOUR_TIME_LABELS_WIDTH ? 3 : 4
-    const xTicks =
-        width > 0 && all.length
-            ? Array.from({ length: tickCount }, (_, i) => t0 + (span * i) / (tickCount - 1))
-            : []
+    const xAxis =
+        width > 0 && all.length ? buildXTicks(t0, t1, plotW, formatTime) : { ticks: [], labels: [] }
     const tickTextClass = "chart-axis"
 
     const hover =
@@ -409,17 +453,17 @@ export function Chart({
                             </g>
                         ))}
                     </g>
-                    {xTicks.map((t, i) => (
+                    {xAxis.ticks.map((t, i) => (
                         <text
                             key={i}
                             x={x(t)}
                             y={height - (isMobile ? 3 : 6)}
                             textAnchor={
-                                i === 0 ? "start" : i === xTicks.length - 1 ? "end" : "middle"
+                                i === 0 ? "start" : i === xAxis.ticks.length - 1 ? "end" : "middle"
                             }
                             className={tickTextClass}
                         >
-                            {formatTime(t)}
+                            {xAxis.labels[i]}
                         </text>
                     ))}
                     {paths.map(
@@ -494,7 +538,7 @@ export function Chart({
                     }}
                 >
                     <p className="num mb-1 text-kumo-subtle">
-                        {formatTooltipTime(hover.find((h) => h.p)!.p!.t)}
+                        {tooltipTime(hover.find((h) => h.p)!.p!.t)}
                     </p>
                     {hover.map(({ s, p }) => (
                         <p key={s.key} className="flex items-center gap-2">

@@ -101,7 +101,7 @@ export function formatClock(at: number, withDate = false, locale?: string) {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
-        ...(withDate ? { month: "2-digit", day: "2-digit" } : {}),
+        ...(withDate ? { month: "numeric", day: "numeric" } : {}),
     })
 }
 

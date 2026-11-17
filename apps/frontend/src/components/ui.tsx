@@ -589,6 +589,7 @@ export function Info({ title, rows }: { title: string; rows: [string, ReactNode]
 }
 
 export function PageFootnote() {
+    const { t } = useTranslation()
     const note = useStore((s) => s.settings.footerNote)
-    return <p className="page-footnote">{note || "Nezha · Kumo theme"}</p>
+    return <p className="page-footnote">{note || t("ui.footerNote")}</p>
 }

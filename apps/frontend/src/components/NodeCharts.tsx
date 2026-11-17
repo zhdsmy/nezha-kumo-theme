@@ -8,24 +8,55 @@ import { useTranslation } from "react-i18next"
 import { Chart, type ChartSeries, stepDigits } from "./Chart"
 import { CHART_PALETTE } from "./ui"
 
+const HOURS_PER_DAY = 24
+const HOURS_PER_WEEK = 168
+
+function sameLocalDay(a: number, b: number): boolean {
+    const da = new Date(a)
+    const db = new Date(b)
+    return (
+        da.getFullYear() === db.getFullYear() &&
+        da.getMonth() === db.getMonth() &&
+        da.getDate() === db.getDate()
+    )
+}
+
+export function formatTimeTick(
+    t: number,
+    index: number,
+    ticks: readonly number[],
+    hours: number,
+    locale?: string,
+): string {
+    if (hours >= HOURS_PER_WEEK) {
+        return new Date(t).toLocaleDateString(locale, {
+            month: "numeric",
+            day: "numeric",
+        })
+    }
+    const showDate = hours >= HOURS_PER_DAY && (index === 0 || !sameLocalDay(ticks[index - 1], t))
+    return formatClock(t, showDate, locale)
+}
+
+export function formatTimeAxis(ticks: readonly number[], hours: number, locale?: string): string[] {
+    return ticks.map((t, i) => formatTimeTick(t, i, ticks, hours, locale))
+}
+
 function useTimeFormats(hours: number) {
     const { i18n } = useTranslation()
-    const long = hours >= 24
+    const long = hours >= HOURS_PER_DAY
     return {
-        axis: (t: number) =>
-            hours >= 168
-                ? new Date(t).toLocaleDateString(i18n.language, {
-                      month: "numeric",
-                      day: "numeric",
-                  })
-                : formatClock(t, false, i18n.language),
+        axis: (t: number, index = 0, ticks: readonly number[] = [t]) =>
+            formatTimeTick(t, index, ticks, hours, i18n.language),
         tooltip: (t: number) =>
-            new Date(t).toLocaleString(i18n.language, {
-                hour12: false,
-                hour: "2-digit",
-                minute: "2-digit",
-                ...(long ? { month: "numeric", day: "numeric" } : { second: "2-digit" }),
-            }),
+            long
+                ? formatClock(t, true, i18n.language)
+                : new Date(t).toLocaleString(i18n.language, {
+                      hour12: false,
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                  }),
     }
 }
 

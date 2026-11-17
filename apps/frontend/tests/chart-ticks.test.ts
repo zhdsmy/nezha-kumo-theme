@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest"
 
-import { buildYTicks, stepDigits } from "../src/components/Chart"
-import { formatBytes, formatNumber, formatSpeed } from "../src/core/format"
+import { buildXTicks, buildYTicks, stepDigits } from "../src/components/Chart"
+import { formatTimeAxis, formatTimeTick } from "../src/components/NodeCharts"
+import { formatBytes, formatClock, formatNumber, formatSpeed } from "../src/core/format"
 
 describe("chart y-axis ticks", () => {
     it("generates nice 1-2-5 decimal steps that cover dataMax and yMax", () => {
@@ -103,5 +104,103 @@ describe("chart y-axis ticks", () => {
 
         const flatBin = buildYTicks(5 * 1024 ** 3, { scale: "binary" })
         expect(flatBin.ticks.map((v) => formatBytes(v, 0))).toEqual(["0 B", "2 GB", "4 GB", "6 GB"])
+    })
+})
+
+describe("chart x-axis time ticks", () => {
+    const locales = ["en", "zh-CN", "zh-TW", "ja"] as const
+
+    it("keeps < 24h clock-only and >= 168h date-only across all 4 locales", () => {
+        const ticks = [
+            new Date(2026, 10, 16, 17, 30).getTime(),
+            new Date(2026, 10, 17, 1, 30).getTime(),
+            new Date(2026, 10, 17, 9, 30).getTime(),
+            new Date(2026, 10, 17, 17, 30).getTime(),
+        ]
+        for (const locale of locales) {
+            for (const hours of [0.25, 1, 4, 23]) {
+                expect(formatTimeAxis(ticks, hours, locale)).toEqual(
+                    ticks.map((t) => formatClock(t, false, locale)),
+                )
+            }
+            for (const hours of [168, 720]) {
+                expect(formatTimeAxis(ticks, hours, locale)).toEqual(
+                    ticks.map((t) =>
+                        new Date(t).toLocaleDateString(locale, {
+                            month: "numeric",
+                            day: "numeric",
+                        }),
+                    ),
+                )
+            }
+        }
+    })
+
+    it("shows Intl date+clock on start and midnight transitions for [24h, 168h) across 4 locales", () => {
+        const t0 = new Date(2026, 10, 16, 17, 30).getTime()
+        const t1 = new Date(2026, 10, 17, 1, 30).getTime()
+        const t2 = new Date(2026, 10, 17, 9, 30).getTime()
+        const t3 = new Date(2026, 10, 17, 17, 30).getTime()
+        const ticks = [t0, t1, t2, t3]
+
+        for (const locale of locales) {
+            const labels = formatTimeAxis(ticks, 24, locale)
+            // First tick (Nov 16) and second tick (crossed midnight into Nov 17) carry date + clock
+            expect(labels[0]).toBe(formatClock(t0, true, locale))
+            expect(labels[1]).toBe(formatClock(t1, true, locale))
+            expect(labels[0]).toContain("16")
+            expect(labels[1]).toContain("17")
+            expect(labels[0]).not.toBe(labels[1])
+            // Same-day subsequent ticks stay compact clock-only
+            expect(labels[2]).toBe(formatClock(t2, false, locale))
+            expect(labels[3]).toBe(formatClock(t3, false, locale))
+            expect(labels[2]).not.toContain("11")
+            expect(labels[3]).not.toContain("11")
+        }
+
+        // Multi-day < 168h (e.g. 72h) shows each new day while keeping < 168h clock resolution
+        const threeDays = [
+            new Date(2026, 10, 14, 18, 0).getTime(),
+            new Date(2026, 10, 15, 18, 0).getTime(),
+            new Date(2026, 10, 16, 18, 0).getTime(),
+            new Date(2026, 10, 17, 18, 0).getTime(),
+        ]
+        for (const locale of locales) {
+            expect(formatTimeAxis(threeDays, 72, locale)).toEqual(
+                threeDays.map((t) => formatClock(t, true, locale)),
+            )
+        }
+    })
+
+    it("prevents label overlap or out-of-bounds truncation across 375/867/952/1440 plot widths", () => {
+        const startOffsets = [0, 2, 6, 12, 17.5, 23.5]
+        // Representative plotW values for 375 (~245px), 867 (~455px), 952 (~540px), 1440 2-col (~454px) & PingChart (~990px)
+        const plotWidths = [240, 255, 454, 540, 990]
+
+        for (const locale of locales) {
+            for (const offsetHours of startOffsets) {
+                const end = new Date(2026, 11, 28, 0, 0).getTime() + offsetHours * 3_600_000
+                const start = end - 24 * 3_600_000
+                const fmt = (t: number, i: number, arr: readonly number[]) =>
+                    formatTimeTick(t, i, arr, 24, locale)
+
+                for (const plotW of plotWidths) {
+                    const { ticks, labels } = buildXTicks(start, end, plotW, fmt)
+                    expect(ticks.length).toBeGreaterThanOrEqual(2)
+                    let prevRight = -Infinity
+                    for (let i = 0; i < labels.length; i++) {
+                        // Conservative upper bound matching measured 12px Inter tabular widths
+                        const w = labels[i].length > 5 ? 75 : 34
+                        const cx = (plotW * i) / (labels.length - 1)
+                        const left = i === 0 ? 0 : i === labels.length - 1 ? plotW - w : cx - w / 2
+                        const right = left + w
+                        expect(left).toBeGreaterThanOrEqual(-0.5)
+                        expect(right).toBeLessThanOrEqual(plotW + 0.5)
+                        if (i > 0) expect(left - prevRight).toBeGreaterThanOrEqual(4)
+                        prevRight = right
+                    }
+                }
+            }
+        }
     })
 })

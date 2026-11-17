@@ -132,16 +132,24 @@ export async function mockNezha(
             return route.fulfill({ json: { success: true, data: { data_points } } })
         }
         if (path.endsWith("/service")) {
-            const now = Date.now()
+            const period = url.searchParams.get("period")
+            const hours = period === "30d" ? 720 : period === "7d" ? 168 : 24
+            const start = metricNow - hours * 3_600_000
+            const count = hours === 24 ? 2881 : hours === 168 ? 1009 : 721
+            const spikeIndex = count - 15
+            const createdAt = Array.from(
+                { length: count },
+                (_, i) => start + (i * hours * 3_600_000) / (count - 1),
+            )
             return route.fulfill({
                 json: {
                     success: true,
                     data: [1, 2, 3].map((id) => ({
                         monitor_id: id,
                         monitor_name: ["Tokyo", "Singapore", "Los Angeles"][id - 1],
-                        created_at: Array.from({ length: 600 }, (_, i) => now - (599 - i) * 6000),
-                        avg_delay: Array.from({ length: 600 }, (_, i) =>
-                            i === 330 ? 1200 : 20 * id + Math.sin(i / 15) * 8,
+                        created_at: createdAt,
+                        avg_delay: Array.from({ length: count }, (_, i) =>
+                            i === spikeIndex ? 1200 : 20 * id + Math.sin(i / 15) * 8,
                         ),
                     })),
                 },
