@@ -13,7 +13,8 @@
         "test": "vitest run",
         "preview": "vite preview",
         "e2e": "playwright test",
-        "e2e:install": "playwright install --with-deps chromium"
+        "e2e:install": "playwright install --with-deps chromium",
+        "package": "pnpm build && python3 ../../scripts/package.py admin"
     },
     "dependencies": {
         "@cloudflare/kumo": "2.18.1",

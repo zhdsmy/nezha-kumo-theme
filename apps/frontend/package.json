@@ -13,7 +13,7 @@
         "test:unit": "vitest run",
         "test:e2e": "playwright test",
         "check:size": "node scripts/check-size.mjs",
-        "package": "pnpm build && pnpm check:size && node scripts/package.mjs"
+        "package": "pnpm build && pnpm check:size && python3 ../../scripts/package.py frontend"
     },
     "dependencies": {
         "@cloudflare/kumo": "2.18.1",

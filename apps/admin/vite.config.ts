@@ -5,7 +5,7 @@ import { defineConfig } from "vite"
 const backend = process.env.NEZHA_DEV_BACKEND || "http://127.0.0.1:8008"
 
 export default defineConfig({
-    base: "/dashboard",
+    base: "/dashboard/",
     plugins: [react()],
     server: {
         // Bind the dev server to loopback so an in-browser CSRF or LAN
