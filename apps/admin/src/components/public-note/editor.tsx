@@ -106,30 +106,20 @@ export function PublicNoteEditor({
             <KumoPortalProvider container={portal}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                     <h3 className="text-sm font-semibold">{t("PublicNote.Label")}</h3>
-                    <div className="flex gap-2">
-                        <Button
-                            type="button"
-                            variant={mode === "structured" ? "secondary" : "ghost"}
-                            aria-pressed={mode === "structured"}
-                            disabled={parsed === undefined}
-                            onClick={() => {
-                                setMode("structured")
-                                onChange(value, "structured")
+                    <div>
+                        <Choices
+                            label={t("PublicNote.Label")}
+                            value={mode}
+                            options={[
+                                ["structured", t("PublicNote.CustomFields")],
+                                ["raw", t("PublicNote.RawText")],
+                            ]}
+                            disabledValues={parsed === undefined ? ["structured"] : []}
+                            onChange={(next) => {
+                                setMode(next as "structured" | "raw")
+                                onChange(value, next as "structured" | "raw")
                             }}
-                        >
-                            {t("PublicNote.CustomFields")}
-                        </Button>
-                        <Button
-                            type="button"
-                            variant={mode === "raw" ? "secondary" : "ghost"}
-                            aria-pressed={mode === "raw"}
-                            onClick={() => {
-                                setMode("raw")
-                                onChange(value, "raw")
-                            }}
-                        >
-                            {t("PublicNote.RawText")}
-                        </Button>
+                        />
                     </div>
                 </div>
                 {parsed === undefined && (

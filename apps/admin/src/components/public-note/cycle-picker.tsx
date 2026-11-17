@@ -12,7 +12,12 @@ import {
 } from "../../../../../packages/shared/public-note"
 import { type NoteControlProps } from "./controls"
 
-export function CyclePicker({ value, onChange, label }: NoteControlProps) {
+export function CyclePicker({
+    value,
+    onChange,
+    label,
+    unsetLabel,
+}: NoteControlProps & { unsetLabel?: string }) {
     const { t } = useTranslation()
     const hint = useId()
     const parsed = parseCycle(value)
@@ -50,12 +55,14 @@ export function CyclePicker({ value, onChange, label }: NoteControlProps) {
                     <Button
                         type="button"
                         variant="secondary"
-                        aria-label={`${label} · ${parsed ? display(parsed) : value || t("PublicNote.Unset")}`}
+                        aria-label={`${label} · ${parsed ? display(parsed) : value || unsetLabel || t("PublicNote.Unset")}`}
                         aria-describedby={value && !parsed ? hint : undefined}
                         className="w-full min-w-0 justify-between gap-2"
                     >
                         <span className="truncate">
-                            {parsed ? display(parsed) : value || t("PublicNote.Unset")}
+                            {parsed
+                                ? display(parsed)
+                                : value || unsetLabel || t("PublicNote.Unset")}
                         </span>
                         <ChevronRight className="size-4 shrink-0" aria-hidden="true" />
                     </Button>

@@ -15,7 +15,10 @@ import zhTW from "../src/i18n/locales/zh-TW.json"
 
 const privateBilling = vi.hoisted(() => ({
     loggedIn: false,
-    actualCosts: null as Record<string, { amount: number; currency: string }> | null,
+    actualCosts: null as Record<
+        string,
+        { amount: number; currency: string; cycle?: number }
+    > | null,
     exchangeRates: {
         date: "2026-11-04",
         rates: { USD: 1, CNY: 7, HKD: 7.8, JPY: 150, EUR: 0.9, AUD: 1.5 },
@@ -168,4 +171,15 @@ describe("Nezha billing display", () => {
         expect(oneTime).toContain("¥700.00 一次性")
         vi.unstubAllGlobals()
     })
+})
+
+it("restates private prices with their own period in the shared billing formatter", async () => {
+    await i18n.changeLanguage("en")
+    privateBilling.loggedIn = true
+    privateBilling.actualCosts = { sample: { amount: 300, currency: "USD", cycle: 365 } }
+    expect(render({ billingDataMod: { amount: "USD 100", cycle: "Month" } })).toContain(
+        "$25.00" + en.unit.perMonth,
+    )
+    privateBilling.loggedIn = false
+    privateBilling.actualCosts = null
 })

@@ -7,12 +7,12 @@ export interface NoteControlProps {
     onChange: (value: string | undefined) => void
     label: string
 }
-export function UnknownValue({ value }: { value?: string }) {
+export function UnknownValue({ value, hint }: { value?: string; hint?: string }) {
     const { t } = useTranslation()
     return (
         <div className="space-y-1">
             <p className="break-all rounded-md border px-3 py-2 text-sm">{value}</p>
-            <p className="text-xs text-muted-foreground">{t("PublicNote.Unrecognized")}</p>
+            <p className="text-xs text-muted-foreground">{hint || t("PublicNote.Unrecognized")}</p>
         </div>
     )
 }
@@ -21,10 +21,12 @@ export function Choices({
     value,
     options,
     onChange,
+    disabledValues = [],
 }: {
     label: string
     value?: string
     options: readonly (readonly [string, string])[]
+    disabledValues?: string[]
     onChange: (value: string) => void
 }) {
     return (
@@ -33,6 +35,7 @@ export function Choices({
                 <Button
                     type="button"
                     key={key}
+                    disabled={disabledValues.includes(key)}
                     variant={key === (value ?? "") ? "secondary" : "ghost"}
                     aria-pressed={key === (value ?? "")}
                     className="h-auto min-h-9 min-w-0 flex-1 whitespace-normal px-2 py-1 text-sm leading-snug"
@@ -52,12 +55,14 @@ export function NumberInput({
     label,
     min = 0,
     placeholder,
+    required,
 }: {
     value?: number
     onChange: (value: number | undefined) => void
     label: string
     min?: number
     placeholder?: string
+    required?: boolean
 }) {
     const [draft, setDraft] = useState(value === undefined ? "" : String(value))
     useEffect(() => {
@@ -70,12 +75,14 @@ export function NumberInput({
     return (
         <Input
             type="text"
+            required={required}
             inputMode="decimal"
             aria-label={label}
             placeholder={placeholder}
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             onBlur={() => {
+                if (!draft.trim() && value === undefined) return
                 const number = Number(draft)
                 if (draft.trim() && number === value) return
                 if (!draft.trim()) onChange(undefined)

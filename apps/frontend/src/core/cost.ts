@@ -105,7 +105,10 @@ export function onlineMonthlyCost(
     for (const node of nodes) {
         if (!snapshots[node.id]?.online) continue
         const actual = actualCosts?.[node.id]
-        const monthly = monthlyCost(actual?.amount ?? node.price, node.billingCycle)
+        const monthly = monthlyCost(
+            actual?.amount ?? node.price,
+            actual?.cycle ?? node.billingCycle,
+        )
         if (monthly <= 0) continue
         paid++
         const converted = convertAmount(monthly, actual?.currency ?? node.currency, currency, rates)

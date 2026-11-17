@@ -673,3 +673,39 @@ body,
         top: 0;
     }
 }
+
+.nkt-json-rows {
+    display: grid;
+    min-width: 0;
+    gap: 8px;
+}
+.nkt-json-row {
+    display: grid;
+    min-width: 0;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--color-kumo-line);
+    border-radius: 8px;
+}
+.nkt-json-row .nkt-json-rows {
+    border-left: 2px solid var(--color-kumo-line);
+    padding-left: 4px;
+}
+.nkt-json-heading {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 6.5rem) auto;
+    gap: 4px;
+    align-items: end;
+}
+.nkt-json-heading > *,
+.nkt-json-row :is(input, textarea, [role="combobox"]) {
+    min-width: 0;
+    max-width: 100%;
+}
+.nkt-json-row .nkt-json-row .nkt-json-heading {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+.nkt-json-row .nkt-json-row .nkt-json-heading > :first-child {
+    grid-column: 1 / -1;
+}

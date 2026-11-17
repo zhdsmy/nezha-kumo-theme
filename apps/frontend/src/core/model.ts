@@ -133,6 +133,8 @@ export interface Session {
 export interface ActualCost {
     amount: number
     currency: string
+    /** Actual billing cycle in days; absent values inherit the public cycle. */
+    cycle?: number
 }
 
 export type LoginResult =
