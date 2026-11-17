@@ -35,8 +35,13 @@ export function PublicNoteEditor({
         if (!isNoteObject(group) || !Object.hasOwn(group, key)) return
         return typeof group[key] === "string" ? group[key] : JSON.stringify(group[key])
     }
-    const patch = (section: string, key: string, next: string | undefined) =>
-        onChange(patchPublicNote(value, section, key, next))
+    const patch = (section: string, key: string, next: string | undefined) => {
+        let updated = patchPublicNote(value, section, key, next)
+        const amount = get("billingDataMod", "amount")
+        if (section === "billingDataMod" && key === "cycle" && parseAmount(amount)?.cycle)
+            updated = patchPublicNote(updated, section, "amount", amount!.split("/")[0])
+        onChange(updated)
+    }
     const field = (
         section: string,
         key: string,
@@ -51,7 +56,7 @@ export function PublicNoteEditor({
             <div className="min-w-0 space-y-2" data-note-field={key}>
                 <div className="flex min-h-9 items-center justify-between gap-2">
                     <span className="text-sm font-medium">{label}</span>
-                    {current !== undefined && (
+                    {(current !== undefined || (key === "cycle" && cycle !== undefined)) && (
                         <Button
                             type="button"
                             variant="ghost"

@@ -79,3 +79,31 @@ test("invalid raw notes explain the fallback and can still be cleared and saved"
     await waitFor(() => expect(update).toHaveBeenCalledTimes(1))
     expect(update.mock.calls[0][1].public_note).toBe("")
 })
+
+test.each(["clear", "replace"])("edits the amount-suffix cycle at its source: %s", (action) => {
+    function Harness() {
+        const [value, setValue] = useState(
+            '{"billingDataMod":{"amount":"$3.99/2年","cycle":""},"unknown":1e+2}',
+        )
+        return (
+            <>
+                <PublicNoteEditor value={value} onChange={setValue} />
+                <output>{value}</output>
+            </>
+        )
+    }
+    render(<Harness />)
+    expect(screen.getByRole("button", { name: "周期" }).textContent).toContain("每 2 年")
+    if (action === "clear") fireEvent.click(screen.getByRole("button", { name: "清除 · 周期" }))
+    else {
+        fireEvent.click(screen.getByRole("button", { name: "周期" }))
+        fireEvent.click(screen.getByRole("button", { name: "每周" }))
+    }
+    expect(screen.getByRole("button", { name: "周期" }).textContent).toContain(
+        action === "clear" ? "未填" : "每周",
+    )
+    const saved = JSON.parse(screen.getByRole("status").textContent!)
+    expect(saved.billingDataMod.amount).toBe("$3.99")
+    expect(saved.billingDataMod.cycle).toBe(action === "clear" ? undefined : "Week")
+    expect(saved.unknown).toBe(100)
+})
