@@ -74,3 +74,23 @@ test("FE06 refreshes the overview across local midnight and expires old peaks", 
     await expect(traffic).toHaveText("400 B")
     await expect(peak).not.toContainText("KB/s")
 })
+
+test("FE04 reports settings failure and recovers history after retry", async ({ page }) => {
+    await mockNezha(page)
+    let failed = true
+    await page.route("**/api/v1/setting", (route) =>
+        failed ? route.fulfill({ status: 503, json: { success: false } }) : route.fallback(),
+    )
+    await page.goto("/server/6#latency")
+    await expect(page.getByRole("alert")).toBeVisible()
+    await expect(
+        page.getByText(
+            "This dashboard keeps no server-side history. Charts fill in while the page is open.",
+        ),
+    ).toHaveCount(0)
+    failed = false
+    await page.getByRole("button", { name: "Try again", exact: true }).click()
+    await expect(page.locator(".chart svg")).toBeVisible()
+    await page.goto("/server/6#history")
+    await expect(page.locator(".hour-grid-cell").first()).toBeVisible()
+})

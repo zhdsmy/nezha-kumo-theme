@@ -616,7 +616,8 @@ export const nezha = {
     historyRanges: [0, 1, 4, 24, 168, 720],
 
     async loadSite(loggedIn = false): Promise<SiteInfo> {
-        const res = await request<Common<NezhaSetting>>("/api/v1/setting").catch(() => null)
+        const res = await request<Common<NezhaSetting>>("/api/v1/setting")
+        if (!res.success || !res.data) throw new Error("Nezha settings unavailable")
         const cfg = res?.data?.config ?? {}
         const hasGroupIcons = Object.keys(parseGroupIcons(cfg.custom_code)).length > 0
         if (hasGroupIcons) await loadGroups()
