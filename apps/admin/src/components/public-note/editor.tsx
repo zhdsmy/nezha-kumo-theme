@@ -1,13 +1,11 @@
-import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
 import {
     detectPublicNoteMode,
     isNoteObject,
     parsePublicNote,
     patchPublicNote,
 } from "@/lib/public-note"
-import { type ReactNode, useState } from "react"
+import { Button, KumoPortalProvider, Switch, Textarea } from "@cloudflare/kumo"
+import { type ReactNode, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TRAFFIC_TYPES, parseAmount, writeCycle } from "../../../../../packages/shared/public-note"
@@ -28,6 +26,7 @@ export function PublicNoteEditor({
     routes?: string[]
 }) {
     const { t } = useTranslation()
+    const portal = useRef<HTMLElement>(null)
     const [mode, setMode] = useState(() => detectPublicNoteMode(value))
     const parsed = parsePublicNote(value)
     const object = isNoteObject(parsed) ? parsed : {}
@@ -94,220 +93,239 @@ export function PublicNoteEditor({
         </fieldset>
     )
     return (
-        <section className="space-y-4" aria-label={t("PublicNote.Label")} data-public-note-editor>
-            <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-sm font-semibold">{t("PublicNote.Label")}</h3>
-                <div className="flex gap-2">
-                    <Button
-                        type="button"
-                        variant={mode === "structured" ? "secondary" : "ghost"}
-                        aria-pressed={mode === "structured"}
-                        disabled={parsed === undefined}
-                        onClick={() => {
-                            setMode("structured")
-                            onChange(value, "structured")
-                        }}
-                    >
-                        {t("PublicNote.CustomFields")}
-                    </Button>
-                    <Button
-                        type="button"
-                        variant={mode === "raw" ? "secondary" : "ghost"}
-                        aria-pressed={mode === "raw"}
-                        onClick={() => {
-                            setMode("raw")
-                            onChange(value, "raw")
-                        }}
-                    >
-                        {t("PublicNote.RawText")}
-                    </Button>
+        <section
+            ref={portal}
+            className="space-y-4 nkt-note-editor"
+            aria-label={t("PublicNote.Label")}
+            data-public-note-editor
+        >
+            <KumoPortalProvider container={portal}>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="text-sm font-semibold">{t("PublicNote.Label")}</h3>
+                    <div className="flex gap-2">
+                        <Button
+                            type="button"
+                            variant={mode === "structured" ? "secondary" : "ghost"}
+                            aria-pressed={mode === "structured"}
+                            disabled={parsed === undefined}
+                            onClick={() => {
+                                setMode("structured")
+                                onChange(value, "structured")
+                            }}
+                        >
+                            {t("PublicNote.CustomFields")}
+                        </Button>
+                        <Button
+                            type="button"
+                            variant={mode === "raw" ? "secondary" : "ghost"}
+                            aria-pressed={mode === "raw"}
+                            onClick={() => {
+                                setMode("raw")
+                                onChange(value, "raw")
+                            }}
+                        >
+                            {t("PublicNote.RawText")}
+                        </Button>
+                    </div>
                 </div>
-            </div>
-            {parsed === undefined && (
-                <p role="status" className="text-sm text-muted-foreground">
-                    {t("PublicNote.InvalidJSONHint")}
-                </p>
-            )}
-            {parsed !== undefined && !isNoteObject(parsed) && <UnknownValue value={value} />}
-            {mode === "raw" ? (
-                <Textarea
-                    aria-label={t("PublicNote.RawText")}
-                    rows={8}
-                    value={value}
-                    onChange={(event) => onChange(event.target.value, "raw")}
-                />
-            ) : (
-                <>
-                    {section(
-                        billing,
-                        t("PublicNote.Billing"),
-                        <>
-                            {field(
-                                billing,
-                                "startDate",
-                                t("PublicNote.StartDate"),
-                                (value, onChange) => (
-                                    <DateInput
-                                        label={t("PublicNote.StartDate")}
-                                        value={value}
-                                        onChange={onChange}
-                                    />
-                                ),
-                            )}
-                            {field(
-                                billing,
-                                "endDate",
-                                t("PublicNote.EndDate"),
-                                (value, onChange) => (
-                                    <DateInput
-                                        end
-                                        label={t("PublicNote.EndDate")}
-                                        value={value}
-                                        onChange={onChange}
-                                        start={get(billing, "startDate")}
-                                        cycle={cycle}
-                                    />
-                                ),
-                            )}
-                            {field(
-                                billing,
-                                "autoRenewal",
-                                t("PublicNote.AutoRenewal"),
-                                (value, onChange) => (
-                                    <>
-                                        <Switch
-                                            aria-label={t("PublicNote.AutoRenewal")}
-                                            checked={value === "1"}
-                                            onCheckedChange={(checked) =>
-                                                onChange(checked ? "1" : "0")
-                                            }
-                                        />
-                                        {value !== undefined && !/^[01]$/.test(value) && (
-                                            <UnknownValue value={value} />
-                                        )}
-                                    </>
-                                ),
-                            )}
-                            {field(billing, "cycle", t("PublicNote.Cycle"), (value, onChange) => (
-                                <CyclePicker
-                                    label={t("PublicNote.Cycle")}
-                                    value={value || cycle}
-                                    onChange={onChange}
-                                />
-                            ))}
-                            {field(billing, "amount", t("PublicNote.Amount"), (value, onChange) => (
-                                <AmountInput
-                                    label={t("PublicNote.Amount")}
-                                    value={value}
-                                    onChange={onChange}
-                                />
-                            ))}
-                        </>,
-                    )}
-                    {section(
-                        plan,
-                        t("PublicNote.Plan"),
-                        <>
-                            {field(
-                                plan,
-                                "bandwidth",
-                                t("PublicNote.Bandwidth"),
-                                (value, onChange) => (
-                                    <QuantityInput
-                                        label={t("PublicNote.Bandwidth")}
-                                        value={value}
-                                        onChange={onChange}
-                                    />
-                                ),
-                            )}
-                            {field(
-                                plan,
-                                "trafficVol",
-                                t("PublicNote.TrafficVolume"),
-                                (value, onChange) => (
-                                    <QuantityInput
-                                        traffic
-                                        label={t("PublicNote.TrafficVolume")}
-                                        value={value}
-                                        onChange={onChange}
-                                    />
-                                ),
-                            )}
-                            {field(
-                                plan,
-                                "trafficType",
-                                t("PublicNote.TrafficType"),
-                                (value, onChange) => (
-                                    <>
-                                        <Choices
-                                            label={t("PublicNote.TrafficType")}
+                {parsed === undefined && (
+                    <p role="status" className="text-sm text-muted-foreground">
+                        {t("PublicNote.InvalidJSONHint")}
+                    </p>
+                )}
+                {parsed !== undefined && !isNoteObject(parsed) && <UnknownValue value={value} />}
+                {mode === "raw" ? (
+                    <Textarea
+                        aria-label={t("PublicNote.RawText")}
+                        rows={8}
+                        value={value}
+                        onChange={(event) => onChange(event.target.value, "raw")}
+                    />
+                ) : (
+                    <>
+                        {section(
+                            billing,
+                            t("PublicNote.Billing"),
+                            <>
+                                {field(
+                                    billing,
+                                    "startDate",
+                                    t("PublicNote.StartDate"),
+                                    (value, onChange) => (
+                                        <DateInput
+                                            label={t("PublicNote.StartDate")}
                                             value={value}
-                                            options={TRAFFIC_TYPES.map(
-                                                ({ value, mode }) =>
-                                                    [
-                                                        value,
-                                                        t(`PublicNote.TrafficModes.${mode}`),
-                                                    ] as const,
-                                            )}
                                             onChange={onChange}
                                         />
-                                        {value !== undefined && !/^[123]$/.test(value) && (
-                                            <UnknownValue value={value} />
-                                        )}
-                                    </>
-                                ),
-                            )}
-                            {(["IPv4", "IPv6"] as const).map((key) => (
-                                <div key={key}>
-                                    {field(plan, key, key, (value, onChange) => (
+                                    ),
+                                )}
+                                {field(
+                                    billing,
+                                    "endDate",
+                                    t("PublicNote.EndDate"),
+                                    (value, onChange) => (
+                                        <DateInput
+                                            end
+                                            label={t("PublicNote.EndDate")}
+                                            value={value}
+                                            onChange={onChange}
+                                            start={get(billing, "startDate")}
+                                            cycle={cycle}
+                                        />
+                                    ),
+                                )}
+                                {field(
+                                    billing,
+                                    "autoRenewal",
+                                    t("PublicNote.AutoRenewal"),
+                                    (value, onChange) => (
                                         <>
-                                            <Choices
-                                                label={key}
-                                                value={value}
-                                                options={[
-                                                    ["", t("PublicNote.Unset")],
-                                                    ["1", t("PublicNote.Has")],
-                                                    ["0", t("PublicNote.None")],
-                                                ]}
-                                                onChange={(next) => onChange(next || undefined)}
+                                            <Switch
+                                                aria-label={t("PublicNote.AutoRenewal")}
+                                                checked={value === "1"}
+                                                onCheckedChange={(checked) =>
+                                                    onChange(checked ? "1" : "0")
+                                                }
                                             />
                                             {value !== undefined && !/^[01]$/.test(value) && (
                                                 <UnknownValue value={value} />
                                             )}
                                         </>
-                                    ))}
-                                </div>
-                            ))}
-                            {field(
-                                plan,
-                                "networkRoute",
-                                t("PublicNote.NetworkRoute"),
-                                (_, onChange) => (
+                                    ),
+                                )}
+                                {field(
+                                    billing,
+                                    "cycle",
+                                    t("PublicNote.Cycle"),
+                                    (value, onChange) => (
+                                        <CyclePicker
+                                            label={t("PublicNote.Cycle")}
+                                            value={value || cycle}
+                                            onChange={onChange}
+                                        />
+                                    ),
+                                )}
+                                {field(
+                                    billing,
+                                    "amount",
+                                    t("PublicNote.Amount"),
+                                    (value, onChange) => (
+                                        <AmountInput
+                                            label={t("PublicNote.Amount")}
+                                            value={value}
+                                            onChange={onChange}
+                                        />
+                                    ),
+                                )}
+                            </>,
+                        )}
+                        {section(
+                            plan,
+                            t("PublicNote.Plan"),
+                            <>
+                                {field(
+                                    plan,
+                                    "bandwidth",
+                                    t("PublicNote.Bandwidth"),
+                                    (value, onChange) => (
+                                        <QuantityInput
+                                            label={t("PublicNote.Bandwidth")}
+                                            value={value}
+                                            onChange={onChange}
+                                        />
+                                    ),
+                                )}
+                                {field(
+                                    plan,
+                                    "trafficVol",
+                                    t("PublicNote.TrafficVolume"),
+                                    (value, onChange) => (
+                                        <QuantityInput
+                                            traffic
+                                            label={t("PublicNote.TrafficVolume")}
+                                            value={value}
+                                            onChange={onChange}
+                                        />
+                                    ),
+                                )}
+                                {field(
+                                    plan,
+                                    "trafficType",
+                                    t("PublicNote.TrafficType"),
+                                    (value, onChange) => (
+                                        <>
+                                            <Choices
+                                                label={t("PublicNote.TrafficType")}
+                                                value={value}
+                                                options={TRAFFIC_TYPES.map(
+                                                    ({ value, mode }) =>
+                                                        [
+                                                            value,
+                                                            t(`PublicNote.TrafficModes.${mode}`),
+                                                        ] as const,
+                                                )}
+                                                onChange={onChange}
+                                            />
+                                            {value !== undefined && !/^[123]$/.test(value) && (
+                                                <UnknownValue value={value} />
+                                            )}
+                                        </>
+                                    ),
+                                )}
+                                {(["IPv4", "IPv6"] as const).map((key) => (
+                                    <div key={key}>
+                                        {field(plan, key, key, (value, onChange) => (
+                                            <>
+                                                <Choices
+                                                    label={key}
+                                                    value={value}
+                                                    options={[
+                                                        ["", t("PublicNote.Unset")],
+                                                        ["1", t("PublicNote.Has")],
+                                                        ["0", t("PublicNote.None")],
+                                                    ]}
+                                                    onChange={(next) => onChange(next || undefined)}
+                                                />
+                                                {value !== undefined && !/^[01]$/.test(value) && (
+                                                    <UnknownValue value={value} />
+                                                )}
+                                            </>
+                                        ))}
+                                    </div>
+                                ))}
+                                {field(
+                                    plan,
+                                    "networkRoute",
+                                    t("PublicNote.NetworkRoute"),
+                                    (_, onChange) => (
+                                        <TagInput
+                                            label={t("PublicNote.NetworkRoute")}
+                                            value={
+                                                isNoteObject(object[plan])
+                                                    ? object[plan].networkRoute
+                                                    : undefined
+                                            }
+                                            onChange={onChange}
+                                            suggestions={routes}
+                                        />
+                                    ),
+                                )}
+                                {field(plan, "extra", t("PublicNote.Extra"), (_, onChange) => (
                                     <TagInput
-                                        label={t("PublicNote.NetworkRoute")}
+                                        label={t("PublicNote.Extra")}
                                         value={
                                             isNoteObject(object[plan])
-                                                ? object[plan].networkRoute
+                                                ? object[plan].extra
                                                 : undefined
                                         }
                                         onChange={onChange}
-                                        suggestions={routes}
                                     />
-                                ),
-                            )}
-                            {field(plan, "extra", t("PublicNote.Extra"), (_, onChange) => (
-                                <TagInput
-                                    label={t("PublicNote.Extra")}
-                                    value={
-                                        isNoteObject(object[plan]) ? object[plan].extra : undefined
-                                    }
-                                    onChange={onChange}
-                                />
-                            ))}
-                        </>,
-                    )}
-                </>
-            )}
+                                ))}
+                            </>,
+                        )}
+                    </>
+                )}
+            </KumoPortalProvider>
         </section>
     )
 }

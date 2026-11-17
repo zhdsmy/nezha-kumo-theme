@@ -1,7 +1,4 @@
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Switch } from "@/components/ui/switch"
+import { Button, DatePicker, Popover, Switch } from "@cloudflare/kumo"
 import { enUS, ja, zhCN, zhTW } from "date-fns/locale"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -49,33 +46,37 @@ export function DateInput({
     return (
         <div className="space-y-2">
             <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
+                <Popover.Trigger asChild>
                     <Button
                         type="button"
-                        variant="outline"
+                        variant="secondary"
                         aria-label={`${label} · ${display}`}
                         disabled={noExpiry}
                         className="w-full min-w-0 justify-start truncate"
                     >
                         {display}
                     </Button>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="w-auto p-0">
-                    <Calendar
-                        mode="single"
-                        locale={locale}
-                        captionLayout="dropdown"
-                        selected={selected}
-                        defaultMonth={selected}
-                        startMonth={new Date(2000, 0)}
-                        endMonth={new Date(2100, 11)}
-                        onSelect={(date) => {
-                            if (!date) return
-                            onChange(writeNoteDate(date, value))
-                            setOpen(false)
-                        }}
-                    />
-                </PopoverContent>
+                </Popover.Trigger>
+                <Popover.Content align="start" className="w-auto p-3">
+                    <div data-note-calendar>
+                        <DatePicker
+                            navLayout="around"
+                            className="[--cell-size:36px] [--cell-width:36px]"
+                            mode="single"
+                            locale={locale}
+                            captionLayout="dropdown"
+                            selected={selected}
+                            defaultMonth={selected}
+                            startMonth={new Date(2000, 0)}
+                            endMonth={new Date(2100, 11)}
+                            onChange={(date) => {
+                                if (!date) return
+                                onChange(writeNoteDate(date, value))
+                                setOpen(false)
+                            }}
+                        />
+                    </div>
+                </Popover.Content>
             </Popover>
             {value && time === undefined && (
                 <p className="text-xs text-muted-foreground">{t("PublicNote.Unrecognized")}</p>

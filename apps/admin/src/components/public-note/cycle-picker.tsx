@@ -1,13 +1,4 @@
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
+import { Button, Input, Popover, Select } from "@cloudflare/kumo"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useEffect, useId, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -55,10 +46,10 @@ export function CyclePicker({ value, onChange, label }: NoteControlProps) {
                     }
                 }}
             >
-                <PopoverTrigger asChild>
+                <Popover.Trigger asChild>
                     <Button
                         type="button"
-                        variant="outline"
+                        variant="secondary"
                         aria-label={`${label} · ${parsed ? display(parsed) : value || t("PublicNote.Unset")}`}
                         aria-describedby={value && !parsed ? hint : undefined}
                         className="w-full min-w-0 justify-between gap-2"
@@ -68,8 +59,8 @@ export function CyclePicker({ value, onChange, label }: NoteControlProps) {
                         </span>
                         <ChevronRight className="size-4 shrink-0" aria-hidden="true" />
                     </Button>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="space-y-2 p-3" aria-label={label}>
+                </Popover.Trigger>
+                <Popover.Content align="start" className="w-64 space-y-2 p-3">
                     {custom ? (
                         <>
                             <Button type="button" variant="ghost" onClick={() => setCustom(false)}>
@@ -89,20 +80,14 @@ export function CyclePicker({ value, onChange, label }: NoteControlProps) {
                                 />
                                 <Select
                                     value={unit}
-                                    onValueChange={(next) => setUnit(next as CycleUnit)}
+                                    aria-label={`${t("PublicNote.RepeatUnit")} · ${t(`PublicNote.${unit}`)}`}
+                                    onValueChange={(next) => next && setUnit(next as CycleUnit)}
                                 >
-                                    <SelectTrigger
-                                        aria-label={`${t("PublicNote.RepeatUnit")} · ${t(`PublicNote.${unit}`)}`}
-                                    >
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {CYCLE_UNITS.map((item) => (
-                                            <SelectItem key={item} value={item}>
-                                                {t(`PublicNote.${item}`)}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
+                                    {CYCLE_UNITS.map((item) => (
+                                        <Select.Option key={item} value={item}>
+                                            {t(`PublicNote.${item}`)}
+                                        </Select.Option>
+                                    ))}
                                 </Select>
                             </div>
                             <Button
@@ -162,7 +147,7 @@ export function CyclePicker({ value, onChange, label }: NoteControlProps) {
                             )}
                         </>
                     )}
-                </PopoverContent>
+                </Popover.Content>
             </Popover>
             {value && !parsed && (
                 <p id={hint} className="text-xs text-muted-foreground">

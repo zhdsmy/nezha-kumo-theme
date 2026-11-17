@@ -1,5 +1,4 @@
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button, ButtonGroup, Input } from "@cloudflare/kumo"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -29,18 +28,14 @@ export function Choices({
     onChange: (value: string) => void
 }) {
     return (
-        <div
-            role="group"
-            aria-label={label}
-            className="flex min-w-0 flex-wrap gap-1 rounded-md bg-muted p-1"
-        >
+        <ButtonGroup aria-label={label} className="w-full min-w-0">
             {options.map(([key, text]) => (
                 <Button
                     type="button"
                     key={key}
                     variant={key === (value ?? "") ? "secondary" : "ghost"}
                     aria-pressed={key === (value ?? "")}
-                    className="h-auto min-h-9 min-w-0 flex-1 whitespace-normal px-2 py-2 leading-snug"
+                    className="h-auto min-h-9 min-w-0 flex-1 whitespace-normal px-2 py-1 text-sm leading-snug"
                     onClick={() => {
                         if (key !== (value ?? "")) onChange(key)
                     }}
@@ -48,7 +43,7 @@ export function Choices({
                     {text}
                 </Button>
             ))}
-        </div>
+        </ButtonGroup>
     )
 }
 export function NumberInput({

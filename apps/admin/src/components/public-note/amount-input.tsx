@@ -1,4 +1,4 @@
-import { Combobox } from "@/components/ui/combobox"
+import { Combobox } from "@cloudflare/kumo"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -46,22 +46,38 @@ export function AmountInput({ value, onChange, label }: NoteControlProps) {
             {mode === "paid" && (
                 <div className="grid grid-cols-2 gap-2">
                     <Combobox
-                        key={code}
-                        allowDeselect={false}
-                        aria-label={`${t("PublicNote.Currency")} · ${options.find((item) => item.value === code)?.label || code}`}
-                        options={options}
-                        defaultValue={code}
-                        placeholder={t("PublicNote.Currency")}
+                        items={options}
+                        value={options.find((item) => item.value === code)}
                         onValueChange={(next) => {
                             if (!next) return
-                            setCurrency(next)
+                            setCurrency(next.value)
                             if (amount)
                                 onChange(
-                                    writeAmount(amount.amount, next) +
+                                    writeAmount(amount.amount, next.value) +
                                         (amount.cycle ? `/${value!.split("/")[1]}` : ""),
                                 )
                         }}
-                    />
+                    >
+                        <Combobox.TriggerValue
+                            aria-label={`${t("PublicNote.Currency")} · ${options.find((item) => item.value === code)?.label || code}`}
+                            className="min-w-0 w-full"
+                        >
+                            {() => code}
+                        </Combobox.TriggerValue>
+                        <Combobox.Content className="w-72 max-w-[calc(100vw-2rem)]">
+                            <Combobox.Input
+                                aria-label={t("PublicNote.Currency")}
+                                placeholder={t("PublicNote.Currency")}
+                            />
+                            <Combobox.List>
+                                {(item: { value: string; label: string }) => (
+                                    <Combobox.Item key={item.value} value={item}>
+                                        {item.label}
+                                    </Combobox.Item>
+                                )}
+                            </Combobox.List>
+                        </Combobox.Content>
+                    </Combobox>
                     <NumberInput
                         label={label}
                         value={amount?.amount}
