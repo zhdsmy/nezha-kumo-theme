@@ -1,5 +1,8 @@
+import { currencyCode } from "../../../../packages/shared/public-note"
 // Adapted from zool-theme/src/core/format.ts (MIT, luoleiorg).
 import type { NodeInfo, Snapshot, TrafficLimitType } from "./model"
+
+export { currencyCode } from "../../../../packages/shared/public-note"
 
 const BYTE_UNITS = ["B", "KB", "MB", "GB", "TB", "PB", "EB"]
 
@@ -106,24 +109,6 @@ export function formatClock(at: number, withDate = false, locale?: string) {
         hour12: false,
         ...(withDate ? { month: "numeric", day: "numeric" } : {}),
     })
-}
-
-export function currencyCode(currency: string): string | null {
-    const code = currency.trim().toUpperCase()
-    return (
-        (
-            {
-                $: "USD",
-                US$: "USD",
-                "¥": "CNY",
-                "￥": "CNY",
-                RMB: "CNY",
-                "€": "EUR",
-                AUD$: "AUD",
-                A$: "AUD",
-            } as Record<string, string>
-        )[code] ?? (/^[A-Z]{3}$/.test(code) ? code : null)
-    )
 }
 
 const SYMBOLS: Record<string, string> = {
