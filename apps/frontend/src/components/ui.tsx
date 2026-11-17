@@ -238,7 +238,10 @@ export function Loading({ variant = "home" }: { variant?: LoadingVariant } = {})
                             </div>
                         </div>
                         {showRegions && (
-                            <div className="region-tabs flex h-9 w-64 max-w-full items-center gap-2 rounded-lg bg-kumo-recessed px-2">
+                            <div
+                                className="region-tabs flex h-9 max-w-full items-center gap-2 rounded-lg bg-kumo-recessed px-2"
+                                style={{ width: 256 }}
+                            >
                                 <SkeletonLine minWidth={100} maxWidth={100} />
                             </div>
                         )}

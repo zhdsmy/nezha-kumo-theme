@@ -261,14 +261,15 @@ export function App() {
         return () => cancelAnimationFrame(frame)
     }, [nodeId, peers.length])
     const [disconnected, setDisconnected] = useState(false)
+    const isConnected = connection === "open"
     useEffect(() => {
-        if (phase !== "ready" || connection === "open") {
+        if (phase !== "ready" || isConnected) {
             setDisconnected(false)
             return
         }
         const timer = setTimeout(() => setDisconnected(true), 5_000)
         return () => clearTimeout(timer)
-    }, [phase, connection])
+    }, [phase, isConnected])
     return (
         <>
             <style>{responsive}</style>
