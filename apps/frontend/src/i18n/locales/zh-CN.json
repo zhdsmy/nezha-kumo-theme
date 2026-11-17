@@ -32,6 +32,7 @@
         "all": "全部",
         "groups": "分组",
         "search": "搜索",
+        "clear": "清除",
         "searchPlaceholder": "搜索节点、地区、分组…",
         "searchHint": "回车打开",
         "noResults": "没有匹配的节点",

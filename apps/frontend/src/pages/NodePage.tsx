@@ -1,7 +1,14 @@
 import { setShave, useShave } from "@/app/prefs"
-import { navigate, usePathname } from "@/app/router"
+import { Link, navigate, useLastListHref, usePathname } from "@/app/router"
 import { SECTIONS, type Section } from "@/app/sections"
-import { adapter, backfillLive, getLive, useStore, useVisibleNodes } from "@/app/store"
+import {
+    adapter,
+    backfillLive,
+    getLive,
+    useSiteTitle,
+    useStore,
+    useVisibleNodes,
+} from "@/app/store"
 import { HourGrid } from "@/components/HourGrid"
 import { LoadCharts, PingChart } from "@/components/NodeCharts"
 import { RegionFlag } from "@/components/RegionFlag"
@@ -28,10 +35,12 @@ export default function NodePage({ id, section }: { id: string; section: Section
     const nodes = useVisibleNodes()
     const node = nodes.find((n) => n.id === id)
     const snap = useStore((s) => s.snapshots[id])
+    const fed = useStore((s) => s.fed)
     const recordHours = useStore((s) => s.site?.recordHours ?? 0)
     const showBilling = useStore((s) => s.settings.showBilling)
     const showRegions = useStore((s) => s.settings.showRegions)
-    const title = useStore((s) => s.settings.siteTitle || s.site?.name || "Nezha")
+    const title = useSiteTitle()
+    const lastListHref = useLastListHref()
     const hash = new URL(usePathname(), window.location.origin).hash
     const [subTab, setSubTab] = useState<"system" | "network">("system")
     const [range, setRange] = useState(0)
@@ -39,6 +48,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
     const activeRange = ranges.includes(range) ? range : 0
     const liveVersion = useStore((s) => (section === "load" && !activeRange ? s.liveVersion : -1))
     const [nonce, setNonce] = useState(0)
+    const [liveBackfilledKey, setLiveBackfilledKey] = useState("")
     const [history, setHistory] = useState<{ key: string; points: HistoryPoint[] } | null>(null)
     const [ping, setPing] = useState<{ key: string; data: PingData } | null>(null)
     const [dayResult, setDayResult] = useState<{ key: string; points: HistoryPoint[] } | null>(null)
@@ -61,10 +71,18 @@ export default function NodePage({ id, section }: { id: string; section: Section
         [id, section, activeRange, liveVersion],
     )
     useEffect(() => {
-        if (section === "load") void backfillLive(id)
-    }, [id, section])
+        if (section !== "load" || !recordHours) return
+        let active = true
+        void backfillLive(id).finally(() => {
+            if (active) setLiveBackfilledKey(dayKey)
+        })
+        return () => {
+            active = false
+        }
+    }, [id, section, recordHours, dayKey])
     useEffect(() => {
-        if (node) document.title = `${stripFlag(node.name)} · ${title}`
+        if (!title) return
+        document.title = node ? `${stripFlag(node.name)} · ${title}` : title
     }, [node, title])
     useEffect(() => {
         if (section !== "load" || !activeRange) return
@@ -138,8 +156,10 @@ export default function NodePage({ id, section }: { id: string; section: Section
     }, [id, recordHours, reportHours, section, reportKey])
     if (!node)
         return (
-            <Page title={t("node.notFound")}>
-                <NoData title={t("node.notFound")} />
+            <Page maxWidth={1100} title={t("node.notFound")}>
+                <Link className="text-kumo-link" href={lastListHref}>
+                    {t("node.back")}
+                </Link>
             </Page>
         )
     const points = activeRange === 0 ? live : history?.key === dataKey ? history.points : null
@@ -209,7 +229,6 @@ export default function NodePage({ id, section }: { id: string; section: Section
                             onClick={() => {
                                 adapter.clearHistory(id)
                                 setNonce((v) => v + 1)
-                                if (section === "load" && !activeRange) void backfillLive(id)
                             }}
                         >
                             <ArrowClockwiseIcon size={16} />
@@ -417,13 +436,13 @@ export default function NodePage({ id, section }: { id: string; section: Section
                         ) : points === null ? (
                             <Loading />
                         ) : points.length < 2 ? (
-                            <>
-                                {activeRange === 0 ? (
-                                    <Loading />
-                                ) : (
-                                    <NoData title={t("node.noHistory")} />
-                                )}
-                            </>
+                            activeRange === 0 &&
+                            ((recordHours > 0 && liveBackfilledKey !== dayKey) ||
+                                (!recordHours && (!fed || snap?.online))) ? (
+                                <Loading />
+                            ) : (
+                                <NoData title={t("node.noHistory")} />
+                            )
                         ) : (
                             <LoadCharts
                                 node={node}

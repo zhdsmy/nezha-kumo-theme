@@ -30,12 +30,14 @@
     }
 }
 
-.nk-shell {
-    --nk-gutter: 16px;
+body {
     font-family: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
     font-size: 14px;
     line-height: 1.5;
     letter-spacing: -0.16px;
+}
+.nk-shell {
+    --nk-gutter: 16px;
     min-height: 100svh;
 }
 .nk-shell-body {
@@ -309,9 +311,9 @@
     transform: translateY(0);
 }
 @media (prefers-reduced-motion: reduce) {
-    .nk-shell *,
-    .nk-shell *::before,
-    .nk-shell *::after {
+    *,
+    *::before,
+    *::after {
         transition-duration: 0s !important;
         animation-duration: 0s !important;
     }
