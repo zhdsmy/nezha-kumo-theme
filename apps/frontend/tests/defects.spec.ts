@@ -347,11 +347,11 @@ test("inline search clear label, login username autofocus, and Cmd/Ctrl+K guard 
     await expect(page.locator(".kumo-tooltip-popup[data-open]")).toHaveText("Clear")
 
     await page.getByRole("button", { name: "Language" }).click()
-    await page.getByRole("menuitem", { name: "简体中文" }).click()
+    await page.getByRole("menuitemradio", { name: "简体中文" }).click()
     await expect(clearBtn).toHaveAttribute("aria-label", "清除")
 
     await page.getByRole("button", { name: "语言" }).click()
-    await page.getByRole("menuitem", { name: "English" }).click()
+    await page.getByRole("menuitemradio", { name: "English" }).click()
     await clearBtn.click()
 
     // Login dialog focuses username input on open and ignores Cmd/Ctrl+K:

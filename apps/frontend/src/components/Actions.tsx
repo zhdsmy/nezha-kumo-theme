@@ -1,5 +1,6 @@
 import { setAppearance, useAppearance } from "@/app/prefs"
 import { adapter, useStore } from "@/app/store"
+import type { Appearance } from "@/core/settings"
 import { LOCALES, type Locale, setLocale } from "@/i18n"
 import { Button, DropdownMenu, Loader, Tooltip } from "@cloudflare/kumo"
 import { useSidebar } from "@cloudflare/kumo/components/sidebar"
@@ -167,16 +168,18 @@ export function Actions() {
                         <span className="action-label">{t(`prefs.${appearance}`)}</span>
                     </Button>
                 </DropdownMenu.Trigger>
-                <DropdownMenu.Content align="end">
-                    {(["light", "dark", "system"] as const).map((a) => (
-                        <DropdownMenu.Item
-                            key={a}
-                            onClick={() => setAppearance(a)}
-                            aria-current={a === appearance ? "true" : undefined}
-                        >
-                            {t(`prefs.${a}`)}
-                        </DropdownMenu.Item>
-                    ))}
+                <DropdownMenu.Content align="end" className="min-w-36">
+                    <DropdownMenu.RadioGroup
+                        value={appearance}
+                        onValueChange={(v: string) => setAppearance(v as Appearance)}
+                    >
+                        {(["light", "dark", "system"] as const).map((a) => (
+                            <DropdownMenu.RadioItem key={a} value={a} closeOnClick>
+                                {t(`prefs.${a}`)}
+                                <DropdownMenu.RadioItemIndicator />
+                            </DropdownMenu.RadioItem>
+                        ))}
+                    </DropdownMenu.RadioGroup>
                 </DropdownMenu.Content>
             </DropdownMenu>
             <DropdownMenu>
@@ -193,16 +196,27 @@ export function Actions() {
                         </span>
                     </Button>
                 </DropdownMenu.Trigger>
-                <DropdownMenu.Content align="end">
-                    {LOCALES.map((l) => (
-                        <DropdownMenu.Item
-                            key={l.code}
-                            onClick={() => void setLocale(l.code as Locale)}
-                            lang={l.code}
-                        >
-                            {l.label}
-                        </DropdownMenu.Item>
-                    ))}
+                <DropdownMenu.Content align="end" className="min-w-40">
+                    <DropdownMenu.RadioGroup
+                        value={
+                            LOCALES.find((l) => l.code === i18n.language)?.code ??
+                            LOCALES.find((l) => i18n.language.startsWith(l.code))?.code ??
+                            "en"
+                        }
+                        onValueChange={(v: string) => void setLocale(v as Locale)}
+                    >
+                        {LOCALES.map((l) => (
+                            <DropdownMenu.RadioItem
+                                key={l.code}
+                                value={l.code}
+                                lang={l.code}
+                                closeOnClick
+                            >
+                                {l.label}
+                                <DropdownMenu.RadioItemIndicator />
+                            </DropdownMenu.RadioItem>
+                        ))}
+                    </DropdownMenu.RadioGroup>
                 </DropdownMenu.Content>
             </DropdownMenu>
             {!hidden &&
