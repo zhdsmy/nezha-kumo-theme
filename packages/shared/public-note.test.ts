@@ -13,6 +13,7 @@ import {
     writeAmount,
     writeBandwidth,
     writeCycle,
+    writeNoteDate,
     writeTraffic,
 } from "./public-note.ts"
 
@@ -34,7 +35,10 @@ test("all documented dialects and case variants share one cycle definition", () 
         }
     for (const unit of ["Day", "Week", "Month", "Year"] as const)
         for (const count of [1, 2, 3, 6, 12, 999]) {
-            assert.deepEqual(parseCycle(writeCycle({ count, unit })), { count, unit })
+            assert.deepEqual(parseCycle(writeCycle({ count, unit })), {
+                count,
+                unit,
+            })
             assert.deepEqual(parseCycle(`${count} ${unit}`), { count, unit })
         }
     assert.deepEqual(parseCycle("2 年"), { count: 2, unit: "Year" })
@@ -78,11 +82,7 @@ test("generator currencies and amount-embedded periods", () => {
     assert.equal(writeAmount(-1, "USD"), "-1")
     for (const invalid of [-0.5, -2, Infinity, NaN])
         assert.throws(() => writeAmount(invalid, "USD"), /Invalid amount/)
-    for (const invalid of [
-        "USD -1",
-        "USD Infinity",
-        "$3.99/unknown",
-    ])
+    for (const invalid of ["USD -1", "USD Infinity", "$3.99/unknown"])
         assert.equal(parseAmount(invalid), undefined)
 })
 test("plan units, explicit unlimited, dates and tags", () => {
@@ -112,4 +112,31 @@ test("plan units, explicit unlimited, dates and tags", () => {
         "2026-02-28T12:00:00.000Z",
     )
     assert.deepEqual(splitTags(" CN2，cn2、4837[联通];CMI "), ["CN2", "cn2、4837[联通];CMI"])
+})
+
+test("calendar edits preserve offsets and zone-less month arithmetic uses local dates", () => {
+    const previous = process.env.TZ
+    process.env.TZ = "Asia/Taipei"
+    try {
+        assert.equal(
+            writeNoteDate(new Date(2026, 1, 28), "2026-01-31T23:59:59+08:00"),
+            "2026-02-28T23:59:59+08:00",
+        )
+        assert.equal(
+            writeNoteDate(new Date(2026, 1, 28), "2026-01-31T10:20:30-04:00"),
+            "2026-02-28T10:20:30-04:00",
+        )
+        assert.equal(writeNoteDate(new Date(2026, 1, 28)), "2026-02-28T00:00:00+08:00")
+        assert.equal(
+            addCycle("2026-01-31T00:00:00", { count: 1, unit: "Month" }),
+            "2026-02-28T00:00:00+08:00",
+        )
+        assert.equal(
+            addCycle("2026-01-31T00:00:00+08:00", { count: 1, unit: "Month" }),
+            "2026-02-28T00:00:00.000+08:00",
+        )
+    } finally {
+        if (previous === undefined) delete process.env.TZ
+        else process.env.TZ = previous
+    }
 })

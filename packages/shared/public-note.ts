@@ -116,7 +116,10 @@ export function parseBandwidth(value: unknown): Bandwidth | "unlimited" | undefi
     if (isUnlimited(value)) return "unlimited"
     const match = /^(\d+(?:\.\d+)?)\s*([MG])bps$/i.exec(value.trim())
     if (match && Number.isFinite(Number(match[1])) && Number(match[1]) > 0)
-        return { amount: Number(match[1]), unit: match[2].toUpperCase() === "G" ? "Gbps" : "Mbps" }
+        return {
+            amount: Number(match[1]),
+            unit: match[2].toUpperCase() === "G" ? "Gbps" : "Mbps",
+        }
 }
 export const writeBandwidth = ({ amount, unit }: Bandwidth) => `${amount}${unit}`
 export interface Traffic {
@@ -148,14 +151,39 @@ export function parseNoteDate(value: unknown): number | undefined {
     const time = Date.parse(value.trim().replace(/^(\d{4}-\d\d-\d\d) /, "$1T"))
     return Number.isFinite(time) ? time : undefined
 }
+const noteZone = (value: string) => /(?:Z|[+-]\d{2}:?\d{2})$/i.exec(value)?.[0]
+export function writeNoteDate(date: Date, source = ""): string {
+    const pad = (value: number) => String(value).padStart(2, "0")
+    const day = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+    const clock = /[T ](\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?)/.exec(source)?.[1] || "00:00:00"
+    const offset = -new Date(`${day}T${clock}`).getTimezoneOffset()
+    const zone =
+        noteZone(source) ||
+        `${offset < 0 ? "-" : "+"}${pad(Math.floor(Math.abs(offset) / 60))}:${pad(Math.abs(offset) % 60)}`
+    return `${day}T${clock}${zone}`
+}
 export function addCycle(start: string, cycle: Cycle): string | undefined {
     const time = parseNoteDate(start)
     if (!time) return
+    const zone = noteZone(start)
     const offset = /([+-])(\d{2}):?(\d{2})$/.exec(start)
     const shift = offset
         ? (Number(offset[2]) * 60 + Number(offset[3])) * 60_000 * (offset[1] === "+" ? 1 : -1)
         : 0
-    const date = new Date(time + shift)
+    const local = new Date(time)
+    const date = zone
+        ? new Date(time + shift)
+        : new Date(
+              Date.UTC(
+                  local.getFullYear(),
+                  local.getMonth(),
+                  local.getDate(),
+                  local.getHours(),
+                  local.getMinutes(),
+                  local.getSeconds(),
+                  local.getMilliseconds(),
+              ),
+          )
     if (cycle.unit === "Day" || cycle.unit === "Week")
         date.setUTCDate(date.getUTCDate() + cycle.count * (cycle.unit === "Week" ? 7 : 1))
     else {
@@ -166,12 +194,19 @@ export function addCycle(start: string, cycle: Cycle): string | undefined {
         last.setUTCMonth(last.getUTCMonth() + 1, 0)
         date.setUTCDate(Math.min(day, last.getUTCDate()))
     }
-    return Number.isFinite(date.getTime())
-        ? new Date(date.getTime() - shift).toISOString()
-        : undefined
+    if (!Number.isFinite(date.getTime())) return
+    return zone
+        ? date.toISOString().slice(0, -1) + zone
+        : writeNoteDate(
+              new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+              start,
+          )
 }
 export function splitTags(value: string): string[] {
-    return value.split(/[,，]/).map((tag) => tag.trim()).filter(Boolean)
+    return value
+        .split(/[,，]/)
+        .map((tag) => tag.trim())
+        .filter(Boolean)
 }
 
 export const TRAFFIC_TYPES = [
@@ -181,4 +216,5 @@ export const TRAFFIC_TYPES = [
 ] as const
 export type TrafficBilling = (typeof TRAFFIC_TYPES)[number]["mode"]
 export const parseTrafficType = (value: unknown): TrafficBilling =>
-    TRAFFIC_TYPES.find((item) => item.value === (typeof value === "string" ? value.trim() : value))?.mode ?? "max"
+    TRAFFIC_TYPES.find((item) => item.value === (typeof value === "string" ? value.trim() : value))
+        ?.mode ?? "max"

@@ -22,7 +22,7 @@ test("generator dates display and expiry uses calendar months at the source time
     expect(screen.getByRole("button", { name: /^到期日期 · / }).textContent).toContain("2027")
     expect(change).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole("button", { name: "按周期推算" }))
-    expect(change).toHaveBeenLastCalledWith("2026-02-27T16:00:00.000Z")
+    expect(change).toHaveBeenLastCalledWith("2026-02-28T00:00:00.000+08:00")
     fireEvent.click(screen.getByRole("switch", { name: i18n.t("PublicNote.NoExpiry") }))
     expect(change).toHaveBeenLastCalledWith("0000-00-00T23:59:59+08:00")
 })

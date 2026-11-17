@@ -11,6 +11,7 @@ import {
     addCycle,
     parseCycle,
     parseNoteDate,
+    writeNoteDate,
 } from "../../../../../packages/shared/public-note"
 import { type NoteControlProps } from "./cycle-picker"
 
@@ -26,7 +27,11 @@ export function DateInput({
     const [open, setOpen] = useState(false)
     const time = parseNoteDate(value)
     const noExpiry = end && time === 0
-    const selected = time ? new Date(time) : undefined
+    const selected = time
+        ? /^\d{4}-\d{2}-\d{2}/.test(value!)
+            ? new Date(`${value!.slice(0, 10)}T12:00:00`)
+            : new Date(time)
+        : undefined
     const period = parseCycle(cycle)
     const estimated = start && period ? addCycle(start, period) : undefined
     const locale = i18n.language.startsWith("zh-CN")
@@ -66,14 +71,7 @@ export function DateInput({
                         endMonth={new Date(2100, 11)}
                         onSelect={(date) => {
                             if (!date) return
-                            if (selected)
-                                date.setHours(
-                                    selected.getHours(),
-                                    selected.getMinutes(),
-                                    selected.getSeconds(),
-                                    selected.getMilliseconds(),
-                                )
-                            onChange(date.toISOString())
+                            onChange(writeNoteDate(date, value))
                             setOpen(false)
                         }}
                     />
