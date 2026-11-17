@@ -217,7 +217,7 @@
         "Amount": "Amount",
         "Bandwidth": "Bandwidth",
         "TrafficVolume": "Traffic Volume",
-        "TrafficType": "Traffic Type",
+        "TrafficType": "Traffic billing",
         "IPv4": "IPv4",
         "IPv6": "IPv6",
         "NetworkRoute": "Network Route",
@@ -265,7 +265,12 @@
         "Currency": "Currency",
         "Unlimited": "Unlimited",
         "TrafficCycle": "Traffic period",
-        "EstimateExpiry": "Calculate from cycle"
+        "EstimateExpiry": "Calculate from cycle",
+        "TrafficModes": {
+            "sum": "Both directions",
+            "out": "Outbound only",
+            "max": "Larger direction"
+        }
     },
     "Validation": {
         "InvalidDate": "Invalid date",

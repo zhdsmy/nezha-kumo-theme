@@ -132,7 +132,13 @@
         "bandwidth": "带宽",
         "ipSupport": "IP 支持",
         "networkRoute": "网络线路",
-        "noCycleUsage": "本周期用量暂无数据。"
+        "noCycleUsage": "本周期用量暂无数据。",
+        "trafficBilling": "流量计费方式",
+        "traffic": {
+            "sum": "双向",
+            "out": "仅出站",
+            "max": "取较大"
+        }
     },
     "auth": {
         "signIn": "登录",

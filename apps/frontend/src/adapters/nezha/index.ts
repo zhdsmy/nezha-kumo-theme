@@ -21,6 +21,7 @@ import {
     parseCycle,
     parseNoteDate,
     parseTraffic,
+    parseTrafficType,
 } from "../../../../../packages/shared/public-note"
 
 /* ---------- API shapes (Nezha dashboard v1, tested on v2.0.13) ---------- */
@@ -200,7 +201,7 @@ export function parsePublicNote(note: string | undefined) {
             out.trafficLimit = traffic === "unlimited" ? 0 : traffic.bytes
             out.trafficLimitPeriod = traffic === "unlimited" ? 0 : cycleDays(traffic.cycle)
         }
-        out.trafficLimitType = text(p.trafficType) === "2" ? "sum" : "max"
+        out.trafficLimitType = parseTrafficType(p.trafficType)
         out.bandwidth = text(p.bandwidth)
         out.ipv4 = text(p.IPv4) === "1" ? true : text(p.IPv4) === "0" ? false : undefined
         out.ipv6 = text(p.IPv6) === "1" ? true : text(p.IPv6) === "0" ? false : undefined

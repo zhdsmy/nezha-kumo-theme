@@ -435,6 +435,10 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                                 : "—",
                                         ],
                                         [t("metric.quota"), billing.quota(node)],
+                                        [
+                                            t("node.trafficBilling"),
+                                            t(`node.traffic.${node.trafficLimitType}`),
+                                        ],
                                         [t("ui.quotaUsed"), used !== null ? formatBytes(used) : ""],
                                     ]}
                                 />

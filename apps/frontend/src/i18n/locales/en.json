@@ -141,7 +141,13 @@
         "bandwidth": "Bandwidth",
         "ipSupport": "IP support",
         "networkRoute": "Network route",
-        "noCycleUsage": "Usage for this period is unavailable."
+        "noCycleUsage": "Usage for this period is unavailable.",
+        "trafficBilling": "Traffic billing",
+        "traffic": {
+            "sum": "Both directions",
+            "out": "Outbound only",
+            "max": "Larger direction"
+        }
     },
     "auth": {
         "signIn": "Sign in",

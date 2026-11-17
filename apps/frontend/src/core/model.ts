@@ -1,5 +1,7 @@
+import type { TrafficBilling as TrafficLimitType } from "../../../../packages/shared/public-note"
+
 // Adapted from zool-theme/src/core/model.ts (MIT, luoleiorg).
-export type TrafficLimitType = "sum" | "max"
+export type { TrafficBilling as TrafficLimitType } from "../../../../packages/shared/public-note"
 
 export interface SiteInfo {
     name: string

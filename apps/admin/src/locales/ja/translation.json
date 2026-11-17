@@ -217,7 +217,7 @@
         "Amount": "金額",
         "Bandwidth": "帯域幅",
         "TrafficVolume": "通信量",
-        "TrafficType": "通信カウント方向",
+        "TrafficType": "転送量の課金方式",
         "IPv4": "IPv4",
         "IPv6": "IPv6",
         "NetworkRoute": "ネットワーク経路",
@@ -265,7 +265,12 @@
         "Currency": "通貨",
         "Unlimited": "無制限",
         "TrafficCycle": "転送量の周期",
-        "EstimateExpiry": "周期から計算"
+        "EstimateExpiry": "周期から計算",
+        "TrafficModes": {
+            "sum": "送受信合計",
+            "out": "送信のみ",
+            "max": "大きい方"
+        }
     },
     "Validation": {
         "InvalidDate": "無効な日付です",

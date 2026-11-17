@@ -217,7 +217,7 @@
         "Amount": "金額",
         "Bandwidth": "頻寬",
         "TrafficVolume": "流量",
-        "TrafficType": "流量計算方式",
+        "TrafficType": "流量計費方式",
         "IPv4": "IPv4",
         "IPv6": "IPv6",
         "NetworkRoute": "網路線路",
@@ -265,7 +265,12 @@
         "Currency": "幣別",
         "Unlimited": "不限",
         "TrafficCycle": "流量週期",
-        "EstimateExpiry": "依週期推算"
+        "EstimateExpiry": "依週期推算",
+        "TrafficModes": {
+            "sum": "雙向",
+            "out": "僅出站",
+            "max": "取較大"
+        }
     },
     "Validation": {
         "InvalidDate": "日期無效",

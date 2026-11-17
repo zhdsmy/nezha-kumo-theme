@@ -68,9 +68,11 @@ export function duration(seconds: number): Duration {
     }
 }
 
-/** Nezha public_note supports total or the larger direction. */
+/** Nezha public_note bills outbound, the sum or the larger direction. */
 export function trafficUsed(type: TrafficLimitType, up: number, down: number) {
     switch (type) {
+        case "out":
+            return up
         case "sum":
             return up + down
         default:

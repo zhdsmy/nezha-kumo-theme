@@ -181,3 +181,12 @@ export function splitTags(value: string): string[] {
             return true
         })
 }
+
+export const TRAFFIC_TYPES = [
+    { value: "2", mode: "sum" },
+    { value: "1", mode: "out" },
+    { value: "3", mode: "max" },
+] as const
+export type TrafficBilling = (typeof TRAFFIC_TYPES)[number]["mode"]
+export const parseTrafficType = (value: unknown): TrafficBilling =>
+    TRAFFIC_TYPES.find((item) => item.value === value)?.mode ?? "max"

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import { parseActualCost, parsePublicNote } from "../src/adapters/nezha"
+import { trafficUsed } from "../src/core/format"
 
 describe("shared public-note compatibility", () => {
     it.each([
@@ -46,4 +47,15 @@ describe("shared public-note compatibility", () => {
             amount,
         })
     })
+})
+
+it.each([
+    ["1", 10, "out"],
+    ["2", 110, "sum"],
+    ["3", 100, "max"],
+    [undefined, 100, "max"],
+])("trafficType %s bills the correct direction", (trafficType, expected, mode) => {
+    const parsed = parsePublicNote(JSON.stringify({ planDataMod: { trafficType } }))
+    expect(parsed.trafficLimitType).toBe(mode)
+    expect(trafficUsed(parsed.trafficLimitType, 10, 100)).toBe(expected)
 })

@@ -217,7 +217,7 @@
         "Amount": "金额",
         "Bandwidth": "带宽",
         "TrafficVolume": "流量配额",
-        "TrafficType": "流量类型",
+        "TrafficType": "流量计费方式",
         "IPv4": "IPv4",
         "IPv6": "IPv6",
         "NetworkRoute": "网络路由",
@@ -265,7 +265,12 @@
         "Currency": "币种",
         "Unlimited": "不限",
         "TrafficCycle": "流量周期",
-        "EstimateExpiry": "按周期推算"
+        "EstimateExpiry": "按周期推算",
+        "TrafficModes": {
+            "sum": "双向",
+            "out": "仅出站",
+            "max": "取较大"
+        }
     },
     "Validation": {
         "InvalidDate": "无效的日期格式",
