@@ -310,10 +310,11 @@ function RowActions({ children }: { children: React.ReactNode }) {
     const id = useId()
     const root = useRef<HTMLDivElement>(null)
     const trigger = useRef<HTMLButtonElement>(null)
+    const insidePointer = useRef<Event | null>(null)
     useEffect(() => {
         if (!open) return
         const closeOutside = (event: PointerEvent) => {
-            if (!root.current?.contains(event.target as Node)) setOpen(false)
+            if (insidePointer.current !== event) setOpen(false)
         }
         document.addEventListener("pointerdown", closeOutside)
         return () => document.removeEventListener("pointerdown", closeOutside)
@@ -322,6 +323,10 @@ function RowActions({ children }: { children: React.ReactNode }) {
         <div
             ref={root}
             className="nkt-action-disclosure"
+            onPointerDownCapture={(event) => {
+                // React captures events from this row's portals as well as DOM children.
+                insidePointer.current = event.nativeEvent
+            }}
             onKeyDown={(event) => {
                 if (event.key === "Escape" && root.current?.contains(event.target as Node)) {
                     setOpen(false)

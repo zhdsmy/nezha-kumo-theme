@@ -232,12 +232,13 @@ export default function ServerPage() {
                                     <DropdownMenuItem asChild>
                                         <TerminalButton id={s.id} menuItem />
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
+                                    <DropdownMenuItem
+                                        asChild
+                                        onSelect={(event) => event.preventDefault()}
+                                    >
                                         <ServerConfigCard sid={s.id} variant="ghost" menuItem />
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
-                                        <InstallCommandsMenu uuid={s.uuid} menuItem />
-                                    </DropdownMenuItem>
+                                    <InstallCommandsMenu uuid={s.uuid} menuItem />
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </>

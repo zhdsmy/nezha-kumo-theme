@@ -3,15 +3,20 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuPortal,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/hooks/useAuth"
 import { useClipboard } from "@/hooks/useClipboard"
 import useSettings from "@/hooks/useSetting"
+import { cn } from "@/lib/utils"
 import { ModelProfile, ModelSetting } from "@/types"
 import i18next from "i18next"
 import { Check, Copy, Download } from "lucide-react"
-import { forwardRef } from "react"
+import { Fragment, forwardRef } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 
@@ -34,6 +39,10 @@ export const InstallCommandsMenu = forwardRef<HTMLButtonElement, InstallCommands
         const { profile } = useAuth()
 
         const { t } = useTranslation()
+        const Menu = menuItem ? DropdownMenuSub : DropdownMenu
+        const Trigger = menuItem ? DropdownMenuSubTrigger : DropdownMenuTrigger
+        const Content = menuItem ? DropdownMenuSubContent : DropdownMenuContent
+        const Portal = menuItem ? DropdownMenuPortal : Fragment
 
         const switchState = async (type: number) => {
             if (!copy) {
@@ -51,12 +60,18 @@ export const InstallCommandsMenu = forwardRef<HTMLButtonElement, InstallCommands
         }
 
         return (
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+            <Menu>
+                <Trigger asChild>
                     {menuItem ? (
-                        <button
+                        <Button
+                            variant="ghost"
+                            {...props}
+                            ref={ref}
                             type="button"
-                            className="flex w-full items-center text-sm px-2 py-2 hover:bg-accent hover:text-accent-foreground"
+                            className={cn(
+                                "flex w-full items-center text-sm px-2 py-2 hover:bg-accent hover:text-accent-foreground",
+                                props.className,
+                            )}
                             title={t("InstallCommands")}
                         >
                             {copy ? (
@@ -65,7 +80,7 @@ export const InstallCommandsMenu = forwardRef<HTMLButtonElement, InstallCommands
                                 <Copy className="h-4 w-4 mr-2" />
                             )}
                             <span>{t("InstallCommands")}</span>
-                        </button>
+                        </Button>
                     ) : iconOnly ? (
                         <Button ref={ref} title={t("InstallCommands")} size="icon" {...props}>
                             {copy ? (
@@ -80,37 +95,36 @@ export const InstallCommandsMenu = forwardRef<HTMLButtonElement, InstallCommands
                             <span className="ml-2">{t("InstallCommands")}</span>
                         </Button>
                     )}
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                    side={menuItem ? "right" : undefined}
-                    align={menuItem ? "start" : undefined}
-                >
-                    <DropdownMenuItem
-                        className="nezha-copy"
-                        onClick={async () => {
-                            switchState(OSTypes.Linux)
-                        }}
-                    >
-                        Linux
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                        className="nezha-copy"
-                        onClick={async () => {
-                            switchState(OSTypes.macOS)
-                        }}
-                    >
-                        macOS
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                        className="nezha-copy"
-                        onClick={async () => {
-                            switchState(OSTypes.Windows)
-                        }}
-                    >
-                        Windows
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+                </Trigger>
+                <Portal>
+                    <Content>
+                        <DropdownMenuItem
+                            className="nezha-copy"
+                            onClick={async () => {
+                                switchState(OSTypes.Linux)
+                            }}
+                        >
+                            Linux
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            className="nezha-copy"
+                            onClick={async () => {
+                                switchState(OSTypes.macOS)
+                            }}
+                        >
+                            macOS
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            className="nezha-copy"
+                            onClick={async () => {
+                                switchState(OSTypes.Windows)
+                            }}
+                        >
+                            Windows
+                        </DropdownMenuItem>
+                    </Content>
+                </Portal>
+            </Menu>
         )
     },
 )

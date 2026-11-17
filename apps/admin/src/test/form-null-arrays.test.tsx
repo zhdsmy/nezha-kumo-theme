@@ -3,6 +3,7 @@ import { CronCard } from "@/components/cron"
 import { DDNSCard } from "@/components/ddns"
 import { NotificationGroupCard } from "@/components/notification-group"
 import { ServerCard } from "@/components/server"
+import { ServerConfigCard } from "@/components/server-config"
 import { ServerGroupCard } from "@/components/server-group"
 import { ServiceCard } from "@/components/service"
 import i18n from "@/lib/i18n"
@@ -21,8 +22,15 @@ beforeEach(async () => {
     vi.stubGlobal(
         "fetch",
         vi.fn(async (url, init) => {
-            if (init?.method === "PATCH")
+            if (
+                init?.method === "PATCH" ||
+                (init?.method === "POST" && String(url).endsWith("/server/config"))
+            )
                 writes.push({ url: String(url), body: JSON.parse(init.body) })
+            if (String(url).includes("/server/config/"))
+                return new Response(
+                    JSON.stringify({ success: true, data: '{"nic_allowlist":null}' }),
+                )
             return new Response(
                 JSON.stringify({ success: true, data: { config: { custom_code: "" } } }),
             )
@@ -127,4 +135,85 @@ test("ADM-05: validation errors in a hidden field remain visible", async () => {
     expect(writes).toHaveLength(0)
     expect(screen.getByRole("alert").textContent).toBeTruthy()
     expect(document.activeElement).toBe(screen.getByRole("alert"))
+})
+
+test.each([
+    {
+        name: "service skip_servers",
+        Card: ServiceCard,
+        data: { ...service, skip_servers: null },
+        field: "skip_servers",
+    },
+    {
+        name: "server override_ddns_domains",
+        Card: ServerCard,
+        data: { ...base, display_index: 0, override_ddns_domains: null },
+        field: "override_ddns_domains",
+    },
+    {
+        name: "alert nested maps",
+        Card: AlertRuleCard,
+        data: {
+            ...base,
+            notification_group_id: 0,
+            trigger_mode: 0,
+            rules: [
+                {
+                    type: "cpu",
+                    cover: 0,
+                    min: 0,
+                    max: 90,
+                    duration: 10,
+                    ignore: null,
+                    next_transfer_at: null,
+                },
+            ],
+        },
+        field: "rules",
+    },
+])("R2-ADM-05: $name submits null maps as empty records", async ({ Card, data, field }) => {
+    render(
+        <SWRConfig value={{ provider: () => new Map() }}>
+            <Card data={data as never} mutate={vi.fn()} />
+        </SWRConfig>,
+    )
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }))
+    const dialog = await screen.findByRole("dialog")
+    fireEvent.change(dialog.querySelector('input[name="name"]')!, { target: { value: "Renamed" } })
+    await act(async () => {
+        fireEvent.submit(dialog.querySelector("form")!)
+    })
+    await waitFor(() => expect(writes).toHaveLength(1))
+    if (field === "rules")
+        expect(writes[0].body.rules).toEqual([
+            expect.objectContaining({ ignore: {}, next_transfer_at: {} }),
+        ])
+    else expect(writes[0].body[field]).toEqual({})
+})
+
+test("R2-ADM-05: invalid non-null maps still show validation errors", async () => {
+    render(
+        <ServiceCard
+            data={{ ...service, skip_servers: { "1": "invalid" } } as never}
+            mutate={vi.fn()}
+        />,
+    )
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }))
+    await act(async () => {
+        fireEvent.submit(screen.getByRole("dialog").querySelector("form")!)
+    })
+    expect(writes).toHaveLength(0)
+    expect(screen.getByRole("alert").textContent).toBeTruthy()
+})
+
+test("R2-ADM-05: server config accepts a null nic_allowlist", async () => {
+    render(<ServerConfigCard sid={1} />)
+    fireEvent.click(screen.getByRole("button", { name: i18n.t("Settings") }))
+    const dialog = await screen.findByRole("dialog")
+    await waitFor(() => expect(dialog.querySelector("form")).not.toBeNull())
+    await act(async () => {
+        fireEvent.submit(dialog.querySelector("form")!)
+    })
+    await waitFor(() => expect(writes).toHaveLength(1))
+    expect(JSON.parse(writes[0].body.config as string).nic_allowlist).toEqual({})
 })

@@ -23,12 +23,13 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { IconButton } from "@/components/xui/icon-button"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { withCollectionDefaults } from "@/lib/form"
 import i18n from "@/lib/i18n"
-import { asOptionalField, errorMessage } from "@/lib/utils"
+import { asOptionalField, cn, errorMessage } from "@/lib/utils"
 import { ModelServerTaskResponse } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { CogIcon } from "lucide-react"
-import { useEffect, useState } from "react"
+import { Ref, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
@@ -104,9 +105,15 @@ for (let i = 0; i < boolFields.length; i += 2) {
 interface ServerConfigCardProps extends ButtonProps {
     sid: number
     menuItem?: boolean
+    ref?: Ref<HTMLButtonElement>
 }
 
-export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConfigCardProps) => {
+export const ServerConfigCard = ({
+    sid,
+    menuItem = false,
+    ref,
+    ...props
+}: ServerConfigCardProps) => {
     const { t } = useTranslation()
     const [data, setData] = useState<AgentConfig | undefined>(undefined)
     const [loading, setLoading] = useState(true)
@@ -116,7 +123,9 @@ export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConf
         const fetchData = async () => {
             try {
                 const result = await getServerConfig(sid)
-                setData(JSON.parse(result))
+                setData(
+                    withCollectionDefaults<AgentConfig>(JSON.parse(result), [], ["nic_allowlist"]),
+                )
             } catch (error) {
                 console.error(error)
                 toast.error(t("Error"), {
@@ -192,16 +201,21 @@ export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConf
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {menuItem ? (
-                    <button
+                    <Button
+                        variant="ghost"
+                        {...props}
+                        ref={ref}
                         type="button"
-                        className="flex w-full items-center text-sm px-2 py-2 hover:bg-accent hover:text-accent-foreground"
-                        onClick={() => setOpen(true)}
+                        className={cn(
+                            "flex w-full items-center text-sm px-2 py-2 hover:bg-accent hover:text-accent-foreground",
+                            props.className,
+                        )}
                     >
                         <CogIcon className="h-4 w-4 mr-2" />
                         <span>{t("Config")}</span>
-                    </button>
+                    </Button>
                 ) : (
-                    <IconButton {...props} icon="cog" />
+                    <IconButton {...props} ref={ref} icon="cog" />
                 )}
             </DialogTrigger>
             <DialogContent className="sm:max-w-xl">
@@ -327,11 +341,7 @@ export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConf
                                                 {t("Close")}
                                             </Button>
                                         </DialogClose>
-                                        <Button
-                                            type="submit"
-                                            className="my-2"
-                                            loading={submitting}
-                                        >
+                                        <Button type="submit" className="my-2" loading={submitting}>
                                             {t("Submit")}
                                         </Button>
                                     </DialogFooter>

@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils"
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
+import { Slottable } from "@radix-ui/react-slot"
 import { Check, ChevronRight, Circle } from "lucide-react"
 import { ComponentPropsWithoutRef, ComponentRef, HTMLAttributes, forwardRef } from "react"
 
@@ -30,7 +31,7 @@ const DropdownMenuSubTrigger = forwardRef<
         )}
         {...props}
     >
-        {children}
+        <Slottable>{children}</Slottable>
         <ChevronRight className="ml-auto" />
     </DropdownMenuPrimitive.SubTrigger>
 ))
