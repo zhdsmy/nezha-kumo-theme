@@ -1,51 +1,179 @@
 import { cn } from "@/lib/utils"
+import {
+    Button as KumoButton,
+    type ButtonProps as KumoButtonProps,
+    Tooltip,
+    buttonVariants as kumoButtonVariants,
+} from "@cloudflare/kumo"
 import { Slot } from "@radix-ui/react-slot"
-import { type VariantProps, cva } from "class-variance-authority"
 import { ButtonHTMLAttributes, forwardRef } from "react"
 
-const buttonVariants = cva(
-    "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg text-base leading-5 font-medium transition-colors duration-150 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-    {
-        variants: {
-            variant: {
-                default: "nkt-emphasis border border-primary text-primary-foreground shadow-xs",
-                destructive:
-                    "nkt-emphasis nkt-emphasis-danger border border-destructive text-destructive-foreground shadow-xs",
-                outline:
-                    "border border-input bg-card hover:bg-accent hover:text-accent-foreground shadow-xs",
-                secondary:
-                    "border border-border bg-secondary text-secondary-foreground hover:bg-accent shadow-xs",
-                ghost: "hover:bg-accent hover:text-accent-foreground",
-                link: "text-kumo-link underline-offset-4 hover:underline",
-            },
-            size: {
-                default: "h-9 px-3 py-2",
-                sm: "h-6.5 rounded-md px-2 text-xs leading-4",
-                lg: "h-10 px-4",
-                icon: "size-9",
-            },
-        },
-        defaultVariants: {
-            variant: "default",
-            size: "default",
-        },
-    },
-)
+export type ButtonVariant = "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
+export type ButtonSize = "default" | "sm" | "lg" | "icon"
 
-export interface ButtonProps
-    extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+const LINK_CLASSES =
+    "h-auto p-0 shadow-none bg-transparent hover:bg-transparent !text-kumo-link underline-offset-4 hover:underline"
+
+const SVG_CLASSES =
+    "justify-center [&_svg]:pointer-events-none [&_svg:not([role='status'])]:size-4 [&_svg]:shrink-0"
+
+function resolveKumoVariant(variant: ButtonVariant = "default"): NonNullable<KumoButtonProps["variant"]> {
+    switch (variant) {
+        case "default":
+            return "primary"
+        case "destructive":
+            return "destructive"
+        case "outline":
+        case "secondary":
+            return "secondary"
+        case "ghost":
+        case "link":
+            return "ghost"
+    }
+}
+
+function resolveKumoSizeAndShape(size: ButtonSize = "default"): {
+    size: NonNullable<KumoButtonProps["size"]>
+    shape: NonNullable<KumoButtonProps["shape"]>
+} {
+    switch (size) {
+        case "sm":
+            return { size: "sm", shape: "base" }
+        case "lg":
+            return { size: "lg", shape: "base" }
+        case "icon":
+            return { size: "base", shape: "square" }
+        case "default":
+        default:
+            return { size: "base", shape: "base" }
+    }
+}
+
+function buttonVariants({
+    variant = "default",
+    size = "default",
+    className,
+}: {
+    variant?: ButtonVariant | null
+    size?: ButtonSize | null
+    className?: string
+} = {}) {
+    const resolvedVariant = variant ?? "default"
+    const resolvedSize = size ?? "default"
+    const kumoVariant = resolveKumoVariant(resolvedVariant)
+    const { size: kumoSize, shape: kumoShape } = resolveKumoSizeAndShape(resolvedSize)
+
+    return cn(
+        kumoButtonVariants({
+            variant: kumoVariant,
+            size: kumoSize,
+            shape: kumoShape,
+        }),
+        SVG_CLASSES,
+        resolvedVariant === "default" && "nkt-emphasis ring-primary/80",
+        resolvedVariant === "destructive" && "nkt-emphasis nkt-emphasis-danger ring-destructive/80",
+        resolvedVariant === "link" && LINK_CLASSES,
+        className,
+    )
+}
+
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+    variant?: ButtonVariant | null
+    size?: ButtonSize | null
     asChild?: boolean
+    loading?: boolean
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant, size, asChild = false, ...props }, ref) => {
-        const Comp = asChild ? Slot : "button"
+    (
+        {
+            className,
+            variant = "default",
+            size = "default",
+            asChild = false,
+            loading = false,
+            disabled,
+            title,
+            children,
+            ...props
+        },
+        ref,
+    ) => {
+        const resolvedVariant = variant ?? "default"
+        const resolvedSize = size ?? "default"
+        const isInert = Boolean(className?.includes("pointer-events-none"))
+        const resolvedTitle =
+            title ??
+            (resolvedSize === "icon" && !("data-day" in props) && !isInert
+                ? props["aria-label"]
+                : undefined)
+
+        if (asChild) {
+            const slot = (
+                <Slot
+                    ref={ref}
+                    aria-busy={loading || undefined}
+                    className={buttonVariants({
+                        variant: resolvedVariant,
+                        size: resolvedSize,
+                        className,
+                    })}
+                    {...props}
+                >
+                    {children}
+                </Slot>
+            )
+            if (resolvedTitle) {
+                return (
+                    <Tooltip content={resolvedTitle} asChild>
+                        {slot}
+                    </Tooltip>
+                )
+            }
+            return slot
+        }
+
+        const kumoVariant = resolveKumoVariant(resolvedVariant)
+        const { size: kumoSize, shape: kumoShape } = resolveKumoSizeAndShape(resolvedSize)
+        const mergedClassName = cn(
+            SVG_CLASSES,
+            resolvedVariant === "link" && LINK_CLASSES,
+            className,
+        )
+
+        if (kumoShape === "square") {
+            return (
+                <KumoButton
+                    {...props}
+                    ref={ref}
+                    variant={kumoVariant}
+                    size={kumoSize}
+                    shape="square"
+                    loading={loading}
+                    disabled={disabled}
+                    title={resolvedTitle}
+                    aria-label={props["aria-label"] ?? resolvedTitle ?? ""}
+                    className={mergedClassName}
+                >
+                    {children}
+                </KumoButton>
+            )
+        }
+
         return (
-            <Comp
-                className={cn(buttonVariants({ variant, size, className }))}
+            <KumoButton
                 ref={ref}
+                variant={kumoVariant}
+                size={kumoSize}
+                shape="base"
+                loading={loading}
+                disabled={disabled}
+                title={resolvedTitle}
+                className={mergedClassName}
                 {...props}
-            />
+            >
+                {children}
+            </KumoButton>
         )
     },
 )

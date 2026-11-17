@@ -191,3 +191,63 @@ test("SelectAll and SelectedCount translations cover zh-CN, zh-TW, en, ja and fa
     expect(i18n.t("SelectedCount", { count: 3 })).toBe("3 selected")
 })
 
+test("button maps variants and icon size to Kumo Button, supports loading/disabled, and renders IconButton tooltip", async () => {
+    const { Button, buttonVariants } = await import("@/components/ui/button")
+    const { IconButton } = await import("@/components/xui/icon-button")
+    const { Dialog, DialogContent, DialogTitle, DialogTrigger } = await import(
+        "@/components/ui/dialog"
+    )
+    await i18n.changeLanguage("zh-CN")
+
+    const onClick = vi.fn()
+    const { rerender } = render(
+        <Button variant="default" onClick={onClick}>
+            保存
+        </Button>,
+    )
+    const primary = screen.getByRole("button", { name: "保存" })
+    expect(primary.getAttribute("data-kumo-component")).toBe("Button")
+    expect((primary as HTMLButtonElement).style.getPropertyValue("--kumo-button-emphasis-gradient-end")).toBe(
+        "var(--color-kumo-brand)",
+    )
+
+    rerender(
+        <Button variant="destructive" loading onClick={onClick}>
+            删除
+        </Button>,
+    )
+    const loadingBtn = screen.getByRole("button", { name: /删除/ }) as HTMLButtonElement
+    expect(loadingBtn.disabled).toBe(true)
+    expect(screen.getByRole("status", { name: "Loading" })).toBeTruthy()
+    fireEvent.click(loadingBtn)
+    expect(onClick).not.toHaveBeenCalled()
+
+    rerender(
+        <Button variant="outline" size="icon" aria-label="刷新">
+            <svg viewBox="0 0 16 16" />
+        </Button>,
+    )
+    const squareBtn = screen.getByRole("button", { name: "刷新" })
+    expect(squareBtn.className).toContain("size-9")
+    expect(squareBtn.className).toContain("p-0")
+    expect(buttonVariants({ variant: "outline", size: "sm" })).toContain("h-6.5")
+
+    cleanup()
+    render(
+        <Dialog>
+            <DialogTrigger asChild>
+                <IconButton icon="edit" variant="outline" />
+            </DialogTrigger>
+            <DialogContent aria-describedby={undefined}>
+                <DialogTitle>编辑对话框</DialogTitle>
+            </DialogContent>
+        </Dialog>,
+    )
+    const editBtn = screen.getByRole("button", { name: "编辑" })
+    fireEvent.focus(editBtn)
+    expect(await screen.findByText("编辑")).toBeTruthy()
+    fireEvent.click(editBtn)
+    expect(await screen.findByRole("dialog", { name: "编辑对话框" })).toBeTruthy()
+})
+
+

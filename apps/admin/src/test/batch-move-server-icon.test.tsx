@@ -1,5 +1,5 @@
 import { BatchMoveServerIcon } from "@/components/batch-move-server-icon"
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
 
 const toastCalls: Array<{ title: string; description: string }> = []
@@ -33,6 +33,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+    cleanup()
     document.body.innerHTML = ""
 })
 

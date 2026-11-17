@@ -1,5 +1,9 @@
 {
-    "Navigation": { "Monitoring": "Monitoring", "Automation": "Automation", "System": "System" },
+    "Navigation": {
+        "Monitoring": "Monitoring",
+        "Automation": "Automation",
+        "System": "System"
+    },
     "TableDetails": "Row details",
     "nezha": "Nezha Monitoring",
     "theme": {
@@ -409,5 +413,17 @@
     "ShowPassword": "Show password",
     "HidePassword": "Hide password",
     "ScrollTabsLeft": "Scroll tabs left",
-    "ScrollTabsRight": "Scroll tabs right"
+    "ScrollTabsRight": "Scroll tabs right",
+    "Edit": "Edit",
+    "Create": "Create",
+    "ForceUpdate": "Force update",
+    "Run": "Run",
+    "Download": "Download",
+    "Upload": "Upload",
+    "Menu": "Menu",
+    "Block": "Block",
+    "Expand": "Expand",
+    "Remove": "Remove",
+    "ChangeOwner": "Change owner",
+    "More": "More"
 }
