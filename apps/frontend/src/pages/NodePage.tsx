@@ -15,7 +15,7 @@ import { RegionFlag } from "@/components/RegionFlag"
 import { useBilling } from "@/components/billing"
 import { ErrorBanner, Info, Loading, Meter, NoData, PageFootnote, Status } from "@/components/ui"
 import { formatBytes, formatSpeed, formatUsage, quotaUsage, ratio } from "@/core/format"
-import { pollVisible } from "@/core/http"
+import { isCanceledError, pollVisible } from "@/core/http"
 import type { HistoryPoint, PingData } from "@/core/model"
 import { regionName, stripFlag } from "@/core/region"
 import { summariseDay } from "@/core/summary"
@@ -82,13 +82,13 @@ export default function NodePage({ id, section }: { id: string; section: Section
     )
     useEffect(() => {
         if (section !== "load" || !recordHours) return
-        let active = true
-        void backfillLive(id).finally(() => {
-            if (active) setLiveBackfilledKey(dayKey)
-        })
-        return () => {
-            active = false
-        }
+        const ctrl = new AbortController()
+        void backfillLive(id, ctrl.signal)
+            .catch(() => {})
+            .finally(() => {
+                if (!ctrl.signal.aborted) setLiveBackfilledKey(dayKey)
+            })
+        return () => ctrl.abort()
     }, [id, section, recordHours, dayKey])
     useEffect(() => {
         if (!title) return
@@ -96,74 +96,68 @@ export default function NodePage({ id, section }: { id: string; section: Section
     }, [node, title])
     useEffect(() => {
         if (section !== "load" || !activeRange) return
-        let active = true
+        const ctrl = new AbortController()
         adapter
-            .loadHistory(id, activeRange)
+            .loadHistory(id, activeRange, "overview", ctrl.signal)
             .then((points) => {
-                if (active) {
+                if (!ctrl.signal.aborted) {
                     setHistoryError("")
                     setHistory({ id, key: dataKey, hours: activeRange, points })
                 }
             })
-            .catch(() => {
-                if (active) setHistoryError(dataKey)
+            .catch((err) => {
+                if (!isCanceledError(err, ctrl.signal)) setHistoryError(dataKey)
             })
-        return () => {
-            active = false
-        }
+        return () => ctrl.abort()
     }, [id, activeRange, section, dataKey])
     useEffect(() => {
         if (section !== "latency" || !recordHours) return
-        let active = true
+        const ctrl = new AbortController()
         const hours = activeRange || 0.25
         const load = () =>
             adapter
-                .loadPing(id, hours)
+                .loadPing(id, hours, ctrl.signal)
                 .then((data) => {
-                    if (active) {
+                    if (!ctrl.signal.aborted) {
                         setPingError("")
                         setPing({ id, key: dataKey, hours, data })
                     }
                 })
-                .catch(() => {
-                    if (active) setPingError(dataKey)
+                .catch((err) => {
+                    if (!isCanceledError(err, ctrl.signal)) setPingError(dataKey)
                 })
         const stop = activeRange === 0 ? pollVisible(load, 30_000) : (void load(), () => {})
         return () => {
-            active = false
+            ctrl.abort()
             stop()
         }
     }, [id, activeRange, section, recordHours, dataKey])
     useEffect(() => {
         if (section !== "overview" || !recordHours || dayPoints) return
-        let active = true
+        const ctrl = new AbortController()
         adapter
-            .loadHistory(id, 24, "billing")
+            .loadHistory(id, 24, "billing", ctrl.signal)
             .then((p) => {
-                if (active) setDayResult({ key: dayKey, points: p })
+                if (!ctrl.signal.aborted) setDayResult({ key: dayKey, points: p })
             })
             .catch(() => {})
-        return () => {
-            active = false
-        }
+        return () => ctrl.abort()
     }, [id, recordHours, section, dayKey, dayPoints])
     useEffect(() => {
         if (section !== "history" || !recordHours) return
-        let active = true
+        const ctrl = new AbortController()
         adapter
-            .loadHistory(id, reportHours, "reports")
+            .loadHistory(id, reportHours, "reports", ctrl.signal)
             .then((p) => {
-                if (active) {
+                if (!ctrl.signal.aborted) {
                     setReportError("")
                     setReports({ id, key: reportKey, points: p })
                 }
             })
-            .catch(() => {
-                if (active) setReportError(reportKey)
+            .catch((err) => {
+                if (!isCanceledError(err, ctrl.signal)) setReportError(reportKey)
             })
-        return () => {
-            active = false
-        }
+        return () => ctrl.abort()
     }, [id, recordHours, reportHours, section, reportKey])
     if (!node)
         return (

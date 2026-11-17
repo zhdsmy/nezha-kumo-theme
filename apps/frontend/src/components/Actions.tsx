@@ -204,7 +204,7 @@ export function Actions() {
                             LOCALES.find((l) => i18n.language.startsWith(l.code))?.code ??
                             "en"
                         }
-                        onValueChange={(v: string) => void setLocale(v as Locale)}
+                        onValueChange={(v: string) => void setLocale(v as Locale).catch(() => {})}
                     >
                         {LOCALES.map((l) => (
                             <DropdownMenu.RadioItem
@@ -239,8 +239,8 @@ export function Actions() {
                         variant="secondary"
                         size="sm"
                         aria-label={t("auth.signIn")}
-                        onPointerEnter={() => void loadLoginDialog()}
-                        onFocus={() => void loadLoginDialog()}
+                        onPointerEnter={() => void loadLoginDialog().catch(() => {})}
+                        onFocus={() => void loadLoginDialog().catch(() => {})}
                         onClick={() => setLogin(true)}
                     >
                         <UserIcon size={16} />

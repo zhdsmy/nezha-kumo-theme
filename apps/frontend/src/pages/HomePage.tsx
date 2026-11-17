@@ -257,7 +257,10 @@ export function HomePage() {
     // Counters and live seeds cover every node, so switching groups refetches nothing.
     const daily = useDailyCounters(settings.showOverview ? all : [])
     useEffect(() => {
-        if (settings.showOverview) void seedLive(all)
+        if (!settings.showOverview) return
+        const ctrl = new AbortController()
+        void seedLive(all, ctrl.signal).catch(() => {})
+        return () => ctrl.abort()
     }, [all, settings.showOverview])
     useEffect(() => {
         writeStorage("nkt:sort", JSON.stringify(sort))

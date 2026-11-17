@@ -4,7 +4,7 @@ import { ErrorBanner, Loading, Status } from "@/components/ui"
 import { loadExchangeRates } from "@/core/cost"
 import { groupCounts, parseFilterQuery, resolvePeerGroup } from "@/core/filter"
 import { peerNodes } from "@/core/fleet"
-import { pollVisible } from "@/core/http"
+import { isCanceledError, pollVisible } from "@/core/http"
 import { stripFlag } from "@/core/region"
 import { resolveLocale, setLocale, uiLabels } from "@/i18n"
 import { HomePage } from "@/pages/HomePage"
@@ -216,7 +216,7 @@ export function App() {
                     settings.defaultLanguage === "auto" ? site.language : settings.defaultLanguage,
                 ),
                 false,
-            )
+            ).catch(() => {})
     }, [site, settings.defaultLanguage])
     useEffect(() => {
         if (phase !== "ready" || (!settings.showCost && !settings.showBilling)) return
@@ -226,8 +226,8 @@ export function App() {
                 .then((r) => {
                     if (active) setExchangeRates(r)
                 })
-                .catch(() => {
-                    if (active) setExchangeRates(null, true)
+                .catch((err) => {
+                    if (active && !isCanceledError(err)) setExchangeRates(null, true)
                 })
         const stop = pollVisible(load, 86_400_000)
         return () => {
