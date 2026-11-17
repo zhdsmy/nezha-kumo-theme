@@ -26,6 +26,7 @@ import { IconButton } from "@/components/xui/icon-button"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
 import { withCollectionDefaults } from "@/lib/form"
 import i18n from "@/lib/i18n"
+import { detectPublicNoteMode, preparePublicNote } from "@/lib/public-note"
 import { asOptionalField, conv, errorMessage } from "@/lib/utils"
 import { ModelServer } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -90,6 +91,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate, routes }) 
     const [open, setOpen] = useState(false)
 
     const [publicNoteRaw, setPublicNoteRaw] = useState(data?.public_note ?? "")
+    const [publicNoteMode, setPublicNoteMode] = useState(detectPublicNoteMode(data?.public_note))
 
     const { submitting, runSubmit } = useSubmitLock()
 
@@ -102,7 +104,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate, routes }) 
                 ? JSON.parse(values.override_ddns_domains_raw)
                 : undefined
 
-            values.public_note = publicNoteRaw
+            values.public_note = preparePublicNote(publicNoteRaw, publicNoteMode)
 
             await updateServer(data!.id!, values)
         } catch (e) {
@@ -129,6 +131,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate, routes }) 
                     : undefined,
             })
             setPublicNoteRaw(data?.public_note ?? "")
+            setPublicNoteMode(detectPublicNoteMode(data?.public_note))
         }
         setOpen(v)
     }
@@ -291,7 +294,10 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate, routes }) 
                                 />
                                 <PublicNoteEditor
                                     value={publicNoteRaw}
-                                    onChange={setPublicNoteRaw}
+                                    onChange={(value, mode) => {
+                                        setPublicNoteRaw(value)
+                                        if (mode) setPublicNoteMode(mode)
+                                    }}
                                     routes={routes}
                                 />
                                 <DialogFooter className="justify-end">

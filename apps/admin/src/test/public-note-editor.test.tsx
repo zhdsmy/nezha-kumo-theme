@@ -119,3 +119,19 @@ test("array extras are shown as unknown and survive edits to other fields", () =
     fireEvent.click(screen.getByRole("switch", { name: "自动续费" }))
     expect(change.mock.calls[0][0]).toContain('"extra":["a","b"],"networkRoute":["CN2"]')
 })
+
+test("raw text is trimmed when the server form saves", async () => {
+    render(
+        <ServerCard
+            data={{ id: 1, name: "Mock", display_index: 0, public_note: " old " } as never}
+            mutate={vi.fn()}
+        />,
+    )
+    fireEvent.click(screen.getByRole("button", { name: i18n.t("Edit") }))
+    fireEvent.change(screen.getByRole("textbox", { name: i18n.t("PublicNote.RawText") }), {
+        target: { value: "  new note\n" },
+    })
+    await act(async () => fireEvent.submit(screen.getByRole("dialog").querySelector("form")!))
+    await waitFor(() => expect(update).toHaveBeenCalledTimes(1))
+    expect(update.mock.calls[0][1].public_note).toBe("new note")
+})

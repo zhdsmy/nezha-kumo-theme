@@ -23,7 +23,7 @@ export function PublicNoteEditor({
     routes = [],
 }: {
     value: string
-    onChange: (value: string) => void
+    onChange: (value: string, mode?: "structured" | "raw") => void
     routes?: string[]
 }) {
     const { t } = useTranslation()
@@ -40,7 +40,7 @@ export function PublicNoteEditor({
         const amount = get("billingDataMod", "amount")
         if (section === "billingDataMod" && key === "cycle" && parseAmount(amount)?.cycle)
             updated = patchPublicNote(updated, section, "amount", amount!.split("/")[0])
-        onChange(updated)
+        onChange(updated, "structured")
     }
     const field = (
         section: string,
@@ -102,7 +102,10 @@ export function PublicNoteEditor({
                         variant={mode === "structured" ? "secondary" : "ghost"}
                         aria-pressed={mode === "structured"}
                         disabled={parsed === undefined}
-                        onClick={() => setMode("structured")}
+                        onClick={() => {
+                            setMode("structured")
+                            onChange(value, "structured")
+                        }}
                     >
                         {t("PublicNote.CustomFields")}
                     </Button>
@@ -110,7 +113,10 @@ export function PublicNoteEditor({
                         type="button"
                         variant={mode === "raw" ? "secondary" : "ghost"}
                         aria-pressed={mode === "raw"}
-                        onClick={() => setMode("raw")}
+                        onClick={() => {
+                            setMode("raw")
+                            onChange(value, "raw")
+                        }}
                     >
                         {t("PublicNote.RawText")}
                     </Button>
@@ -127,7 +133,7 @@ export function PublicNoteEditor({
                     aria-label={t("PublicNote.RawText")}
                     rows={8}
                     value={value}
-                    onChange={(event) => onChange(event.target.value)}
+                    onChange={(event) => onChange(event.target.value, "raw")}
                 />
             ) : (
                 <>

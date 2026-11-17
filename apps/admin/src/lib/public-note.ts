@@ -58,14 +58,18 @@ function patchObject(raw: string, key: string, value: string | undefined): strin
         // Deleting a duplicate key must not reveal an earlier, shadowed value.
         return patchObject(removed, key, undefined)
     }
-    return value === undefined
-        ? raw
-        : raw.slice(0, end) +
-              (fields.length ? "," : "") +
-              JSON.stringify(key) +
-              ":" +
-              value +
-              raw.slice(end)
+    if (value === undefined) return raw
+    const position = fields.at(-1)?.end ?? end
+    const gap = fields.length ? raw.slice(raw.indexOf("{") + 1, fields[0].start) : ""
+    return (
+        raw.slice(0, position) +
+        (fields.length ? "," : "") +
+        gap +
+        JSON.stringify(key) +
+        ":" +
+        value +
+        raw.slice(position)
+    )
 }
 export function patchPublicNote(
     raw: string,
@@ -83,4 +87,15 @@ export function patchPublicNote(
     const next = patchObject(previous, key, value === undefined ? undefined : JSON.stringify(value))
     if (next === previous) return raw
     return patchObject(source, section, next)
+}
+
+export function preparePublicNote(raw: string, mode: "structured" | "raw"): string {
+    if (mode === "raw") return raw.trim()
+    const parsed = parsePublicNote(raw)
+    if (!isNoteObject(parsed)) return raw
+    let result = raw
+    for (const key of ["billingDataMod", "planDataMod"])
+        if (isNoteObject(parsed[key]) && !Object.keys(parsed[key]).length)
+            result = patchObject(result, key, undefined)
+    return Object.keys(parsePublicNote(result) as object).length ? result : ""
 }

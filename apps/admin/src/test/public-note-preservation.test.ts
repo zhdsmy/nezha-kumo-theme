@@ -1,4 +1,9 @@
-import { detectPublicNoteMode, parsePublicNote, patchPublicNote } from "@/lib/public-note"
+import {
+    detectPublicNoteMode,
+    parsePublicNote,
+    patchPublicNote,
+    preparePublicNote,
+} from "@/lib/public-note"
 import { expect, test } from "vitest"
 
 const source =
@@ -40,4 +45,19 @@ test("all plan inventory formats survive a no-op round trip exactly", () => {
     ]) {
         expect(patchPublicNote(raw, "planDataMod", "unused", undefined)).toBe(raw)
     }
+})
+
+test("save removes empty structured sections and trims only raw text", () => {
+    expect(preparePublicNote(' {"billingDataMod":{},"planDataMod":{}} ', "structured")).toBe("")
+    expect(preparePublicNote('{"unknown":1e+2,"planDataMod":{}}', "structured")).toBe(
+        '{"unknown":1e+2}',
+    )
+    expect(preparePublicNote(source, "structured")).toBe(source)
+    expect(preparePublicNote("  legacy note\n", "raw")).toBe("legacy note")
+})
+test("new keys follow the preceding value before trailing indentation", () => {
+    const raw = '{\n  "billingDataMod": {\n    "amount": "USD 45"\n  }\n}'
+    expect(patchPublicNote(raw, "billingDataMod", "cycle", "Month")).toBe(
+        '{\n  "billingDataMod": {\n    "amount": "USD 45",\n    "cycle":"Month"\n  }\n}',
+    )
 })
