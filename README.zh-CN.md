@@ -53,7 +53,7 @@
 
 1. 前往 [GitHub Releases](https://github.com/zhdsmy/nezha-kumo-theme/releases)（用户前台）或 [`zhdsmy/nezha-kumo-admin` Releases](https://github.com/zhdsmy/nezha-kumo-admin/releases)（管理后台）下载 `dist.zip` 与对应的 `.sha256` 校验文件并核对哈希值。
 2. 将压缩包中的 `dist/` 解压到面板进程/容器可读取的目录（例如 `data/kumo-user` 或 `data/kumo-admin`）。
-3. _（可选，仅用户前台）_ 将 [`apps/frontend/public/config.js`](apps/frontend/public/config.js) 复制到解压后的 `index.html` 同级目录，按需修改 `window.NezhaKumoConfig`。发布包 `dist.zip` 不包含 `config.js`，升级时不会覆盖已有配置。
+3. _（可选，仅用户前台）_ 将 [`apps/frontend/public/config.js`](apps/frontend/public/config.js) 复制到解压后的 `index.html` 同级目录，按需修改 `window.NezhaKumoConfig`。`dist.zip` 自带一份全部注释掉的 `config.js`，手动升级解压前请先备份自己的 `config.js`，解压后再放回。
 4. 修改面板 `data/config.yaml` 中的 `user_template`（及/或 `admin_template`）指向解压后的目录，重启哪吒面板服务。
 
 ## 回滚方法

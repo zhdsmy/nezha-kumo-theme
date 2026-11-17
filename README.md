@@ -53,7 +53,7 @@ For panels without Frontend Management or custom container/host mounts:
 
 1. Download `dist.zip` (and `dist.zip.sha256`) from [GitHub Releases](https://github.com/zhdsmy/nezha-kumo-theme/releases) for the user frontend, or from [`zhdsmy/nezha-kumo-admin` Releases](https://github.com/zhdsmy/nezha-kumo-admin/releases) for the admin panel, and verify the SHA-256 checksum.
 2. Extract `dist/` to a directory readable by the Nezha Dashboard process/container (for example `data/kumo-user` or `data/kumo-admin`).
-3. _(Optional, user frontend)_ Copy [`apps/frontend/public/config.js`](apps/frontend/public/config.js) next to the extracted `index.html` and customize `window.NezhaKumoConfig`. `config.js` is excluded from `dist.zip` so upgrades will not overwrite it.
+3. _(Optional, user frontend)_ Copy [`apps/frontend/public/config.js`](apps/frontend/public/config.js) next to the extracted `index.html` and customize `window.NezhaKumoConfig`. `dist.zip` ships an all-commented `config.js`, so back up your own copy before extracting an upgrade and restore it afterwards.
 4. Update `user_template` (and/or `admin_template`) in Nezha's `data/config.yaml` to point to the extracted directory, then restart the Nezha Dashboard service.
 
 ## Rollback
