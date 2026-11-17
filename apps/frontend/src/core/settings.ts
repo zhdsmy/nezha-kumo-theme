@@ -2,7 +2,7 @@
 export type Appearance = "system" | "light" | "dark"
 type LanguagePreference = "auto" | "en" | "zh-CN" | "zh-TW" | "ja"
 
-/** Optional site-owner settings from config.js. Layout follows the shared responsive contract. */
+/** Optional site-owner settings from panel JSON and config.js. Layout follows the shared responsive contract. */
 export interface ThemeSettings {
     defaultAppearance: Appearance
     defaultLanguage: LanguagePreference
@@ -81,5 +81,24 @@ export function normalizeSettings(raw: unknown): ThemeSettings {
         hiddenNodes: list(r.hiddenNodes),
         hideAdminEntry: bool(r.hideAdminEntry, d.hideAdminEntry),
         footerNote: str(r.footerNote, d.footerNote).trim(),
+    }
+}
+
+/** Parse custom code as data only; never insert or execute panel scripts. */
+export function readThemeConfig(customCode: string | undefined, config: unknown): unknown {
+    const block = customCode?.match(
+        /<script\b[^>]*\bid=["']nezha-kumo-config["'][^>]*>([\s\S]*?)<\/script>/i,
+    )
+    let panel: unknown
+    if (block) {
+        try {
+            panel = JSON.parse(block[1])
+        } catch {
+            console.warn("Invalid nezha-kumo-config JSON; ignoring block")
+        }
+    }
+    return {
+        ...(panel && typeof panel === "object" && !Array.isArray(panel) ? panel : {}),
+        ...(config && typeof config === "object" && !Array.isArray(config) ? config : {}),
     }
 }

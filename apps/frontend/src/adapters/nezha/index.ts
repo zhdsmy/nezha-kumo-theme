@@ -13,6 +13,7 @@ import type {
     Snapshot,
 } from "@/core/model"
 import { flagToRegion } from "@/core/region"
+import { readThemeConfig } from "@/core/settings"
 
 import { parseGroupIcons } from "../../../../../packages/shared/group-icons"
 import {
@@ -622,7 +623,7 @@ export const nezha = {
         return {
             name: (cfg.site_name ?? "").trim() || "Nezha",
             language: cfg.language?.replace("_", "-"),
-            settings: window.NezhaKumoConfig ?? {},
+            settings: readThemeConfig(cfg.custom_code, window.NezhaKumoConfig),
             groupIcons,
             // Guests may only read one day of TSDB history; signed-in users get the full 30 days.
             recordHours: res?.data?.tsdb_enabled ? (loggedIn ? 720 : 24) : 0,
