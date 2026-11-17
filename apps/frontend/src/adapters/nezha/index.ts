@@ -93,7 +93,7 @@ interface NezhaSetting {
     tsdb_enabled?: boolean
 }
 
-/** Older dashboards send `service_*`; current ones (monitor.example.com, 2026-11) send `monitor_*`. */
+/** Older dashboards send `service_*`; current dashboards send `monitor_*`. */
 interface NezhaServiceInfo {
     monitor_id?: number
     monitor_name?: string

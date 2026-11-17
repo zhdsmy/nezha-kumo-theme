@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { parseActualCost, parsePublicNote } from "../src/adapters/nezha"
 import { trafficUsed } from "../src/core/format"
-import liveNotes from "./fixtures/public-notes-20261117.json"
+import syntheticNotes from "./fixtures/public-notes-synthetic.json"
 import legacyNotes from "./fixtures/public-notes-legacy.json"
 
 describe("shared public-note compatibility", () => {
@@ -64,9 +64,9 @@ it.each([
     expect(trafficUsed(parsed.trafficLimitType, 10, 100)).toBe(expected)
 })
 
-it("preserves all 21 anonymous public notes against a17fb3d except the planned outbound correction", () => {
-    expect(liveNotes).toHaveLength(21)
-    for (const { public_note, expected } of liveNotes) {
+it("preserves all 21 synthetic public-note format cases", () => {
+    expect(syntheticNotes).toHaveLength(21)
+    for (const { public_note, expected } of syntheticNotes) {
         let outbound = false
         let trafficLimitTypeExplicit = false
         try {
