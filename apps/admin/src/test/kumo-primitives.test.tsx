@@ -351,3 +351,119 @@ test("badge, neutral switch, input, password-input, and textarea delegate to Kum
     fireEvent.change(notesArea, { target: { value: "updated note" } })
     expect(notesArea.value).toBe("updated note")
 })
+
+test("checkbox delegates to Kumo, clicking FormLabel toggles state without warnings, and Table card mode counts selected rows once", async () => {
+    const { useState } = await import("react")
+    const { useForm } = await import("react-hook-form")
+    const { Form, FormControl, FormField, FormItem, FormLabel } = await import(
+        "@/components/ui/form"
+    )
+    const { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } = await import(
+        "@/components/ui/table"
+    )
+    await i18n.changeLanguage("zh-CN")
+
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+    vi.stubGlobal(
+        "matchMedia",
+        vi.fn((query: string) => ({
+            matches: false,
+            media: query,
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+        })),
+    )
+
+    function CheckboxHarness() {
+        const form = useForm({ defaultValues: { tls: false } })
+        const [rows, setRows] = useState([true, false])
+        const allState: boolean | "indeterminate" = rows.every(Boolean)
+            ? true
+            : rows.some(Boolean)
+              ? "indeterminate"
+              : false
+
+        return (
+            <div>
+                <Form {...form}>
+                    <FormField
+                        control={form.control}
+                        name="tls"
+                        render={({ field }) => (
+                            <FormItem>
+                                <div className="flex items-center gap-2">
+                                    <FormControl>
+                                        <Checkbox
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                        />
+                                    </FormControl>
+                                    <FormLabel className="text-sm cursor-pointer">
+                                        启用 TLS
+                                    </FormLabel>
+                                </div>
+                            </FormItem>
+                        )}
+                    />
+                </Form>
+                <Table columnPriority={[["name", 120]]}>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead data-col="select">
+                                <Checkbox
+                                    aria-label="Select all"
+                                    checked={allState}
+                                    onCheckedChange={(next) => setRows([next, next])}
+                                />
+                            </TableHead>
+                            <TableHead data-col="name">Name</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {rows.map((selected, idx) => (
+                            <TableRow key={idx} data-state={selected ? "selected" : undefined}>
+                                <TableCell data-col="select">
+                                    <Checkbox
+                                        aria-label={`Select row ${idx + 1}`}
+                                        checked={selected}
+                                        onCheckedChange={(next) =>
+                                            setRows((prev) =>
+                                                prev.map((v, i) => (i === idx ? next : v)),
+                                            )
+                                        }
+                                    />
+                                </TableCell>
+                                <TableCell data-col="name">{`Node ${idx + 1}`}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+        )
+    }
+
+    try {
+        render(<CheckboxHarness />)
+
+        expect(warnSpy).not.toHaveBeenCalled()
+
+        const tlsCheckbox = screen.getByRole("checkbox", { name: "启用 TLS" })
+        expect(tlsCheckbox.getAttribute("data-kumo-component")).toBe("Checkbox")
+        expect(tlsCheckbox.getAttribute("aria-checked")).toBe("false")
+
+        fireEvent.click(screen.getByText("启用 TLS"))
+        expect(tlsCheckbox.getAttribute("aria-checked")).toBe("true")
+        fireEvent.click(screen.getByText("启用 TLS"))
+        expect(tlsCheckbox.getAttribute("aria-checked")).toBe("false")
+
+        const selectAll = screen.getByRole("checkbox", { name: "Select all" })
+        expect(selectAll.getAttribute("aria-checked")).toBe("mixed")
+        expect(await screen.findByText("已选 1 项")).toBeTruthy()
+
+        fireEvent.click(screen.getByText("已选 1 项"))
+        expect(await screen.findByText("已选 2 项")).toBeTruthy()
+        expect(selectAll.getAttribute("aria-checked")).toBe("true")
+    } finally {
+        vi.unstubAllGlobals()
+    }
+})

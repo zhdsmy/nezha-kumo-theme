@@ -20,7 +20,6 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
     Select,
     SelectContent,
@@ -257,17 +256,17 @@ export const NotifierCard: React.FC<NotifierCardProps> = ({ data, mutate }) => {
                                     name="verify_tls"
                                     render={({ field }) => (
                                         <FormItem className="flex items-center space-x-2">
-                                            <FormControl>
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <FormControl>
                                                     <Checkbox
                                                         checked={field.value === true}
                                                         onCheckedChange={field.onChange}
                                                     />
-                                                    <Label className="text-sm">
-                                                        {t("VerifyTLS")}
-                                                    </Label>
-                                                </div>
-                                            </FormControl>
+                                                </FormControl>
+                                                <FormLabel className="text-sm cursor-pointer">
+                                                    {t("VerifyTLS")}
+                                                </FormLabel>
+                                            </div>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -277,17 +276,17 @@ export const NotifierCard: React.FC<NotifierCardProps> = ({ data, mutate }) => {
                                     name="skip_check"
                                     render={({ field }) => (
                                         <FormItem className="flex items-center space-x-2">
-                                            <FormControl>
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <FormControl>
                                                     <Checkbox
                                                         checked={field.value === true}
                                                         onCheckedChange={field.onChange}
                                                     />
-                                                    <Label className="text-sm">
-                                                        {t("DoNotSendTestMessage")}
-                                                    </Label>
-                                                </div>
-                                            </FormControl>
+                                                </FormControl>
+                                                <FormLabel className="text-sm cursor-pointer">
+                                                    {t("DoNotSendTestMessage")}
+                                                </FormLabel>
+                                            </div>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -297,17 +296,17 @@ export const NotifierCard: React.FC<NotifierCardProps> = ({ data, mutate }) => {
                                     name="format_metric_units"
                                     render={({ field }) => (
                                         <FormItem className="flex items-center space-x-2">
-                                            <FormControl>
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <FormControl>
                                                     <Checkbox
                                                         checked={field.value === true}
                                                         onCheckedChange={field.onChange}
                                                     />
-                                                    <Label className="text-sm">
-                                                        {t("FormatMetricUnits")}
-                                                    </Label>
-                                                </div>
-                                            </FormControl>
+                                                </FormControl>
+                                                <FormLabel className="text-sm cursor-pointer">
+                                                    {t("FormatMetricUnits")}
+                                                </FormLabel>
+                                            </div>
                                             <FormMessage />
                                         </FormItem>
                                     )}

@@ -20,7 +20,6 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { IconButton } from "@/components/xui/icon-button"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
@@ -294,8 +293,8 @@ export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConf
                                                     name={field}
                                                     render={({ field: controllerField }) => (
                                                         <FormItem className="flex items-center w-full">
-                                                            <FormControl>
-                                                                <div className="flex items-center gap-2">
+                                                            <div className="flex items-center gap-2">
+                                                                <FormControl>
                                                                     <Checkbox
                                                                         checked={
                                                                             !!controllerField.value
@@ -304,11 +303,11 @@ export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConf
                                                                             controllerField.onChange
                                                                         }
                                                                     />
-                                                                    <Label className="text-sm">
-                                                                        {t(field)}
-                                                                    </Label>
-                                                                </div>
-                                                            </FormControl>
+                                                                </FormControl>
+                                                                <FormLabel className="text-sm cursor-pointer">
+                                                                    {t(field)}
+                                                                </FormLabel>
+                                                            </div>
                                                             <FormMessage />
                                                         </FormItem>
                                                     )}

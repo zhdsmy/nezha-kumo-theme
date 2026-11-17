@@ -752,15 +752,17 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                                     name="enable"
                                     render={({ field }) => (
                                         <FormItem className="flex items-center space-x-2">
-                                            <FormControl>
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <FormControl>
                                                     <Checkbox
                                                         checked={field.value}
                                                         onCheckedChange={field.onChange}
                                                     />
-                                                    <Label className="text-sm">{t("Enable")}</Label>
-                                                </div>
-                                            </FormControl>
+                                                </FormControl>
+                                                <FormLabel className="text-sm cursor-pointer">
+                                                    {t("Enable")}
+                                                </FormLabel>
+                                            </div>
                                             <FormMessage />
                                         </FormItem>
                                     )}

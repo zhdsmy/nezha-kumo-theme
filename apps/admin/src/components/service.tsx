@@ -20,7 +20,6 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
     Select,
     SelectContent,
@@ -240,17 +239,17 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ data, mutate }) => {
                                     name="hide_for_guest"
                                     render={({ field }) => (
                                         <FormItem className="flex items-center space-x-2">
-                                            <FormControl>
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <FormControl>
                                                     <Checkbox
                                                         checked={field.value}
                                                         onCheckedChange={field.onChange}
                                                     />
-                                                    <Label className="text-sm">
-                                                        {t("HideForGuest")}
-                                                    </Label>
-                                                </div>
-                                            </FormControl>
+                                                </FormControl>
+                                                <FormLabel className="text-sm cursor-pointer">
+                                                    {t("HideForGuest")}
+                                                </FormLabel>
+                                            </div>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -337,17 +336,17 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ data, mutate }) => {
                                     name="notify"
                                     render={({ field }) => (
                                         <FormItem className="flex items-center space-x-2">
-                                            <FormControl>
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <FormControl>
                                                     <Checkbox
                                                         checked={field.value}
                                                         onCheckedChange={field.onChange}
                                                     />
-                                                    <Label className="text-sm">
-                                                        {t("EnableFailureNotification")}
-                                                    </Label>
-                                                </div>
-                                            </FormControl>
+                                                </FormControl>
+                                                <FormLabel className="text-sm cursor-pointer">
+                                                    {t("EnableFailureNotification")}
+                                                </FormLabel>
+                                            </div>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -391,17 +390,17 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ data, mutate }) => {
                                     name="latency_notify"
                                     render={({ field }) => (
                                         <FormItem className="flex items-center space-x-2">
-                                            <FormControl>
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <FormControl>
                                                     <Checkbox
                                                         checked={field.value}
                                                         onCheckedChange={field.onChange}
                                                     />
-                                                    <Label className="text-sm">
-                                                        {t("EnableLatencyNotification")}
-                                                    </Label>
-                                                </div>
-                                            </FormControl>
+                                                </FormControl>
+                                                <FormLabel className="text-sm cursor-pointer">
+                                                    {t("EnableLatencyNotification")}
+                                                </FormLabel>
+                                            </div>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -411,17 +410,17 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ data, mutate }) => {
                                     name="enable_trigger_task"
                                     render={({ field }) => (
                                         <FormItem className="flex items-center space-x-2">
-                                            <FormControl>
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <FormControl>
                                                     <Checkbox
                                                         checked={field.value}
                                                         onCheckedChange={field.onChange}
                                                     />
-                                                    <Label className="text-sm">
-                                                        {t("EnableTriggerTask")}
-                                                    </Label>
-                                                </div>
-                                            </FormControl>
+                                                </FormControl>
+                                                <FormLabel className="text-sm cursor-pointer">
+                                                    {t("EnableTriggerTask")}
+                                                </FormLabel>
+                                            </div>
                                             <FormMessage />
                                         </FormItem>
                                     )}

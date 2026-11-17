@@ -20,7 +20,6 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
     Select,
     SelectContent,
@@ -285,17 +284,17 @@ export const CronCard: React.FC<CronCardProps> = ({ data, mutate }) => {
                                     name="push_successful"
                                     render={({ field }) => (
                                         <FormItem className="flex items-center space-x-2">
-                                            <FormControl>
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <FormControl>
                                                     <Checkbox
                                                         checked={field.value === true}
                                                         onCheckedChange={field.onChange}
                                                     />
-                                                    <Label className="text-sm">
-                                                        {t("PushSuccessful")}
-                                                    </Label>
-                                                </div>
-                                            </FormControl>
+                                                </FormControl>
+                                                <FormLabel className="text-sm cursor-pointer">
+                                                    {t("PushSuccessful")}
+                                                </FormLabel>
+                                            </div>
                                             <FormMessage />
                                         </FormItem>
                                     )}

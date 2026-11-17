@@ -63,7 +63,7 @@ const Table = forwardRef<
             })
             const syncSelectedCount = () => {
                 const next = container.querySelectorAll(
-                    'tbody [data-col="select"] [aria-checked="true"], tbody [data-col="select"] input:checked',
+                    'tbody [data-col="select"] [aria-checked="true"], tbody [data-col="select"] input:checked:not([aria-hidden="true"])',
                 ).length
                 if (selectedCountRef.current !== next) {
                     selectedCountRef.current = next

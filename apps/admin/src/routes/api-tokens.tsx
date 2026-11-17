@@ -268,9 +268,10 @@ function CreateApiTokenDialog({
                                 return (
                                     <label
                                         key={s.value}
-                                        className={`flex items-start gap-2 text-sm ${disabled ? "opacity-40" : ""}`}
+                                        className={`flex items-start gap-2 text-sm ${disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
                                     >
                                         <Checkbox
+                                            aria-label={s.value}
                                             checked={scopes.includes(s.value)}
                                             onCheckedChange={() =>
                                                 !disabled && toggleScope(s.value)

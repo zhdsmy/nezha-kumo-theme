@@ -20,7 +20,6 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { PasswordInput } from "@/components/ui/password-input"
 import {
     Select,
@@ -366,17 +365,17 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
                                     name="enable_ipv4"
                                     render={({ field }) => (
                                         <FormItem className="flex items-center space-x-2">
-                                            <FormControl>
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <FormControl>
                                                     <Checkbox
                                                         checked={field.value === true}
                                                         onCheckedChange={field.onChange}
                                                     />
-                                                    <Label className="text-sm">
-                                                        {t("Enable")} IPv4
-                                                    </Label>
-                                                </div>
-                                            </FormControl>
+                                                </FormControl>
+                                                <FormLabel className="text-sm cursor-pointer">
+                                                    {t("Enable")} IPv4
+                                                </FormLabel>
+                                            </div>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -386,17 +385,17 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
                                     name="enable_ipv6"
                                     render={({ field }) => (
                                         <FormItem className="flex items-center space-x-2">
-                                            <FormControl>
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <FormControl>
                                                     <Checkbox
                                                         checked={field.value === true}
                                                         onCheckedChange={field.onChange}
                                                     />
-                                                    <Label className="text-sm">
-                                                        {t("Enable")} IPv6
-                                                    </Label>
-                                                </div>
-                                            </FormControl>
+                                                </FormControl>
+                                                <FormLabel className="text-sm cursor-pointer">
+                                                    {t("Enable")} IPv6
+                                                </FormLabel>
+                                            </div>
                                             <FormMessage />
                                         </FormItem>
                                     )}
