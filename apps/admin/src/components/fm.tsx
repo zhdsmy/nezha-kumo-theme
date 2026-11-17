@@ -78,6 +78,7 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
 
     const [dOpen, setdOpen] = useState(false)
     const [uOpen, setuOpen] = useState(false)
+    const [connected, setConnected] = useState(false)
 
     const columns: ColumnDef<typeof virtualizedTableFeatures, FMEntry>[] = [
         {
@@ -106,6 +107,7 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
                     <IconButton
                         variant="ghost"
                         icon="download"
+                        disabled={!connected}
                         onClick={() => {
                             if (!dOpen) setdOpen(true)
                             downloadFile(row.original.name)
@@ -152,17 +154,32 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
     const handleReady = useRef(false)
     const currentBasename = useRef("temp")
 
-    const waitForHandleReady = async () => {
-        while (!handleReady.current) {
+    const disconnect = useCallback((description: string) => {
+        const ws = wsRef.current
+        if (!ws) return
+        wsRef.current = null
+        firstChunk.current = true
+        handleReady.current = false
+        setConnected(false)
+        setdOpen(false)
+        setuOpen(false)
+        ws.close()
+        toast.error(tRef.current("FileManagerError"), { description })
+    }, [])
+
+    const waitForHandleReady = async (ws: WebSocket) => {
+        while (!handleReady.current && wsRef.current === ws && !firstChunk.current) {
             await new Promise((resolve) => setTimeout(resolve, 10))
         }
+        return handleReady.current && wsRef.current === ws
     }
 
     useEffect(() => {
         worker.onmessage = async (event: MessageEvent<FMWorkerData>) => {
+            if (!wsRef.current) return
             switch (event.data.type) {
                 case FMWorkerOpcode.Error: {
-                    console.error("Error from worker", event.data.error)
+                    disconnect(event.data.error)
                     break
                 }
                 case FMWorkerOpcode.Progress: {
@@ -182,7 +199,7 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
                     }
 
                     firstChunk.current = true
-                    if (dOpen) setdOpen(false)
+                    setdOpen(false)
                     break
                 }
             }
@@ -197,14 +214,16 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
         window.addEventListener("beforeunload", handleBeforeUnload)
         return () => {
             window.removeEventListener("beforeunload", handleBeforeUnload)
+            worker.onmessage = null
         }
-    }, [dOpen])
+    }, [disconnect])
 
     const [currentPath, setPath] = useState("")
     const currentPathRef = useRef(currentPath)
     currentPathRef.current = currentPath
 
     const listFile = useCallback(() => {
+        if (wsRef.current?.readyState !== WebSocket.OPEN) return
         const prefix = new Int8Array([FMOpcode.List])
         const pathMsg = new TextEncoder().encode(currentPathRef.current)
 
@@ -224,18 +243,14 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
         wsRef.current = ws
         ws.binaryType = "arraybuffer"
         ws.onopen = () => {
+            setConnected(true)
             listFile()
         }
-        ws.onclose = (e) => {
-            console.log("WebSocket connection closed:", e)
-        }
-        ws.onerror = (e) => {
-            console.error(e)
-            toast.error(tRef.current("WebsocketError"), {
-                description: tRef.current("Results.UnExpectedError"),
-            })
+        ws.onclose = ws.onerror = () => {
+            if (wsRef.current === ws) disconnect(tRef.current("WebsocketError"))
         }
         ws.onmessage = async (e: MessageEvent<ArrayBufferLike>) => {
+            if (wsRef.current !== ws) return
             try {
                 const identifier = new Uint8Array(e.data, 0, 4)
                 if (arraysEqual(identifier, FMIdentifier.error)) {
@@ -263,7 +278,7 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
                         throw new Error(tRef.current("Results.UnknownIdentifier"))
                     }
                 } else {
-                    await waitForHandleReady()
+                    if (!(await waitForHandleReady(ws))) return
                     worker.postMessage({
                         operation: 2,
                         arrayBuffer: e.data,
@@ -272,21 +287,20 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
                 }
             } catch (error) {
                 console.error("Error processing received data:", error)
-                toast.error(tRef.current("FileManagerError"), {
-                    description: errorMessage(error, tRef.current("Results.UnExpectedError")),
-                })
-                setdOpen(false)
-                setuOpen(false)
+                disconnect(errorMessage(error, tRef.current("Results.UnExpectedError")))
             }
         }
 
         return () => {
-            ws.close()
             if (wsRef.current === ws) {
                 wsRef.current = null
             }
+            ws.onopen = ws.onclose = ws.onerror = ws.onmessage = null
+            ws.close()
+            firstChunk.current = true
+            handleReady.current = false
         }
-    }, [listFile, wsUrl])
+    }, [listFile, wsUrl, disconnect])
 
     useEffect(() => {
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -295,6 +309,7 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
     }, [currentPath, listFile])
 
     const downloadFile = (basename: string) => {
+        if (wsRef.current?.readyState !== WebSocket.OPEN) return
         currentBasename.current = basename
         const prefix = new Int8Array([FMOpcode.Download])
         const filePathMessage = new TextEncoder().encode(`${currentPath}/${basename}`)
@@ -307,18 +322,21 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
     }
 
     const uploadFile = async (file: File) => {
+        const ws = wsRef.current
+        if (ws?.readyState !== WebSocket.OPEN) return
         const chunkSize = 1048576 // 1MB chunk
         let offset = 0
 
         // Send header
         const header = fm.buildUploadHeader({ path: currentPath, file: file })
-        wsRef.current?.send(header)
+        ws.send(header)
 
         // Send data chunks
         while (offset < file.size) {
             const chunk = file.slice(offset, offset + chunkSize)
             const arrayBuffer = await fm.readFileAsArrayBuffer(chunk)
-            if (arrayBuffer) wsRef.current?.send(arrayBuffer)
+            if (wsRef.current !== ws || ws.readyState !== WebSocket.OPEN) return
+            if (arrayBuffer) ws.send(arrayBuffer)
             offset += chunkSize
         }
     }
@@ -335,7 +353,9 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
                             <IconButton variant="ghost" icon="menu" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                            <DropdownMenuItem onClick={listFile}>{t("Refresh")}</DropdownMenuItem>
+                            <DropdownMenuItem disabled={!connected} onClick={listFile}>
+                                {t("Refresh")}
+                            </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={async () => {
                                     try {
@@ -395,12 +415,24 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
                             const files = e.target.files
                             if (files && files.length > 0) {
                                 if (!uOpen) setuOpen(true)
-                                await uploadFile(files[0])
+                                try {
+                                    await uploadFile(files[0])
+                                } catch (error) {
+                                    disconnect(
+                                        errorMessage(
+                                            error,
+                                            tRef.current("Results.UnExpectedError"),
+                                        ),
+                                    )
+                                } finally {
+                                    if (fileInputRef.current) fileInputRef.current.value = ""
+                                }
                             }
                         }}
                     />
                     <IconButton
                         icon="upload"
+                        disabled={!connected}
                         variant="ghost"
                         onClick={() => {
                             if (fileInputRef.current) fileInputRef.current.click()
