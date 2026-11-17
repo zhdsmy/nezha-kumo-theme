@@ -218,28 +218,18 @@
         "Bandwidth": "Bandwidth",
         "TrafficVolume": "Traffic Volume",
         "TrafficType": "Traffic billing",
-        "IPv4": "IPv4",
-        "IPv6": "IPv6",
         "NetworkRoute": "Network Route",
         "Extra": "Extra",
-        "Enabled": "Enabled",
-        "Disabled": "Disabled",
-        "Inbound": "Inbound",
-        "Both": "Both",
         "Day": "Day",
         "Week": "Week",
         "Month": "Month",
         "Year": "Year",
         "NoExpiry": "No Expiry",
-        "SetNoExpiry": "Set No Expiry",
-        "CancelNoExpiry": "Cancel No Expiry",
         "Free": "Free",
         "PayAsYouGo": "Pay as you go",
-        "CommaSeparated": "Separate multiple items with commas",
         "Has": "Has",
         "None": "None",
         "CustomFields": "Custom Fields",
-        "ClearDate": "Clear Date",
         "Clear": "Clear",
         "RawText": "Raw Text",
         "Unrecognized": "Unrecognized value. The frontend may not read it; choose a new value.",
@@ -276,13 +266,8 @@
         "InvalidJSONHint": "This note is not valid JSON. Edit the original text to keep its content."
     },
     "Validation": {
-        "InvalidDate": "Invalid date",
-        "MustBe0Or1": "Must be 0 or 1",
-        "MustBeDayWeekMonthYear": "Must be Day/Week/Month/Year",
-        "MustBe1Or2": "Must be 1 or 2",
         "InvalidForm": "Invalid form",
-        "InvalidJSON": "Invalid JSON",
-        "InvalidPublicNoteJSON": "Invalid public note JSON"
+        "InvalidJSON": "Invalid JSON"
     },
     "AlertRules": {
         "CoverAllServers": "Monitor all servers",
@@ -501,9 +486,7 @@
         "GroupName": "Group Name",
         "NotifierName": "My Notifier",
         "ServiceName": "My Service Monitor",
-        "SelectCycle": "Select cycle",
-        "SelectType": "Select type",
-        "TrafficVolume": "1TB/Month"
+        "SelectType": "Select type"
     },
     "TerminalKeys": {
         "Escape": "Escape",

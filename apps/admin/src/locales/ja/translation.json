@@ -218,28 +218,18 @@
         "Bandwidth": "帯域幅",
         "TrafficVolume": "通信量",
         "TrafficType": "転送量の課金方式",
-        "IPv4": "IPv4",
-        "IPv6": "IPv6",
         "NetworkRoute": "ネットワーク経路",
         "Extra": "補足情報",
-        "Enabled": "有効",
-        "Disabled": "無効",
-        "Inbound": "受信のみ",
-        "Both": "双方向",
         "Day": "日",
         "Week": "週",
         "Month": "月",
         "Year": "年",
         "NoExpiry": "無期限",
-        "SetNoExpiry": "無期限に設定",
-        "CancelNoExpiry": "無期限を解除",
         "Free": "無料",
         "PayAsYouGo": "従量課金",
-        "CommaSeparated": "複数項目はカンマで区切ってください",
         "Has": "あり",
         "None": "なし",
         "CustomFields": "カスタムフィールド",
-        "ClearDate": "日付をクリア",
         "Clear": "クリア",
         "RawText": "テキスト表示",
         "Unrecognized": "認識できません。フロント画面で読めない場合があります。選び直してください。",
@@ -276,13 +266,8 @@
         "InvalidJSONHint": "この備考は JSON として解析できません。内容を保つには元のテキストを編集してください。"
     },
     "Validation": {
-        "InvalidDate": "無効な日付です",
-        "MustBe0Or1": "0 または 1 を指定してください",
-        "MustBeDayWeekMonthYear": "Day/Week/Month/Year のいずれかを指定してください",
-        "MustBe1Or2": "1 または 2 を指定してください",
         "InvalidForm": "入力内容に誤りがあります",
-        "InvalidJSON": "無効な JSON です",
-        "InvalidPublicNoteJSON": "公開メモの JSON が無効です"
+        "InvalidJSON": "無効な JSON です"
     },
     "AlertRules": {
         "CoverAllServers": "すべてのサーバーを監視",
@@ -501,9 +486,7 @@
         "GroupName": "グループ名",
         "NotifierName": "マイ通知先",
         "ServiceName": "マイサービス監視",
-        "SelectCycle": "サイクルを選択",
-        "SelectType": "種類を選択",
-        "TrafficVolume": "1TB/月"
+        "SelectType": "種類を選択"
     },
     "TerminalKeys": {
         "Escape": "エスケープ",

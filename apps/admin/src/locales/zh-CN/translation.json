@@ -218,28 +218,18 @@
         "Bandwidth": "带宽",
         "TrafficVolume": "流量配额",
         "TrafficType": "流量计费方式",
-        "IPv4": "IPv4",
-        "IPv6": "IPv6",
         "NetworkRoute": "网络路由",
         "Extra": "额外备注",
-        "Enabled": "启用",
-        "Disabled": "禁用",
-        "Inbound": "入站",
-        "Both": "双向",
         "Day": "天",
         "Week": "周",
         "Month": "月",
         "Year": "年",
         "NoExpiry": "不过期",
-        "SetNoExpiry": "设置为不过期",
-        "CancelNoExpiry": "取消不过期",
         "Free": "免费",
         "PayAsYouGo": "按量付费",
-        "CommaSeparated": "以英文逗号分隔多个",
         "Has": "有",
         "None": "无",
         "CustomFields": "自定义字段",
-        "ClearDate": "清除日期",
         "Clear": "清除",
         "RawText": "原始文本",
         "Unrecognized": "无法识别，前台可能读不出，建议重选",
@@ -276,13 +266,8 @@
         "InvalidJSONHint": "此备注无法解析为 JSON。请编辑原始文本以保留内容。"
     },
     "Validation": {
-        "InvalidDate": "无效的日期格式",
-        "MustBe0Or1": "只能为 0 或 1",
-        "MustBeDayWeekMonthYear": "必须为 Day/Week/Month/Year",
-        "MustBe1Or2": "只能为 1 或 2",
         "InvalidForm": "表单校验失败",
-        "InvalidJSON": "无效的 JSON",
-        "InvalidPublicNoteJSON": "无效的公开备注 JSON"
+        "InvalidJSON": "无效的 JSON"
     },
     "AlertRules": {
         "CoverAllServers": "监控所有服务器",
@@ -501,9 +486,7 @@
         "GroupName": "分组名称",
         "NotifierName": "我的通知方式",
         "ServiceName": "我的服务监控",
-        "SelectCycle": "选择周期",
-        "SelectType": "选择类型",
-        "TrafficVolume": "1TB/月"
+        "SelectType": "选择类型"
     },
     "TerminalKeys": {
         "Escape": "Esc 键",
