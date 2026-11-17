@@ -10,6 +10,7 @@ import { resolveLocale, setLocale, uiLabels } from "@/i18n"
 import { HomePage } from "@/pages/HomePage"
 import { Banner, SkeletonLine, Tabs } from "@cloudflare/kumo"
 import { useSidebar } from "@cloudflare/kumo/components/sidebar"
+import { KumoLocaleProvider } from "@cloudflare/kumo/utils"
 import { AppShell, Page, type ShellLinkProps } from "@nezha-kumo/ui"
 import { FolderSimpleIcon, GaugeIcon, GlobeIcon, HardDrivesIcon } from "@phosphor-icons/react"
 import { Component, type ReactNode, Suspense, lazy, useEffect, useMemo, useState } from "react"
@@ -270,8 +271,21 @@ export function App() {
         const timer = setTimeout(() => setDisconnected(true), 5_000)
         return () => clearTimeout(timer)
     }, [phase, isConnected])
+    const kumoTranslations = useMemo(
+        () => ({
+            label: {
+                optional: t("ui.optional"),
+                tooltip: t("ui.moreInfo"),
+            },
+            layerDialog: {
+                close: t("auth.close"),
+                cancel: t("ui.cancel"),
+            },
+        }),
+        [t],
+    )
     return (
-        <>
+        <KumoLocaleProvider translations={kumoTranslations}>
             <style>{responsive}</style>
             <AppShell
                 brand={<BrandLink title={siteTitle} />}
@@ -516,6 +530,6 @@ export function App() {
                     )}
                 </ErrorBoundary>
             </AppShell>
-        </>
+        </KumoLocaleProvider>
     )
 }

@@ -73,7 +73,7 @@ function ServerFacts({ node, snap, showBilling }: RowProps) {
                 <span>↓ {formatBytes(snap?.totalDown ?? 0)}</span>
             </>,
         ],
-        [t("metric.uptime"), on ? `${days.days}d ${days.hours}h ${days.minutes}m` : "—"],
+        [t("metric.uptime"), on ? t("unit.uptime", { ...days }) : "—"],
         [
             t("metric.load"),
             on

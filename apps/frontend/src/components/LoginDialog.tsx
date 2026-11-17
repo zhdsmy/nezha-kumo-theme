@@ -1,5 +1,5 @@
 import { adapter, refresh, useStore } from "@/app/store"
-import { Banner, Button, Dialog, Input } from "@cloudflare/kumo"
+import { Banner, Button, Dialog, Input, Loader } from "@cloudflare/kumo"
 import { XIcon } from "@phosphor-icons/react"
 import { type FormEvent, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -69,7 +69,8 @@ function LoginForm({ close }: { close: () => void }) {
                 <Button
                     variant="primary"
                     type="submit"
-                    loading={busy}
+                    disabled={busy}
+                    icon={busy ? <Loader size={14} aria-label={t("auth.submitting")} /> : undefined}
                     aria-label={busy ? t("auth.submitting") : undefined}
                 >
                     {t("auth.submit")}

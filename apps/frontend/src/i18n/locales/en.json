@@ -91,7 +91,8 @@
         "perMonth": "/mo",
         "perYear": "/yr",
         "perDays": "/{{count}}d",
-        "oneTime": "one-time"
+        "oneTime": "one-time",
+        "uptime": "{{days}}d {{hours}}h {{minutes}}m"
     },
     "expiry": {
         "inDays_one": "in {{count}} day",
@@ -180,7 +181,11 @@
         "quotaUsed": "Quota used",
         "historyHint": "Cells show whether a report was recorded in each hour. Unobserved and future hours stay empty.",
         "notFound": "Page not found",
-        "dailyIncluded": "Since midnight · {{count}}/{{total}} nodes"
+        "dailyIncluded": "Since midnight · {{count}}/{{total}} nodes",
+        "footerNote": "Nezha · Kumo theme",
+        "moreInfo": "More information",
+        "optional": "(optional)",
+        "cancel": "Cancel"
     },
     "shell": {
         "skipToContent": "Skip to content",

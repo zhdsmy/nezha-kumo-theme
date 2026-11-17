@@ -87,7 +87,8 @@
         "perMonth": "/月",
         "perYear": "/年",
         "perDays": "/{{count}}日",
-        "oneTime": "買い切り"
+        "oneTime": "買い切り",
+        "uptime": "{{days}}日 {{hours}}時間 {{minutes}}分"
     },
     "expiry": {
         "inDays_other": "{{count}} 日後",
@@ -175,7 +176,11 @@
         "quotaUsed": "使用済み転送枠",
         "historyHint": "各セルは1時間ごとのレポートの有無です。未観測と未来の時間は空欄です。",
         "notFound": "ページが見つかりません",
-        "dailyIncluded": "本日0時から · {{count}}/{{total}} ノード"
+        "dailyIncluded": "本日0時から · {{count}}/{{total}} ノード",
+        "footerNote": "Nezha · Kumo テーマ",
+        "moreInfo": "詳細情報",
+        "optional": "（任意）",
+        "cancel": "キャンセル"
     },
     "shell": {
         "skipToContent": "本文へスキップ",

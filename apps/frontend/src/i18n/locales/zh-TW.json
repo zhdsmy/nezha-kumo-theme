@@ -87,7 +87,8 @@
         "perMonth": "/月",
         "perYear": "/年",
         "perDays": "/{{count}}天",
-        "oneTime": "一次性"
+        "oneTime": "一次性",
+        "uptime": "{{days}}天 {{hours}}小時 {{minutes}}分"
     },
     "expiry": {
         "inDays_other": "{{count}} 天後",
@@ -175,7 +176,11 @@
         "quotaUsed": "配額已用",
         "historyHint": "每格表示該小時是否有回報。未觀察和未來時段留空。",
         "notFound": "頁面不存在",
-        "dailyIncluded": "自今日零時 · 含 {{count}}/{{total}} 個節點"
+        "dailyIncluded": "自今日零時 · 含 {{count}}/{{total}} 個節點",
+        "footerNote": "Nezha · Kumo 主題",
+        "moreInfo": "更多資訊",
+        "optional": "（選填）",
+        "cancel": "取消"
     },
     "shell": {
         "skipToContent": "跳至內文",
