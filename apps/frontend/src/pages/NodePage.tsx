@@ -317,17 +317,26 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                     value: k,
                                     label: t(`node.${k}`),
                                     className: "flex-1 justify-center",
+                                    render: (
+                                        <button
+                                            id={`node-subtab-${k}`}
+                                            aria-controls={`node-panel-${k}`}
+                                            type="button"
+                                        />
+                                    ),
                                 }))}
                             />
                         </div>
                         <div className="node-info-grid" data-has-billing={showBilling || undefined}>
                             <div
+                                id="node-panel-system"
                                 className="node-info-panel"
                                 data-panel="system"
                                 data-active={activeSub === "system" || undefined}
                             >
                                 <Info
                                     title={t("node.system")}
+                                    labelId="node-subtab-system"
                                     rows={[
                                         [t("node.os"), node.os],
                                         [t("node.arch"), node.arch],
@@ -363,12 +372,14 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                 />
                             </div>
                             <div
+                                id="node-panel-network"
                                 className="node-info-panel"
                                 data-panel="network"
                                 data-active={activeSub === "network" || undefined}
                             >
                                 <Info
                                     title={t("node.network")}
+                                    labelId="node-subtab-network"
                                     rows={[
                                         [t("node.bandwidth"), node.bandwidth],
                                         [
@@ -431,12 +442,14 @@ export default function NodePage({ id, section }: { id: string; section: Section
                             </div>
                             {showBilling && (
                                 <div
+                                    id="node-panel-billing"
                                     className="node-info-panel"
                                     data-panel="billing"
                                     data-active={activeSub === "billing" || undefined}
                                 >
                                     <Info
                                         title={t("node.billing")}
+                                        labelId="node-subtab-billing"
                                         rows={[
                                             [t("metric.price"), billing.price(node) || "—"],
                                             [t("metric.actualCost"), billing.actualPrice(node)],

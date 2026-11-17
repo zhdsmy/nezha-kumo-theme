@@ -54,6 +54,9 @@ ${FT} td,${FT} th { vertical-align:middle; overflow-wrap:anywhere; }
   .node-info-grid[data-has-billing]>.node-info-panel[data-panel="network"] { grid-column:2; grid-row:1; }
   .node-info-grid[data-has-billing]>.node-info-panel[data-panel="billing"] { grid-column:2; grid-row:2; }
   .node-info-panel { display:block; }
+  .node-info-panel .info-section>h2 { display:block; }
+  .node-info-panel .info-heading-skeleton { display:flex; }
+  .node-info-panel .info-section dl>div:first-child { padding-top:10px; }
  }
 }
 @media (min-width:${BREAKPOINTS.sidebar}px) { .topbar-title { display:none; } }

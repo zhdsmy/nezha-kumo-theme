@@ -716,8 +716,17 @@
 .info-section {
     min-width: 0;
 }
-.info-section h2 {
+.info-section h2,
+.info-heading-skeleton {
     margin-bottom: 8px;
+}
+.info-heading-skeleton {
+    height: 24px;
+    align-items: center;
+}
+.node-info-panel .info-section > h2,
+.node-info-panel .info-heading-skeleton {
+    display: none;
 }
 .info-section dl > div {
     display: grid;
@@ -727,6 +736,9 @@
     padding: 10px 0;
     border-bottom: 1px solid var(--color-kumo-line);
     font-size: 14px;
+}
+.node-info-panel .info-section dl > div:first-child {
+    padding-top: 0;
 }
 .info-section dl > div:last-child {
     padding-bottom: 0;
