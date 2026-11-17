@@ -212,6 +212,7 @@ export default function OnlineUserPage() {
                     page={page}
                     pageSize={pageSize}
                     total={data.pagination.total}
+                    disabled={isLoading}
                     onPageChange={(newPage) =>
                         setSearchParams({ page: newPage.toString(), pageSize: pageSize.toString() })
                     }

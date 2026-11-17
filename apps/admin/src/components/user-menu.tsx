@@ -5,7 +5,7 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
+import { UserAvatar } from "./ui/avatar"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -32,18 +32,11 @@ export default function UserMenu() {
                         title={profile.username}
                         className="shrink-0 rounded-lg focus-visible:outline-2 focus-visible:outline-ring"
                     >
-                        <Avatar className="size-8 border">
-                            <AvatarImage
-                                src={
-                                    "https://api.dicebear.com/7.x/notionists/svg?seed=" +
-                                    encodeURIComponent(profile.username)
-                                }
-                                alt=""
-                            />
-                            <AvatarFallback className="text-xs">
-                                {Array.from(profile.username).slice(0, 2).join("").toUpperCase()}
-                            </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar
+                            username={profile.username}
+                            className="size-8 border"
+                            fallbackClassName="text-xs"
+                        />
                     </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">

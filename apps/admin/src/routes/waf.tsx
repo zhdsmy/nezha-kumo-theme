@@ -233,6 +233,7 @@ export default function WAFPage() {
                     page={page}
                     pageSize={pageSize}
                     total={data.pagination.total}
+                    disabled={isLoading}
                     onPageChange={(newPage) =>
                         setSearchParams({ page: newPage.toString(), pageSize: pageSize.toString() })
                     }

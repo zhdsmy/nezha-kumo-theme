@@ -405,5 +405,7 @@
     "GroupIconLoadError": "Failed to load icon image",
     "GroupIconInvalid": "Enter one emoji or character, or a valid https:// URL",
     "SelectAll": "Select all",
-    "SelectedCount": "{{count}} selected"
+    "SelectedCount": "{{count}} selected",
+    "ShowPassword": "Show password",
+    "HidePassword": "Hide password"
 }

@@ -381,5 +381,7 @@
     "GroupIconLoadError": "圖示圖片載入失敗",
     "GroupIconInvalid": "請輸入一個 Emoji 或單一字元，或有效的 https:// 圖片網址",
     "SelectAll": "全選",
-    "SelectedCount": "已選 {{count}} 項"
+    "SelectedCount": "已選 {{count}} 項",
+    "ShowPassword": "顯示密碼",
+    "HidePassword": "隱藏密碼"
 }

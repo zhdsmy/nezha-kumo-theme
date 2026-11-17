@@ -405,5 +405,7 @@
     "GroupIconLoadError": "图标图片加载失败",
     "GroupIconInvalid": "请输入一个 Emoji 或单个字符，或有效的 https:// 图片地址",
     "SelectAll": "全选",
-    "SelectedCount": "已选 {{count}} 项"
+    "SelectedCount": "已选 {{count}} 项",
+    "ShowPassword": "显示密码",
+    "HidePassword": "隐藏密码"
 }

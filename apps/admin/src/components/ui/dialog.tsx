@@ -29,33 +29,38 @@ const DialogOverlay = forwardRef<
 ))
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
-const DialogContent = forwardRef<
-    ComponentRef<typeof DialogPrimitive.Content>,
-    ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => {
-    const sheet = !useMediaQuery(`(min-width: ${BREAKPOINTS.gutter}px)`)
-    const { t } = useTranslation()
-    return (
-        <DialogPortal>
-            <DialogOverlay />
-            <DialogPrimitive.Content
-                ref={ref}
-                data-layout={sheet ? "sheet" : "dialog"}
-                className={cn(
-                    "nkt-dialog max-w-lg fixed z-50 flex flex-col gap-4 border bg-card p-6 shadow-lg duration-150 motion-reduce:animate-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-                    className,
-                )}
-                {...props}
-            >
-                {children}
-                <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">{t("Close")}</span>
-                </DialogPrimitive.Close>
-            </DialogPrimitive.Content>
-        </DialogPortal>
-    )
-})
+type DialogContentProps = ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+    hideCloseButton?: boolean
+}
+
+const DialogContent = forwardRef<ComponentRef<typeof DialogPrimitive.Content>, DialogContentProps>(
+    ({ className, children, hideCloseButton = false, ...props }, ref) => {
+        const sheet = !useMediaQuery(`(min-width: ${BREAKPOINTS.gutter}px)`)
+        const { t } = useTranslation()
+        return (
+            <DialogPortal>
+                <DialogOverlay />
+                <DialogPrimitive.Content
+                    ref={ref}
+                    data-layout={sheet ? "sheet" : "dialog"}
+                    className={cn(
+                        "nkt-dialog max-w-lg fixed z-50 flex flex-col gap-4 border bg-card p-6 shadow-lg duration-150 motion-reduce:animate-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+                        className,
+                    )}
+                    {...props}
+                >
+                    {children}
+                    {!hideCloseButton && (
+                        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+                            <X className="h-4 w-4" />
+                            <span className="sr-only">{t("Close")}</span>
+                        </DialogPrimitive.Close>
+                    )}
+                </DialogPrimitive.Content>
+            </DialogPortal>
+        )
+    },
+)
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
 const DialogHeader = ({ className, ...props }: HTMLAttributes<HTMLDivElement>) => (

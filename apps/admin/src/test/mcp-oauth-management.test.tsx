@@ -21,7 +21,12 @@ vi.mock("@/api/mcp-oauth", () => ({
 vi.mock("@/hooks/useAuth", () => ({
     useAuth: () => ({ profile: mocks.profile, loading: mocks.loading }),
 }))
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
+vi.mock("react-i18next", () => ({
+    useTranslation: () => ({
+        t: (key: string, opts?: Record<string, unknown>) =>
+            opts?.name ? `${key}:${String(opts.name)}` : key,
+    }),
+}))
 vi.mock("@/lib/i18n", () => ({ default: { t: (key: string) => key } }))
 
 const grant = {
@@ -53,7 +58,6 @@ beforeEach(() => {
     mocks.clients.mockResolvedValue({ items: [client], total: 1 })
     mocks.revoke.mockResolvedValue(undefined)
     mocks.disable.mockResolvedValue(undefined)
-    vi.spyOn(window, "confirm").mockReturnValue(true)
 })
 afterEach(() => {
     cleanup()
@@ -97,11 +101,15 @@ test("members see only their authorizations and confirm revocation", async () =>
     expect(mocks.clients).not.toHaveBeenCalled()
     expect(screen.getByText("nezha:server:read")).toBeTruthy()
     expect(screen.getByText("7")).toBeTruthy()
-    vi.mocked(window.confirm).mockReturnValueOnce(false)
+
     fireEvent.click(screen.getByRole("button", { name: "Revoke" }))
+    expect(await screen.findByText("MCPOAuthManager.ConfirmRevoke:ChatGPT")).toBeTruthy()
+    fireEvent.click(screen.getByRole("button", { name: "Close" }))
     expect(mocks.revoke).not.toHaveBeenCalled()
+
     mocks.grants.mockResolvedValue({ items: [], total: 0 })
     fireEvent.click(screen.getByRole("button", { name: "Revoke" }))
+    fireEvent.click(await screen.findByRole("button", { name: "Confirm" }))
     await screen.findByText("NoResults")
     expect(mocks.revoke).toHaveBeenCalledExactlyOnceWith("alice-grant")
     expect(screen.queryByText("ChatGPT")).toBeNull()
@@ -117,23 +125,28 @@ test("administrators inspect all-user authorizations and disable and enable clie
     selectTab("MCPOAuthManager.Clients")
     await screen.findByText("https://chatgpt.com/callback")
     expect(mocks.clients).toHaveBeenCalledWith(1)
-    vi.mocked(window.confirm).mockReturnValueOnce(false)
+
     fireEvent.click(screen.getByRole("button", { name: "MCPOAuthManager.Disable" }))
+    expect(await screen.findByText("MCPOAuthManager.ConfirmDisable:ChatGPT")).toBeTruthy()
+    fireEvent.click(screen.getByRole("button", { name: "Close" }))
     expect(mocks.disable).not.toHaveBeenCalled()
+
     mocks.clients.mockResolvedValue({
         items: [{ ...client, disabled: true, grant_count: 0 }],
         total: 1,
     })
     fireEvent.click(screen.getByRole("button", { name: "MCPOAuthManager.Disable" }))
+    fireEvent.click(await screen.findByRole("button", { name: "Confirm" }))
     const enable = await screen.findByRole("button", { name: "MCPOAuthManager.Enable" })
     await waitFor(() => expect((enable as HTMLButtonElement).disabled).toBe(false))
     expect(mocks.disable).toHaveBeenNthCalledWith(1, "chatgpt-client", true)
-    expect(window.confirm).toHaveBeenCalledWith("MCPOAuthManager.ConfirmDisable")
+
     mocks.clients.mockResolvedValue({ items: [client], total: 1 })
     fireEvent.click(enable)
+    expect(await screen.findByText("MCPOAuthManager.ConfirmEnable:ChatGPT")).toBeTruthy()
+    fireEvent.click(screen.getByRole("button", { name: "Confirm" }))
     await screen.findByRole("button", { name: "MCPOAuthManager.Disable" })
     expect(mocks.disable).toHaveBeenNthCalledWith(2, "chatgpt-client", false)
-    expect(window.confirm).toHaveBeenCalledWith("MCPOAuthManager.ConfirmEnable")
 })
 
 test("failed revocation remains visible with an error and is not reported as removed", async () => {
@@ -141,6 +154,7 @@ test("failed revocation remains visible with an error and is not reported as rem
     openManagement()
     await screen.findByText("ChatGPT")
     fireEvent.click(screen.getByRole("button", { name: "Revoke" }))
+    fireEvent.click(await screen.findByRole("button", { name: "Confirm" }))
     expect((await screen.findByRole("alert")).textContent).toBe("Permission denied")
     expect(screen.getByText("ChatGPT")).toBeTruthy()
     expect((screen.getByRole("button", { name: "Revoke" }) as HTMLButtonElement).disabled).toBe(
@@ -154,6 +168,7 @@ test("failed client update leaves its previous state visible", async () => {
     openManagement()
     selectTab("MCPOAuthManager.Clients")
     fireEvent.click(await screen.findByRole("button", { name: "MCPOAuthManager.Disable" }))
+    fireEvent.click(await screen.findByRole("button", { name: "Confirm" }))
     expect((await screen.findByRole("alert")).textContent).toBe("Update rejected")
     expect(screen.getByText("MCPOAuthManager.Enabled")).toBeTruthy()
     expect(screen.queryByRole("button", { name: "MCPOAuthManager.Enable" })).toBeNull()

@@ -160,13 +160,18 @@ export function joinIP(p?: ModelIP) {
 }
 
 export async function copyToClipboard(text: string) {
-    try {
-        return await navigator.clipboard.writeText(text)
-    } catch (error) {
-        console.error("navigator", error)
+    if (navigator.clipboard?.writeText) {
+        try {
+            await navigator.clipboard.writeText(text)
+            return
+        } catch (error) {
+            console.error("navigator", error)
+        }
     }
     try {
-        return copy(text)
+        if (await copy(text)) {
+            return
+        }
     } catch (error) {
         console.error("copy", error)
     }

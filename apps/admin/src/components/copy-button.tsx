@@ -1,7 +1,6 @@
 import { ButtonProps } from "@/components/ui/button"
 import { copyToClipboard } from "@/lib/utils"
-import { forwardRef } from "react"
-import { useState } from "react"
+import { forwardRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 
@@ -13,7 +12,7 @@ interface CopyButtonProps extends ButtonProps {
 
 export const CopyButton = forwardRef<HTMLButtonElement, CopyButtonProps>((props, ref) => {
     const { t } = useTranslation()
-    const [copy, setCopy] = useState(false)
+    const [copied, setCopied] = useState(false)
 
     const switchState = async (text?: string) => {
         if (!text) {
@@ -23,12 +22,18 @@ export const CopyButton = forwardRef<HTMLButtonElement, CopyButtonProps>((props,
             return
         }
 
-        if (!copy) {
-            setCopy(true)
-            await copyToClipboard(text)
-            setTimeout(() => {
-                setCopy(false)
-            }, 2 * 1000)
+        if (!copied) {
+            try {
+                await copyToClipboard(text)
+                setCopied(true)
+                setTimeout(() => {
+                    setCopied(false)
+                }, 2 * 1000)
+            } catch {
+                toast(t("Error"), {
+                    description: t("ClipboardWriteFailed"),
+                })
+            }
         }
     }
 
@@ -36,10 +41,12 @@ export const CopyButton = forwardRef<HTMLButtonElement, CopyButtonProps>((props,
         <IconButton
             {...props}
             ref={ref}
+            aria-label={props["aria-label"] ?? (copied ? t("Copied") : t("Copy"))}
             variant="outline"
             size="icon"
-            icon={copy ? "check" : "clipboard"}
+            icon={copied ? "check" : "clipboard"}
             onClick={() => switchState(props.text)}
         />
     )
 })
+CopyButton.displayName = "CopyButton"

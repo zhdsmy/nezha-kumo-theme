@@ -19,6 +19,7 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import {
     Select,
     SelectContent,
@@ -98,7 +99,7 @@ export const UserCard: React.FC<UserCardProps> = ({ mutate }) => {
                                         <FormItem>
                                             <FormLabel>{t("Username")}</FormLabel>
                                             <FormControl>
-                                                <Input {...field} />
+                                                <Input autoComplete="off" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -111,7 +112,10 @@ export const UserCard: React.FC<UserCardProps> = ({ mutate }) => {
                                         <FormItem>
                                             <FormLabel>{t("Password")}</FormLabel>
                                             <FormControl>
-                                                <Input {...field} />
+                                                <PasswordInput
+                                                    autoComplete="new-password"
+                                                    {...field}
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

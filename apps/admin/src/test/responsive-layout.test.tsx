@@ -310,7 +310,9 @@ test("table expands ID and whitespace-nowrap columns to fit intrinsic content wi
         </Table>,
     )
     expect(
-        document.querySelector<HTMLElement>(".nkt-table")?.style.getPropertyValue("--nkt-table-columns"),
+        document
+            .querySelector<HTMLElement>(".nkt-table")
+            ?.style.getPropertyValue("--nkt-table-columns"),
     ).toBe("108px minmax(0, 1fr) 116px")
 })
 
@@ -343,8 +345,8 @@ test.each([
         expect(next.textContent).toBe("MCPOAuthManager.Next")
 
         const renderedPages = Array.from(
-            document.querySelectorAll("nav[aria-label='pagination'] a"),
-            (a) => a.textContent,
+            document.querySelectorAll("nav[aria-label='pagination'] button"),
+            (btn) => btn.textContent,
         ).filter((txt) => txt && /^\d+$/.test(txt))
         expect(renderedPages).toEqual(pages)
 
@@ -352,4 +354,3 @@ test.each([
         expect(onPageChange).toHaveBeenCalledWith(501)
     },
 )
-

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/form"
 import { OAuthProviderIcon } from "@/components/ui/icon"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/hooks/useAuth"
 import useSetting from "@/hooks/useSetting"
@@ -97,8 +98,7 @@ function Login() {
                             <FormItem>
                                 <FormLabel>{t("Password")}</FormLabel>
                                 <FormControl>
-                                    <Input
-                                        type="password"
+                                    <PasswordInput
                                         placeholder="admin"
                                         autoComplete="current-password"
                                         {...field}

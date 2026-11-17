@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { PasswordInput } from "@/components/ui/password-input"
 import {
     Select,
     SelectContent,
@@ -222,7 +223,11 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
                                         <FormItem>
                                             <FormLabel>{t("Credential")} 2</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Token Secret" {...field} />
+                                                <PasswordInput
+                                                    autoComplete="off"
+                                                    placeholder="Token Secret"
+                                                    {...field}
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

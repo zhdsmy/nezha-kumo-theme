@@ -8,6 +8,7 @@ import {
     parseExpiresInDaysInput,
     parseServerIDsInput,
 } from "@/api/api-tokens"
+import { ConfirmActionDialog } from "@/components/action-button-group"
 import { SettingsTab } from "@/components/settings-tab"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -31,6 +32,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { useAuth } from "@/hooks/useAuth"
+import { copyToClipboard } from "@/lib/utils"
 import { Page } from "@nezha-kumo/ui"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -59,8 +61,7 @@ export default function ApiTokensPage() {
     const [createOpen, setCreateOpen] = useState(false)
     const [revealed, setRevealed] = useState<ApiTokenCreateResponse | null>(null)
 
-    const handleDelete = async (id: number, name: string) => {
-        if (!window.confirm(t("ConfirmDeleteApiToken", { name }))) return
+    const handleDelete = async (id: number) => {
         try {
             await deleteApiToken(id)
             toast(t("ApiTokenRevoked"))
@@ -142,13 +143,18 @@ export default function ApiTokensPage() {
                                         : t("ApiTokenNever")}
                                 </TableCell>
                                 <TableCell data-col="actions">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handleDelete(tok.id, tok.name)}
-                                    >
-                                        {t("Revoke")}
-                                    </Button>
+                                    <ConfirmActionDialog
+                                        trigger={
+                                            <Button variant="outline" size="sm">
+                                                {t("Revoke")}
+                                            </Button>
+                                        }
+                                        title={t("Revoke")}
+                                        description={t("ConfirmDeleteApiToken", {
+                                            name: tok.name,
+                                        })}
+                                        onConfirm={() => handleDelete(tok.id)}
+                                    />
                                 </TableCell>
                             </TableRow>
                         ))
@@ -311,7 +317,7 @@ function CreateApiTokenDialog({
     )
 }
 
-function RevealedTokenDialog({
+export function RevealedTokenDialog({
     token,
     onClose,
 }: {
@@ -320,8 +326,14 @@ function RevealedTokenDialog({
 }) {
     const { t } = useTranslation()
     return (
-        <Dialog open={!!token} onOpenChange={(v) => !v && onClose()}>
-            <DialogContent className="sm:max-w-md">
+        <Dialog open={!!token}>
+            <DialogContent
+                className="sm:max-w-md"
+                hideCloseButton
+                onEscapeKeyDown={(e) => e.preventDefault()}
+                onPointerDownOutside={(e) => e.preventDefault()}
+                onInteractOutside={(e) => e.preventDefault()}
+            >
                 <DialogHeader>
                     <DialogTitle>{t("ApiTokenCreated")}</DialogTitle>
                     <DialogDescription>{t("ApiTokenRevealOnce")}</DialogDescription>
@@ -335,11 +347,18 @@ function RevealedTokenDialog({
                             {token.token}
                         </code>
                         <Button
+                            type="button"
                             variant="secondary"
                             size="sm"
                             onClick={async () => {
-                                await navigator.clipboard.writeText(token.token)
-                                toast(t("Copied"))
+                                try {
+                                    await copyToClipboard(token.token)
+                                    toast(t("Copied"))
+                                } catch {
+                                    toast(t("Error"), {
+                                        description: t("ClipboardWriteFailed"),
+                                    })
+                                }
                             }}
                         >
                             {t("Copy")}
@@ -347,7 +366,9 @@ function RevealedTokenDialog({
                     </div>
                 )}
                 <DialogFooter>
-                    <Button onClick={onClose}>{t("Done")}</Button>
+                    <Button type="button" onClick={onClose}>
+                        {t("Done")}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
