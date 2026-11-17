@@ -209,18 +209,20 @@ export default function NodePage({ id, section }: { id: string; section: Section
             <section aria-label={t(`ui.${section}`)}>
                 {(section === "load" || section === "latency") && (
                     <div className="chart-toolbar">
-                        <div className="ranges" aria-label={t("money.period")}>
-                            {ranges.map((h) => (
-                                <Button
-                                    key={h}
-                                    size="sm"
-                                    variant={activeRange === h ? "secondary" : "ghost"}
-                                    aria-pressed={activeRange === h}
-                                    onClick={() => setRange(h)}
-                                >
-                                    {labelRange(h)}
-                                </Button>
-                            ))}
+                        <div className="min-w-0" aria-label={t("money.period")}>
+                            <Tabs
+                                variant="segmented"
+                                size="sm"
+                                activateOnFocus
+                                className="w-fit max-w-full"
+                                labels={tabLabels}
+                                value={String(activeRange)}
+                                onValueChange={(v) => setRange(Number(v))}
+                                tabs={ranges.map((h) => ({
+                                    value: String(h),
+                                    label: labelRange(h),
+                                }))}
+                            />
                         </div>
                         <Button
                             size="sm"

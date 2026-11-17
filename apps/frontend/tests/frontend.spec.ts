@@ -106,7 +106,7 @@ test("node tabs hash navigation, overview responsive panels, #billing link and l
     await expect(page.locator(".metric-tile")).toHaveCount(0)
     await expect(page.locator(".spark")).toHaveCount(0)
     await expect(page.locator(".chart svg")).toHaveCount(6)
-    await expect(page.getByRole("button", { name: "7 d", exact: true })).toHaveCount(0)
+    await expect(page.getByRole("tab", { name: "7 d", exact: true })).toHaveCount(0)
     await page
         .locator(".chart svg")
         .first()
@@ -206,17 +206,17 @@ test("login and OAuth use local mocks, authenticated history unlocks and shares 
     await dialog.getByRole("button", { name: "Sign in", exact: true }).click()
     await expect(dialog).toHaveCount(0)
     await page.goto("/server/6#load")
-    const sevenDays = page.getByRole("button", { name: "7 d", exact: true })
+    const sevenDays = page.getByRole("tab", { name: "7 d", exact: true })
     await expect(sevenDays).toBeVisible()
-    await expect(page.getByRole("button", { name: "30 d", exact: true })).toBeVisible()
+    await expect(page.getByRole("tab", { name: "30 d", exact: true })).toBeVisible()
     requested.length = 0
     await sevenDays.click()
-    await expect(sevenDays).toHaveAttribute("aria-pressed", "true")
+    await expect(sevenDays).toHaveAttribute("aria-selected", "true")
     await expect(page.locator(".chart svg")).toHaveCount(6)
     expect(requested.some((u) => u.includes("/metrics?period=7d&"))).toBe(true)
     await page.getByRole("tab", { name: "Latency", exact: true }).click()
-    await expect(page.getByRole("button", { name: "7 d", exact: true })).toHaveAttribute(
-        "aria-pressed",
+    await expect(page.getByRole("tab", { name: "7 d", exact: true })).toHaveAttribute(
+        "aria-selected",
         "true",
     )
     await expect(page.locator(".node-ping-list button")).toHaveCount(3)
@@ -693,21 +693,35 @@ test("node sidebar peer switcher: lists group peers, keeps hash & range, respect
     // 2. Switch page Tab to Latency + pick "7 d" range + scroll down, then click peer Server 13 (/server/35)
     await page.getByRole("tab", { name: "Latency", exact: true }).click()
     await expect(page).toHaveURL(/\/server\/32#latency$/)
-    const range7d = page.getByRole("button", { name: "7 d", exact: true })
+    const range7d = page.getByRole("tab", { name: "7 d", exact: true })
     await range7d.click()
-    await expect(range7d).toHaveAttribute("aria-pressed", "true")
+    await expect(range7d).toHaveAttribute("aria-selected", "true")
     await page.setViewportSize({ width: 1440, height: 420 })
-    await page.evaluate(() => window.scrollTo({ top: 120 }))
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(50)
+    await page.evaluate(() => {
+        const el = document.querySelector<HTMLElement>("#main-content")
+        if (el && el.scrollHeight > el.clientHeight) el.scrollTop = 120
+        else window.scrollTo({ top: 120 })
+    })
+    expect(
+        await page.evaluate(() => {
+            const el = document.querySelector<HTMLElement>("#main-content")
+            return el && el.scrollHeight > el.clientHeight ? el.scrollTop : window.scrollY
+        }),
+    ).toBeGreaterThan(50)
 
     await onlinePeer.click()
     await expect(page).toHaveURL(/\/server\/35#latency$/)
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Server 13")
-    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+    expect(
+        await page.evaluate(() => {
+            const el = document.querySelector<HTMLElement>("#main-content")
+            return el && el.scrollHeight > el.clientHeight ? el.scrollTop : window.scrollY
+        }),
+    ).toBe(0)
     await expect(sidebarNav.locator('a[aria-current="page"] .nk-nav-label')).toHaveText("Server 13")
     // Range state ("7 d") is preserved across peer navigation
-    await expect(page.getByRole("button", { name: "7 d", exact: true })).toHaveAttribute(
-        "aria-pressed",
+    await expect(page.getByRole("tab", { name: "7 d", exact: true })).toHaveAttribute(
+        "aria-selected",
         "true",
     )
     // Peer switch pushed history: browser Back returns to /server/32#latency

@@ -242,7 +242,7 @@ test("24h, 7d and 30d charts and downsampling do not recompute for live frames",
     await page.goto("/server/6#load")
     await expect(page.locator(".chart svg")).toHaveCount(6)
     for (const name of ["1 d", "7 d", "30 d"]) {
-        await page.getByRole("button", { name, exact: true }).click()
+        await page.getByRole("tab", { name, exact: true }).click()
         await expect(page.locator(".chart svg")).toHaveCount(6)
         await page.mouse.move(0, 0)
         await page.waitForTimeout(250)
@@ -264,7 +264,7 @@ test("24h, 7d and 30d charts and downsampling do not recompute for live frames",
     }
     await page.getByRole("tab", { name: "Latency", exact: true }).click()
     for (const name of ["1 d", "7 d", "30 d"]) {
-        await page.getByRole("button", { name, exact: true }).click()
+        await page.getByRole("tab", { name, exact: true }).click()
         await expect(page.locator(".node-ping-list button")).toHaveCount(3)
         await page.mouse.move(0, 0)
         await page.waitForTimeout(250)

@@ -39,7 +39,7 @@ test("load charts round integer series, fit y-axis labels at 375 and 1440, and f
 
     await page.setViewportSize({ width: 375, height: 812 })
     await page.goto("/server/6#load")
-    await page.getByRole("button", { name: "1 h" }).click()
+    await page.getByRole("tab", { name: "1 h" }).click()
 
     const connectionsValue = page
         .locator(".chart-card")
