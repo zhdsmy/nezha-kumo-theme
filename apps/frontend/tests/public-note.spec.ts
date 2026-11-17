@@ -51,6 +51,9 @@ for (const engine of ["chromium", "webkit"]) {
             await expect(
                 target.locator("#node-panel-network").getByText("CN2GIA", { exact: true }),
             ).toHaveCount(2)
+            await expect(
+                target.locator("#node-panel-network").getByText("CN2GIA", { exact: true }).first(),
+            ).toHaveClass(/bg-kumo-fill/)
             for (const tag of ["9929;4837[联通]"])
                 await expect(
                     target.locator("#node-panel-network").getByText(tag, { exact: true }),

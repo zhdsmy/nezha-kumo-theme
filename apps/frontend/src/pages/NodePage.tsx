@@ -35,7 +35,11 @@ function NoteTags({ value }: { value: string }) {
     return (
         <div className="flex flex-wrap gap-1">
             {splitTags(value).map((tag, index) => (
-                <Badge key={index} className="max-w-full whitespace-normal break-words">
+                <Badge
+                    variant="secondary"
+                    key={index}
+                    className="max-w-full whitespace-normal break-words"
+                >
                     {tag}
                 </Badge>
             ))}
