@@ -10,15 +10,25 @@ interface DaySummary {
     peakDownAt: number
 }
 
-/** Keep recorded history authoritative and append only newer live samples. */
+/** Merge counter observations by report time; history wins duplicate readings. */
 export function mergeHistoryTail(
     history: readonly HistoryPoint[],
     live: readonly HistoryPoint[],
     since: number,
 ) {
-    return [...history, ...live.filter((p) => p.at > (history.at(-1)?.at ?? -Infinity))].filter(
-        (p) => p.at >= since,
-    )
+    const readings = new Map<number, HistoryPoint>()
+    for (const p of [...live, ...history]) {
+        const at = p.reportedAt ?? p.at
+        if (at < since) continue
+        const previous = readings.get(at)
+        readings.set(at, {
+            ...p,
+            at,
+            totalUp: p.totalUp ?? previous?.totalUp,
+            totalDown: p.totalDown ?? previous?.totalDown,
+        })
+    }
+    return [...readings.values()].sort((a, b) => a.at - b.at)
 }
 
 /** Counter drops start a new segment; its first reading is traffic observed since reset. */
@@ -26,25 +36,23 @@ export function dailyTraffic(points: readonly HistoryPoint[], midnight: number):
     let previousUp: number | undefined, previousDown: number | undefined
     let up = 0,
         down = 0
-    return points
-        .filter((p) => p.at >= midnight)
-        .map((p) => {
-            if (p.totalUp !== undefined) {
-                if (previousUp !== undefined)
-                    up += p.totalUp >= previousUp ? p.totalUp - previousUp : p.totalUp
-                previousUp = p.totalUp
-            }
-            if (p.totalDown !== undefined) {
-                if (previousDown !== undefined)
-                    down += p.totalDown >= previousDown ? p.totalDown - previousDown : p.totalDown
-                previousDown = p.totalDown
-            }
-            return {
-                ...p,
-                totalUp: previousUp === undefined ? undefined : up,
-                totalDown: previousDown === undefined ? undefined : down,
-            }
-        })
+    return mergeHistoryTail(points, [], midnight).map((p) => {
+        if (p.totalUp !== undefined) {
+            if (previousUp !== undefined)
+                up += p.totalUp >= previousUp ? p.totalUp - previousUp : p.totalUp
+            previousUp = p.totalUp
+        }
+        if (p.totalDown !== undefined) {
+            if (previousDown !== undefined)
+                down += p.totalDown >= previousDown ? p.totalDown - previousDown : p.totalDown
+            previousDown = p.totalDown
+        }
+        return {
+            ...p,
+            totalUp: previousUp === undefined ? undefined : up,
+            totalDown: previousDown === undefined ? undefined : down,
+        }
+    })
 }
 
 /**
@@ -54,7 +62,7 @@ export function dailyTraffic(points: readonly HistoryPoint[], midnight: number):
  */
 export function summariseDay(
     points: HistoryPoint[],
-    now: { totalUp: number; totalDown: number } | undefined,
+    now: Pick<Snapshot, "at" | "totalUp" | "totalDown"> | undefined,
     midnight: number,
 ): DaySummary {
     const s: DaySummary = {
@@ -77,10 +85,11 @@ export function summariseDay(
     }
     const readings =
         now && points.length
-            ? [
-                  ...points,
-                  { ...points[points.length - 1], totalUp: now.totalUp, totalDown: now.totalDown },
-              ]
+            ? mergeHistoryTail(
+                  points,
+                  [{ ...points[points.length - 1], ...now, reportedAt: now.at }],
+                  midnight,
+              )
             : points
     const total = dailyTraffic(readings, midnight).at(-1)
     s.todayUp = total?.totalUp ?? 0
@@ -99,6 +108,12 @@ export function spikeLimit(values: number[]): number {
     return Math.max(q(0.75) + 3 * (q(0.75) - q(0.25)), q(0.5) * 1.5)
 }
 
+/** Each direction needs its own recorded baseline; a live snapshot cannot supply it. */
+export const hasDailyCounters = (points: readonly HistoryPoint[] | undefined, midnight: number) =>
+    (["totalUp", "totalDown"] as const).every((key) =>
+        points?.some((p) => (p.reportedAt ?? p.at) >= midnight && Number.isFinite(p[key])),
+    )
+
 export function summariseFleetDay(
     nodes: readonly NodeInfo[],
     snapshots: Record<string, Snapshot>,
@@ -109,13 +124,7 @@ export function summariseFleetDay(
         included = 0
     for (const n of nodes) {
         const points = counters?.[n.id]
-        if (
-            !snapshots[n.id] ||
-            !points?.some(
-                (p) => p.at >= midnight && p.totalUp !== undefined && p.totalDown !== undefined,
-            )
-        )
-            continue
+        if (!snapshots[n.id] || !points || !hasDailyCounters(points, midnight)) continue
         const day = summariseDay(points, snapshots[n.id], midnight)
         amount += day.todayUp + day.todayDown
         included++

@@ -7,6 +7,7 @@ import {
     adapter,
     backfillLive,
     getLive,
+    getTraffic,
     useSiteTitle,
     useStore,
     useVisibleNodes,
@@ -20,7 +21,7 @@ import { formatBytes, formatSpeed, formatUsage, quotaUsage, ratio } from "@/core
 import { isCanceledError, pollVisible } from "@/core/http"
 import type { HistoryPoint, PingData } from "@/core/model"
 import { regionName, stripFlag } from "@/core/region"
-import { mergeHistoryTail, summariseDay } from "@/core/summary"
+import { hasDailyCounters, mergeHistoryTail, summariseDay } from "@/core/summary"
 import { uiLabels } from "@/i18n"
 import { Banner, RefreshButton, Tabs } from "@cloudflare/kumo"
 import { Page } from "@nezha-kumo/ui"
@@ -207,7 +208,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
     const day =
         dayPoints?.length && snap
             ? summariseDay(
-                  mergeHistoryTail(dayPoints, getLive(id), Date.now() - 86_400_000),
+                  mergeHistoryTail(dayPoints, getTraffic(id), Date.now() - 86_400_000),
                   snap,
                   midnight,
               )
@@ -423,7 +424,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                         [t("metric.download"), formatBytes(snap?.totalDown ?? 0)],
                                         [
                                             t("ui.todayTraffic"),
-                                            day
+                                            day && hasDailyCounters(dayPoints ?? [], midnight)
                                                 ? `${formatBytes(day.todayUp + day.todayDown)}`
                                                 : "—",
                                         ],

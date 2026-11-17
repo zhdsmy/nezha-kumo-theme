@@ -14,6 +14,7 @@ import type {
 } from "@/core/model"
 import { DEFAULT_SETTINGS, type ThemeSettings, normalizeSettings } from "@/core/settings"
 import { readStorage, writeStorage } from "@/core/storage"
+import { mergeHistoryTail } from "@/core/summary"
 import { useMemo, useSyncExternalStore } from "react"
 
 export { adapter }
@@ -101,6 +102,10 @@ const live = new Map<string, HistoryPoint[]>()
 
 export const getLive = (id: string) => live.get(id) ?? []
 
+// Keep each reset's endpoints for the day after the chart buffer has expired.
+const traffic = new Map<string, HistoryPoint[]>()
+export const getTraffic = (id: string) => [...(traffic.get(id) ?? []), ...getLive(id)]
+
 /** Network-only backfill for the ledger sparks; kept out of `live`, whose points are complete. */
 const sparkSeeds = new Map<string, HistoryPoint[]>()
 
@@ -121,10 +126,7 @@ function pushLive(snapshots: Record<string, Snapshot>) {
         // Stamp with our own clock: the instruments plot against Date.now(), and a server whose
         // clock is a minute off would otherwise leave a permanent hole at one end of the window.
         const at = receivedAt
-        // Same report arriving twice (a retry, a reconnect) must not become two points.
-        if (buf.length && (buf[buf.length - 1].at >= at || buf[buf.length - 1].reportedAt === s.at))
-            continue
-        buf.push({
+        const point: HistoryPoint = {
             at,
             reportedAt: s.at,
             cpu: s.cpu,
@@ -139,7 +141,32 @@ function pushLive(snapshots: Record<string, Snapshot>) {
             tcp: s.tcp,
             udp: s.udp,
             process: s.process,
-        })
+        }
+        const previousCounters = traffic.get(id) ?? []
+        const counters = mergeHistoryTail(
+            previousCounters,
+            [point],
+            new Date(receivedAt).setHours(0, 0, 0, 0),
+        )
+        if (counters.length > previousCounters.length) changed = true
+        traffic.set(
+            id,
+            counters.filter((p, i) => {
+                const before = counters[i - 1],
+                    after = counters[i + 1]
+                return (
+                    !before ||
+                    !after ||
+                    !(["totalUp", "totalDown"] as const).every(
+                        (key) => before[key]! <= p[key]! && p[key]! <= after[key]!,
+                    )
+                )
+            }),
+        )
+        // Same report arriving twice (a retry, a reconnect) must not become two chart points.
+        if (buf.length && (buf[buf.length - 1].at >= at || buf[buf.length - 1].reportedAt === s.at))
+            continue
+        buf.push(point)
         if (buf.length > LIVE_CAPACITY) buf.splice(0, buf.length - LIVE_CAPACITY)
         live.set(id, buf)
         changed = true

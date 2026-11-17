@@ -450,11 +450,15 @@ let groupsPromise: Promise<Map<number, string[]>> | null = null
 const loadGroups = () =>
     (groupsPromise ??= request<Common<NezhaGroup[]>>("/api/v1/server-group")
         .then((r) => {
+            if (!r.success) throw new Error("Nezha groups unavailable")
             rawGroupsCache = r.data ?? []
             groupOrderCache = mapGroupOrder(rawGroupsCache)
             return (groupsCache = groupIndex(rawGroupsCache))
         })
-        .catch(() => groupsCache))
+        .catch((err) => {
+            groupsPromise = null
+            throw err
+        }))
 
 export function mapGroupIcons(groups: NezhaGroup[], customCode?: string): Record<string, string> {
     const byId = parseGroupIcons(customCode)
@@ -673,7 +677,8 @@ export const nezha = {
     },
 
     subscribe(listener: (event: LiveEvent) => void, onStatus?: (status: ConnectionStatus) => void) {
-        void loadGroups()
+        // Startup reports group errors; a failed refresh keeps the last successful mapping.
+        void loadGroups().catch(() => {})
         return hub.listen((frame) => listener(mapFrame(frame, groupsCache)), onStatus)
     },
 

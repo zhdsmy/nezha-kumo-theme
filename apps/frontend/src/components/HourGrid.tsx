@@ -17,50 +17,52 @@ const HOUR = 3_600_000
 export function HourGrid({ points, days = 7 }: { points: readonly HistoryPoint[]; days?: number }) {
     const { t, i18n } = useTranslation()
     const now = Date.now()
-    const cells = days * 24
-    // Align to local midnight so a row is a calendar day and a cell is a wall-clock hour;
-    // the last row runs to the current hour and the rest of it stays empty.
-    const end = new Date(now)
-    end.setMinutes(0, 0, 0)
-    const lastHour = end.getTime()
-    const startOfToday = new Date(lastHour)
-    startOfToday.setHours(0, 0, 0, 0)
-    const from = startOfToday.getTime() - (days - 1) * 24 * HOUR
-    // The window ends at the hour we are in; the rest of today is not history yet.
-    const buckets = bucketSeries(points, (p) => p.at, cells, from, from + cells * HOUR).map(
-        (b, i) => (from + i * HOUR > lastHour ? { ...b, value: null } : b),
+    const since = now - days * 24 * HOUR
+    const from = new Date(since).setHours(0, 0, 0, 0)
+    const to = new Date(now).setHours(24, 0, 0, 0)
+    const watched = points.filter((p) => p.at >= since && p.at <= now)
+    const inWindow = (at: number) => at <= now && at + HOUR > since
+    const buckets = bucketSeries(watched, (p) => p.at, (to - from) / HOUR, from, to)
+    // Partial boundary cells contribute only their duration inside the rolling window.
+    const elapsed = (now - since) / HOUR
+    const seen = buckets.reduce(
+        (sum, b) =>
+            sum +
+            (b.value === null
+                ? 0
+                : Math.max(0, Math.min(now, b.at + HOUR) - Math.max(since, b.at)) / HOUR),
+        0,
     )
-    // Only hours that have happened can be missing; counting the rest of today as unreported
-    // would read as twelve hours of downtime every morning.
-    const elapsed = Math.round((lastHour - from) / HOUR) + 1
-    const seen = buckets.filter((b) => b.value !== null).length
-    const first = points.length ? points[0].at : now
-
-    const rows = Array.from({ length: days }, (_, d) => buckets.slice(d * 24, d * 24 + 24))
-    const dayLabel = (index: number) =>
-        new Date(from + index * 24 * HOUR).toLocaleDateString(i18n.language, {
+    const first = watched.length ? Math.min(...watched.map((p) => p.at)) : now
+    const rows = new Map<string, typeof buckets>()
+    for (const bucket of buckets) {
+        const day = new Date(bucket.at).toLocaleDateString(i18n.language, {
             month: "numeric",
             day: "numeric",
         })
+        const row = rows.get(day) ?? []
+        row.push(bucket)
+        rows.set(day, row)
+    }
     const rate = formatNumber(ratio(seen, elapsed), 1)
 
     return (
         <ChartCard
             title={t("node.reportRate")}
-            value={t("node.reportedHours", { rate, seen, count: elapsed })}
+            value={t("node.reportedHours", { rate, seen: formatNumber(seen, 1), count: elapsed })}
         >
             <div className="hour-grid-rows">
-                {rows.map((row, d) => (
-                    <div key={d} className="flex items-center gap-2">
+                {[...rows].map(([day, row]) => (
+                    <div key={day} className="flex items-center gap-2">
                         <span className="num w-10 shrink-0 text-right text-[10px] text-kumo-subtle">
-                            {dayLabel(d)}
+                            {day}
                         </span>
                         <span className="flex flex-1 gap-[2px]">
-                            {row.map((cell, h) => {
-                                const at = from + (d * 24 + h) * HOUR
+                            {row.map((cell) => {
+                                const at = cell.at
                                 // Hours we never watched, and hours still ahead of the clock, are not outages.
                                 const state =
-                                    at > lastHour || at < first - HOUR
+                                    !inWindow(at) || at < first - HOUR
                                         ? "unwatched"
                                         : cell.value !== null
                                           ? "up"
@@ -69,9 +71,9 @@ export function HourGrid({ points, days = 7 }: { points: readonly HistoryPoint[]
                                 const stamp = `${hour.toLocaleDateString(i18n.language, { month: "numeric", day: "numeric" })} ${String(hour.getHours()).padStart(2, "0")}:00`
                                 return (
                                     <span
-                                        key={h}
-                                        // Hours that have not happened carry no reading, so they carry no tooltip either.
-                                        title={at > lastHour ? undefined : stamp}
+                                        key={at}
+                                        // Padding outside the rolling window carries no reading or tooltip.
+                                        title={inWindow(at) ? stamp : undefined}
                                         className={`hour-grid-cell flex-1 rounded-[1px] ${state === "up" ? "bg-kumo-success" : state === "down" ? "bg-kumo-danger" : "cell-empty"}`}
                                     />
                                 )

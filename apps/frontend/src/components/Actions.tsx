@@ -13,7 +13,14 @@ import {
     SunIcon,
     UserIcon,
 } from "@phosphor-icons/react"
-import { type ComponentType, useCallback, useEffect, useState, useSyncExternalStore } from "react"
+import {
+    type ComponentType,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+    useSyncExternalStore,
+} from "react"
 import { createPortal } from "react-dom"
 import { useTranslation } from "react-i18next"
 
@@ -105,6 +112,7 @@ export function Actions() {
     const { t, i18n } = useTranslation()
     const appearance = useAppearance()
     const search = useSyncExternalStore(subscribeSearch, () => searchOpenState)
+    const loadingRef = useRef<HTMLDivElement>(null)
     const [login, setLogin] = useState(false)
     const [Palette, setPalette] = useState<ComponentType<SearchPaletteProps> | null>(
         () => cachedPalette,
@@ -120,6 +128,11 @@ export function Actions() {
     useEffect(() => () => setSearchDialogOpen(false), [])
     useEffect(() => {
         if (!search || Palette) return
+        const previous = document.activeElement as HTMLElement | null
+        const root = document.getElementById("root")
+        const wasInert = root?.inert ?? false
+        if (root) root.inert = true
+        loadingRef.current?.focus()
         let cancelled = false
         void loadSearchPalette()
             .then((Comp) => {
@@ -130,6 +143,9 @@ export function Actions() {
             })
         return () => {
             cancelled = true
+            if (root) root.inert = wasInert
+            // Module completion hands focus to the palette without closing search.
+            if (!searchOpenState) previous?.focus()
         }
     }, [search, Palette])
     useEffect(() => {
@@ -148,9 +164,9 @@ export function Actions() {
     }, [login, LoginModal])
     useEffect(() => {
         const key = (e: KeyboardEvent) => {
-            if (e.key === "Escape" && search && !Palette) {
+            if (search && !Palette && (e.key === "Escape" || e.key === "Tab")) {
                 e.preventDefault()
-                toggleSearch(false)
+                if (e.key === "Escape") toggleSearch(false)
                 return
             }
             if (login) return
@@ -270,6 +286,8 @@ export function Actions() {
                         onMouseDown={() => toggleSearch(false)}
                     >
                         <div
+                            ref={loadingRef}
+                            tabIndex={-1}
                             role="dialog"
                             aria-modal="true"
                             aria-label={t("toolbar.search")}

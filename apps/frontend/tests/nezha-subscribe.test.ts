@@ -49,6 +49,56 @@ afterAll(() => {
     vi.unstubAllGlobals()
 })
 
+it.each([503, 200])(
+    "retries failed groups (%s) for nodes, order, icons and live mapping",
+    async (status) => {
+        nezha.reset()
+        let failed = true
+        let calls = 0
+        vi.stubGlobal("fetch", async (url: string) => {
+            if (url.includes("server-group")) {
+                calls++
+                return new Response(JSON.stringify(failed ? { success: false } : groups), {
+                    status: failed ? status : 200,
+                })
+            }
+            return new Response(
+                JSON.stringify({
+                    success: true,
+                    data: {
+                        config: {
+                            custom_code:
+                                '<script type="application/json" id="nezha-kumo-group-icons">{"1":"☁️"}</script>',
+                        },
+                    },
+                }),
+            )
+        })
+        const first = Promise.allSettled([
+            nezha.loadNodes(),
+            nezha.loadGroupOrder(),
+            nezha.loadSite(),
+        ])
+        await vi.advanceTimersByTimeAsync(0)
+        expect((await first).map((r) => r.status)).toEqual(["rejected", "rejected", "rejected"])
+        expect(calls).toBe(1)
+        failed = false
+        const [nodes, order, site] = await Promise.all([
+            nezha.loadNodes(),
+            nezha.loadGroupOrder(),
+            nezha.loadSite(),
+        ])
+        expect(calls).toBe(2)
+        expect(order.length).toBeGreaterThan(0)
+        expect(Object.keys(site.groupIcons ?? {})).toHaveLength(1)
+        const events: LiveEvent[] = []
+        const stop = nezha.subscribe((event) => events.push(event))
+        expect(events[0].nodes?.map((n) => n.groups)).toEqual(nodes.map((n) => n.groups))
+        stop()
+        nezha.reset()
+    },
+)
+
 it("keeps groups on the first live event after loadNodes (no flicker)", async () => {
     const loading = nezha.loadNodes()
     // Deliver the socket's first frame without waiting for a real event-loop tick.
