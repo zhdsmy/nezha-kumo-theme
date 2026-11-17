@@ -100,6 +100,19 @@ test("array moves carry numeric drafts and focus with stable row identities", ()
         (screen.getByRole("textbox", { name: label("Value", "a.1") }) as HTMLInputElement).value,
     ).toBe("2")
 })
+test.each([false, true])(
+    "array move keeps focus in the moved row when the move button becomes disabled (%s)",
+    (focusButton) => {
+        render(<Harness raw='{"a":[1,2]}' />)
+        const button = screen.getByRole("button", { name: label("MoveDown", "a.1") })
+        if (focusButton) button.focus()
+        fireEvent.click(button)
+        expect(
+            document.activeElement?.closest("[data-json-path]")?.getAttribute("data-json-path"),
+        ).toBe("[0,1]")
+        expect(document.activeElement?.matches(":disabled")).toBe(false)
+    },
+)
 test("type conversion keeps numeric text, confirms containers and rejects incomplete numbers", () => {
     expect(convertJsonType('"12.50"', "number")).toBe(12.5)
     expect(convertJsonType("12.5", "string")).toBe("12.5")
@@ -328,3 +341,18 @@ test.each(["", "免费节点", "odd cost"])(
         ).toBe("true")
     },
 )
+
+test("unknown actual periods preserve the old value until the period is corrected", () => {
+    const raw = '{"billingDataMod":{"actualAmount":"CNY 300.00/unknown"}}'
+    render(<Harness raw={raw} />)
+    const amount = screen.getByRole("textbox", { name: i18n.t("PrivateNote.ActualAmount") })
+    fireEvent.change(amount, { target: { value: "12" } })
+    fireEvent.blur(amount)
+    expect(saved()).toBe(raw)
+    expect(amount.getAttribute("aria-invalid")).toBe("true")
+    fireEvent.click(
+        screen.getByRole("button", { name: new RegExp("^" + i18n.t("PrivateNote.ActualCycle")) }),
+    )
+    fireEvent.click(screen.getByRole("button", { name: i18n.t("PublicNote.EveryYear") }))
+    expect(JSON.parse(saved()).billingDataMod.actualAmount).toBe("CNY 12.00/Year")
+})

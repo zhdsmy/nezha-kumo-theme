@@ -170,7 +170,10 @@ for (const [engine, driver] of Object.entries({ chromium, webkit }))
                         page.getByRole("switch", { name: "流量配额 · 不限" }),
                     ).toBeChecked()
                     await capture("unlimited", '[data-note-field="trafficVol"]')
-                    await page.getByRole("radio", { name: "付费", exact: true }).locator("..").click()
+                    await page
+                        .getByRole("radio", { name: "付费", exact: true })
+                        .locator("..")
+                        .click()
                     await page
                         .getByRole("textbox", { name: "金额", exact: true })
                         .pressSequentially("0.99")

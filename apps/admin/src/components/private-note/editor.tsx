@@ -45,7 +45,13 @@ export function PrivateNoteEditor({
     const sequence = useRef(0)
     const movedFocus = useRef<HTMLElement | null>(null)
     useLayoutEffect(() => {
-        movedFocus.current?.focus({ preventScroll: true })
+        const target = movedFocus.current
+        const focus = target?.matches(":disabled")
+            ? target
+                  .closest(".nkt-json-row")
+                  ?.querySelector<HTMLElement>("input:not(:disabled), button:not(:disabled)")
+            : target
+        focus?.focus({ preventScroll: true })
         movedFocus.current = null
     })
     const [mode, setMode] = useState(() => detectNoteMode(value))
@@ -76,13 +82,16 @@ export function PrivateNoteEditor({
         if (type === "number" && next === null)
             setEmptyNumbers((items) => [...items, JSON.stringify(path)])
     }
-    const reindex = (path: JsonPath, index: number, to?: number) => {
+    const reindex = (path: JsonPath, index: number, to?: number, button?: HTMLElement) => {
         let identities = rowIds.current
         for (const part of path) identities = identities[part as number].children
         const [moved] = identities.splice(index, 1)
         if (to !== undefined) {
             identities.splice(to, 0, moved)
-            movedFocus.current = document.activeElement as HTMLElement
+            const active = document.activeElement as HTMLElement
+            movedFocus.current = button?.closest(".nkt-json-row")?.contains(active)
+                ? active
+                : (button ?? null)
         }
         setConfirmation(null)
         setEmptyNumbers((items) =>
@@ -196,8 +205,13 @@ export function PrivateNoteEditor({
                                                 shape="square"
                                                 aria-label={`${t("PrivateNote.MoveUp")} · ${label}`}
                                                 disabled={index === 0}
-                                                onClick={() => {
-                                                    reindex(path, index, index - 1)
+                                                onClick={(event) => {
+                                                    reindex(
+                                                        path,
+                                                        index,
+                                                        index - 1,
+                                                        event.currentTarget,
+                                                    )
                                                     onChange(
                                                         moveJsonItem(value, path, index, index - 1),
                                                         "structured",
@@ -212,8 +226,13 @@ export function PrivateNoteEditor({
                                                 shape="square"
                                                 aria-label={`${t("PrivateNote.MoveDown")} · ${label}`}
                                                 disabled={index === entries.length - 1}
-                                                onClick={() => {
-                                                    reindex(path, index, index + 1)
+                                                onClick={(event) => {
+                                                    reindex(
+                                                        path,
+                                                        index,
+                                                        index + 1,
+                                                        event.currentTarget,
+                                                    )
                                                     onChange(
                                                         moveJsonItem(value, path, index, index + 1),
                                                         "structured",

@@ -284,6 +284,45 @@ for (const [engine, driver] of Object.entries({ webkit, chromium }))
                         const value = privateEditor.getByRole("textbox", {
                             name: "键值 · custom.region",
                         })
+                        const down = privateEditor.getByRole("button", {
+                            name: "下移 · custom.array.1",
+                        })
+                        await down.click()
+                        expect(
+                            await page.evaluate(() =>
+                                document.activeElement
+                                    ?.closest("[data-json-path]")
+                                    ?.getAttribute("data-json-path"),
+                            ),
+                        ).toBe("[1,2,1]")
+                        await privateEditor
+                            .getByRole("button", { name: "上移 · custom.array.2" })
+                            .click()
+                        const key = privateEditor.getByRole("textbox", {
+                            name: "键名 · custom.region",
+                        })
+                        await key.fill("")
+                        await page.getByRole("button", { name: "提交", exact: true }).click()
+                        await expect(
+                            page.getByText("请修正私有备注中标出的字段。", { exact: true }),
+                        ).toBeVisible()
+                        const emptyKey = privateEditor.getByRole("textbox", {
+                            name: "键名 · custom.",
+                            exact: true,
+                        })
+                        await expect(emptyKey).toBeFocused()
+                        expect(writes).toEqual([])
+                        await emptyKey.fill("region")
+                        const actualAmount = privateEditor.getByRole("textbox", {
+                            name: "实际花费",
+                            exact: true,
+                        })
+                        await actualAmount.fill("")
+                        await page.getByRole("button", { name: "提交", exact: true }).click()
+                        await expect(actualAmount).toBeFocused()
+                        await expect(actualAmount).toHaveAttribute("aria-invalid", "true")
+                        expect(writes).toEqual([])
+                        await actualAmount.fill("60")
                         await value.fill("Edited")
                         expect(await value.evaluate((el) => getComputedStyle(el).fontSize)).toBe(
                             "16px",
