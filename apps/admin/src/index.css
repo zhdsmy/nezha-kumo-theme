@@ -305,7 +305,14 @@ body,
     grid-template-columns: minmax(0, 1fr) auto;
 }
 .nkt-table[data-layout="cards"] tr:has([data-col="select"]) {
-    grid-template-columns: 3rem minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+}
+.nkt-table[data-layout="cards"] td[data-col="select"] {
+    padding-right: 0.25rem;
+}
+/* Cards: the name takes the free width, so the details chevron sits next to the actions. */
+.nkt-table[data-layout="cards"] .nkt-server-name {
+    max-width: none;
 }
 .nkt-table[data-layout="cards"] :is(th, td) {
     display: none;

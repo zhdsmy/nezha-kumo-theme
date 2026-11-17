@@ -95,8 +95,21 @@ export default function ServerPage() {
             accessorFn: (row) => row.name,
             cell: ({ row }) => {
                 const s = row.original
+                const cc = s.geoip?.country_code?.toLowerCase()
                 return (
-                    <div className="min-w-32 max-w-40 sm:max-w-56 whitespace-normal break-words font-medium">
+                    <div className="nkt-server-name min-w-32 max-w-40 sm:max-w-56 whitespace-normal break-words font-medium">
+                        {/^[a-z]{2}$/.test(cc ?? "") && (
+                            // Flag SVGs ship with the frontend theme on the same origin.
+                            <img
+                                src={`/flags/${cc}.svg`}
+                                alt={cc!.toUpperCase()}
+                                width={16}
+                                height={12}
+                                loading="lazy"
+                                className="mr-2 inline-block rounded-[2px] align-[-1px]"
+                                onError={(e) => e.currentTarget.remove()}
+                            />
+                        )}
                         {s.name}
                     </div>
                 )
