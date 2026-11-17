@@ -5,7 +5,9 @@ import {
     type AppShellProps,
     BREAKPOINTS,
     type NavItem,
+    type NavSection,
     SHELL,
+    type ShellContext,
     type ShellLinkProps,
 } from "./contract"
 
@@ -121,6 +123,43 @@ function NavEntry({
     )
 }
 
+function NavSections({
+    sections,
+    activeId,
+    Link,
+    close,
+}: {
+    sections: NavSection[]
+    activeId?: string
+    Link: ComponentType<ShellLinkProps>
+    close: () => void
+}) {
+    return (
+        <nav aria-label="Main navigation">
+            {sections.map((section) => (
+                <Sidebar.Group key={section.id}>
+                    {section.title && (
+                        <Sidebar.GroupLabel title={section.title}>
+                            {section.title}
+                        </Sidebar.GroupLabel>
+                    )}
+                    <Sidebar.Menu>
+                        {section.items.map((item) => (
+                            <NavEntry
+                                key={item.id}
+                                item={item}
+                                activeId={activeId}
+                                Link={Link}
+                                close={close}
+                            />
+                        ))}
+                    </Sidebar.Menu>
+                </Sidebar.Group>
+            ))}
+        </nav>
+    )
+}
+
 function ShellLayout({
     brand,
     nav,
@@ -135,7 +174,19 @@ function ShellLayout({
     const { isMobile, open, openMobile, setOpenMobile } = useSidebar()
     const sidebarRef = useRef<HTMLElement>(null)
     const triggerRef = useRef<HTMLButtonElement>(null)
+    const lastRootRef = useRef<NavSection[] | null>(context ? null : nav)
+    const lastContextRef = useRef<{ context: ShellContext; nav: NavSection[] } | null>(
+        context ? { context, nav } : null,
+    )
     const closeDrawer = () => setOpenMobile(false)
+
+    useEffect(() => {
+        if (context) lastContextRef.current = { context, nav }
+        else lastRootRef.current = nav
+    }, [context, nav])
+
+    const rootNav = context ? lastRootRef.current : nav
+    const contextView = context ? { context, nav } : lastContextRef.current
 
     useEffect(() => {
         if (!isMobile || !openMobile) return
@@ -182,54 +233,67 @@ function ShellLayout({
                     <div className="nk-brand">{brand}</div>
                     {isMobile && <Sidebar.Close aria-label="Close navigation" />}
                 </Sidebar.Header>
-                <Sidebar.Content>
-                    {context && (
-                        <div className="nk-context">
-                            <Link
-                                href={context.backHref}
-                                className="nk-nav-link"
-                                onClick={closeDrawer}
-                            >
-                                <span className="nk-nav-icon" aria-hidden="true">
-                                    ←
-                                </span>
-                                <span className="nk-nav-label" title={context.backLabel}>
-                                    {context.backLabel}
-                                </span>
-                            </Link>
-                            <div
-                                className="nk-context-title"
-                                title={
-                                    typeof context.title === "string" ? context.title : undefined
-                                }
-                            >
-                                {context.title}
-                            </div>
-                        </div>
-                    )}
-                    <nav aria-label="Main navigation">
-                        {nav.map((section) => (
-                            <Sidebar.Group key={section.id}>
-                                {section.title && (
-                                    <Sidebar.GroupLabel title={section.title}>
-                                        {section.title}
-                                    </Sidebar.GroupLabel>
-                                )}
-                                <Sidebar.Menu>
-                                    {section.items.map((item) => (
-                                        <NavEntry
-                                            key={item.id}
-                                            item={item}
-                                            activeId={activeId}
-                                            Link={Link}
-                                            close={closeDrawer}
-                                        />
-                                    ))}
-                                </Sidebar.Menu>
-                            </Sidebar.Group>
-                        ))}
-                    </nav>
-                </Sidebar.Content>
+                <Sidebar.SlidingViews activeKey={context ? "context" : "root"}>
+                    <Sidebar.SlidingView value="root">
+                        {rootNav && (
+                            <Sidebar.Content>
+                                <NavSections
+                                    sections={rootNav}
+                                    activeId={context ? undefined : activeId}
+                                    Link={Link}
+                                    close={closeDrawer}
+                                />
+                            </Sidebar.Content>
+                        )}
+                    </Sidebar.SlidingView>
+                    <Sidebar.SlidingView value="context">
+                        {contextView && (
+                            <Sidebar.Content>
+                                <div className="nk-context">
+                                    <Link
+                                        href={contextView.context.backHref}
+                                        className="nk-nav-link"
+                                        onClick={() => {
+                                            if (
+                                                document.activeElement instanceof HTMLElement &&
+                                                sidebarRef.current?.contains(document.activeElement)
+                                            ) {
+                                                document.activeElement.blur()
+                                            }
+                                            closeDrawer()
+                                        }}
+                                    >
+                                        <span className="nk-nav-icon" aria-hidden="true">
+                                            ←
+                                        </span>
+                                        <span
+                                            className="nk-nav-label"
+                                            title={contextView.context.backLabel}
+                                        >
+                                            {contextView.context.backLabel}
+                                        </span>
+                                    </Link>
+                                    <div
+                                        className="nk-context-title"
+                                        title={
+                                            typeof contextView.context.title === "string"
+                                                ? contextView.context.title
+                                                : undefined
+                                        }
+                                    >
+                                        {contextView.context.title}
+                                    </div>
+                                </div>
+                                <NavSections
+                                    sections={contextView.nav}
+                                    activeId={context ? activeId : undefined}
+                                    Link={Link}
+                                    close={closeDrawer}
+                                />
+                            </Sidebar.Content>
+                        )}
+                    </Sidebar.SlidingView>
+                </Sidebar.SlidingViews>
                 <Sidebar.Footer className="nk-sidebar-footer">
                     {footer && <div className="nk-footer-content">{footer}</div>}
                     {!isMobile && (
