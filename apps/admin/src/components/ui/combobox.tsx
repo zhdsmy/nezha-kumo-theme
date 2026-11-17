@@ -24,11 +24,23 @@ interface ComboboxProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     placeholder?: string
     defaultValue?: string
     className?: string
+    allowDeselect?: boolean
     onValueChange: (value: string) => void
 }
 
 export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(
-    ({ options, placeholder, defaultValue, className, onValueChange, ...props }, ref) => {
+    (
+        {
+            options,
+            placeholder,
+            defaultValue,
+            className,
+            onValueChange,
+            allowDeselect = true,
+            ...props
+        },
+        ref,
+    ) => {
         const { t } = useTranslation()
         const [open, setOpen] = useState(false)
         const [value, setValue] = useState(defaultValue)
@@ -81,10 +93,12 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(
                                         value={option.value}
                                         keywords={[option.label]}
                                         onSelect={(currentValue) => {
-                                            setValue(currentValue === value ? "" : currentValue)
-                                            onValueChange(
-                                                currentValue === value ? "" : currentValue,
-                                            )
+                                            const next =
+                                                allowDeselect && currentValue === value
+                                                    ? ""
+                                                    : currentValue
+                                            setValue(next)
+                                            onValueChange(next)
                                             setOpen(false)
                                         }}
                                     >

@@ -30,8 +30,10 @@ export function Choices({
                     key={key}
                     variant={key === (value ?? "") ? "secondary" : "ghost"}
                     aria-pressed={key === (value ?? "")}
-                    className="min-w-0 flex-1 px-2"
-                    onClick={() => onChange(key)}
+                    className="h-auto min-h-9 min-w-0 flex-1 whitespace-normal px-2 py-2 leading-snug"
+                    onClick={() => {
+                        if (key !== (value ?? "")) onChange(key)
+                    }}
                 >
                     {text}
                 </Button>
@@ -42,8 +44,15 @@ export function Choices({
 export function AmountInput({ value, onChange, label }: NoteControlProps) {
     const { t, i18n } = useTranslation()
     const amount = parseAmount(value)
+    const [editingPaid, setEditingPaid] = useState(false)
     const mode =
-        value && !amount ? "unknown" : value === "0" ? "free" : value === "-1" ? "usage" : "paid"
+        value && !amount
+            ? "unknown"
+            : amount?.amount === 0 && !amount.currency && !editingPaid
+              ? "free"
+              : amount?.amount === -1
+                ? "usage"
+                : "paid"
     const [currency, setCurrency] = useState("USD")
     const code = amount?.currency || currency
     const options = useMemo(() => {
@@ -63,15 +72,18 @@ export function AmountInput({ value, onChange, label }: NoteControlProps) {
                     ["free", t("PublicNote.Free")],
                     ["usage", t("PublicNote.PayAsYouGo")],
                 ]}
-                onChange={(next) =>
+                onChange={(next) => {
+                    setEditingPaid(next === "paid")
+                    setCurrency(code)
                     onChange(next === "free" ? "0" : next === "usage" ? "-1" : undefined)
-                }
+                }}
             />
             {mode === "unknown" && <UnknownValue value={value} />}
             {mode === "paid" && (
                 <div className="grid grid-cols-2 gap-2">
                     <Combobox
                         key={code}
+                        allowDeselect={false}
                         aria-label={t("PublicNote.Currency")}
                         options={options}
                         defaultValue={code}
@@ -91,14 +103,16 @@ export function AmountInput({ value, onChange, label }: NoteControlProps) {
                         value={amount?.amount}
                         step="0.01"
                         placeholder="45.00"
-                        onChange={(number) =>
+                        onChange={(number) => {
+                            setEditingPaid(true)
+                            setCurrency(code)
                             onChange(
                                 number === undefined
                                     ? undefined
                                     : writeAmount(number, code) +
                                           (amount?.cycle ? `/${value!.split("/")[1]}` : ""),
                             )
-                        }
+                        }}
                     />
                 </div>
             )}

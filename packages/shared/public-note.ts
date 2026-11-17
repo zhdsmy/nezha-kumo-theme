@@ -98,7 +98,7 @@ export function parseAmount(value: unknown): Amount | undefined {
         return { amount, currency, symbol, cycle }
 }
 export function writeAmount(amount: number, currency: string): string {
-    if (!Number.isFinite(amount) || amount < -1) throw new Error("Invalid amount")
+    if (!Number.isFinite(amount) || (amount < 0 && amount !== -1)) throw new Error("Invalid amount")
     return amount <= 0 ? String(amount) : `${currency} ${amount.toFixed(2)}`
 }
 

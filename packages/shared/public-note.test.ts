@@ -72,6 +72,8 @@ test("generator currencies and amount-embedded periods", () => {
     assert.equal(writeAmount(45, "USD"), "USD 45.00")
     assert.equal(writeAmount(0, "USD"), "0")
     assert.equal(writeAmount(-1, "USD"), "-1")
+    for (const invalid of [-0.5, -2, Infinity, NaN])
+        assert.throws(() => writeAmount(invalid, "USD"), /Invalid amount/)
     for (const invalid of [
         "USD -1",
         "USD 1 extra",

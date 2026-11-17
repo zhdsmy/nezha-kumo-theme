@@ -2,6 +2,7 @@ import { AmountInput } from "@/components/public-note/amount-input"
 import { CyclePicker } from "@/components/public-note/cycle-picker"
 import i18n from "@/lib/i18n"
 import { cleanup, fireEvent, render, screen } from "@testing-library/react"
+import { useState } from "react"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
 
 beforeEach(async () => {
@@ -45,4 +46,49 @@ test("structured amount writes currency and decimals and keeps free/usage shortc
     rerender(<AmountInput label="金额" value="special deal" onChange={change} />)
     expect(screen.getByText("special deal")).toBeTruthy()
     expect(screen.getByText(i18n.t("PublicNote.Unrecognized"))).toBeTruthy()
+})
+
+test("a paid decimal starting with zero stays editable and retains the chosen currency", () => {
+    const change = vi.fn()
+    function Harness() {
+        const [value, setValue] = useState<string | undefined>("EUR 45.00")
+        return (
+            <AmountInput
+                label="金额"
+                value={value}
+                onChange={(next) => {
+                    setValue(next)
+                    change(next)
+                }}
+            />
+        )
+    }
+    render(<Harness />)
+    fireEvent.change(screen.getByRole("spinbutton", { name: "金额" }), { target: { value: "0" } })
+    fireEvent.change(screen.getByRole("spinbutton", { name: "金额" }), {
+        target: { value: "0.99" },
+    })
+    expect(change).toHaveBeenLastCalledWith("EUR 0.99")
+})
+test.each([
+    ["en-US", "Every 3 months", "Every month"],
+    ["zh-CN", "每 3 个月", "每月"],
+    ["zh-TW", "每 3 個月", "每月"],
+    ["ja-JP", "3 か月ごと", "毎月"],
+])("cycle plural labels are natural in %s", async (language, plural, singular) => {
+    await i18n.changeLanguage(language)
+    const { rerender } = render(<CyclePicker label="cycle" value="Quarter" onChange={vi.fn()} />)
+    expect(screen.getByRole("button", { name: "cycle" }).textContent).toBe(plural)
+    rerender(<CyclePicker label="cycle" value="Month" onChange={vi.fn()} />)
+    expect(screen.getByRole("button", { name: "cycle" }).textContent).toBe(singular)
+})
+
+test("the active paid mode and currency cannot accidentally clear an amount", () => {
+    const change = vi.fn()
+    render(<AmountInput label="金额" value="USD 45" onChange={change} />)
+    fireEvent.click(screen.getByRole("button", { name: "付费" }))
+    expect(change).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole("combobox", { name: "币种" }))
+    fireEvent.click(screen.getByRole("option", { name: /USD/ }))
+    expect(screen.getByRole("combobox", { name: "币种" }).textContent).toContain("USD")
 })
