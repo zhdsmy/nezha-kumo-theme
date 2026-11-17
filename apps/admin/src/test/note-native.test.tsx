@@ -12,7 +12,9 @@ test("note selectors use Kumo groups and the calendar keeps navigation beside it
             onChange={vi.fn()}
         />,
     )
-    expect(container.querySelector('[data-kumo-component="ButtonGroup"]')).toBeTruthy()
+    expect(
+        container.querySelector('[data-kumo-component="Radio"][data-kumo-part="items"]'),
+    ).toBeTruthy()
     fireEvent.click(screen.getByRole("button", { name: /^开始时间 · / }))
     expect(document.querySelector("[data-note-calendar] .rdp-dropdowns")).toBeTruthy()
 })

@@ -45,19 +45,19 @@ test("raw and structured modes share one draft; clear deletes keys and IP has th
     }
     render(<Harness />)
     fireEvent.click(screen.getByRole("button", { name: `${i18n.t("PublicNote.Clear")} · IPv4` }))
-    const ip = screen.getByRole("group", { name: "IPv4" })
-    expect(within(ip).getByRole("button", { name: i18n.t("PublicNote.Unset") })).toHaveProperty(
-        "ariaPressed",
+    const ip = screen.getByRole("radiogroup", { name: "IPv4" })
+    expect(within(ip).getByRole("radio", { name: i18n.t("PublicNote.Unset") })).toHaveProperty(
+        "ariaChecked",
         "true",
     )
-    fireEvent.click(within(ip).getByRole("button", { name: i18n.t("PublicNote.None") }))
-    fireEvent.click(screen.getByRole("button", { name: i18n.t("PublicNote.RawText") }))
+    fireEvent.click(within(ip).getByRole("radio", { name: i18n.t("PublicNote.None") }))
+    fireEvent.click(screen.getByRole("radio", { name: i18n.t("PublicNote.RawText") }))
     const raw = screen.getByRole("textbox", {
         name: i18n.t("PublicNote.RawText"),
     }) as HTMLTextAreaElement
     expect(raw.value).toBe(note.replace('"IPv4":"1"', '"IPv4":"0"'))
     fireEvent.change(raw, { target: { value: raw.value.replace('"Quarter"', '"Week"') } })
-    fireEvent.click(screen.getByRole("button", { name: i18n.t("PublicNote.CustomFields") }))
+    fireEvent.click(screen.getByRole("radio", { name: i18n.t("PublicNote.CustomFields") }))
     expect(
         screen.getByRole("button", { name: new RegExp("^" + i18n.t("PublicNote.Cycle") + " · ") })
             .textContent,
@@ -71,7 +71,7 @@ test("invalid raw notes explain the fallback and can still be cleared and saved"
         />,
     )
     fireEvent.click(screen.getByRole("button", { name: i18n.t("Edit") }))
-    expect(screen.getByRole("status").textContent).toContain(i18n.t("PublicNote.InvalidJSONHint"))
+    expect(screen.getByRole("status").textContent).toContain(i18n.t("NoteEditor.RawReason"))
     fireEvent.change(screen.getByRole("textbox", { name: i18n.t("PublicNote.RawText") }), {
         target: { value: "" },
     })

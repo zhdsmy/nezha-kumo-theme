@@ -1,5 +1,5 @@
 import { parseDecimal } from "@/lib/number"
-import { Button, ButtonGroup, Input } from "@cloudflare/kumo"
+import { Input, Radio } from "@cloudflare/kumo"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -31,23 +31,25 @@ export function Choices({
     onChange: (value: string) => void
 }) {
     return (
-        <ButtonGroup aria-label={label} className="w-full min-w-0">
+        <Radio.Group
+            appearance="segmented"
+            orientation="horizontal"
+            className="nkt-note-choices"
+            value={value ?? ""}
+            onValueChange={(next) => {
+                if (next !== (value ?? "")) onChange(next)
+            }}
+        >
+            <Radio.Legend className="sr-only">{label}</Radio.Legend>
             {options.map(([key, text]) => (
-                <Button
-                    type="button"
+                <Radio.Item
                     key={key}
                     disabled={disabledValues.includes(key)}
-                    variant={key === (value ?? "") ? "secondary" : "ghost"}
-                    aria-pressed={key === (value ?? "")}
-                    className="h-auto min-h-9 min-w-0 flex-1 whitespace-normal px-2 py-1 text-sm leading-snug"
-                    onClick={() => {
-                        if (key !== (value ?? "")) onChange(key)
-                    }}
-                >
-                    {text}
-                </Button>
+                    value={key}
+                    label={text}
+                />
             ))}
-        </ButtonGroup>
+        </Radio.Group>
     )
 }
 export function NumberInput({

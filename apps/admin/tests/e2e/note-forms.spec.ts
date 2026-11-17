@@ -199,14 +199,14 @@ for (const [engine, driver] of Object.entries({ webkit, chromium }))
                         await expect(trigger).toBeFocused()
                         const privateEditor = page.locator("[data-private-note-editor]")
                         await privateEditor
-                            .getByRole("button", { name: "原始文本", exact: true })
+                            .getByRole("radio", { name: "原始文本", exact: true })
                             .click()
                         await privateEditor
                             .getByRole("textbox", { name: "私有备注原始文本" })
                             .scrollIntoViewIfNeeded()
                         await capture("private-raw")
                         await privateEditor
-                            .getByRole("button", { name: "表单", exact: true })
+                            .getByRole("radio", { name: "表单", exact: true })
                             .click()
                         if (width === 375)
                             for (const size of [

@@ -263,7 +263,6 @@
         },
         "RemoveTag": "刪除 {{tag}}",
         "TagsHint": "按 Enter 或輸入逗號新增標籤。",
-        "InvalidJSONHint": "此備註無法解析為 JSON。請編輯原始文字以保留內容。",
         "Time": "時間"
     },
     "Validation": {
@@ -583,7 +582,6 @@
         "ActualCycle": "實際花費週期",
         "FollowPublicCycle": "跟隨公開備註週期",
         "AddActualAmount": "新增實際花費",
-        "RawReason": "此備註不是 JSON 物件。請使用原始文字模式保留其內容。",
         "Types": {
             "string": "文字",
             "number": "數字",
@@ -592,5 +590,8 @@
             "object": "物件",
             "array": "陣列"
         }
+    },
+    "NoteEditor": {
+        "RawReason": "此備註不是 JSON 物件。請使用原始文字模式保留其內容。"
     }
 }

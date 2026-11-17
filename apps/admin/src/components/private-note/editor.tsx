@@ -1,7 +1,9 @@
-import { Choices, NumberInput, UnknownValue } from "@/components/public-note/controls"
+import { NoteEditor } from "@/components/note-editor"
+import { NumberInput, UnknownValue } from "@/components/public-note/controls"
 import {
     type JsonPath,
     appendJsonEntry,
+    detectNoteMode,
     isNoteObject,
     jsonEntries,
     moveJsonItem,
@@ -14,11 +16,10 @@ import {
     JSON_TYPES,
     type JsonType,
     convertJsonType,
-    detectPrivateNoteMode,
     jsonType,
     privateNoteErrors,
 } from "@/lib/private-note"
-import { Button, Input, KumoPortalProvider, Select, Switch, Textarea } from "@cloudflare/kumo"
+import { Button, Input, Select, Switch } from "@cloudflare/kumo"
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react"
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -40,7 +41,6 @@ export function PrivateNoteEditor({
     onValidityChange: (valid: boolean) => void
 }) {
     const { t } = useTranslation()
-    const portal = useRef<HTMLElement>(null)
     const rowIds = useRef<RowIdentity[]>([])
     const sequence = useRef(0)
     const movedFocus = useRef<HTMLElement | null>(null)
@@ -48,7 +48,7 @@ export function PrivateNoteEditor({
         movedFocus.current?.focus({ preventScroll: true })
         movedFocus.current = null
     })
-    const [mode, setMode] = useState(() => detectPrivateNoteMode(value))
+    const [mode, setMode] = useState(() => detectNoteMode(value))
     const [emptyNumbers, setEmptyNumbers] = useState<string[]>([])
     const parsed = parseJsonNote(value)
     const errors = privateNoteErrors(value)
@@ -343,70 +343,32 @@ export function PrivateNoteEditor({
         (!Object.hasOwn(parsed, "billingDataMod") ||
             (isNoteObject(billing) && !Object.hasOwn(billing, "actualAmount")))
     return (
-        <section
-            ref={portal}
-            className="nkt-note-editor space-y-2"
-            data-private-note-editor
-            aria-label={t("PrivateNote.Label")}
+        <NoteEditor
+            kind="private"
+            value={value}
+            mode={mode}
+            onChange={onChange}
+            onModeChange={(next) => {
+                setMode(next)
+                setEmptyNumbers([])
+                rowIds.current = []
+            }}
         >
-            <KumoPortalProvider container={portal}>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h3 className="text-sm font-semibold">{t("PrivateNote.Label")}</h3>
-                    <div>
-                        <Choices
-                            label={t("PrivateNote.Label")}
-                            value={mode}
-                            disabledValues={!isNoteObject(parsed) ? ["structured"] : []}
-                            options={[
-                                ["structured", t("PublicNote.CustomFields")],
-                                ["raw", t("PublicNote.RawText")],
-                            ]}
-                            onChange={(next) => {
-                                if (next === "structured" && !isNoteObject(parsed)) return
-                                setMode(next as "structured" | "raw")
-                                onChange(value, next as "structured" | "raw")
-                                setEmptyNumbers([])
-                                rowIds.current = []
-                            }}
-                        />
-                    </div>
-                </div>
-                {!isNoteObject(parsed) && (
-                    <p role="status" className="text-sm text-kumo-subtle">
-                        {t("PrivateNote.RawReason")}
-                    </p>
-                )}
-                {mode === "raw" ? (
-                    <Textarea
-                        aria-label={t("PrivateNote.RawText")}
-                        value={value}
-                        rows={4}
-                        onChange={(event) => onChange(event.target.value, "raw")}
-                    />
-                ) : (
-                    <>
-                        {canAddActual && (
-                            <Button
-                                type="button"
-                                variant="secondary"
-                                onClick={() =>
-                                    onChange(
-                                        patchJsonNote(
-                                            value,
-                                            ["billingDataMod", "actualAmount"],
-                                            "",
-                                        ),
-                                        "structured",
-                                    )
-                                }
-                            >
-                                {t("PrivateNote.AddActualAmount")}
-                            </Button>
-                        )}
-                        {rows(value)}
-                    </>
-                )}
-            </KumoPortalProvider>
-        </section>
+            {canAddActual && (
+                <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() =>
+                        onChange(
+                            patchJsonNote(value, ["billingDataMod", "actualAmount"], ""),
+                            "structured",
+                        )
+                    }
+                >
+                    {t("PrivateNote.AddActualAmount")}
+                </Button>
+            )}
+            {rows(value)}
+        </NoteEditor>
     )
 }

@@ -263,7 +263,6 @@
         },
         "RemoveTag": "Remove {{tag}}",
         "TagsHint": "Press Enter or comma to add a tag.",
-        "InvalidJSONHint": "This note is not valid JSON. Edit the original text to keep its content.",
         "Time": "Time"
     },
     "Validation": {
@@ -583,7 +582,6 @@
         "ActualCycle": "Actual expense period",
         "FollowPublicCycle": "Follow public billing period",
         "AddActualAmount": "Add actual expense",
-        "RawReason": "This note is not a JSON object. Edit it as raw text to preserve its content.",
         "Types": {
             "string": "Text",
             "number": "Number",
@@ -592,5 +590,8 @@
             "object": "Object",
             "array": "Array"
         }
+    },
+    "NoteEditor": {
+        "RawReason": "This note is not a JSON object. Edit it as raw text to preserve its content."
     }
 }

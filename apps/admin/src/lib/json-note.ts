@@ -9,6 +9,15 @@ export function parseJsonNote(raw = ""): unknown {
     }
 }
 
+export type NoteMode = "structured" | "raw"
+export const detectNoteMode = (raw?: string): NoteMode =>
+    isNoteObject(parseJsonNote(raw)) ? "structured" : "raw"
+export function prepareJsonNote(raw: string, mode: NoteMode): string {
+    if (mode === "raw") return raw.trim()
+    const value = parseJsonNote(raw)
+    return isNoteObject(value) && !Object.keys(value).length ? "" : raw
+}
+
 export type JsonPath = readonly (string | number)[]
 interface Member {
     key: string | number

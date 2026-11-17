@@ -1,12 +1,8 @@
 import { PrivateNoteEditor } from "@/components/private-note/editor"
 import { ServerCard } from "@/components/server"
 import i18n from "@/lib/i18n"
-import {
-    convertJsonType,
-    detectPrivateNoteMode,
-    preparePrivateNote,
-    privateNoteErrors,
-} from "@/lib/private-note"
+import { detectNoteMode, prepareJsonNote } from "@/lib/json-note"
+import { convertJsonType, privateNoteErrors } from "@/lib/private-note"
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { useState } from "react"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
@@ -159,7 +155,7 @@ test("unknown actual amounts and non-JSON private notes remain unchanged until e
     fireEvent.blur(screen.getByRole("textbox", { name: i18n.t("PrivateNote.ActualAmount") }))
     expect(change).not.toHaveBeenCalled()
     unmount()
-    for (const raw of ["legacy text", "[1]", "null"]) expect(detectPrivateNoteMode(raw)).toBe("raw")
+    for (const raw of ["legacy text", "[1]", "null"]) expect(detectNoteMode(raw)).toBe("raw")
     render(<Harness raw=" legacy text " />)
     expect(
         (
@@ -168,9 +164,9 @@ test("unknown actual amounts and non-JSON private notes remain unchanged until e
             }) as HTMLTextAreaElement
         ).value,
     ).toBe(" legacy text ")
-    expect(screen.getByText(i18n.t("PrivateNote.RawReason"))).toBeTruthy()
-    expect(preparePrivateNote("  text\n", "raw")).toBe("text")
-    expect(preparePrivateNote(" {} ", "structured")).toBe("")
+    expect(screen.getByText(i18n.t("NoteEditor.RawReason"))).toBeTruthy()
+    expect(prepareJsonNote("  text\n", "raw")).toBe("text")
+    expect(prepareJsonNote(" {} ", "structured")).toBe("")
 })
 test("private server submission rejects duplicate keys and saves valid note bytes", async () => {
     const raw = ' {"a":"one", "b":1e+2} '

@@ -27,8 +27,9 @@ import { IconButton } from "@/components/xui/icon-button"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
 import { withCollectionDefaults } from "@/lib/form"
 import i18n from "@/lib/i18n"
-import { detectPrivateNoteMode, preparePrivateNote, privateNoteErrors } from "@/lib/private-note"
-import { detectPublicNoteMode, preparePublicNote } from "@/lib/public-note"
+import { detectNoteMode, prepareJsonNote } from "@/lib/json-note"
+import { privateNoteErrors } from "@/lib/private-note"
+import { preparePublicNote } from "@/lib/public-note"
 import { asOptionalField, conv, errorMessage } from "@/lib/utils"
 import { ModelServer } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -93,7 +94,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate, routes }) 
     const [open, setOpen] = useState(false)
 
     const [privateNoteRaw, setPrivateNoteRaw] = useState(data?.note ?? "")
-    const [privateNoteMode, setPrivateNoteMode] = useState(detectPrivateNoteMode(data?.note ?? ""))
+    const [privateNoteMode, setPrivateNoteMode] = useState(detectNoteMode(data?.note ?? ""))
     const [privateNoteValid, setPrivateNoteValid] = useState(true)
     const formRef = useRef<HTMLFormElement>(null)
     const showNoteError = () => {
@@ -106,7 +107,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate, routes }) 
     }
 
     const [publicNoteRaw, setPublicNoteRaw] = useState(data?.public_note ?? "")
-    const [publicNoteMode, setPublicNoteMode] = useState(detectPublicNoteMode(data?.public_note))
+    const [publicNoteMode, setPublicNoteMode] = useState(detectNoteMode(data?.public_note))
 
     const { submitting, runSubmit } = useSubmitLock()
 
@@ -121,7 +122,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate, routes }) 
             return
         }
         try {
-            values.note = preparePrivateNote(privateNoteRaw, privateNoteMode)
+            values.note = prepareJsonNote(privateNoteRaw, privateNoteMode)
             values.ddns_profiles = values.ddns_profiles_raw
                 ? conv.strToArr(values.ddns_profiles_raw).map(Number)
                 : undefined
@@ -156,10 +157,10 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate, routes }) 
                     : undefined,
             })
             setPrivateNoteRaw(data?.note ?? "")
-            setPrivateNoteMode(detectPrivateNoteMode(data?.note ?? ""))
+            setPrivateNoteMode(detectNoteMode(data?.note ?? ""))
             setPrivateNoteValid(true)
             setPublicNoteRaw(data?.public_note ?? "")
-            setPublicNoteMode(detectPublicNoteMode(data?.public_note))
+            setPublicNoteMode(detectNoteMode(data?.public_note))
         }
         setOpen(v)
     }

@@ -163,14 +163,14 @@ for (const [engine, driver] of Object.entries({ chromium, webkit }))
                     note = original.replace('"USD 45"', '"0"').replace('"1TB/Month"', '"Unlimited"')
                     await open()
                     await expect(
-                        page.getByRole("button", { name: "免费", exact: true }),
-                    ).toHaveAttribute("aria-pressed", "true")
+                        page.getByRole("radio", { name: "免费", exact: true }),
+                    ).toHaveAttribute("aria-checked", "true")
                     await capture("free", '[data-note-field="amount"]')
                     await expect(
                         page.getByRole("switch", { name: "流量配额 · 不限" }),
                     ).toBeChecked()
                     await capture("unlimited", '[data-note-field="trafficVol"]')
-                    await page.getByRole("button", { name: "付费", exact: true }).click()
+                    await page.getByRole("radio", { name: "付费", exact: true }).click()
                     await page
                         .getByRole("textbox", { name: "金额", exact: true })
                         .pressSequentially("0.99")

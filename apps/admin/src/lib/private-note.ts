@@ -1,13 +1,10 @@
-import { type JsonPath, isNoteObject, jsonEntries, parseJsonNote } from "./json-note"
+import { type JsonPath, jsonEntries, parseJsonNote } from "./json-note"
 import { parseDecimal } from "./number"
 
 export const JSON_TYPES = ["string", "number", "boolean", "null", "object", "array"] as const
 export type JsonType = (typeof JSON_TYPES)[number]
 export const jsonType = (value: unknown): JsonType =>
     value === null ? "null" : Array.isArray(value) ? "array" : (typeof value as JsonType)
-export const detectPrivateNoteMode = (raw: string) =>
-    isNoteObject(parseJsonNote(raw)) ? ("structured" as const) : ("raw" as const)
-
 export function convertJsonType(raw: string, type: JsonType): unknown {
     const value = parseJsonNote(raw)
     if (jsonType(value) === type) return value
@@ -39,9 +36,4 @@ export function privateNoteErrors(
             ...privateNoteErrors(entry.raw, next, depth + 1),
         ] as { path: JsonPath; error: "EmptyKey" | "DuplicateKey" }[]
     })
-}
-
-export function preparePrivateNote(raw: string, mode: "structured" | "raw"): string {
-    if (mode === "raw") return raw.trim()
-    return isNoteObject(parseJsonNote(raw)) && !jsonEntries(raw).length ? "" : raw
 }

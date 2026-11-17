@@ -1,9 +1,5 @@
-import {
-    detectPublicNoteMode,
-    parsePublicNote,
-    patchPublicNote,
-    preparePublicNote,
-} from "@/lib/public-note"
+import { detectNoteMode, parseJsonNote } from "@/lib/json-note"
+import { patchPublicNote, preparePublicNote } from "@/lib/public-note"
 import { expect, test } from "vitest"
 
 const source =
@@ -12,13 +8,13 @@ test("editing one field preserves every untouched JSON byte and unknown key", ()
     expect(patchPublicNote(source, "planDataMod", "bandwidth", "50Mbps")).toBe(
         source.replace('"30Mbps"', '"50Mbps"'),
     )
-    expect(detectPublicNoteMode(source)).toBe("structured")
-    expect(parsePublicNote(source)).toMatchObject({ unknown: [100, { escaped: "中" }] })
+    expect(detectNoteMode(source)).toBe("structured")
+    expect(parseJsonNote(source)).toMatchObject({ unknown: [100, { escaped: "中" }] })
 })
-test("only malformed JSON defaults to raw; odd valid structures survive unchanged", () => {
-    expect(detectPublicNoteMode("plain text")).toBe("raw")
+test("only JSON objects default to forms; other valid structures survive in raw mode", () => {
+    expect(detectNoteMode("plain text")).toBe("raw")
     for (const raw of ["null", "[]", '"note"', '{"billingDataMod":null}']) {
-        expect(detectPublicNoteMode(raw)).toBe("structured")
+        expect(detectNoteMode(raw)).toBe(raw.startsWith("{") ? "structured" : "raw")
         expect(patchPublicNote(raw, "billingDataMod", "amount", "0")).toBe(raw)
     }
 })
@@ -58,6 +54,6 @@ test("save removes empty structured sections and trims only raw text", () => {
 test("new keys follow the preceding value before trailing indentation", () => {
     const raw = '{\n  "billingDataMod": {\n    "amount": "USD 45"\n  }\n}'
     expect(patchPublicNote(raw, "billingDataMod", "cycle", "Month")).toBe(
-        '{\n  "billingDataMod": {\n    "amount": "USD 45",\n    "cycle":"Month"\n  }\n}',
+        '{\n  "billingDataMod": {\n    "amount": "USD 45",\n    "cycle": "Month"\n  }\n}',
     )
 })
