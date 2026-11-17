@@ -26,3 +26,36 @@ test("generator dates display and expiry uses calendar months at the source time
     fireEvent.click(screen.getByRole("switch", { name: i18n.t("PublicNote.NoExpiry") }))
     expect(change).toHaveBeenLastCalledWith("0000-00-00T23:59:59+08:00")
 })
+
+test.each(["+08:00", "-0430", "Z"])(
+    "date/time edits retain zone %s and unchanged seconds",
+    (zone) => {
+        const change = vi.fn()
+        render(
+            <DateInput label="Date" value={`2026-11-11T10:20:37.123${zone}`} onChange={change} />,
+        )
+        expect(screen.getByRole("button", { name: /^Date · / }).textContent).toContain("10:20")
+        fireEvent.click(screen.getByRole("button", { name: /^Date · / }))
+        const clock = screen.getByLabelText(`Date · ${i18n.t("PublicNote.Time")}`)
+        fireEvent.change(clock, { target: { value: "10:20" } })
+        expect(change).not.toHaveBeenCalled()
+        fireEvent.click(
+            document.querySelector('button[data-day="2026-11-12"]') ||
+                screen.getByRole("button", { name: /2026年11月12日/ }),
+        )
+        expect(change).toHaveBeenLastCalledWith(`2026-11-12T10:20:37.123${zone}`)
+        fireEvent.change(clock, { target: { value: "14:35" } })
+        expect(change).toHaveBeenLastCalledWith(`2026-11-11T14:35:00${zone}`)
+    },
+)
+
+test("date-only values show midnight without writing until an edit", () => {
+    const change = vi.fn()
+    render(<DateInput label="Date" value="2026-11-11" onChange={change} />)
+    expect(screen.getByRole("button", { name: /^Date · / }).textContent).toContain("00:00")
+    fireEvent.click(screen.getByRole("button", { name: /^Date · / }))
+    expect(
+        (screen.getByLabelText(`Date · ${i18n.t("PublicNote.Time")}`) as HTMLInputElement).value,
+    ).toBe("00:00")
+    expect(change).not.toHaveBeenCalled()
+})

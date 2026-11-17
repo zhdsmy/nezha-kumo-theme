@@ -1,4 +1,4 @@
-import { Button, DatePicker, Popover, Switch } from "@cloudflare/kumo"
+import { Button, DatePicker, Input, Popover, Switch } from "@cloudflare/kumo"
 import { enUS, ja, zhCN, zhTW } from "date-fns/locale"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -29,6 +29,7 @@ export function DateInput({
             ? new Date(`${value!.slice(0, 10)}T12:00:00`)
             : new Date(time)
         : undefined
+    const clock = /[T ](\d{2}:\d{2})/.exec(value || "")?.[1] || "00:00"
     const period = parseCycle(cycle)
     const estimated = start && period ? addCycle(start, period) : undefined
     const locale = i18n.language.startsWith("zh-CN")
@@ -41,7 +42,7 @@ export function DateInput({
     const display = noExpiry
         ? t("PublicNote.NoExpiry")
         : selected
-          ? selected.toLocaleDateString(i18n.language)
+          ? `${selected.toLocaleDateString(i18n.language)} ${new Date(`2000-01-01T${clock}`).toLocaleTimeString(i18n.language, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })}`
           : value || t("PublicNote.Unset")
     return (
         <div className="space-y-2">
@@ -57,26 +58,50 @@ export function DateInput({
                         {display}
                     </Button>
                 </Popover.Trigger>
-                <Popover.Content align="start" className="w-auto p-3">
-                    <div data-note-calendar>
-                        <DatePicker
-                            navLayout="around"
-                            className="[--cell-size:36px] [--cell-width:36px]"
-                            mode="single"
-                            locale={locale}
-                            captionLayout="dropdown"
-                            selected={selected}
-                            defaultMonth={selected}
-                            startMonth={new Date(2000, 0)}
-                            endMonth={new Date(2100, 11)}
-                            onChange={(date) => {
-                                if (!date) return
-                                onChange(writeNoteDate(date, value))
-                                setOpen(false)
-                            }}
-                        />
-                    </div>
-                </Popover.Content>
+                <Popover.Portal>
+                    <Popover.Positioner align="start" sideOffset={8} collisionPadding={8}>
+                        <Popover.Popup className="w-auto max-h-[var(--available-height)] overflow-y-auto p-3">
+                            <div data-note-calendar>
+                                <DatePicker
+                                    navLayout="around"
+                                    className="[--cell-size:36px] [--cell-width:36px]"
+                                    mode="single"
+                                    locale={locale}
+                                    captionLayout="dropdown"
+                                    selected={selected}
+                                    defaultMonth={selected}
+                                    startMonth={new Date(2000, 0)}
+                                    endMonth={new Date(2100, 11)}
+                                    onChange={(date) => {
+                                        if (!date) return
+                                        onChange(writeNoteDate(date, value))
+                                    }}
+                                />
+                            </div>
+                            <div className="mt-3 flex items-end gap-2">
+                                <Input
+                                    type="time"
+                                    label={t("PublicNote.Time")}
+                                    aria-label={`${label} · ${t("PublicNote.Time")}`}
+                                    value={clock}
+                                    onChange={(event) => {
+                                        const next = event.target.value
+                                        if (!/^\d{2}:\d{2}$/.test(next) || next === clock) return
+                                        onChange(
+                                            writeNoteDate(selected || new Date(), value).replace(
+                                                /T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?/,
+                                                `T${next}:00`,
+                                            ),
+                                        )
+                                    }}
+                                />
+                                <Button type="button" onClick={() => setOpen(false)}>
+                                    {t("PublicNote.Apply")}
+                                </Button>
+                            </div>
+                        </Popover.Popup>
+                    </Popover.Positioner>
+                </Popover.Portal>
             </Popover>
             {value && time === undefined && (
                 <p className="text-xs text-muted-foreground">{t("PublicNote.Unrecognized")}</p>
