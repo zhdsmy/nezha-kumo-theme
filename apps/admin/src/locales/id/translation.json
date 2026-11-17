@@ -11,7 +11,6 @@
         "UsernameMin": "Nama pengguna harus minimal {{number}} karakter.",
         "PasswordRequired": "Kata sandi tidak boleh kosong.",
         "ErrorFetchingResource": "Galat Mengambil Sumber Daya : {{error}}",
-        "SelectAtLeastOneServer": "Harap pilih minimal satu server.",
         "UnExpectedError": "Galat tak terduga, Harap lihat konsol untuk detail.",
         "ForceUpdate": "Peningkatan paksa:",
         "NoRowsAreSelected": "Tidak ada baris yang dipilih",

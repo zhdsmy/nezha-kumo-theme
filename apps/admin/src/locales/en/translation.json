@@ -19,7 +19,6 @@
         "UsernameMin": "Username must be at least {{number}} characters.",
         "PasswordRequired": "Password cannot be empty.",
         "ErrorFetchingResource": "Error Fetching Resource : {{error}}",
-        "SelectAtLeastOneServer": "Please select at least one server.",
         "UnExpectedError": "Unexpected error, Please see the console for details.",
         "ForceUpdate": "Forced upgrade:",
         "NoRowsAreSelected": "No rows are selected",

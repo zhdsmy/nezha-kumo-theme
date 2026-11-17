@@ -258,6 +258,7 @@ export default function ServerPage() {
     })
 
     const selectedRows = table.getSelectedRowModel().rows
+    const selectedServerIds = selectedRows.map((r) => r.original.id)
 
     return (
         <Page
@@ -267,24 +268,22 @@ export default function ServerPage() {
                     className="flex gap-2 flex-wrap shrink-0"
                     delete={{
                         fn: deleteServer,
-                        id: selectedRows.map((r) => r.original.id),
+                        id: selectedServerIds,
                         mutate: mutate,
                     }}
                 >
                     <IconButton
                         icon="update"
+                        disabled={selectedServerIds.length === 0}
+                        title={
+                            selectedServerIds.length === 0
+                                ? t("Results.NoRowsAreSelected")
+                                : undefined
+                        }
                         onClick={async () => {
-                            const id = selectedRows.map((r) => r.original.id)
-                            if (id.length < 1) {
-                                toast.error(t("Error"), {
-                                    description: t("Results.SelectAtLeastOneServer"),
-                                })
-                                return
-                            }
-
                             let resp: ModelServerTaskResponse = {}
                             try {
-                                resp = await forceUpdateServer(id)
+                                resp = await forceUpdateServer(selectedServerIds)
                             } catch (e) {
                                 console.error(e)
                                 toast.error(t("Error"), {
@@ -311,8 +310,8 @@ export default function ServerPage() {
                             })
                         }}
                     />
-                    <BatchMoveServerIcon serverIds={selectedRows.map((r) => r.original.id)} />
-                    <ServerConfigCardBatch sid={selectedRows.map((r) => r.original.id)} />
+                    <BatchMoveServerIcon serverIds={selectedServerIds} />
+                    <ServerConfigCardBatch sid={selectedServerIds} />
                     <InstallCommandsMenu className="rounded-lg" />
                 </HeaderButtonGroup>
             }

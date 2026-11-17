@@ -19,7 +19,6 @@
         "UsernameMin": "ユーザー名は {{number}} 文字以上で入力してください。",
         "PasswordRequired": "パスワードを入力してください。",
         "ErrorFetchingResource": "リソースの取得エラー: {{error}}",
-        "SelectAtLeastOneServer": "少なくとも 1 台のサーバーを選択してください。",
         "UnExpectedError": "予期しないエラーが発生しました。詳細はコンソールを確認してください。",
         "ForceUpdate": "強制更新:",
         "NoRowsAreSelected": "行が選択されていません",

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { buttonVariants } from "@/components/ui/button"
 import { IconButton } from "@/components/xui/icon-button"
+import { errorMessage } from "@/lib/utils"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import { KeyedMutator } from "swr"
@@ -37,58 +38,50 @@ export function HeaderButtonGroup<E, U>({
     const handleDelete = async () => {
         try {
             await fn(id)
-        } catch (error: any) {
+        } catch (error) {
             toast.error(t("Error"), {
-                description: error.message,
+                description: errorMessage(error, t("Results.UnExpectedError")),
             })
         }
         await mutate()
     }
+
     return (
         <div className={className}>
             {id.length < 1 ? (
-                <>
-                    <IconButton
-                        variant="destructive"
-                        icon="trash"
-
-                        onClick={() => {
-                            toast.error(t("Error"), {
-                                description: t("Results.NoRowsAreSelected"),
-                            })
-                        }}
-                    />
-                    {children}
-                </>
+                <IconButton
+                    variant="destructive"
+                    icon="trash"
+                    disabled
+                    title={t("Results.NoRowsAreSelected")}
+                />
             ) : (
-                <>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <IconButton variant="destructive" icon="trash" />
-                        </AlertDialogTrigger>
-                        <AlertDialogContent className="sm:max-w-lg">
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>{t("ConfirmDeletion")}</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    {t("Results.ThisOperationIsUnrecoverable")}
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>{t("Close")}</AlertDialogCancel>
-                                <AlertDialogAction
-                                    className={buttonVariants({
-                                        variant: "destructive",
-                                    })}
-                                    onClick={handleDelete}
-                                >
-                                    {t("Confirm")}
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                    {children}
-                </>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <IconButton variant="destructive" icon="trash" />
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="sm:max-w-lg">
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>{t("ConfirmDeletion")}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {t("Results.ThisOperationIsUnrecoverable")}
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>{t("Close")}</AlertDialogCancel>
+                            <AlertDialogAction
+                                className={buttonVariants({
+                                    variant: "destructive",
+                                })}
+                                onClick={handleDelete}
+                            >
+                                {t("Confirm")}
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             )}
+            {children}
         </div>
     )
 }
@@ -103,58 +96,50 @@ export function HeaderBlockButtonGroup<E, U>({
     const handleBlock = async () => {
         try {
             await fn(id)
-        } catch (error: any) {
+        } catch (error) {
             toast.error(t("Error"), {
-                description: error.message,
+                description: errorMessage(error, t("Results.UnExpectedError")),
             })
         }
         await mutate()
     }
+
     return (
         <div className={className}>
             {id.length < 1 ? (
-                <>
-                    <IconButton
-                        variant="destructive"
-                        icon="ban"
-
-                        onClick={() => {
-                            toast.error(t("Error"), {
-                                description: t("Results.NoRowsAreSelected"),
-                            })
-                        }}
-                    />
-                    {children}
-                </>
+                <IconButton
+                    variant="destructive"
+                    icon="ban"
+                    disabled
+                    title={t("Results.NoRowsAreSelected")}
+                />
             ) : (
-                <>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <IconButton variant="destructive" icon="ban" />
-                        </AlertDialogTrigger>
-                        <AlertDialogContent className="sm:max-w-lg">
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>{t("ConfirmBlock")}</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    {t("Results.ThisOperationIsUnrecoverable")}
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>{t("Close")}</AlertDialogCancel>
-                                <AlertDialogAction
-                                    className={buttonVariants({
-                                        variant: "destructive",
-                                    })}
-                                    onClick={handleBlock}
-                                >
-                                    {t("Confirm")}
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                    {children}
-                </>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <IconButton variant="destructive" icon="ban" />
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="sm:max-w-lg">
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>{t("ConfirmBlock")}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {t("Results.ThisOperationIsUnrecoverable")}
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>{t("Close")}</AlertDialogCancel>
+                            <AlertDialogAction
+                                className={buttonVariants({
+                                    variant: "destructive",
+                                })}
+                                onClick={handleBlock}
+                            >
+                                {t("Confirm")}
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             )}
+            {children}
         </div>
     )
 }

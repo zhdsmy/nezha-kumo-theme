@@ -19,7 +19,6 @@
         "UsernameMin": "使用者名稱必須至少有 {{number}} 個字元。",
         "PasswordRequired": "密碼不能為空。",
         "ErrorFetchingResource": "取得資源時發生錯誤：{{error}}",
-        "SelectAtLeastOneServer": "請至少選擇一台伺服器。",
         "UnExpectedError": "意外錯誤，請查看控制台以了解詳細資訊。",
         "ForceUpdate": "強制升級：",
         "NoRowsAreSelected": "未選擇任何行",

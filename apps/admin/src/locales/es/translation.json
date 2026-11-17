@@ -23,7 +23,6 @@
         "ThisOperationIsUnrecoverable": "¡Esta operación no se puede deshacer!",
         "TheServerDoesNotOnline": "El servidor no existe o aún no se ha conectado",
         "InstallHostRequired": "La dirección de conexión del Agent no se ha configurado en los ajustes.",
-        "SelectAtLeastOneServer": "Por favor, seleccione al menos un servidor.",
         "UnknownIdentifier": "Identificador desconocido"
     },
     "Unknown": "desconocido",

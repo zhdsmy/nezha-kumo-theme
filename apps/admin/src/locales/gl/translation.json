@@ -13,7 +13,6 @@
         "UsernameMin": "O nome de usuario debe ter polo menos {{number}} caracteres.",
         "PasswordRequired": "O contrasinal non pode estar baleiro.",
         "ErrorFetchingResource": "Erro ao obter o recurso: {{error}}",
-        "SelectAtLeastOneServer": "Por favor, selecciona polo menos un servidor.",
         "UnExpectedError": "Erro inesperado. Consulta a consola para obter máis detalles.",
         "ForceUpdate": "Actualización forzada:",
         "NoRowsAreSelected": "Non hai filas seleccionadas",

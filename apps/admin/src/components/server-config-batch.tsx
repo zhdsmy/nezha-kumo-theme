@@ -61,11 +61,8 @@ export const ServerConfigCardBatch: React.FC<ServerConfigCardBatchProps> = ({ si
         <IconButton
             {...props}
             icon="cog"
-            onClick={() => {
-                toast.error(t("Error"), {
-                    description: t("Results.NoRowsAreSelected"),
-                })
-            }}
+            disabled
+            title={t("Results.NoRowsAreSelected")}
         />
     ) : (
         <Dialog open={open} onOpenChange={setOpen}>

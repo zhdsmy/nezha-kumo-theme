@@ -13,7 +13,6 @@
         "UsernameMin": "Numele de utilizator trebuie să conține cel puțin {{number}} de caractere lung.",
         "PasswordRequired": "Parola nu poate fii goală.",
         "ErrorFetchingResource": "Error Fetching Resource: {{error}}",
-        "SelectAtLeastOneServer": "Alege-ți cel puțin un server.",
         "UnExpectedError": "Eroare neașteptată, verificați consola pentru mai multe informații.",
         "ForceUpdate": "Upgradare forțată:",
         "NoRowsAreSelected": "Nu este niciun rând selectat",

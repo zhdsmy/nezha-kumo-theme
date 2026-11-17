@@ -21,7 +21,6 @@
         "TheServerDoesNotOnline": "Сервер не существует или еще не подключен",
         "PasswordRequired": "Пароль не может быть пустым.",
         "ErrorFetchingResource": "Ошибка при получении ресурса: {{error}}",
-        "SelectAtLeastOneServer": "Выберите хотя бы один сервер.",
         "UnExpectedError": "Непредвиденная ошибка. Подробности в консоли.",
         "ThisOperationIsUnrecoverable": "Эту операцию нельзя отменить!",
         "TaskTriggeredSuccessfully": "Задача успешно запущена",

@@ -80,11 +80,8 @@ export const BatchMoveServerIcon: React.FC<BatchMoveServerIconProps> = ({
         <IconButton
             {...props}
             icon="user-pen"
-            onClick={() => {
-                toast.error(t("Error"), {
-                    description: t("Results.NoRowsAreSelected"),
-                })
-            }}
+            disabled
+            title={t("Results.NoRowsAreSelected")}
         />
     ) : (
         <Dialog open={open} onOpenChange={setOpen}>

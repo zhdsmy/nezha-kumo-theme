@@ -7,7 +7,6 @@
     "Username": "Benutzername",
     "Results": {
         "PasswordRequired": "Passwort kann nicht leer sein.",
-        "SelectAtLeastOneServer": "Bitte wählen Sie mindestens einen Server aus.",
         "NoRowsAreSelected": "Keine Zeilen ausgewählt",
         "ThisOperationIsUnrecoverable": "Diese Operation kann nicht rückgängig gemacht werden!",
         "UnExpectedError": "Unerwarteter Fehler, mehr Details in der Konsole.",

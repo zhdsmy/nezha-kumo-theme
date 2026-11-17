@@ -9,7 +9,6 @@
     "Results": {
         "UsernameMin": "Le nom d’utilisateur doit comporter au moins {{number}} caractères.",
         "PasswordRequired": "Le mot de passe ne peut pas être vide.",
-        "SelectAtLeastOneServer": "Veuillez sélectionner au moins un serveur.",
         "UnExpectedError": "Erreur inattendue, veuillez consulter la console pour avoir plus de détails.",
         "ForceUpdate": "Mise à jour forcée :",
         "NoRowsAreSelected": "Aucune ligne n’a été sélectionnée",

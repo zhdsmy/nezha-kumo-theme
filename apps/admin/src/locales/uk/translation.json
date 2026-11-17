@@ -13,7 +13,6 @@
         "UsernameMin": "Ім'я користувача має містити не менше {{number}} символів.",
         "PasswordRequired": "Пароль не може бути порожнім.",
         "ErrorFetchingResource": "Помилка при отриманні ресурсу: {{error}}",
-        "SelectAtLeastOneServer": "Виберіть хоча б один сервер.",
         "UnExpectedError": "Непередбачена помилка. Подробиці у консолі.",
         "ForceUpdate": "Примусове оновлення:",
         "NoRowsAreSelected": "Не вибрані рядки",
