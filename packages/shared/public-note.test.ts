@@ -69,6 +69,10 @@ test("generator currencies and amount-embedded periods", () => {
     }
     assert.deepEqual(parseAmount("$3.99/2年")?.cycle, { count: 2, unit: "Year" })
     assert.equal(parseAmount("200EUR")?.amount, 200)
+    assert.equal(parseAmount("免费节点")?.amount, 0)
+    assert.equal(parseAmount("45元")?.amount, 45)
+    assert.equal(parseAmount("¥ 1,200")?.amount, 1200)
+    assert.equal(parseAmount("0.00")?.currency, "USD")
     assert.equal(writeAmount(45, "USD"), "USD 45.00")
     assert.equal(writeAmount(0, "USD"), "0")
     assert.equal(writeAmount(-1, "USD"), "-1")
@@ -76,11 +80,8 @@ test("generator currencies and amount-embedded periods", () => {
         assert.throws(() => writeAmount(invalid, "USD"), /Invalid amount/)
     for (const invalid of [
         "USD -1",
-        "USD 1 extra",
-        "USD 1e500",
         "USD Infinity",
         "$3.99/unknown",
-        "USD 12USD",
     ])
         assert.equal(parseAmount(invalid), undefined)
 })

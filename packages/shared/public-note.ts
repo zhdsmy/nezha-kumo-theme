@@ -55,6 +55,7 @@ export function currencies(): string[] {
 export const CURRENCY_SYMBOLS: Record<string, string> = {
     "¥": "CNY",
     "￥": "CNY",
+    元: "CNY",
     $: "USD",
     "€": "EUR",
     "£": "GBP",
@@ -86,16 +87,16 @@ export function parseAmount(value: unknown): Amount | undefined {
     const [price, period, ...rest] = value.trim().split("/")
     const cycle = period === undefined ? undefined : parseCycle(period)
     if (rest.length || (period !== undefined && !cycle)) return
-    if (/^(0|-1|free|免费|免費)$/i.test(price)) {
+    if (price === "-1" || price === "0" || /free|免费|免費/i.test(price)) {
         return { amount: price === "-1" ? -1 : 0, currency: "", symbol: "", cycle }
     }
-    const match = /^([^\d\s.,+-]*)\s*(\d+(?:\.\d+)?)\s*([^\d\s.,+-]*)$/.exec(price)
-    if (!match || (match[1] && match[3])) return
-    const symbol = match[1] || match[3]
+    const normalized = price.replace(/(\d),(?=\d{3}(?:\D|$))/g, "$1")
+    const match = /-?\d+(?:\.\d+)?/.exec(normalized)
+    if (!match) return
+    const amount = Number(match[0])
+    const symbol = normalized.replace(match[0], "").trim()
     const currency = currencyCode(symbol) || (symbol ? "" : "USD")
-    const amount = Number(match[2])
-    if (/^[A-Z]{3}$/.test(currency) && Number.isFinite(amount))
-        return { amount, currency, symbol, cycle }
+    if (Number.isFinite(amount) && amount >= 0) return { amount, currency, symbol, cycle }
 }
 export function writeAmount(amount: number, currency: string): string {
     if (!Number.isFinite(amount) || (amount < 0 && amount !== -1)) throw new Error("Invalid amount")

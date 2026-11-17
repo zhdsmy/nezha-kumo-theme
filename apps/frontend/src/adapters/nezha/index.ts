@@ -146,7 +146,7 @@ export function parseActualCost(note: unknown): ActualCost | undefined {
     if (typeof note !== "string") return
     try {
         const price = parseAmount(JSON.parse(note)?.billingDataMod?.actualAmount)
-        if (price && price.symbol && price.amount >= 0) {
+        if (price && price.symbol && price.currency && price.amount >= 0) {
             return { currency: price.currency, amount: price.amount }
         }
     } catch {
@@ -183,8 +183,13 @@ export function parsePublicNote(note: string | undefined) {
     if (b) {
         const amount = parseAmount(b.amount)
         if (amount) {
-            out.price = amount.amount === -1 ? -2 : amount.amount === 0 ? -1 : amount.amount
-            out.currency = amount.symbol || "$"
+            out.price =
+                amount.amount === -1
+                    ? -2
+                    : amount.amount === 0 && !amount.currency
+                      ? -1
+                      : amount.amount
+            if (amount.amount > 0) out.currency = amount.symbol.slice(0, 4) || "$"
         }
         out.billingCycle = cycleDays(
             parseCycle(b.cycle) ?? (!text(b.cycle) ? amount?.cycle : undefined),

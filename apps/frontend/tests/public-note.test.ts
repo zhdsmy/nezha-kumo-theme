@@ -76,3 +76,16 @@ it("preserves all 21 anonymous public notes against a17fb3d except the planned o
         })
     }
 })
+
+it.each([
+    ["免费节点", -1, "$"],
+    ["45元", 45, "元"],
+    ["¥ 1,200", 1200, "¥"],
+    ["0.00", 0, "$"],
+    ["9.99C", 9.99, "C"],
+])("keeps legacy amount display for %s", (amount, price, currency) => {
+    expect(parsePublicNote(JSON.stringify({ billingDataMod: { amount } }))).toMatchObject({
+        price,
+        currency,
+    })
+})
