@@ -1,5 +1,5 @@
 import { adapter, refresh, useStore } from "@/app/store"
-import { Button, Dialog, Input, Loader } from "@cloudflare/kumo"
+import { Banner, Button, Dialog, Input, Loader } from "@cloudflare/kumo"
 import { XIcon } from "@phosphor-icons/react"
 import { type FormEvent, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -84,9 +84,9 @@ function LoginForm({ close }: { close: () => void }) {
                 </div>
             )}
             {message && (
-                <p role="alert" className="text-kumo-danger mt-4">
+                <Banner variant="error" size="sm" role="alert" className="mt-4">
                     {message}
-                </p>
+                </Banner>
             )}
             <p className="muted mt-5 text-xs">{t("auth.wafHint")}</p>
         </>

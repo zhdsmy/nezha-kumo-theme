@@ -702,16 +702,14 @@
     text-wrap: balance;
     text-align: right;
 }
-.notice {
-    margin: 16px 0 24px;
-    color: var(--text-color-kumo-subtle);
-    font-size: 12px;
-    line-height: 20px;
+.disconnect-banner-wrap {
+    width: 100%;
+    max-width: calc(var(--nk-page-max, 1280px) + 2 * var(--nk-gutter));
+    padding: 16px var(--nk-gutter) 0;
+    margin: 0 auto;
 }
-.node-info-panel .notice {
-    margin: 12px 0 0;
-    padding-top: 10px;
-    border-top: 1px solid var(--color-kumo-line);
+.disconnect-banner-wrap[data-node] {
+    --nk-page-max: 1100px;
 }
 .quota-track {
     height: 8px;

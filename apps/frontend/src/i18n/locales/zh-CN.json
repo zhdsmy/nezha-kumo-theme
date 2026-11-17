@@ -17,7 +17,8 @@
         "connecting": "连接中",
         "reconnecting": "重新连接中",
         "online": "在线",
-        "offline": "离线"
+        "offline": "离线",
+        "disconnectedBanner": "实时连接已断开，正在自动重新连接…"
     },
     "overview": {
         "nodes": "在线节点",

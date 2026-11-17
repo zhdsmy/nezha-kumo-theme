@@ -13,14 +13,14 @@ import { HourGrid } from "@/components/HourGrid"
 import { LoadCharts, PingChart } from "@/components/NodeCharts"
 import { RegionFlag } from "@/components/RegionFlag"
 import { useBilling } from "@/components/billing"
-import { Info, Loading, Meter, NoData, PageFootnote, Status } from "@/components/ui"
+import { ErrorBanner, Info, Loading, Meter, NoData, PageFootnote, Status } from "@/components/ui"
 import { formatBytes, formatSpeed, formatUsage, quotaUsage, ratio } from "@/core/format"
 import { pollVisible } from "@/core/http"
 import type { HistoryPoint, PingData } from "@/core/model"
 import { regionName, stripFlag } from "@/core/region"
 import { summariseDay } from "@/core/summary"
 import { uiLabels } from "@/i18n"
-import { Button, RefreshButton, Tabs } from "@cloudflare/kumo"
+import { Banner, Button, RefreshButton, Tabs } from "@cloudflare/kumo"
 import { Page } from "@nezha-kumo/ui"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -409,7 +409,9 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                     ]}
                                 />
                                 {node.trafficLimitPeriod ? (
-                                    <p className="notice">{t("node.noCycleUsage")}</p>
+                                    <Banner variant="secondary" size="sm" className="mt-3">
+                                        {t("node.noCycleUsage")}
+                                    </Banner>
                                 ) : null}
                                 {used !== null && node.trafficLimit > 0 && (
                                     <div
@@ -452,7 +454,13 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                         ]}
                                     />
                                     {node.note && (
-                                        <p className="notice whitespace-pre-line">{node.note}</p>
+                                        <Banner
+                                            variant="secondary"
+                                            size="sm"
+                                            className="mt-3 whitespace-pre-line"
+                                        >
+                                            {node.note}
+                                        </Banner>
                                     )}
                                 </div>
                             )}
@@ -461,9 +469,16 @@ export default function NodePage({ id, section }: { id: string; section: Section
                 )}
                 {section === "load" && (
                     <>
-                        {!recordHours && <p className="notice">{t("node.liveOnly")}</p>}
+                        {!recordHours && (
+                            <Banner variant="secondary" size="sm" className="mb-4">
+                                {t("node.liveOnly")}
+                            </Banner>
+                        )}
                         {historyError === dataKey ? (
-                            <NoData title={t("app.loadError")} retry={triggerRefresh} />
+                            <ErrorBanner
+                                description={t("app.loadErrorHint")}
+                                onRetry={triggerRefresh}
+                            />
                         ) : points !== null && points.length >= 2 ? (
                             <div
                                 className={
@@ -520,7 +535,10 @@ export default function NodePage({ id, section }: { id: string; section: Section
                         {!recordHours ? (
                             <NoData title={t("node.liveOnly")} />
                         ) : pingError === dataKey ? (
-                            <NoData title={t("app.loadError")} retry={triggerRefresh} />
+                            <ErrorBanner
+                                description={t("app.loadErrorHint")}
+                                onRetry={triggerRefresh}
+                            />
                         ) : pingData !== null && pingData.tasks.length > 0 ? (
                             <div className="transition-opacity">
                                 <PingChart
@@ -563,7 +581,10 @@ export default function NodePage({ id, section }: { id: string; section: Section
                         {!recordHours ? (
                             <NoData title={t("node.liveOnly")} />
                         ) : reportError === reportKey ? (
-                            <NoData title={t("app.loadError")} retry={triggerRefresh} />
+                            <ErrorBanner
+                                description={t("app.loadErrorHint")}
+                                onRetry={triggerRefresh}
+                            />
                         ) : reports !== null && reports.length > 0 ? (
                             <div className="chart-card transition-opacity">
                                 <HourGrid points={reports} days={reportHours / 24} />

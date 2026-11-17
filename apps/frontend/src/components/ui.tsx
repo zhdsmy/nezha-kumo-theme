@@ -4,7 +4,7 @@ import { formatPercent } from "@/core/format"
 import type { Bucket } from "@/core/live"
 import type { Snapshot } from "@/core/model"
 import { readStorage } from "@/core/storage"
-import { Badge, Empty, SkeletonLine } from "@cloudflare/kumo"
+import { Badge, Banner, Empty, SkeletonLine } from "@cloudflare/kumo"
 import { type ReactNode, useId } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -515,6 +515,27 @@ export function Loading({ variant = "home" }: { variant?: LoadingVariant } = {})
                 </div>
             )}
         </div>
+    )
+}
+
+export function ErrorBanner({
+    title,
+    description,
+    onRetry,
+}: {
+    title?: string
+    description?: string
+    onRetry: () => void
+}) {
+    const { t } = useTranslation()
+    return (
+        <Banner
+            variant="error"
+            role="alert"
+            title={title ?? t("app.loadError")}
+            description={description}
+            action={<Banner.Action onClick={onRetry}>{t("app.retry")}</Banner.Action>}
+        />
     )
 }
 

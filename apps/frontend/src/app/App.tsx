@@ -1,6 +1,6 @@
 import { Actions, SidebarSearch } from "@/components/Actions"
 import { RegionFlag } from "@/components/RegionFlag"
-import { Loading, NoData, PageFootnote, Status } from "@/components/ui"
+import { ErrorBanner, Loading, PageFootnote, Status } from "@/components/ui"
 import { loadExchangeRates } from "@/core/cost"
 import { groupCounts, parseFilterQuery, resolvePeerGroup } from "@/core/filter"
 import { peerNodes } from "@/core/fleet"
@@ -8,7 +8,7 @@ import { pollVisible } from "@/core/http"
 import { stripFlag } from "@/core/region"
 import { resolveLocale, setLocale, uiLabels } from "@/i18n"
 import { HomePage } from "@/pages/HomePage"
-import { Button, SkeletonLine, Tabs } from "@cloudflare/kumo"
+import { Banner, SkeletonLine, Tabs } from "@cloudflare/kumo"
 import { useSidebar } from "@cloudflare/kumo/components/sidebar"
 import { AppShell, Page, type ShellLinkProps } from "@nezha-kumo/ui"
 import { FolderSimpleIcon, GaugeIcon, GlobeIcon, HardDrivesIcon } from "@phosphor-icons/react"
@@ -260,6 +260,15 @@ export function App() {
         })
         return () => cancelAnimationFrame(frame)
     }, [nodeId, peers.length])
+    const [disconnected, setDisconnected] = useState(false)
+    useEffect(() => {
+        if (phase !== "ready" || connection === "open") {
+            setDisconnected(false)
+            return
+        }
+        const timer = setTimeout(() => setDisconnected(true), 5_000)
+        return () => clearTimeout(timer)
+    }, [phase, connection])
     return (
         <>
             <style>{responsive}</style>
@@ -386,13 +395,25 @@ export function App() {
                     </span>
                 }
             >
+                {disconnected && (
+                    <div className="disconnect-banner-wrap" data-node={nodeId ? "" : undefined}>
+                        <Banner
+                            variant="alert"
+                            size="sm"
+                            role="status"
+                            className="disconnect-banner"
+                        >
+                            {t("status.disconnectedBanner")}
+                        </Banner>
+                    </div>
+                )}
                 <ErrorBoundary
                     resetKey={url.pathname}
                     fallback={
-                        <Page title={t("app.loadError")}>
-                            <NoData
-                                title={t("app.loadError")}
-                                retry={() => window.location.reload()}
+                        <Page title={t("ui.overview")}>
+                            <ErrorBanner
+                                description={t("app.loadErrorHint")}
+                                onRetry={() => window.location.reload()}
                             />
                         </Page>
                     }
@@ -450,10 +471,11 @@ export function App() {
                             </Page>
                         )
                     ) : phase === "error" ? (
-                        <Page title={t("app.loadError")} description={t("app.loadErrorHint")}>
-                            <Button variant="primary" onClick={() => void start()}>
-                                {t("app.retry")}
-                            </Button>
+                        <Page title={t("ui.overview")}>
+                            <ErrorBanner
+                                description={t("app.loadErrorHint")}
+                                onRetry={() => void start()}
+                            />
                         </Page>
                     ) : nodeId ? (
                         <Suspense

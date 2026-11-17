@@ -19,7 +19,8 @@
         "connecting": "Connecting",
         "reconnecting": "Reconnecting",
         "online": "Online",
-        "offline": "Offline"
+        "offline": "Offline",
+        "disconnectedBanner": "Live connection interrupted — reconnecting automatically…"
     },
     "overview": {
         "nodes": "Nodes online",

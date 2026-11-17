@@ -17,7 +17,8 @@
         "connecting": "連線中",
         "reconnecting": "重新連線中",
         "online": "在線",
-        "offline": "離線"
+        "offline": "離線",
+        "disconnectedBanner": "即時連線已中斷，正在自動重新連線…"
     },
     "overview": {
         "nodes": "在線節點",
