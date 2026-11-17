@@ -39,6 +39,8 @@ export function cycleDays(cycle: Cycle | undefined): number {
 }
 export function writeCycle({ count, unit }: Cycle): string {
     if (!Number.isSafeInteger(count) || count < 1) throw new Error("Invalid cycle")
+    if (unit === "Month" && count % 12 === 0) return writeCycle({ count: count / 12, unit: "Year" })
+    if (unit === "Day" && count % 7 === 0) return writeCycle({ count: count / 7, unit: "Week" })
     return count === 1
         ? unit
         : unit === "Month" && count === 3

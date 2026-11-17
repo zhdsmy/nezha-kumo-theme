@@ -34,13 +34,19 @@ test("all documented dialects and case variants share one cycle definition", () 
                 assert.deepEqual(parseCycle(variant), { count, unit }, variant)
         }
     for (const unit of ["Day", "Week", "Month", "Year"] as const)
-        for (const count of [1, 2, 3, 6, 12, 999]) {
-            assert.deepEqual(parseCycle(writeCycle({ count, unit })), {
-                count,
-                unit,
-            })
+        for (const count of [1, 2, 3, 6, 7, 12, 14, 24, 999]) {
+            const canonical =
+                unit === "Month" && count % 12 === 0
+                    ? { count: count / 12, unit: "Year" }
+                    : unit === "Day" && count % 7 === 0
+                      ? { count: count / 7, unit: "Week" }
+                      : { count, unit }
+            assert.deepEqual(parseCycle(writeCycle({ count, unit })), canonical)
             assert.deepEqual(parseCycle(`${count} ${unit}`), { count, unit })
         }
+    assert.equal(writeCycle({ count: 12, unit: "Month" }), "Year")
+    assert.equal(writeCycle({ count: 24, unit: "Month" }), "2Year")
+    assert.equal(writeCycle({ count: 14, unit: "Day" }), "2Week")
     assert.deepEqual(parseCycle("2 年"), { count: 2, unit: "Year" })
     for (const invalid of [
         "两月付",
