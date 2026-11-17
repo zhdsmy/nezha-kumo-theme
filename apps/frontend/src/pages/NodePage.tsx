@@ -1,3 +1,5 @@
+import { HISTORY_CACHE_MS } from "@/adapters/nezha"
+import { useLocalMidnight } from "@/app/history"
 import { setShave, useShave } from "@/app/prefs"
 import { Link, navigate, useLastListHref, usePathname } from "@/app/router"
 import { SECTIONS, type Section } from "@/app/sections"
@@ -18,7 +20,7 @@ import { formatBytes, formatSpeed, formatUsage, quotaUsage, ratio } from "@/core
 import { isCanceledError, pollVisible } from "@/core/http"
 import type { HistoryPoint, PingData } from "@/core/model"
 import { regionName, stripFlag } from "@/core/region"
-import { summariseDay } from "@/core/summary"
+import { mergeHistoryTail, summariseDay } from "@/core/summary"
 import { uiLabels } from "@/i18n"
 import { Banner, RefreshButton, Tabs } from "@cloudflare/kumo"
 import { Page } from "@nezha-kumo/ui"
@@ -43,7 +45,9 @@ export default function NodePage({ id, section }: { id: string; section: Section
     const [range, setRange] = useState(0)
     const ranges = adapter.historyRanges.filter((h) => h === 0 || h <= recordHours)
     const activeRange = ranges.includes(range) ? range : 0
-    const liveVersion = useStore((s) => (section === "load" && !activeRange ? s.liveVersion : -1))
+    const liveVersion = useStore((s) =>
+        section === "overview" || (section === "load" && !activeRange) ? s.liveVersion : -1,
+    )
     const [nonce, setNonce] = useState(0)
     const [liveBackfilledKey, setLiveBackfilledKey] = useState("")
     const [history, setHistory] = useState<{
@@ -70,7 +74,8 @@ export default function NodePage({ id, section }: { id: string; section: Section
     const shave = useShave()
     const billing = useBilling()
     const dataKey = `${id}:${activeRange}:${nonce}`
-    const dayKey = `${id}:${nonce}`
+    const midnight = useLocalMidnight()
+    const dayKey = `${id}:${nonce}:${midnight}`
     const reportHours = recordHours >= 168 ? 168 : 24
     const reportKey = `${id}:${reportHours}:${nonce}`
     const dayPoints = dayResult?.key === dayKey ? dayResult.points : null
@@ -132,16 +137,17 @@ export default function NodePage({ id, section }: { id: string; section: Section
         }
     }, [id, activeRange, section, recordHours, dataKey])
     useEffect(() => {
-        if (section !== "overview" || !recordHours || dayPoints) return
+        if (section !== "overview" || !recordHours) return
         const ctrl = new AbortController()
-        adapter
-            .loadHistory(id, 24, "billing", ctrl.signal)
-            .then((p) => {
-                if (!ctrl.signal.aborted) setDayResult({ key: dayKey, points: p })
-            })
-            .catch(() => {})
-        return () => ctrl.abort()
-    }, [id, recordHours, section, dayKey, dayPoints])
+        const stop = pollVisible(async () => {
+            const points = await adapter.loadHistory(id, 24, "billing", ctrl.signal)
+            if (!ctrl.signal.aborted) setDayResult({ key: dayKey, points })
+        }, HISTORY_CACHE_MS)
+        return () => {
+            ctrl.abort()
+            stop()
+        }
+    }, [id, recordHours, section, dayKey])
     useEffect(() => {
         if (section !== "history" || !recordHours) return
         const ctrl = new AbortController()
@@ -200,7 +206,11 @@ export default function NodePage({ id, section }: { id: string; section: Section
               : t("node.rangeDays", { count: h / 24 })
     const day =
         dayPoints?.length && snap
-            ? summariseDay(dayPoints, snap, new Date().setHours(0, 0, 0, 0))
+            ? summariseDay(
+                  mergeHistoryTail(dayPoints, getLive(id), Date.now() - 86_400_000),
+                  snap,
+                  midnight,
+              )
             : null
     const mem = snap?.memTotal || node.memTotal,
         disk = snap?.diskTotal || node.diskTotal

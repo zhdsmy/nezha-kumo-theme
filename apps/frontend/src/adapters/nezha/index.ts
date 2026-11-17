@@ -556,7 +556,11 @@ function cached<T>(
 ): Promise<T> {
     if (signal?.aborted) return Promise.reject(abortError(signal))
     let entry = historyCache.get(key)
-    if (!entry || Date.now() - entry.at >= ttl) {
+    if (
+        !entry ||
+        Date.now() - entry.at >= ttl ||
+        new Date(entry.at).toDateString() !== new Date().toDateString()
+    ) {
         const ctrl = new AbortController()
         const next: CacheEntry = {
             at: Date.now(),
