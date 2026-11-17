@@ -29,7 +29,9 @@ const STORAGE_KEY = "nkt:sidebar-collapsed"
 const FOCUSABLE = 'a[href], button:not([disabled]), input, select, textarea, [tabindex="0"]'
 
 // CSS media queries cannot read custom properties; derive them from the contract here.
-const responsiveStyles = `@media (min-width:${BREAKPOINTS.gutter}px){.nk-shell{--nk-gutter:32px}.nk-action-label{display:inline}}@media (min-width:${BREAKPOINTS.aside}px){.nk-page-with-aside{grid-template-columns:minmax(0,1fr) var(--nk-aside-width)}.nk-page-with-aside>.nk-page-main{border-right:1px solid var(--color-kumo-line)}.nk-page-with-aside>.nk-page-aside{border-top:0;padding:32px}}`
+// The first rule: Kumo switches to the drawer from JS; until that render lands, the desktop sidebar
+// must not squeeze the content area on a narrow viewport (seen after folding a foldable phone).
+const responsiveStyles = `@media (max-width:${BREAKPOINTS.sidebar - 1}px){.nk-sidebar:not([data-mobile]){display:none}}@media (min-width:${BREAKPOINTS.gutter}px){.nk-shell{--nk-gutter:32px}.nk-action-label{display:inline}}@media (min-width:${BREAKPOINTS.aside}px){.nk-page-with-aside{grid-template-columns:minmax(0,1fr) var(--nk-aside-width)}.nk-page-with-aside>.nk-page-main{border-right:1px solid var(--color-kumo-line)}.nk-page-with-aside>.nk-page-aside{border-top:0;padding:32px}}`
 
 function Anchor(props: ShellLinkProps) {
     return <a {...props} />
