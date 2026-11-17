@@ -35,7 +35,20 @@ export default defineConfig(({ mode }) => {
                   }
                 : undefined,
         },
-        build: { manifest: true, sourcemap: false },
+        optimizeDeps: {
+            include: ["@cloudflare/kumo/components/command-palette"],
+        },
+        build: {
+            manifest: true,
+            sourcemap: false,
+            rolldownOptions: {
+                output: {
+                    codeSplitting: {
+                        groups: [{ name: "vendor", tags: ["$initial"] }],
+                    },
+                },
+            },
+        },
         test: { include: ["tests/**/*.test.ts"], environment: "node" },
     }
 })

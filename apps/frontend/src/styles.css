@@ -815,23 +815,37 @@
     padding-top: 20px;
     border-top: 1px solid var(--color-kumo-line);
 }
-.search-results {
-    max-height: 50svh;
-    overflow-y: auto;
-    margin: 8px -11px;
-    padding: 4px 3px;
+[role="dialog"]:has(.nk-search-palette) {
+    width: min(42rem, calc(100vw - 32px));
 }
 .search-result {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
     min-height: 44px;
     padding: 8px;
-    border-radius: 8px;
+    font-size: 14px;
 }
+.search-result[data-highlighted],
 .search-result:hover {
     background: var(--color-kumo-tint);
+}
+.search-result-main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    gap: 2px;
+}
+.search-result-name,
+.search-result-groups {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.search-result-name {
+    font-weight: 500;
+}
+.search-result-groups {
+    font-size: 12px;
+    line-height: 16px;
 }
 
 .numeric-text {

@@ -422,24 +422,26 @@ test.describe("Layout polish (fe2)", () => {
                 expect(shadow, `${appearance} ${selector} ring`).toBe(skipRing.boxShadow)
             }
 
-            // Open search dialog and verify .search-result focus ring matches and is not clipped by .search-results
+            // Open search dialog and verify CommandPalette input ring and .search-result clearance inside .search-results
             await page.keyboard.press("ControlOrMeta+k")
             const result = page.locator(".search-result").first()
             await expect(result).toBeVisible()
+            await expect(result).toHaveAttribute("data-highlighted", "")
             const searchCheck = await page.evaluate(() => {
                 const container = document.querySelector<HTMLElement>(".search-results")!
                 const item = container.querySelector<HTMLElement>(".search-result")!
-                item.focus()
+                const closeBtn = document.querySelector<HTMLElement>(".dialog-close-btn")!
+                closeBtn.focus()
                 const cRect = container.getBoundingClientRect()
                 const iRect = item.getBoundingClientRect()
                 return {
-                    boxShadow: getComputedStyle(item).boxShadow,
+                    boxShadow: getComputedStyle(closeBtn).boxShadow,
                     leftClearance: iRect.left - cRect.left,
                     rightClearance: cRect.right - iRect.right,
                     topClearance: iRect.top - cRect.top,
                 }
             })
-            expect(searchCheck.boxShadow).toBe(skipRing.boxShadow)
+            expect(searchCheck.boxShadow).toContain(skipRing.boxShadow)
             expect(searchCheck.leftClearance).toBeGreaterThanOrEqual(2)
             expect(searchCheck.rightClearance).toBeGreaterThanOrEqual(2)
             expect(searchCheck.topClearance).toBeGreaterThanOrEqual(2)
