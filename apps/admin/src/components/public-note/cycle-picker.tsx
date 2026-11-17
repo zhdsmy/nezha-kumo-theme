@@ -9,7 +9,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { useId, useState } from "react"
+import { useEffect, useId, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
@@ -40,6 +40,11 @@ export function CyclePicker({ value, onChange, label }: NoteControlProps) {
     const parsed = parseCycle(value)
     const [open, setOpen] = useState(false)
     const [custom, setCustom] = useState(false)
+    const countRef = useRef<HTMLInputElement>(null)
+    const customRef = useRef<HTMLButtonElement>(null)
+    useEffect(() => {
+        ;(custom ? countRef.current : customRef.current)?.focus({ preventScroll: true })
+    }, [custom])
     const [count, setCount] = useState("1")
     const [unit, setUnit] = useState<CycleUnit>("Month")
     const display = (cycle: Cycle) =>
@@ -86,6 +91,7 @@ export function CyclePicker({ value, onChange, label }: NoteControlProps) {
                             </Button>
                             <div className="grid grid-cols-2 gap-2">
                                 <Input
+                                    ref={countRef}
                                     type="number"
                                     min={1}
                                     max={9999}
@@ -143,8 +149,9 @@ export function CyclePicker({ value, onChange, label }: NoteControlProps) {
                             ))}
                             <Button
                                 type="button"
-                                variant="ghost"
+                                variant={parsed && parsed.count !== 1 ? "secondary" : "ghost"}
                                 className="w-full justify-between"
+                                ref={customRef}
                                 aria-pressed={!!parsed && parsed.count !== 1}
                                 onClick={() => setCustom(true)}
                             >
