@@ -1,4 +1,5 @@
 import {
+    ColumnDef,
     columnSizingFeature,
     columnVisibilityFeature,
     createSortedRowModel,
@@ -8,7 +9,9 @@ import {
     sortFn_datetime,
     sortFn_text,
     tableFeatures,
+    useTable,
 } from "@tanstack/react-table"
+import { useEffect } from "react"
 
 export const selectableTableFeatures = tableFeatures({
     columnVisibilityFeature,
@@ -27,3 +30,28 @@ export const virtualizedTableFeatures = tableFeatures({
         text: sortFn_text,
     },
 })
+
+type EntityRow = { id?: number; group?: { id: number }; ip?: string }
+const entityRowId = (row: EntityRow) => String(row.group?.id ?? row.id ?? row.ip)
+
+export function useSelectableTable<T extends EntityRow>(
+    data: T[],
+    columns: ColumnDef<typeof selectableTableFeatures, T>[],
+) {
+    const table = useTable({
+        features: selectableTableFeatures,
+        data,
+        columns,
+        getRowId: entityRowId,
+    })
+    useEffect(() => {
+        const ids = new Set(data.map(entityRowId))
+        table.setRowSelection((selected) => {
+            const entries = Object.entries(selected).filter(([id]) => ids.has(id))
+            return entries.length === Object.keys(selected).length
+                ? selected
+                : Object.fromEntries(entries)
+        })
+    }, [data, table])
+    return table
+}

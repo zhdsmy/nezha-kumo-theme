@@ -1,4 +1,5 @@
 import { CopyButton } from "@/components/copy-button"
+import { NoteMenu } from "@/components/note-menu"
 import { UserAvatar, getAvatarColor, getAvatarInitials } from "@/components/ui/avatar"
 import { TablePagination } from "@/components/ui/pagination"
 import { PasswordInput } from "@/components/ui/password-input"
@@ -414,4 +415,27 @@ describe("UserAvatar local initials & contrast", () => {
         expect(container.querySelectorAll("img")).toHaveLength(0)
         expect(container.innerHTML.toLowerCase()).not.toContain("dicebear")
     })
+})
+
+test("ADM-08: NoteMenu reports clipboard failure and allows a successful retry", async () => {
+    const writeText = vi
+        .fn()
+        .mockRejectedValueOnce(new Error("denied"))
+        .mockResolvedValue(undefined)
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } })
+    mocks.copyFallback.mockResolvedValue(false)
+    const { container } = render(<NoteMenu note={{ private: "test note" }} />)
+    const trigger = container.querySelector("button")!
+    fireEvent.pointerDown(trigger, { button: 0, ctrlKey: false, pointerType: "mouse" })
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Private" }))
+    await waitFor(() =>
+        expect(mocks.toastError).toHaveBeenCalledWith("Error", {
+            description: "Clipboard write failed",
+        }),
+    )
+    expect(container.querySelector(".lucide-check")).toBeNull()
+    fireEvent.pointerDown(trigger, { button: 0, ctrlKey: false, pointerType: "mouse" })
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Private" }))
+    await waitFor(() => expect(container.querySelector(".lucide-check")).not.toBeNull())
+    expect(writeText).toHaveBeenCalledTimes(2)
 })

@@ -14,10 +14,10 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { useAuth } from "@/hooks/useAuth"
-import { selectableTableFeatures } from "@/lib/table"
+import { selectableTableFeatures, useSelectableTable } from "@/lib/table"
 import { ModelOnlineUser, ModelOnlineUserApi } from "@/types"
 import { Page } from "@nezha-kumo/ui"
-import { ColumnDef, flexRender, useTable } from "@tanstack/react-table"
+import { ColumnDef, flexRender } from "@tanstack/react-table"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
@@ -121,11 +121,7 @@ export default function OnlineUserPage() {
         return data?.value ?? []
     }, [data])
 
-    const table = useTable({
-        features: selectableTableFeatures,
-        data: dataCache,
-        columns,
-    })
+    const table = useSelectableTable(dataCache, columns)
 
     const selectedRows = table.getSelectedRowModel().rows
 

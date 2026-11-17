@@ -9,7 +9,9 @@ import {
     createContext,
     forwardRef,
     useContext,
+    useEffect,
     useId,
+    useRef,
 } from "react"
 import {
     Controller,
@@ -21,6 +23,27 @@ import {
 } from "react-hook-form"
 
 const Form = FormProvider
+
+function FormErrors() {
+    const context = useFormContext()
+    const errors = context?.formState.errors
+    const submitCount = context?.formState.submitCount
+    const summary = useRef<HTMLParagraphElement>(null)
+    useEffect(() => {
+        if (submitCount) summary.current?.focus()
+    }, [submitCount])
+    if (!errors || Object.keys(errors).length === 0) return null
+    const messages = (value: object): string[] =>
+        Object.entries(value).flatMap(([key, error]) => {
+            if (key === "ref" || !error || typeof error !== "object") return []
+            return typeof error.message === "string" ? [error.message] : messages(error)
+        })
+    return (
+        <p ref={summary} tabIndex={-1} role="alert" className="basis-full text-sm text-destructive">
+            {[...new Set(messages(errors))].join("; ")}
+        </p>
+    )
+}
 
 type FormFieldContextValue<
     TFieldValues extends FieldValues = FieldValues,
@@ -165,6 +188,7 @@ FormMessage.displayName = "FormMessage"
 export {
     useFormField,
     Form,
+    FormErrors,
     FormItem,
     FormLabel,
     FormControl,

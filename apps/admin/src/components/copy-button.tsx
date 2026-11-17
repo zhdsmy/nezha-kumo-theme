@@ -1,6 +1,6 @@
 import { ButtonProps } from "@/components/ui/button"
-import { copyToClipboard } from "@/lib/utils"
-import { forwardRef, useState } from "react"
+import { useClipboard } from "@/hooks/useClipboard"
+import { forwardRef } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 
@@ -12,7 +12,7 @@ interface CopyButtonProps extends ButtonProps {
 
 export const CopyButton = forwardRef<HTMLButtonElement, CopyButtonProps>((props, ref) => {
     const { t } = useTranslation()
-    const [copied, setCopied] = useState(false)
+    const { copied, copy: copyText } = useClipboard()
 
     const switchState = async (text?: string) => {
         if (!text) {
@@ -22,19 +22,7 @@ export const CopyButton = forwardRef<HTMLButtonElement, CopyButtonProps>((props,
             return
         }
 
-        if (!copied) {
-            try {
-                await copyToClipboard(text)
-                setCopied(true)
-                setTimeout(() => {
-                    setCopied(false)
-                }, 2 * 1000)
-            } catch {
-                toast.error(t("Error"), {
-                    description: t("ClipboardWriteFailed"),
-                })
-            }
-        }
+        await copyText(text)
     }
 
     return (

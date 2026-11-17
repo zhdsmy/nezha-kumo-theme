@@ -287,50 +287,75 @@ body,
     min-width: 0;
     max-width: 100%;
 }
-.nkt-table:not([data-layout="cards"])
-    :is(th, td)[data-col="id"]:not([data-primary], [data-hidden])
-    > .nkt-cell-value {
-    display: block;
-    width: max-content;
-    max-width: 100%;
-    white-space: nowrap;
+@media (min-width: 768px) {
+    .nkt-table :is(th, td)[data-col="id"]:not([data-primary], [data-hidden]) > .nkt-cell-value {
+        display: block;
+        width: max-content;
+        max-width: 100%;
+        white-space: nowrap;
+    }
 }
+
 .nkt-table [data-hidden] {
     display: none;
 }
-.nkt-table:not([data-layout="cards"]) :is(th, td):not([data-hidden]) {
-    grid-row: 1;
+@media (min-width: 768px) {
+    .nkt-table :is(th, td):not([data-hidden]) {
+        grid-row: 1;
+    }
 }
-.nkt-table[data-layout="cards"] tr {
-    grid-template-columns: minmax(0, 1fr) auto;
+
+@media (max-width: 767px) {
+    .nkt-table tr {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
 }
-.nkt-table[data-layout="cards"] tr:has([data-col="select"]) {
-    grid-template-columns: auto minmax(0, 1fr) auto;
+
+@media (max-width: 767px) {
+    .nkt-table tr:has([data-col="select"]) {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+    }
 }
-.nkt-table[data-layout="cards"] td[data-col="select"] {
-    padding-right: 0.25rem;
+
+@media (max-width: 767px) {
+    .nkt-table td[data-col="select"] {
+        padding-right: 0.25rem;
+    }
 }
-/* Cards: the name takes the free width, so the details chevron sits next to the actions. */
-.nkt-table[data-layout="cards"] .nkt-server-name {
-    max-width: none;
+
+@media (max-width: 767px) {
+    /* Cards: the name takes the free width, so the details chevron sits next to the actions. */
+    .nkt-table .nkt-server-name {
+        max-width: none;
+    }
 }
-.nkt-table[data-layout="cards"] :is(th, td) {
-    display: none;
+
+@media (max-width: 767px) {
+    .nkt-table :is(th, td) {
+        display: none;
+    }
 }
-.nkt-table[data-layout="cards"] :is([data-primary], [data-col="select"], [data-col="actions"]) {
-    display: flex;
-    grid-row: 1;
+
+@media (max-width: 767px) {
+    .nkt-table :is([data-primary], [data-col="select"], [data-col="actions"]) {
+        display: flex;
+        grid-row: 1;
+    }
 }
-.nkt-table[data-layout="cards"] [data-col="select"] {
-    grid-column: 1;
+
+@media (max-width: 767px) {
+    .nkt-table [data-col="select"] {
+        grid-column: 1;
+    }
 }
-.nkt-table[data-layout="cards"] [data-col="actions"] {
-    grid-column: -2;
+
+@media (max-width: 767px) {
+    .nkt-table [data-col="actions"] {
+        grid-column: -2;
+    }
 }
-.nkt-table tr[data-open] > td[data-hidden],
-.nkt-table[data-layout="cards"]
-    tr[data-open]
-    > td:not([data-primary], [data-col="select"], [data-col="actions"]) {
+
+.nkt-table tr[data-open] > td[data-hidden] {
     display: grid;
     grid-template-columns: minmax(6rem, 1fr) minmax(0, 2fr);
     grid-column: 1 / -1;
@@ -339,41 +364,80 @@ body,
     min-height: 2.5rem;
     border-top: 1px solid var(--border);
 }
-.nkt-table tr[data-open] > td[data-hidden]::before,
-.nkt-table[data-layout="cards"]
-    td[data-label]:not([data-primary], [data-col="select"], [data-col="actions"])::before {
+
+@media (max-width: 767px) {
+    .nkt-table tr[data-open] > td:not([data-primary], [data-col="select"], [data-col="actions"]) {
+        display: grid;
+        grid-template-columns: minmax(6rem, 1fr) minmax(0, 2fr);
+        grid-column: 1 / -1;
+        align-items: center;
+        gap: 1rem;
+        min-height: 2.5rem;
+        border-top: 1px solid var(--border);
+    }
+}
+
+.nkt-table tr[data-open] > td[data-hidden]::before {
     content: attr(data-label);
     color: var(--muted-foreground);
     font-size: 0.8125rem;
 }
+
+@media (max-width: 767px) {
+    .nkt-table
+        td[data-label]:not([data-primary], [data-col="select"], [data-col="actions"])::before {
+        content: attr(data-label);
+        color: var(--muted-foreground);
+        font-size: 0.8125rem;
+    }
+}
+
 .nkt-table td[colspan] {
     display: block;
     grid-column: 1 / -1;
 }
-.nkt-table[data-layout="cards"] {
-    border: 0;
-    background: transparent;
+@media (max-width: 767px) {
+    .nkt-table {
+        border: 0;
+        background: transparent;
+    }
 }
-.nkt-table[data-layout="cards"] thead {
-    margin-top: -0.375rem;
-    margin-bottom: 0.375rem;
-    background: transparent;
+
+@media (max-width: 767px) {
+    .nkt-table thead {
+        margin-top: -0.375rem;
+        margin-bottom: 0.375rem;
+        background: transparent;
+    }
 }
-.nkt-table[data-layout="cards"] thead:not(:has([data-col="select"])) {
-    display: none;
+
+@media (max-width: 767px) {
+    .nkt-table thead:not(:has([data-col="select"])) {
+        display: none;
+    }
 }
-.nkt-table[data-layout="cards"] thead tr {
-    border: 0;
+
+@media (max-width: 767px) {
+    .nkt-table thead tr {
+        border: 0;
+    }
 }
-.nkt-table[data-layout="cards"] thead th:not([data-col="select"]) {
-    display: none;
+
+@media (max-width: 767px) {
+    .nkt-table thead th:not([data-col="select"]) {
+        display: none;
+    }
 }
-.nkt-table[data-layout="cards"] thead th[data-col="select"] {
-    grid-column: 1 / -1;
-    min-height: 2rem;
-    height: auto;
-    padding: 0.25rem 0.5rem 0.25rem calc(0.5rem + 1px);
+
+@media (max-width: 767px) {
+    .nkt-table thead th[data-col="select"] {
+        grid-column: 1 / -1;
+        min-height: 2rem;
+        height: auto;
+        padding: 0.25rem 0.5rem 0.25rem calc(0.5rem + 1px);
+    }
 }
+
 .nkt-cards-select-all {
     display: inline-flex;
     align-items: center;
@@ -390,34 +454,64 @@ body,
     line-height: 1.25rem;
     font-weight: 500;
 }
-.nkt-table[data-layout="cards"] tbody tr {
-    margin-bottom: 0.5rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--card);
+@media (max-width: 767px) {
+    .nkt-table tbody tr {
+        margin-bottom: 0.5rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+    }
 }
-.nkt-table[data-layout="cards"] td {
-    padding: 0.5rem;
+
+@media (max-width: 767px) {
+    .nkt-table td {
+        padding: 0.5rem;
+    }
 }
-.nkt-table[data-layout="cards"] [data-primary] {
-    font-weight: 500;
+
+@media (max-width: 767px) {
+    .nkt-table [data-primary] {
+        font-weight: 500;
+    }
 }
-.nkt-row-actions > div {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+.nkt-action-disclosure {
+    display: contents;
 }
-.nkt-row-actions > div > span {
-    display: flex;
-    width: 100%;
+.nkt-actions-toggle {
+    display: none;
 }
-.nkt-row-actions button {
-    width: 100%;
-    justify-content: flex-start;
-    padding-inline: 0.75rem;
-}
-.nkt-row-actions button[aria-label]::after {
-    content: attr(aria-label);
+@media (max-width: 767px) {
+    .nkt-table td[data-col="actions"] {
+        display: contents;
+    }
+    .nkt-table .nkt-actions-toggle {
+        display: inline-flex;
+        grid-column: -2;
+        grid-row: 1;
+        align-self: center;
+        margin-right: 0.5rem;
+    }
+    .nkt-table .nkt-table-actions {
+        display: none;
+        width: auto;
+        grid-column: 1 / -1;
+        grid-row: 2;
+        padding: 0.5rem;
+        border-top: 1px solid var(--border);
+    }
+    .nkt-table .nkt-table-actions[data-open="true"] {
+        display: block;
+    }
+    .nkt-table-actions > div {
+        flex-wrap: wrap;
+    }
+    .nkt-table-actions button[aria-label] {
+        width: auto;
+        padding-inline: 0.75rem;
+    }
+    .nkt-table-actions button[aria-label]::after {
+        content: attr(aria-label);
+    }
 }
 
 /* Radix keeps the existing form API and focus behavior; geometry follows Kumo Dialog. */
@@ -432,16 +526,18 @@ body,
     overscroll-behavior: contain;
     border-radius: 0.75rem;
 }
-.nkt-dialog[data-layout="sheet"] {
-    inset: 0;
-    width: 100%;
-    height: 100dvh;
-    max-width: none !important;
-    max-height: 100dvh;
-    transform: none;
-    border: 0;
-    border-radius: 0;
-    padding-top: max(1.5rem, env(safe-area-inset-top));
+@media (max-width: 767px) {
+    .nkt-dialog {
+        inset: 0;
+        width: 100%;
+        height: 100dvh;
+        max-width: none !important;
+        max-height: 100dvh;
+        transform: none;
+        border: 0;
+        border-radius: 0;
+        padding-top: max(1.5rem, env(safe-area-inset-top));
+    }
 }
 .nkt-dialog > * {
     flex-shrink: 0;
@@ -459,7 +555,6 @@ body,
     flex-shrink: 0;
 }
 .nkt-dialog-footer {
-    bottom: -1.5rem;
     margin-bottom: -1.5rem;
     padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
 }
