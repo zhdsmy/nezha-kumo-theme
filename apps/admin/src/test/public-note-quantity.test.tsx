@@ -28,3 +28,17 @@ test("clearing a traffic period removes its suffix", () => {
     fireEvent.click(screen.getByRole("button", { name: "清除" }))
     expect(change).toHaveBeenLastCalledWith("1TB")
 })
+
+test("unknown traffic periods stay visible and survive numeric edits until reselected", () => {
+    const change = vi.fn()
+    render(<QuantityInput traffic label="流量配额" value="1TB/两月" onChange={change} />)
+    expect(screen.getByRole("button", { name: "流量周期 · 两月" })).toBeTruthy()
+    expect(screen.getByText("1TB/两月")).toBeTruthy()
+    const input = screen.getByRole("textbox", { name: "流量配额" })
+    fireEvent.change(input, { target: { value: "2" } })
+    fireEvent.blur(input)
+    expect(change).toHaveBeenLastCalledWith("2TB/两月")
+    fireEvent.click(screen.getByRole("button", { name: "流量周期 · 两月" }))
+    fireEvent.click(screen.getByRole("button", { name: "每周" }))
+    expect(change).toHaveBeenLastCalledWith("1TB/Week")
+})

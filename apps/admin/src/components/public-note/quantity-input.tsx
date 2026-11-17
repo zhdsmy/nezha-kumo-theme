@@ -98,17 +98,27 @@ export function QuantityInput({
 }: NoteControlProps & { traffic?: boolean }) {
     const { t } = useTranslation()
     const parsed = traffic ? parseTraffic(value) : parseBandwidth(value)
-    const quantity = parsed && parsed !== "unlimited" ? parsed : undefined
+    const prefix = traffic && !parsed && value ? parseTraffic(value.split("/")[0]) : undefined
+    const quantity =
+        parsed && parsed !== "unlimited"
+            ? parsed
+            : prefix && prefix !== "unlimited"
+              ? prefix
+              : undefined
     const [selectedUnit, setUnit] = useState(traffic ? "TB" : "Mbps")
     const [selectedCycle, setCycle] = useState<string | undefined>("Month")
     const unit = quantity?.unit || selectedUnit
-    const cycle = quantity && "cycle" in quantity ? quantity.cycle : undefined
-    const period = quantity ? (cycle ? writeCycle(cycle) : undefined) : selectedCycle
+    const rawPeriod =
+        traffic && value?.includes("/") ? value.slice(value.indexOf("/") + 1) : undefined
+    const period = rawPeriod ?? (quantity || value ? undefined : selectedCycle)
     const write = (amount: number | undefined, nextUnit: string, nextCycle: string | undefined) => {
         if (amount === undefined) return onChange(undefined)
         onChange(
             traffic
-                ? writeTraffic({ amount, unit: nextUnit, cycle: parseCycle(nextCycle) })
+                ? writeTraffic({ amount, unit: nextUnit }) +
+                      (nextCycle
+                          ? `/${parseCycle(nextCycle) ? writeCycle(parseCycle(nextCycle)!) : nextCycle}`
+                          : "")
                 : writeBandwidth({ amount, unit: nextUnit as "Mbps" | "Gbps" }),
         )
     }
