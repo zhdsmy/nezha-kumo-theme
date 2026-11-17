@@ -4,8 +4,10 @@ import {
     revokeMCPOAuthGrant,
     setMCPOAuthClientDisabled,
 } from "@/api/mcp-oauth"
+import { ConfirmActionDialog } from "@/components/action-button-group"
 import { SettingsTab } from "@/components/settings-tab"
 import { Button } from "@/components/ui/button"
+import { TablePagination } from "@/components/ui/pagination"
 import {
     Table,
     TableBody,
@@ -29,41 +31,6 @@ function errorMessage(error: unknown) {
     return error instanceof Error ? error.message : String(error)
 }
 
-function OAuthPagination({
-    page,
-    total,
-    busy,
-    onChange,
-}: {
-    page: number
-    total: number
-    busy: boolean
-    onChange: (page: number) => void
-}) {
-    const { t } = useTranslation()
-    return (
-        <div className="flex flex-wrap items-center justify-end gap-3 py-4">
-            <span className="text-sm text-muted-foreground">
-                {t("MCPOAuthManager.Pagination", { page, total })}
-            </span>
-            <Button
-                variant="outline"
-                disabled={busy || page <= 1}
-                onClick={() => onChange(page - 1)}
-            >
-                {t("MCPOAuthManager.Previous")}
-            </Button>
-            <Button
-                variant="outline"
-                disabled={busy || page * 20 >= total}
-                onClick={() => onChange(page + 1)}
-            >
-                {t("MCPOAuthManager.Next")}
-            </Button>
-        </div>
-    )
-}
-
 function OAuthGrants({ all, userID }: { all: boolean; userID: number }) {
     const { t } = useTranslation()
     const [page, setPage] = useState(1)
@@ -74,8 +41,8 @@ function OAuthGrants({ all, userID }: { all: boolean; userID: number }) {
     const { data, error, isLoading, mutate } = useSWR(["mcp-oauth-grants", userID, all, page], () =>
         listMCPOAuthGrants(all, page),
     )
-    async function revoke(id: string, name: string) {
-        if (busy || !window.confirm(t("MCPOAuthManager.ConfirmRevoke", { name }))) return
+    async function revoke(id: string) {
+        if (busy) return
         setBusy(true)
         setActionError("")
         try {
@@ -115,62 +82,70 @@ function OAuthGrants({ all, userID }: { all: boolean; userID: number }) {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {(data?.items ?? []).map((grant) => (
-                        <TableRow key={grant.id}>
-                            <TableCell
-                                data-col="name"
-                                className="max-w-64 break-all whitespace-normal"
-                            >
-                                <p>{grant.client_name || grant.client_id}</p>
-                                <p className="text-xs text-muted-foreground">{grant.client_id}</p>
-                                <p>{t(`MCPOAuthManager.Status.${grant.status}`)}</p>
-                            </TableCell>
-                            {all && (
-                                <TableCell data-col="user">
-                                    {grant.username} (#{grant.user_id})
-                                </TableCell>
-                            )}
-                            <TableCell data-col="permissions" className="whitespace-normal">
-                                {grant.scopes.map((scope) => (
-                                    <div key={scope} className="text-xs">
-                                        {scope}
-                                    </div>
-                                ))}
-                            </TableCell>
-                            <TableCell
-                                data-col="servers"
-                                className="max-w-48 break-words whitespace-normal"
-                            >
-                                {grant.server_ids.length
-                                    ? grant.server_ids.join(", ")
-                                    : t("MCPOAuth.AllServers")}
-                            </TableCell>
-                            <TableCell data-col="lifetime" className="text-xs">
-                                <p>
-                                    {t("MCPOAuthManager.AuthorizedAt")}:{" "}
-                                    {displayTime(grant.created_at)}
-                                </p>
-                                <p>
-                                    {t("ApiTokenExpiresAt")}: {displayTime(grant.expires_at)}
-                                </p>
-                            </TableCell>
-                            <TableCell data-col="lastUsed" className="text-xs">
-                                <p>{displayTime(grant.last_used_at)}</p>
-                                <p>{grant.last_used_ip}</p>
-                            </TableCell>
-                            <TableCell data-col="actions">
-                                <Button
-                                    variant="outline"
-                                    disabled={busy}
-                                    onClick={() =>
-                                        revoke(grant.id, grant.client_name || grant.client_id)
-                                    }
+                    {(data?.items ?? []).map((grant) => {
+                        const grantName = grant.client_name || grant.client_id
+                        return (
+                            <TableRow key={grant.id}>
+                                <TableCell
+                                    data-col="name"
+                                    className="max-w-64 break-all whitespace-normal"
                                 >
-                                    {t("Revoke")}
-                                </Button>
-                            </TableCell>
-                        </TableRow>
-                    ))}
+                                    <p>{grantName}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {grant.client_id}
+                                    </p>
+                                    <p>{t(`MCPOAuthManager.Status.${grant.status}`)}</p>
+                                </TableCell>
+                                {all && (
+                                    <TableCell data-col="user">
+                                        {grant.username} (#{grant.user_id})
+                                    </TableCell>
+                                )}
+                                <TableCell data-col="permissions" className="whitespace-normal">
+                                    {grant.scopes.map((scope) => (
+                                        <div key={scope} className="text-xs">
+                                            {scope}
+                                        </div>
+                                    ))}
+                                </TableCell>
+                                <TableCell
+                                    data-col="servers"
+                                    className="max-w-48 break-words whitespace-normal"
+                                >
+                                    {grant.server_ids.length
+                                        ? grant.server_ids.join(", ")
+                                        : t("MCPOAuth.AllServers")}
+                                </TableCell>
+                                <TableCell data-col="lifetime" className="text-xs">
+                                    <p>
+                                        {t("MCPOAuthManager.AuthorizedAt")}:{" "}
+                                        {displayTime(grant.created_at)}
+                                    </p>
+                                    <p>
+                                        {t("ApiTokenExpiresAt")}: {displayTime(grant.expires_at)}
+                                    </p>
+                                </TableCell>
+                                <TableCell data-col="lastUsed" className="text-xs">
+                                    <p>{displayTime(grant.last_used_at)}</p>
+                                    <p>{grant.last_used_ip}</p>
+                                </TableCell>
+                                <TableCell data-col="actions">
+                                    <ConfirmActionDialog
+                                        trigger={
+                                            <Button variant="outline" disabled={busy}>
+                                                {t("Revoke")}
+                                            </Button>
+                                        }
+                                        title={t("Revoke")}
+                                        description={t("MCPOAuthManager.ConfirmRevoke", {
+                                            name: grantName,
+                                        })}
+                                        onConfirm={() => revoke(grant.id)}
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        )
+                    })}
                 </TableBody>
             </Table>
             {isLoading && (
@@ -181,11 +156,12 @@ function OAuthGrants({ all, userID }: { all: boolean; userID: number }) {
             {!isLoading && !error && data?.items.length === 0 && (
                 <p className="py-4">{t("NoResults")}</p>
             )}
-            <OAuthPagination
+            <TablePagination
                 page={page}
+                pageSize={20}
                 total={data?.total ?? 0}
-                busy={busy || isLoading}
-                onChange={setPage}
+                disabled={busy || isLoading}
+                onPageChange={setPage}
             />
         </>
     )
@@ -200,11 +176,8 @@ function OAuthClients({ userID }: { userID: number }) {
     const { data, error, isLoading, mutate } = useSWR(["mcp-oauth-clients", userID, page], () =>
         listMCPOAuthClients(page),
     )
-    async function changeClient(id: string, name: string, disabled: boolean) {
-        const confirmation = disabled
-            ? "MCPOAuthManager.ConfirmDisable"
-            : "MCPOAuthManager.ConfirmEnable"
-        if (busy || !window.confirm(t(confirmation, { name }))) return
+    async function changeClient(id: string, disabled: boolean) {
+        if (busy) return
         setBusy(true)
         setActionError("")
         try {
@@ -247,53 +220,59 @@ function OAuthClients({ userID }: { userID: number }) {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {(data?.items ?? []).map((client) => (
-                        <TableRow key={client.id}>
-                            <TableCell
-                                data-col="name"
-                                className="max-w-64 break-all whitespace-normal"
-                            >
-                                <p>{client.name}</p>
-                                <p className="text-xs text-muted-foreground">{client.id}</p>
-                                <p>
-                                    {t(
-                                        client.disabled
-                                            ? "MCPOAuthManager.Disabled"
-                                            : "MCPOAuthManager.Enabled",
-                                    )}
-                                </p>
-                            </TableCell>
-                            <TableCell
-                                data-col="callback"
-                                className="max-w-96 break-all whitespace-normal"
-                            >
-                                {client.redirect_uris.map((uri) => (
-                                    <div key={uri} className="text-xs">
-                                        {uri}
-                                    </div>
-                                ))}
-                            </TableCell>
-                            <TableCell data-col="grants">{client.grant_count}</TableCell>
-                            <TableCell data-col="lastUsed">
-                                {displayTime(client.last_used_at)}
-                            </TableCell>
-                            <TableCell data-col="actions">
-                                <Button
-                                    variant="outline"
-                                    disabled={busy}
-                                    onClick={() =>
-                                        changeClient(client.id, client.name, !client.disabled)
-                                    }
+                    {(data?.items ?? []).map((client) => {
+                        const actionLabel = t(
+                            client.disabled ? "MCPOAuthManager.Enable" : "MCPOAuthManager.Disable",
+                        )
+                        const confirmationKey = client.disabled
+                            ? "MCPOAuthManager.ConfirmEnable"
+                            : "MCPOAuthManager.ConfirmDisable"
+                        return (
+                            <TableRow key={client.id}>
+                                <TableCell
+                                    data-col="name"
+                                    className="max-w-64 break-all whitespace-normal"
                                 >
-                                    {t(
-                                        client.disabled
-                                            ? "MCPOAuthManager.Enable"
-                                            : "MCPOAuthManager.Disable",
-                                    )}
-                                </Button>
-                            </TableCell>
-                        </TableRow>
-                    ))}
+                                    <p>{client.name}</p>
+                                    <p className="text-xs text-muted-foreground">{client.id}</p>
+                                    <p>
+                                        {t(
+                                            client.disabled
+                                                ? "MCPOAuthManager.Disabled"
+                                                : "MCPOAuthManager.Enabled",
+                                        )}
+                                    </p>
+                                </TableCell>
+                                <TableCell
+                                    data-col="callback"
+                                    className="max-w-96 break-all whitespace-normal"
+                                >
+                                    {client.redirect_uris.map((uri) => (
+                                        <div key={uri} className="text-xs">
+                                            {uri}
+                                        </div>
+                                    ))}
+                                </TableCell>
+                                <TableCell data-col="grants">{client.grant_count}</TableCell>
+                                <TableCell data-col="lastUsed">
+                                    {displayTime(client.last_used_at)}
+                                </TableCell>
+                                <TableCell data-col="actions">
+                                    <ConfirmActionDialog
+                                        trigger={
+                                            <Button variant="outline" disabled={busy}>
+                                                {actionLabel}
+                                            </Button>
+                                        }
+                                        title={actionLabel}
+                                        description={t(confirmationKey, { name: client.name })}
+                                        confirmVariant={client.disabled ? "default" : "destructive"}
+                                        onConfirm={() => changeClient(client.id, !client.disabled)}
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        )
+                    })}
                 </TableBody>
             </Table>
             {isLoading && (
@@ -304,11 +283,12 @@ function OAuthClients({ userID }: { userID: number }) {
             {!isLoading && !error && data?.items.length === 0 && (
                 <p className="py-4">{t("NoResults")}</p>
             )}
-            <OAuthPagination
+            <TablePagination
                 page={page}
+                pageSize={20}
                 total={data?.total ?? 0}
-                busy={busy || isLoading}
-                onChange={setPage}
+                disabled={busy || isLoading}
+                onPageChange={setPage}
             />
         </>
     )

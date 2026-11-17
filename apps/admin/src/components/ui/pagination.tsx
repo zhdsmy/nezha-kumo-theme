@@ -30,21 +30,28 @@ PaginationItem.displayName = "PaginationItem"
 type PaginationLinkProps = {
     isActive?: boolean
 } & Pick<ButtonProps, "size"> &
-    ComponentProps<"a">
+    ComponentProps<"button">
 
-const PaginationLink = ({ className, isActive, size = "icon", ...props }: PaginationLinkProps) => (
-    <a
-        aria-current={isActive ? "page" : undefined}
-        className={cn(
-            buttonVariants({
-                variant: isActive ? "outline" : "ghost",
-                size,
-            }),
-            size === "icon" && "w-auto min-w-9 px-2 tabular-nums",
-            className,
-        )}
-        {...props}
-    />
+const PaginationLink = forwardRef<HTMLButtonElement, PaginationLinkProps>(
+    ({ className, isActive, disabled, size = "icon", type = "button", ...props }, ref) => (
+        <button
+            ref={ref}
+            type={type}
+            disabled={disabled}
+            aria-disabled={disabled || undefined}
+            aria-current={isActive ? "page" : undefined}
+            className={cn(
+                buttonVariants({
+                    variant: isActive ? "outline" : "ghost",
+                    size,
+                }),
+                size === "icon" && "w-auto min-w-9 px-2 tabular-nums",
+                !disabled && "cursor-pointer",
+                className,
+            )}
+            {...props}
+        />
+    ),
 )
 PaginationLink.displayName = "PaginationLink"
 
@@ -131,16 +138,25 @@ type TablePaginationProps = {
     page: number
     pageSize: number
     total: number
+    disabled?: boolean
     onPageChange: (page: number) => void
 }
 
-const TablePagination = ({ page, pageSize, total, onPageChange }: TablePaginationProps) => {
+const TablePagination = ({
+    page,
+    pageSize,
+    total,
+    disabled = false,
+    onPageChange,
+}: TablePaginationProps) => {
     const { t } = useTranslation()
     const sm = useMediaQuery("(min-width: 640px)")
     const totalPages = Math.ceil(total / pageSize)
+    const prevDisabled = disabled || page <= 1
+    const nextDisabled = disabled || page >= totalPages
 
     const handlePageChange = (newPage: number) => {
-        if (newPage < 1 || newPage > totalPages) return
+        if (disabled || newPage < 1 || newPage > totalPages) return
         onPageChange(newPage)
     }
 
@@ -154,10 +170,7 @@ const TablePagination = ({ page, pageSize, total, onPageChange }: TablePaginatio
                     <PaginationItem>
                         <PaginationPrevious
                             onClick={() => handlePageChange(page - 1)}
-                            aria-disabled={page <= 1 || undefined}
-                            className={
-                                page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
-                            }
+                            disabled={prevDisabled}
                         />
                     </PaginationItem>
 
@@ -171,7 +184,7 @@ const TablePagination = ({ page, pageSize, total, onPageChange }: TablePaginatio
                                 <PaginationLink
                                     onClick={() => handlePageChange(pageNum)}
                                     isActive={pageNum === page}
-                                    className="cursor-pointer"
+                                    disabled={disabled}
                                 >
                                     {pageNum}
                                 </PaginationLink>
@@ -182,12 +195,7 @@ const TablePagination = ({ page, pageSize, total, onPageChange }: TablePaginatio
                     <PaginationItem>
                         <PaginationNext
                             onClick={() => handlePageChange(page + 1)}
-                            aria-disabled={page >= totalPages || undefined}
-                            className={
-                                page >= totalPages
-                                    ? "pointer-events-none opacity-50"
-                                    : "cursor-pointer"
-                            }
+                            disabled={nextDisabled}
                         />
                     </PaginationItem>
                 </PaginationContent>

@@ -15,6 +15,46 @@ import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import { KeyedMutator } from "swr"
 
+export interface ConfirmActionDialogProps {
+    trigger: React.ReactNode
+    title?: React.ReactNode
+    description: React.ReactNode
+    confirmVariant?: "default" | "destructive"
+    onConfirm: () => void | Promise<void>
+}
+
+export function ConfirmActionDialog({
+    trigger,
+    title,
+    description,
+    confirmVariant = "destructive",
+    onConfirm,
+}: ConfirmActionDialogProps) {
+    const { t } = useTranslation()
+    return (
+        <AlertDialog>
+            <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
+            <AlertDialogContent className="sm:max-w-lg">
+                <AlertDialogHeader>
+                    <AlertDialogTitle>{title ?? t("ConfirmDeletion")}</AlertDialogTitle>
+                    <AlertDialogDescription>{description}</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>{t("Close")}</AlertDialogCancel>
+                    <AlertDialogAction
+                        className={buttonVariants({
+                            variant: confirmVariant,
+                        })}
+                        onClick={onConfirm}
+                    >
+                        {t("Confirm")}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    )
+}
+
 interface ButtonGroupProps<E, U> {
     className?: string
     children: React.ReactNode
@@ -47,30 +87,12 @@ export function ActionButtonGroup<E, U>({
     return (
         <div className={className}>
             {children}
-            <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <IconButton variant="destructive" icon="trash" />
-                </AlertDialogTrigger>
-                <AlertDialogContent className="sm:max-w-lg">
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>{t("ConfirmDeletion")}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {t("Results.ThisOperationIsUnrecoverable")}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>{t("Close")}</AlertDialogCancel>
-                        <AlertDialogAction
-                            className={buttonVariants({
-                                variant: "destructive",
-                            })}
-                            onClick={handleDelete}
-                        >
-                            {t("Confirm")}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <ConfirmActionDialog
+                trigger={<IconButton variant="destructive" icon="trash" />}
+                title={t("ConfirmDeletion")}
+                description={t("Results.ThisOperationIsUnrecoverable")}
+                onConfirm={handleDelete}
+            />
         </div>
     )
 }
@@ -95,30 +117,12 @@ export function BlockButtonGroup<E, U>({
     return (
         <div className={className}>
             {children}
-            <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <IconButton variant="destructive" icon="ban" />
-                </AlertDialogTrigger>
-                <AlertDialogContent className="sm:max-w-lg">
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>{t("ConfirmBlock")}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {t("Results.ThisOperationIsUnrecoverable")}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>{t("Close")}</AlertDialogCancel>
-                        <AlertDialogAction
-                            className={buttonVariants({
-                                variant: "destructive",
-                            })}
-                            onClick={handleBlock}
-                        >
-                            {t("Confirm")}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <ConfirmActionDialog
+                trigger={<IconButton variant="destructive" icon="ban" />}
+                title={t("ConfirmBlock")}
+                description={t("Results.ThisOperationIsUnrecoverable")}
+                onConfirm={handleBlock}
+            />
         </div>
     )
 }

@@ -1,7 +1,7 @@
 import { Oauth2RequestType, getOauth2RedirectURL, unbindOauth2 } from "@/api/oauth2"
 import { getProfile } from "@/api/user"
 import { ProfileCard } from "@/components/profile"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserAvatar } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { OAuthProviderIcon } from "@/components/ui/icon"
@@ -54,18 +54,11 @@ export default function ProfilePage() {
             <Page title={t("Profile")} actions={<ProfileCard className="rounded-lg" />}>
                 <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr))]">
                     <div className="flex min-w-0 items-start gap-4">
-                        <Avatar className="size-24 shrink-0 border">
-                            <AvatarImage
-                                src={
-                                    "https://api.dicebear.com/7.x/notionists/svg?seed=" +
-                                    encodeURIComponent(profile.username)
-                                }
-                                alt=""
-                            />
-                            <AvatarFallback>
-                                {Array.from(profile.username).slice(0, 2).join("").toUpperCase()}
-                            </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar
+                            username={profile.username}
+                            className="size-24 shrink-0 border"
+                            fallbackClassName="text-3xl"
+                        />
                         <div className="min-w-0">
                             <p
                                 className="line-clamp-2 text-xl font-semibold"

@@ -19,7 +19,10 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/hooks/useAuth", () => ({ useAuth: () => mocks.auth }))
 vi.mock("@/components/settings-tab", () => ({ SettingsTab: () => null }))
 vi.mock("react-i18next", () => ({
-    useTranslation: () => ({ t: (key: string) => key }),
+    useTranslation: () => ({
+        t: (key: string, opts?: Record<string, unknown>) =>
+            opts?.name ? `${key}:${String(opts.name)}:${String(opts.version ?? "")}` : key,
+    }),
     initReactI18next: { type: "3rdParty", init: () => undefined },
 }))
 vi.mock("sonner", () => ({ toast: { success: mocks.success, error: mocks.error } }))
@@ -190,18 +193,22 @@ test.each([false, true])(
     async (admin) => {
         const state = mocks.swr.getMockImplementation()!()
         state.data.templates[1].is_admin = admin
-        const confirm = vi.spyOn(window, "confirm").mockReturnValue(false)
         renderPage()
         fireEvent.change(screen.getByLabelText("FrontendManager.Target"), {
             target: { value: admin ? "admin" : "user" },
         })
         const buttons = screen.getAllByRole("button", { name: "FrontendManager.Remove" })
         expect(buttons).toHaveLength(1)
+
         fireEvent.click(buttons[0])
-        expect(confirm).toHaveBeenCalledWith("FrontendManager.ConfirmRemove")
+        expect(
+            await screen.findByText("FrontendManager.ConfirmRemove:Installed user:v2"),
+        ).toBeTruthy()
+        fireEvent.click(screen.getByRole("button", { name: "Close" }))
         expect(mocks.remove).not.toHaveBeenCalled()
-        confirm.mockReturnValue(true)
+
         fireEvent.click(buttons[0])
+        fireEvent.click(await screen.findByRole("button", { name: "Confirm" }))
         await waitFor(() => expect(mocks.success).toHaveBeenCalledWith("FrontendManager.Removed"))
         expect(mocks.remove).toHaveBeenCalledExactlyOnceWith("installed-user", admin)
         expect(mocks.refresh).toHaveBeenCalledOnce()
@@ -218,10 +225,10 @@ test("hides removal for active custom frontends", () => {
 })
 
 test("failed removal keeps the catalog and does not report success", async () => {
-    vi.spyOn(window, "confirm").mockReturnValue(true)
     mocks.remove.mockRejectedValue(new Error("Cannot delete frontend"))
     renderPage()
     fireEvent.click(screen.getByRole("button", { name: "FrontendManager.Remove" }))
+    fireEvent.click(await screen.findByRole("button", { name: "Confirm" }))
     await waitFor(() =>
         expect(mocks.error).toHaveBeenCalledWith("Error", {
             description: "Error: Cannot delete frontend",

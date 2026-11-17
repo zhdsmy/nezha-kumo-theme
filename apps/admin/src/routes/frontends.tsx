@@ -8,6 +8,7 @@ import {
     listFrontendReleases,
     removeFrontend,
 } from "@/api/frontends"
+import { ConfirmActionDialog } from "@/components/action-button-group"
 import { SettingsTab } from "@/components/settings-tab"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -73,16 +74,7 @@ export default function FrontendsPage() {
         })
 
     const remove = (template: FrontendTemplate) => {
-        if (
-            busy ||
-            !window.confirm(
-                t("FrontendManager.ConfirmRemove", {
-                    name: template.name,
-                    version: template.version,
-                }),
-            )
-        )
-            return
+        if (busy) return
         // Installation keeps previous versions for rollback; removal is explicit
         // and the backend rechecks active-version protection before deleting files.
         void perform(async () => {
@@ -231,13 +223,19 @@ export default function FrontendsPage() {
                                         !template.is_official &&
                                         data?.user_template !== template.path &&
                                         data?.admin_template !== template.path && (
-                                            <Button
-                                                variant="outline"
-                                                disabled={busy}
-                                                onClick={() => remove(template)}
-                                            >
-                                                {t("FrontendManager.Remove")}
-                                            </Button>
+                                            <ConfirmActionDialog
+                                                trigger={
+                                                    <Button variant="outline" disabled={busy}>
+                                                        {t("FrontendManager.Remove")}
+                                                    </Button>
+                                                }
+                                                title={t("ConfirmDeletion")}
+                                                description={t("FrontendManager.ConfirmRemove", {
+                                                    name: template.name,
+                                                    version: template.version,
+                                                })}
+                                                onConfirm={() => remove(template)}
+                                            />
                                         )}
                                     <Button
                                         variant="outline"

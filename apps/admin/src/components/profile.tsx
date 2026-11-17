@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { PasswordInput } from "@/components/ui/password-input"
 import { useMainStore } from "@/hooks/useMainStore"
 import { asOptionalField } from "@/lib/utils"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -108,7 +109,10 @@ export const ProfileCard = ({ className }: { className: string }) => {
                                         <FormItem>
                                             <FormLabel>{t("OriginalPassword")}</FormLabel>
                                             <FormControl>
-                                                <Input autoComplete="current-password" {...field} />
+                                                <PasswordInput
+                                                    autoComplete="current-password"
+                                                    {...field}
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -121,7 +125,10 @@ export const ProfileCard = ({ className }: { className: string }) => {
                                         <FormItem>
                                             <FormLabel>{t("NewPassword")}</FormLabel>
                                             <FormControl>
-                                                <Input {...field} />
+                                                <PasswordInput
+                                                    autoComplete="new-password"
+                                                    {...field}
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

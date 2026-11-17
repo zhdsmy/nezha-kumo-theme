@@ -310,34 +310,40 @@ test("table expands ID and whitespace-nowrap columns to fit intrinsic content wi
         </Table>,
     )
     expect(
-        document.querySelector<HTMLElement>(".nkt-table")?.style.getPropertyValue("--nkt-table-columns"),
+        document
+            .querySelector<HTMLElement>(".nkt-table")
+            ?.style.getPropertyValue("--nkt-table-columns"),
     ).toBe("108px minmax(0, 1fr) 116px")
 })
 
 test.each([
     [375, ["1", "500", "1235"]],
     [1024, ["1", "499", "500", "501", "1235"]],
-])("TablePagination localizes Previous/Next, keeps Total nowrap, and fits viewport %s", (w, pages) => {
-    width = Number(w)
-    const onPageChange = vi.fn()
-    render(<TablePagination page={500} pageSize={10} total={12345} onPageChange={onPageChange} />)
+])(
+    "TablePagination localizes Previous/Next, keeps Total nowrap, and fits viewport %s",
+    (w, pages) => {
+        width = Number(w)
+        const onPageChange = vi.fn()
+        render(
+            <TablePagination page={500} pageSize={10} total={12345} onPageChange={onPageChange} />,
+        )
 
-    const totalEl = screen.getByText("Total: 12345")
-    expect(totalEl.className).toContain("whitespace-nowrap")
-    expect(totalEl.className).toContain("shrink-0")
+        const totalEl = screen.getByText("Total: 12345")
+        expect(totalEl.className).toContain("whitespace-nowrap")
+        expect(totalEl.className).toContain("shrink-0")
 
-    const prev = screen.getByLabelText("MCPOAuthManager.Previous")
-    const next = screen.getByLabelText("MCPOAuthManager.Next")
-    expect(prev.textContent).toBe("MCPOAuthManager.Previous")
-    expect(next.textContent).toBe("MCPOAuthManager.Next")
+        const prev = screen.getByLabelText("MCPOAuthManager.Previous")
+        const next = screen.getByLabelText("MCPOAuthManager.Next")
+        expect(prev.textContent).toBe("MCPOAuthManager.Previous")
+        expect(next.textContent).toBe("MCPOAuthManager.Next")
 
-    const renderedPages = Array.from(
-        document.querySelectorAll("nav[aria-label='pagination'] a"),
-        (a) => a.textContent,
-    ).filter((txt) => txt && /^\d+$/.test(txt))
-    expect(renderedPages).toEqual(pages)
+        const renderedPages = Array.from(
+            document.querySelectorAll("nav[aria-label='pagination'] button"),
+            (btn) => btn.textContent,
+        ).filter((txt) => txt && /^\d+$/.test(txt))
+        expect(renderedPages).toEqual(pages)
 
-    fireEvent.click(next)
-    expect(onPageChange).toHaveBeenCalledWith(501)
-})
-
+        fireEvent.click(next)
+        expect(onPageChange).toHaveBeenCalledWith(501)
+    },
+)
