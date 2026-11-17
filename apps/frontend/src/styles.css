@@ -766,26 +766,22 @@
     background: var(--color-kumo-fill);
 }
 .loading-state {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 24px 0;
+    display: block;
+    min-width: 0;
 }
-.skeleton {
-    height: 48px;
-    border-radius: 8px;
-    background: var(--color-kumo-fill);
-    animation: pulse 1.5s ease-in-out infinite;
+.skeleton-line {
+    background-color: rgb(0 0 0 / 0.08);
 }
-@keyframes pulse {
-    50% {
-        opacity: 0.4;
-    }
+[data-mode="dark"] .skeleton-line {
+    background-color: rgb(255 255 255 / 0.14);
 }
-@media (prefers-reduced-motion: reduce) {
-    .skeleton {
-        animation: none;
-    }
+[data-mode="dark"] .skeleton-line::after {
+    background: linear-gradient(
+        90deg,
+        rgb(255 255 255 / 0) 0%,
+        rgb(255 255 255 / 0.14) 50%,
+        rgb(255 255 255 / 0) 100%
+    );
 }
 .dialog-title {
     font-size: 20px;

@@ -1,6 +1,6 @@
 import { Actions, SidebarSearch } from "@/components/Actions"
 import { RegionFlag } from "@/components/RegionFlag"
-import { Loading, NoData } from "@/components/ui"
+import { Loading, NoData, PageFootnote, Status } from "@/components/ui"
 import { loadExchangeRates } from "@/core/cost"
 import { groupCounts, parseFilterQuery, resolvePeerGroup } from "@/core/filter"
 import { peerNodes } from "@/core/fleet"
@@ -8,7 +8,7 @@ import { pollVisible } from "@/core/http"
 import { stripFlag } from "@/core/region"
 import { resolveLocale, setLocale, uiLabels } from "@/i18n"
 import { HomePage } from "@/pages/HomePage"
-import { Button } from "@cloudflare/kumo"
+import { Button, SkeletonLine, Tabs } from "@cloudflare/kumo"
 import { useSidebar } from "@cloudflare/kumo/components/sidebar"
 import { AppShell, Page, type ShellLinkProps } from "@nezha-kumo/ui"
 import { FolderSimpleIcon, GaugeIcon, GlobeIcon, HardDrivesIcon } from "@phosphor-icons/react"
@@ -18,8 +18,8 @@ import { useTranslation } from "react-i18next"
 import { classifyGroupIcon } from "../../../../packages/shared/group-icons"
 import { responsive } from "./layout"
 import { setDefaultAppearance } from "./prefs"
-import { Link, useLastListHref, usePathname } from "./router"
-import { SECTIONS } from "./sections"
+import { Link, navigate, useLastListHref, usePathname } from "./router"
+import { SECTIONS, type Section } from "./sections"
 import {
     adapter,
     nodeHref,
@@ -94,6 +94,71 @@ class ErrorBoundary extends Component<
     }
 }
 
+function NodeLoadingShell({
+    nodeId,
+    section,
+    title,
+    actions,
+}: {
+    nodeId: string
+    section: Section
+    title: ReactNode
+    actions: ReactNode
+}) {
+    const { t } = useTranslation()
+    return (
+        <Page
+            maxWidth={1100}
+            title={title}
+            actions={actions}
+            tabs={
+                <Tabs
+                    variant="underline"
+                    labels={uiLabels("tabs")}
+                    value={section}
+                    onValueChange={(s) =>
+                        navigate(`${adapter.nodePath(nodeId)}#${s}`, { replace: true })
+                    }
+                    tabs={SECTIONS.map((s) => ({ value: s, label: t(`ui.${s}`) }))}
+                />
+            }
+        >
+            {section === "overview" ? (
+                <Loading variant="node" />
+            ) : (
+                <>
+                    {(section === "load" || section === "latency") && (
+                        <div className="chart-toolbar" aria-hidden="true">
+                            <div className="flex h-6.5 w-64 max-w-full items-center rounded-lg bg-kumo-recessed px-2">
+                                <SkeletonLine minWidth={100} maxWidth={100} />
+                            </div>
+                            <div className="h-6.5 w-6.5 rounded-md border border-kumo-line bg-kumo-control" />
+                        </div>
+                    )}
+                    {(section === "latency" || section === "history") && (
+                        <div className="section-heading" aria-hidden="true">
+                            <div className="flex items-center" style={{ height: 24 }}>
+                                <SkeletonLine minWidth={100} maxWidth={100} className="h-4 w-20" />
+                            </div>
+                            <div className="h-6.5 w-6.5 rounded-md" />
+                        </div>
+                    )}
+                    <Loading
+                        variant={
+                            section === "load"
+                                ? "charts"
+                                : section === "latency"
+                                  ? "ping"
+                                  : "history"
+                        }
+                    />
+                    <PageFootnote />
+                </>
+            )}
+        </Page>
+    )
+}
+
 export function App() {
     const { t } = useTranslation()
     const phase = useStore((s) => s.phase)
@@ -111,6 +176,7 @@ export function App() {
     const nodeId = adapter.matchNodePath(url.pathname)
     const nodes = useVisibleNodes()
     const node = nodes.find((n) => n.id === nodeId)
+    const nodeSnap = useStore((s) => (nodeId ? s.snapshots[nodeId] : undefined))
     const offlineKey = useStore((s) => {
         if (!nodeId) return ""
         if (!s.fed) return "?"
@@ -125,6 +191,7 @@ export function App() {
     )
     const section = SECTIONS.find((s) => url.hash === `#${s}`) ?? "overview"
     const picked = parseFilterQuery(url.search).groups ?? []
+    const activeGroups = settings.showGroups ? picked : []
     const groups = settings.showGroups ? groupCounts(nodes, groupOrder) : []
     const peerGroup = nodeId
         ? resolvePeerGroup(node, lastListHref, groupOrder, settings.showGroups)
@@ -331,12 +398,57 @@ export function App() {
                     }
                 >
                     {phase === "loading" ? (
-                        <Page
-                            maxWidth={nodeId ? 1100 : undefined}
-                            title={nodeId ? null : t("ui.overview")}
-                        >
-                            <Loading />
-                        </Page>
+                        nodeId ? (
+                            <NodeLoadingShell
+                                nodeId={nodeId}
+                                section={section}
+                                title={
+                                    <span
+                                        className="flex items-center"
+                                        style={{ height: 25 }}
+                                        aria-hidden="true"
+                                    >
+                                        <SkeletonLine
+                                            minWidth={100}
+                                            maxWidth={100}
+                                            className="h-5 w-44"
+                                        />
+                                    </span>
+                                }
+                                actions={
+                                    <span className="status" aria-hidden="true">
+                                        <SkeletonLine
+                                            minWidth={100}
+                                            maxWidth={100}
+                                            className="h-5 w-16 rounded-full"
+                                        />
+                                    </span>
+                                }
+                            />
+                        ) : (
+                            <Page
+                                eyebrow={activeGroups.length ? t("toolbar.groups") : undefined}
+                                title={
+                                    activeGroups.length
+                                        ? activeGroups.length === 1
+                                            ? activeGroups[0] || t("toolbar.ungrouped")
+                                            : activeGroups.join(" · ")
+                                        : t("ui.overview")
+                                }
+                                actions={
+                                    settings.showCost && (
+                                        <div
+                                            className="cost-button flex h-9 w-32 items-center rounded-lg border border-kumo-line bg-kumo-control px-3"
+                                            aria-hidden="true"
+                                        >
+                                            <SkeletonLine minWidth={100} maxWidth={100} />
+                                        </div>
+                                    )
+                                }
+                            >
+                                <Loading variant="home" />
+                            </Page>
+                        )
                     ) : phase === "error" ? (
                         <Page title={t("app.loadError")} description={t("app.loadErrorHint")}>
                             <Button variant="primary" onClick={() => void start()}>
@@ -346,9 +458,26 @@ export function App() {
                     ) : nodeId ? (
                         <Suspense
                             fallback={
-                                <Page maxWidth={1100} title={node ? stripFlag(node.name) : null}>
-                                    <Loading />
-                                </Page>
+                                <NodeLoadingShell
+                                    nodeId={nodeId}
+                                    section={section}
+                                    title={
+                                        node ? (
+                                            settings.showRegions && node.region ? (
+                                                <>
+                                                    <RegionFlag
+                                                        code={node.region}
+                                                        className="mr-2"
+                                                    />
+                                                    {stripFlag(node.name)}
+                                                </>
+                                            ) : (
+                                                stripFlag(node.name)
+                                            )
+                                        ) : null
+                                    }
+                                    actions={<Status snapshot={nodeSnap} />}
+                                />
                             }
                         >
                             <NodePage id={nodeId} section={section} />

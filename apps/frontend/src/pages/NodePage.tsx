@@ -436,12 +436,12 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                 retry={() => setNonce((v) => v + 1)}
                             />
                         ) : points === null ? (
-                            <Loading />
+                            <Loading variant="charts" />
                         ) : points.length < 2 ? (
                             activeRange === 0 &&
                             ((recordHours > 0 && liveBackfilledKey !== dayKey) ||
                                 (!recordHours && (!fed || snap?.online))) ? (
-                                <Loading />
+                                <Loading variant="charts" />
                             ) : (
                                 <NoData title={t("node.noHistory")} />
                             )
@@ -479,7 +479,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                 retry={() => setNonce((v) => v + 1)}
                             />
                         ) : pingData === null ? (
-                            <Loading />
+                            <Loading variant="ping" />
                         ) : !pingData.tasks.length ? (
                             <NoData title={t("node.noPing")} />
                         ) : (
@@ -513,7 +513,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                 retry={() => setNonce((v) => v + 1)}
                             />
                         ) : reports === null ? (
-                            <Loading />
+                            <Loading variant="history" />
                         ) : !reports.length ? (
                             <NoData title={t("node.noHistory")} />
                         ) : (
