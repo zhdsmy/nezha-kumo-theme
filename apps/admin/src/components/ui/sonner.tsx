@@ -2,7 +2,7 @@ import type * as React from "react"
 import { useTranslation } from "react-i18next"
 import { Toaster as Sonner } from "sonner"
 
-import { useTheme } from "@/components/theme-provider"
+import { DEFAULT_THEME, useTheme } from "@/components/theme-provider"
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
@@ -32,7 +32,7 @@ export const KUMO_SONNER_STYLE = {
 
 const Toaster = ({ style, toastOptions, ...props }: ToasterProps) => {
     const { t } = useTranslation()
-    const { theme = "system" } = useTheme()
+    const { theme = DEFAULT_THEME } = useTheme()
 
     return (
         <Sonner

@@ -37,7 +37,7 @@ export default function Root() {
     }
 
     return (
-        <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+        <ThemeProvider>
             {pathname === "/dashboard/login" ? (
                 <>
                     <div className="flex items-center justify-end gap-2 px-4 pt-3">

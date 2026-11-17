@@ -1,6 +1,44 @@
 import { createContext, useContext, useEffect, useState } from "react"
 
-export type Theme = "dark" | "light" | "system"
+// Canonical theme constants & markers. Keep the pre-paint inline script in
+// apps/admin/index.html synchronized with THEME_STORAGE_KEY, THEME_VALUES,
+// DEFAULT_THEME, resolveTheme, and applyResolvedTheme.
+export const THEME_STORAGE_KEY = "vite-ui-theme"
+export const THEME_VALUES = ["light", "dark", "system"] as const
+export type Theme = (typeof THEME_VALUES)[number]
+export type ResolvedTheme = Exclude<Theme, "system">
+export const DEFAULT_THEME: Theme = "system"
+
+export function normalizeTheme(
+    stored: string | null | undefined,
+    fallback: Theme = DEFAULT_THEME,
+): Theme {
+    return (THEME_VALUES as readonly string[]).includes(stored ?? "")
+        ? (stored as Theme)
+        : fallback
+}
+
+export function resolveTheme(theme: Theme, prefersDark: boolean): ResolvedTheme {
+    if (theme === "system") {
+        return prefersDark ? "dark" : "light"
+    }
+    return theme
+}
+
+export function applyResolvedTheme(root: HTMLElement, resolved: ResolvedTheme): void {
+    root.classList.remove("light", "dark")
+    root.classList.add(resolved)
+    root.dataset.mode = resolved
+    root.style.colorScheme = resolved
+}
+
+function readStoredTheme(storageKey: string, fallback: Theme): Theme {
+    try {
+        return normalizeTheme(localStorage.getItem(storageKey), fallback)
+    } catch {
+        return fallback
+    }
+}
 
 type ThemeProviderProps = {
     children: React.ReactNode
@@ -14,7 +52,7 @@ type ThemeProviderState = {
 }
 
 const initialState: ThemeProviderState = {
-    theme: "system",
+    theme: DEFAULT_THEME,
     setTheme: () => null,
 }
 
@@ -22,38 +60,37 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
 export function ThemeProvider({
     children,
-    defaultTheme = "system",
-    storageKey = "vite-ui-theme",
+    defaultTheme = DEFAULT_THEME,
+    storageKey = THEME_STORAGE_KEY,
     ...props
 }: ThemeProviderProps) {
-    const [theme, setTheme] = useState<Theme>(
-        () => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
-    )
+    const [theme, setTheme] = useState<Theme>(() => readStoredTheme(storageKey, defaultTheme))
 
     useEffect(() => {
         const root = window.document.documentElement
+        const media = window.matchMedia("(prefers-color-scheme: dark)")
 
-        root.classList.remove("light", "dark")
+        const sync = () => {
+            applyResolvedTheme(root, resolveTheme(theme, media.matches))
+        }
+        sync()
 
-        if (theme === "system") {
-            const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
-                ? "dark"
-                : "light"
-
-            root.dataset.mode = systemTheme
-            root.classList.add(systemTheme)
+        if (theme !== "system" || typeof media.addEventListener !== "function") {
             return
         }
-
-        root.dataset.mode = theme
-        root.classList.add(theme)
+        media.addEventListener("change", sync)
+        return () => media.removeEventListener("change", sync)
     }, [theme])
 
     const value = {
         theme,
-        setTheme: (theme: Theme) => {
-            localStorage.setItem(storageKey, theme)
-            setTheme(theme)
+        setTheme: (nextTheme: Theme) => {
+            try {
+                localStorage.setItem(storageKey, nextTheme)
+            } catch {
+                // Ignore storage write errors in private/restricted WebViews.
+            }
+            setTheme(nextTheme)
         },
     }
 
