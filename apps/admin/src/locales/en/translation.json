@@ -262,7 +262,10 @@
         "RepeatYear_one": "Every {{count}} year",
         "RepeatYear_other": "Every {{count}} years",
         "Paid": "Paid",
-        "Currency": "Currency"
+        "Currency": "Currency",
+        "Unlimited": "Unlimited",
+        "TrafficCycle": "Traffic period",
+        "EstimateExpiry": "Calculate from cycle"
     },
     "Validation": {
         "InvalidDate": "Invalid date",

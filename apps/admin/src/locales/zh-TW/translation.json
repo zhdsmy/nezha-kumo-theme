@@ -262,7 +262,10 @@
         "RepeatYear_one": "每 {{count}} 年",
         "RepeatYear_other": "每 {{count}} 年",
         "Paid": "付費",
-        "Currency": "幣別"
+        "Currency": "幣別",
+        "Unlimited": "不限",
+        "TrafficCycle": "流量週期",
+        "EstimateExpiry": "依週期推算"
     },
     "Validation": {
         "InvalidDate": "日期無效",

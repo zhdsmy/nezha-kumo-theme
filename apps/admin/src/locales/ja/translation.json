@@ -262,7 +262,10 @@
         "RepeatYear_one": "{{count}} 年ごと",
         "RepeatYear_other": "{{count}} 年ごと",
         "Paid": "有料",
-        "Currency": "通貨"
+        "Currency": "通貨",
+        "Unlimited": "無制限",
+        "TrafficCycle": "転送量の周期",
+        "EstimateExpiry": "周期から計算"
     },
     "Validation": {
         "InvalidDate": "無効な日付です",

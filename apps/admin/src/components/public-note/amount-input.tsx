@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button"
 import { Combobox } from "@/components/ui/combobox"
-import { Input } from "@/components/ui/input"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { currencies, parseAmount, writeAmount } from "../../../../../packages/shared/public-note"
 import { type NoteControlProps, UnknownValue } from "./cycle-picker"
+import { NumberInput } from "./quantity-input"
 
 export function Choices({
     label,
@@ -86,23 +86,19 @@ export function AmountInput({ value, onChange, label }: NoteControlProps) {
                                 )
                         }}
                     />
-                    <Input
-                        type="number"
-                        min={0}
+                    <NumberInput
+                        label={label}
+                        value={amount?.amount}
                         step="0.01"
-                        aria-label={label}
-                        defaultValue={amount?.amount}
-                        key={value === undefined ? "empty" : "paid"}
                         placeholder="45.00"
-                        onChange={(event) => {
-                            const number = event.target.valueAsNumber
-                            if (!event.target.value) onChange(undefined)
-                            else if (Number.isFinite(number) && number >= 0)
-                                onChange(
-                                    writeAmount(number, code) +
-                                        (amount?.cycle ? `/${value!.split("/")[1]}` : ""),
-                                )
-                        }}
+                        onChange={(number) =>
+                            onChange(
+                                number === undefined
+                                    ? undefined
+                                    : writeAmount(number, code) +
+                                          (amount?.cycle ? `/${value!.split("/")[1]}` : ""),
+                            )
+                        }
                     />
                 </div>
             )}

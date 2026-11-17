@@ -1,0 +1,163 @@
+import { Input } from "@/components/ui/input"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
+
+import {
+    BANDWIDTH_UNITS,
+    TRAFFIC_UNITS,
+    parseBandwidth,
+    parseCycle,
+    parseTraffic,
+    writeBandwidth,
+    writeCycle,
+    writeTraffic,
+} from "../../../../../packages/shared/public-note"
+import { CyclePicker, type NoteControlProps, UnknownValue } from "./cycle-picker"
+
+export function NumberInput({
+    value,
+    onChange,
+    label,
+    min = 0,
+    step = "any",
+    placeholder,
+}: {
+    value?: number
+    onChange: (value: number | undefined) => void
+    label: string
+    min?: number
+    step?: string
+    placeholder?: string
+}) {
+    const [draft, setDraft] = useState(value === undefined ? "" : String(value))
+    useEffect(() => {
+        setDraft((previous) =>
+            (previous === "" ? undefined : Number(previous)) === value
+                ? previous
+                : String(value ?? ""),
+        )
+    }, [value])
+    return (
+        <Input
+            type="number"
+            min={min}
+            step={step}
+            aria-label={label}
+            placeholder={placeholder}
+            value={draft}
+            onChange={(event) => {
+                setDraft(event.target.value)
+                if (event.target.value === "") onChange(undefined)
+                else if (
+                    Number.isFinite(event.target.valueAsNumber) &&
+                    event.target.valueAsNumber >= min
+                )
+                    onChange(event.target.valueAsNumber)
+            }}
+        />
+    )
+}
+function UnitSelect({
+    label,
+    value,
+    options,
+    onChange,
+}: {
+    label: string
+    value: string
+    options: readonly string[]
+    onChange: (value: string) => void
+}) {
+    return (
+        <Select value={value} onValueChange={onChange}>
+            <SelectTrigger aria-label={label}>
+                <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+                {options.map((unit) => (
+                    <SelectItem key={unit} value={unit}>
+                        {unit}
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
+    )
+}
+export function QuantityInput({
+    value,
+    onChange,
+    label,
+    traffic = false,
+}: NoteControlProps & { traffic?: boolean }) {
+    const { t } = useTranslation()
+    const parsed = traffic ? parseTraffic(value) : parseBandwidth(value)
+    const quantity = parsed && parsed !== "unlimited" ? parsed : undefined
+    const [selectedUnit, setUnit] = useState(traffic ? "TB" : "Mbps")
+    const [selectedCycle, setCycle] = useState<string | undefined>("Month")
+    const unit = quantity?.unit || selectedUnit
+    const cycle = quantity && "cycle" in quantity ? quantity.cycle : undefined
+    const period = quantity ? (cycle ? writeCycle(cycle) : undefined) : selectedCycle
+    const write = (amount: number | undefined, nextUnit = unit, nextCycle = period) => {
+        if (amount === undefined) return onChange(undefined)
+        onChange(
+            traffic
+                ? writeTraffic({ amount, unit: nextUnit, cycle: parseCycle(nextCycle) })
+                : writeBandwidth({ amount, unit: nextUnit as "Mbps" | "Gbps" }),
+        )
+    }
+    return (
+        <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm">
+                <Switch
+                    aria-label={`${label} · ${t("PublicNote.Unlimited")}`}
+                    checked={parsed === "unlimited"}
+                    onCheckedChange={(checked) => onChange(checked ? "Unlimited" : undefined)}
+                />
+                {t("PublicNote.Unlimited")}
+            </label>
+            {value && !parsed && <UnknownValue value={value} />}
+            {parsed !== "unlimited" && (
+                <>
+                    <div className="grid grid-cols-2 gap-2">
+                        <NumberInput
+                            label={label}
+                            min={0.000001}
+                            placeholder={traffic ? "1" : "30"}
+                            value={quantity?.amount}
+                            onChange={(amount) => write(amount, unit, period)}
+                        />
+                        <UnitSelect
+                            label={`${label} · ${t("PublicNote.RepeatUnit")}`}
+                            value={unit}
+                            options={[
+                                ...new Set([...(traffic ? TRAFFIC_UNITS : BANDWIDTH_UNITS), unit]),
+                            ]}
+                            onChange={(next) => {
+                                setUnit(next)
+                                if (quantity) write(quantity.amount, next, period)
+                            }}
+                        />
+                    </div>
+                    {traffic && (
+                        <CyclePicker
+                            label={t("PublicNote.TrafficCycle")}
+                            value={period}
+                            onChange={(next) => {
+                                setCycle(next)
+                                if (quantity) write(quantity.amount, unit, next)
+                            }}
+                        />
+                    )}
+                </>
+            )}
+        </div>
+    )
+}
