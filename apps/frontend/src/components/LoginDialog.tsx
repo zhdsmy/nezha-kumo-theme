@@ -1,5 +1,5 @@
 import { adapter, refresh, useStore } from "@/app/store"
-import { Banner, Button, Dialog, Input, Loader } from "@cloudflare/kumo"
+import { Banner, Button, Dialog, Input } from "@cloudflare/kumo"
 import { XIcon } from "@phosphor-icons/react"
 import { type FormEvent, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -66,12 +66,13 @@ function LoginForm({ close }: { close: () => void }) {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
-                <Button variant="primary" type="submit" disabled={busy}>
-                    {busy ? (
-                        <Loader size="sm" aria-label={t("auth.submitting")} />
-                    ) : (
-                        t("auth.submit")
-                    )}
+                <Button
+                    variant="primary"
+                    type="submit"
+                    loading={busy}
+                    aria-label={busy ? t("auth.submitting") : undefined}
+                >
+                    {t("auth.submit")}
                 </Button>
             </form>
             {site?.oauth && (
@@ -98,16 +99,20 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
     return (
         <Dialog.Root open={open} onOpenChange={onOpenChange}>
             <Dialog className="p-6">
-                <Button
-                    className="dialog-close"
-                    size="sm"
-                    variant="ghost"
-                    shape="square"
-                    aria-label={t("auth.close")}
-                    onClick={() => onOpenChange(false)}
-                >
-                    <XIcon size={16} />
-                </Button>
+                <Dialog.Close
+                    render={(props) => (
+                        <Button
+                            {...props}
+                            className="dialog-close"
+                            size="sm"
+                            variant="ghost"
+                            shape="square"
+                            aria-label={t("auth.close")}
+                        >
+                            <XIcon size={16} />
+                        </Button>
+                    )}
+                />
                 {open && <LoginForm close={() => onOpenChange(false)} />}
             </Dialog>
         </Dialog.Root>

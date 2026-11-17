@@ -2,8 +2,9 @@ import { setAppearance, useAppearance } from "@/app/prefs"
 import { adapter, useStore } from "@/app/store"
 import type { Appearance } from "@/core/settings"
 import { LOCALES, type Locale, setLocale } from "@/i18n"
-import { Button, DropdownMenu, Loader, Tooltip } from "@cloudflare/kumo"
+import { Button, DropdownMenu, LinkButton, Loader, Tooltip } from "@cloudflare/kumo"
 import { useSidebar } from "@cloudflare/kumo/components/sidebar"
+import { LinkProvider } from "@cloudflare/kumo/utils"
 import { GlobeIcon, MagnifyingGlassIcon, MoonIcon, SunIcon, UserIcon } from "@phosphor-icons/react"
 import { type ComponentType, useCallback, useEffect, useState, useSyncExternalStore } from "react"
 import { createPortal } from "react-dom"
@@ -221,10 +222,18 @@ export function Actions() {
             </DropdownMenu>
             {!hidden &&
                 (session.loggedIn ? (
-                    <a href={adapter.adminUrl} className="account-link" title={t("auth.dashboard")}>
-                        <UserIcon size={16} />
-                        <span className="action-label">{t("auth.dashboard")}</span>
-                    </a>
+                    <LinkProvider>
+                        <LinkButton
+                            href={adapter.adminUrl}
+                            variant="secondary"
+                            size="sm"
+                            aria-label={t("auth.dashboard")}
+                            title={t("auth.dashboard")}
+                        >
+                            <UserIcon size={16} />
+                            <span className="action-label">{t("auth.dashboard")}</span>
+                        </LinkButton>
+                    </LinkProvider>
                 ) : (
                     <Button
                         variant="secondary"

@@ -4,7 +4,7 @@ import { formatPercent } from "@/core/format"
 import type { Bucket } from "@/core/live"
 import type { Snapshot } from "@/core/model"
 import { readStorage } from "@/core/storage"
-import { Badge, Banner, Empty, SkeletonLine } from "@cloudflare/kumo"
+import { Badge, Banner, Button, Empty, SkeletonLine } from "@cloudflare/kumo"
 import { type ReactNode, useId } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -547,9 +547,9 @@ export function NoData({ title, retry }: { title: string; retry?: () => void }) 
             title={title}
             contents={
                 retry && (
-                    <button className="rounded-sm text-kumo-link" onClick={retry}>
+                    <Button variant="secondary" size="sm" onClick={retry}>
                         {t("app.retry")}
-                    </button>
+                    </Button>
                 )
             }
         />

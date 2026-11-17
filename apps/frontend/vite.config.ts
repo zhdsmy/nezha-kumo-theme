@@ -36,7 +36,10 @@ export default defineConfig(({ mode }) => {
                 : undefined,
         },
         optimizeDeps: {
-            include: ["@cloudflare/kumo/components/command-palette"],
+            include: [
+                "@cloudflare/kumo/components/command-palette",
+                "@cloudflare/kumo/components/switch",
+            ],
         },
         build: {
             manifest: true,

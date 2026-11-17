@@ -34,15 +34,6 @@
 .action-label {
     display: none;
 }
-.account-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 8px;
-    border: 1px solid var(--color-kumo-line);
-    border-radius: 8px;
-    font-size: 12px;
-}
 .connection {
     display: flex;
     align-items: center;
@@ -50,8 +41,7 @@
     font-size: 12px;
     color: var(--text-color-kumo-subtle);
 }
-.connection i,
-.status i {
+.connection i {
     display: inline-block;
     flex-shrink: 0;
     width: 6px;
@@ -393,14 +383,8 @@
 .status[data-status="online"] {
     color: var(--text-color-kumo-success);
 }
-.status[data-status="online"] i {
-    background: var(--color-kumo-success);
-}
 .status[data-status="offline"] {
     color: var(--text-color-kumo-danger);
-}
-.status[data-status="offline"] i {
-    background: var(--color-kumo-danger);
 }
 .meter {
     display: grid;

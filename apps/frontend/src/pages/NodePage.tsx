@@ -20,7 +20,8 @@ import type { HistoryPoint, PingData } from "@/core/model"
 import { regionName, stripFlag } from "@/core/region"
 import { summariseDay } from "@/core/summary"
 import { uiLabels } from "@/i18n"
-import { Banner, Button, RefreshButton, Tabs } from "@cloudflare/kumo"
+import { Banner, RefreshButton, Tabs } from "@cloudflare/kumo"
+import { Switch } from "@cloudflare/kumo/components/switch"
 import { Page } from "@nezha-kumo/ui"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -522,15 +523,13 @@ export default function NodePage({ id, section }: { id: string; section: Section
                     <>
                         <div className="section-heading">
                             <h2>{t("node.tabPing")}</h2>
-                            <Button
+                            <Switch
                                 size="sm"
-                                variant={shave ? "secondary" : "ghost"}
-                                aria-pressed={shave}
-                                title={t("node.shaveHint")}
-                                onClick={() => setShave(!shave)}
-                            >
-                                {t("node.shave")}
-                            </Button>
+                                checked={shave}
+                                onCheckedChange={setShave}
+                                label={t("node.shave")}
+                                labelTooltip={t("node.shaveHint")}
+                            />
                         </div>
                         {!recordHours ? (
                             <NoData title={t("node.liveOnly")} />
