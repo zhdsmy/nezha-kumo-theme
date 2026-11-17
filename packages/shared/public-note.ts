@@ -150,7 +150,11 @@ export function parseNoteDate(value: unknown): number | undefined {
 export function addCycle(start: string, cycle: Cycle): string | undefined {
     const time = parseNoteDate(start)
     if (!time) return
-    const date = new Date(time)
+    const offset = /([+-])(\d{2}):?(\d{2})$/.exec(start)
+    const shift = offset
+        ? (Number(offset[2]) * 60 + Number(offset[3])) * 60_000 * (offset[1] === "+" ? 1 : -1)
+        : 0
+    const date = new Date(time + shift)
     if (cycle.unit === "Day" || cycle.unit === "Week")
         date.setUTCDate(date.getUTCDate() + cycle.count * (cycle.unit === "Week" ? 7 : 1))
     else {
@@ -161,7 +165,9 @@ export function addCycle(start: string, cycle: Cycle): string | undefined {
         last.setUTCMonth(last.getUTCMonth() + 1, 0)
         date.setUTCDate(Math.min(day, last.getUTCDate()))
     }
-    return Number.isFinite(date.getTime()) ? date.toISOString() : undefined
+    return Number.isFinite(date.getTime())
+        ? new Date(date.getTime() - shift).toISOString()
+        : undefined
 }
 export function splitTags(value: string): string[] {
     const seen = new Set<string>()
