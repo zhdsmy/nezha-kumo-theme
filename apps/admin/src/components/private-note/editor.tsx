@@ -22,8 +22,13 @@ import {
 } from "@/lib/private-note"
 import { Button, Input, KumoPortalProvider, Select, Switch, Textarea } from "@cloudflare/kumo"
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+interface RowIdentity {
+    id: number
+    children: RowIdentity[]
+}
 
 export function PrivateNoteEditor({
     value,
@@ -36,6 +41,13 @@ export function PrivateNoteEditor({
 }) {
     const { t } = useTranslation()
     const portal = useRef<HTMLElement>(null)
+    const rowIds = useRef<RowIdentity[]>([])
+    const sequence = useRef(0)
+    const movedFocus = useRef<HTMLElement | null>(null)
+    useLayoutEffect(() => {
+        movedFocus.current?.focus({ preventScroll: true })
+        movedFocus.current = null
+    })
     const [mode, setMode] = useState(() => detectPrivateNoteMode(value))
     const [emptyNumbers, setEmptyNumbers] = useState<string[]>([])
     const parsed = parseJsonNote(value)
@@ -58,10 +70,20 @@ export function PrivateNoteEditor({
         const raw = rawJsonAt(value, path)!
         const next = convertJsonType(raw, type)
         patch(path, next)
+        let identities = rowIds.current
+        for (const index of path) identities = identities[index as number].children
+        identities.length = 0
         if (type === "number" && next === null)
             setEmptyNumbers((items) => [...items, JSON.stringify(path)])
     }
     const reindex = (path: JsonPath, index: number, to?: number) => {
+        let identities = rowIds.current
+        for (const part of path) identities = identities[part as number].children
+        const [moved] = identities.splice(index, 1)
+        if (to !== undefined) {
+            identities.splice(to, 0, moved)
+            movedFocus.current = document.activeElement as HTMLElement
+        }
         setConfirmation(null)
         setEmptyNumbers((items) =>
             items.flatMap((item) => {
@@ -79,8 +101,17 @@ export function PrivateNoteEditor({
             }),
         )
     }
-    const rows = (raw: string, path: JsonPath = [], names: (string | number)[] = [], depth = 1) => {
+    const rows = (
+        raw: string,
+        path: JsonPath = [],
+        names: (string | number)[] = [],
+        depth = 1,
+        identities = rowIds.current,
+    ) => {
         const entries = jsonEntries(raw)
+        while (identities.length < entries.length)
+            identities.push({ id: sequence.current++, children: [] })
+        identities.length = entries.length
         const array = Array.isArray(parseJsonNote(raw))
         return (
             <div className="nkt-json-rows">
@@ -99,7 +130,11 @@ export function PrivateNoteEditor({
                     const error = errors.find((error) => JSON.stringify(error.path) === id)?.error
                     const label = nextNames.join(".")
                     return (
-                        <div key={index} className="nkt-json-row" data-json-path={id}>
+                        <div
+                            key={identities[index].id}
+                            className="nkt-json-row"
+                            data-json-path={id}
+                        >
                             <div className="nkt-json-heading">
                                 {array ? (
                                     <span className="self-center text-sm">{index + 1}</span>
@@ -233,7 +268,13 @@ export function PrivateNoteEditor({
                                     hint={t("PrivateNote.DepthLimit")}
                                 />
                             ) : nested ? (
-                                rows(entry.raw, nextPath, nextNames, depth + 1)
+                                rows(
+                                    entry.raw,
+                                    nextPath,
+                                    nextNames,
+                                    depth + 1,
+                                    identities[index].children,
+                                )
                             ) : actual && type === "string" ? (
                                 <div className="space-y-2">
                                     <label className="block text-sm">
@@ -345,6 +386,7 @@ export function PrivateNoteEditor({
                                 setMode(next as "structured" | "raw")
                                 onChange(value, next as "structured" | "raw")
                                 setEmptyNumbers([])
+                                rowIds.current = []
                             }}
                         />
                     </div>

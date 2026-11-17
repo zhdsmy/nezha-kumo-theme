@@ -88,6 +88,20 @@ test("array insertion deletion and ordering preserve untouched value spellings",
     fireEvent.click(screen.getByRole("button", { name: label("Delete", "a.2") }))
     expect(JSON.parse(saved()).a).toEqual(["中", 100, "last"])
 })
+
+test("array moves carry numeric drafts and focus with stable row identities", () => {
+    render(<Harness raw='{"a":[1,2]}' />)
+    const first = screen.getByRole("textbox", { name: label("Value", "a.0") }) as HTMLInputElement
+    fireEvent.change(first, { target: { value: "1e" } })
+    first.focus()
+    fireEvent.click(screen.getByRole("button", { name: label("MoveDown", "a.0") }))
+    expect(screen.getByRole("textbox", { name: label("Value", "a.1") })).toBe(first)
+    expect(first.value).toBe("1e")
+    expect(document.activeElement).toBe(first)
+    expect(
+        (screen.getByRole("textbox", { name: label("Value", "a.0") }) as HTMLInputElement).value,
+    ).toBe("2")
+})
 test("type conversion keeps numeric text, confirms containers and rejects incomplete numbers", () => {
     expect(convertJsonType('"12.50"', "number")).toBe(12.5)
     expect(convertJsonType("12.5", "string")).toBe("12.5")
