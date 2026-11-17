@@ -106,10 +106,10 @@ for (const [engine, driver] of Object.entries({ chromium, webkit }))
                     }
                     await open()
                     await expect(
-                        page.getByRole("button", { name: "周期", exact: true }),
+                        page.getByRole("button", { name: /^周期 · /, exact: true }),
                     ).toHaveText("每 3 个月")
                     await capture("quarter", '[data-note-field="cycle"]')
-                    await page.getByRole("button", { name: "周期", exact: true }).click()
+                    await page.getByRole("button", { name: /^周期 · /, exact: true }).click()
                     await expect(
                         page.getByRole("button", { name: "每天", exact: true }),
                     ).toBeVisible()
@@ -148,7 +148,7 @@ for (const [engine, driver] of Object.entries({ chromium, webkit }))
                         })
                     await page.keyboard.press("Escape")
                     await expect(
-                        page.getByRole("button", { name: "周期", exact: true }),
+                        page.getByRole("button", { name: /^周期 · /, exact: true }),
                     ).toBeFocused()
                     await capture("quota", '[data-note-field="trafficVol"]')
                     await capture("routes", '[data-note-field="networkRoute"]')

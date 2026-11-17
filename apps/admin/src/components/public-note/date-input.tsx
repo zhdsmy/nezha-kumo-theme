@@ -36,6 +36,11 @@ export function DateInput({
           : i18n.language.startsWith("ja")
             ? ja
             : enUS
+    const display = noExpiry
+        ? t("PublicNote.NoExpiry")
+        : selected
+          ? selected.toLocaleDateString(i18n.language)
+          : value || t("PublicNote.Unset")
     return (
         <div className="space-y-2">
             <Popover open={open} onOpenChange={setOpen}>
@@ -43,15 +48,11 @@ export function DateInput({
                     <Button
                         type="button"
                         variant="outline"
-                        aria-label={label}
+                        aria-label={`${label} · ${display}`}
                         disabled={noExpiry}
                         className="w-full min-w-0 justify-start truncate"
                     >
-                        {noExpiry
-                            ? t("PublicNote.NoExpiry")
-                            : selected
-                              ? selected.toLocaleDateString(i18n.language)
-                              : value || t("PublicNote.Unset")}
+                        {display}
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start" className="w-auto p-0">

@@ -72,7 +72,7 @@ export function CyclePicker({ value, onChange, label }: NoteControlProps) {
                     <Button
                         type="button"
                         variant="outline"
-                        aria-label={label}
+                        aria-label={`${label} · ${parsed ? display(parsed) : value || t("PublicNote.Unset")}`}
                         aria-describedby={value && !parsed ? hint : undefined}
                         className="w-full min-w-0 justify-between gap-2"
                     >
@@ -104,7 +104,9 @@ export function CyclePicker({ value, onChange, label }: NoteControlProps) {
                                     value={unit}
                                     onValueChange={(next) => setUnit(next as CycleUnit)}
                                 >
-                                    <SelectTrigger aria-label={t("PublicNote.RepeatUnit")}>
+                                    <SelectTrigger
+                                        aria-label={`${t("PublicNote.RepeatUnit")} · ${t(`PublicNote.${unit}`)}`}
+                                    >
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>

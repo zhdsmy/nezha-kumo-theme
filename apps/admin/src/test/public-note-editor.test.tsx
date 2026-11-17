@@ -22,9 +22,10 @@ test("server submits Quarter and unknown values intact after a one-field edit", 
         />,
     )
     fireEvent.click(screen.getByRole("button", { name: i18n.t("Edit") }))
-    expect(screen.getByRole("button", { name: i18n.t("PublicNote.Cycle") }).textContent).toContain(
-        "每 3 个月",
-    )
+    expect(
+        screen.getByRole("button", { name: new RegExp("^" + i18n.t("PublicNote.Cycle") + " · ") })
+            .textContent,
+    ).toContain("每 3 个月")
     fireEvent.click(screen.getByRole("switch", { name: i18n.t("PublicNote.AutoRenewal") }))
     await act(async () => {
         fireEvent.submit(screen.getByRole("dialog").querySelector("form")!)
@@ -57,9 +58,10 @@ test("raw and structured modes share one draft; clear deletes keys and IP has th
     expect(raw.value).toBe(note.replace('"IPv4":"1"', '"IPv4":"0"'))
     fireEvent.change(raw, { target: { value: raw.value.replace('"Quarter"', '"Week"') } })
     fireEvent.click(screen.getByRole("button", { name: i18n.t("PublicNote.CustomFields") }))
-    expect(screen.getByRole("button", { name: i18n.t("PublicNote.Cycle") }).textContent).toContain(
-        "每周",
-    )
+    expect(
+        screen.getByRole("button", { name: new RegExp("^" + i18n.t("PublicNote.Cycle") + " · ") })
+            .textContent,
+    ).toContain("每周")
 })
 test("invalid raw notes explain the fallback and can still be cleared and saved", async () => {
     render(
@@ -93,13 +95,13 @@ test.each(["clear", "replace"])("edits the amount-suffix cycle at its source: %s
         )
     }
     render(<Harness />)
-    expect(screen.getByRole("button", { name: "周期" }).textContent).toContain("每 2 年")
+    expect(screen.getByRole("button", { name: /^周期 · / }).textContent).toContain("每 2 年")
     if (action === "clear") fireEvent.click(screen.getByRole("button", { name: "清除 · 周期" }))
     else {
-        fireEvent.click(screen.getByRole("button", { name: "周期" }))
+        fireEvent.click(screen.getByRole("button", { name: /^周期 · / }))
         fireEvent.click(screen.getByRole("button", { name: "每周" }))
     }
-    expect(screen.getByRole("button", { name: "周期" }).textContent).toContain(
+    expect(screen.getByRole("button", { name: /^周期 · / }).textContent).toContain(
         action === "clear" ? "未填" : "每周",
     )
     const saved = JSON.parse(screen.getByRole("status").textContent!)

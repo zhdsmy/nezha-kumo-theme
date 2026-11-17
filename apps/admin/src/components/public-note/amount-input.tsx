@@ -84,7 +84,7 @@ export function AmountInput({ value, onChange, label }: NoteControlProps) {
                     <Combobox
                         key={code}
                         allowDeselect={false}
-                        aria-label={t("PublicNote.Currency")}
+                        aria-label={`${t("PublicNote.Currency")} · ${options.find((item) => item.value === code)?.label || code}`}
                         options={options}
                         defaultValue={code}
                         placeholder={t("PublicNote.Currency")}

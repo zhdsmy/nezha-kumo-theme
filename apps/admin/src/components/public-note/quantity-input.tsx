@@ -78,7 +78,7 @@ function UnitSelect({
 }) {
     return (
         <Select value={value} onValueChange={onChange}>
-            <SelectTrigger aria-label={label}>
+            <SelectTrigger aria-label={`${label} · ${value}`}>
                 <SelectValue />
             </SelectTrigger>
             <SelectContent>
