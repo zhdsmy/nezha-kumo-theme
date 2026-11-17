@@ -576,7 +576,7 @@
         "DuplicateKey": "同一物件內的鍵名不得重複。",
         "NumberRequired": "請輸入有效數字。",
         "DepthLimit": "超過四層，請用原始文字編輯。",
-        "ConfirmType": "要替換為空物件或陣列嗎？目前值的內容會被刪除。",
+        "ConfirmType": "取代此值？目前內容將被刪除。",
         "Replace": "替換值",
         "ActualAmount": "實際花費",
         "ActualCycle": "實際花費週期",

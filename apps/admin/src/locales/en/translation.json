@@ -576,7 +576,7 @@
         "DuplicateKey": "Keys in the same object must be unique.",
         "NumberRequired": "Enter a valid number.",
         "DepthLimit": "More than four container levels. Edit this value in raw text.",
-        "ConfirmType": "Replace this value with an empty object or array? Its current content will be removed.",
+        "ConfirmType": "Replace this value? Its current content will be removed.",
         "Replace": "Replace value",
         "ActualAmount": "Actual expense",
         "ActualCycle": "Actual expense period",

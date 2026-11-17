@@ -249,6 +249,24 @@ test("replacing a container clears incomplete numeric drafts in its removed chil
     await selectType("parent.n", "number")
     expect(valid).toHaveBeenLastCalledWith(false)
     await selectType("parent", "string")
+    fireEvent.click(screen.getByRole("button", { name: i18n.t("PrivateNote.Replace") }))
     expect(saved()).toBe('{"parent":""}')
     expect(valid).toHaveBeenLastCalledWith(true)
 })
+
+test.each(["string", "number", "boolean", "null"])(
+    "container to %s requires confirmation and can be cancelled",
+    async (next) => {
+        render(<Harness raw='{"tree":{"keep":[1,2]}}' />)
+        fireEvent.click(
+            screen.getByRole("combobox", { name: new RegExp("^" + label("Type", "tree") + " · ") }),
+        )
+        fireEvent.keyDown(
+            screen.getByRole("option", { name: i18n.t("PrivateNote.Types." + next) }),
+            { key: "Enter" },
+        )
+        expect(saved()).toBe('{"tree":{"keep":[1,2]}}')
+        fireEvent.click(screen.getByRole("button", { name: i18n.t("Cancel") }))
+        expect(saved()).toBe('{"tree":{"keep":[1,2]}}')
+    },
+)

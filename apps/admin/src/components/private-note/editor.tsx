@@ -131,7 +131,10 @@ export function PrivateNoteEditor({
                                             current !== null &&
                                             current !== "" &&
                                             (!nested || jsonEntries(entry.raw).length > 0)
-                                        if ((next === "object" || next === "array") && nonempty)
+                                        if (
+                                            nonempty &&
+                                            (nested || next === "object" || next === "array")
+                                        )
                                             setConfirmation({ path: nextPath, type: next })
                                         else changeType(nextPath, next)
                                     }}

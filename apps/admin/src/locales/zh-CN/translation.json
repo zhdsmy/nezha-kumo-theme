@@ -576,7 +576,7 @@
         "DuplicateKey": "同一对象内的键名不能重复。",
         "NumberRequired": "请输入有效数字。",
         "DepthLimit": "超过四层，请用原始文本编辑。",
-        "ConfirmType": "要替换为空对象或数组吗？当前值的内容会被删除。",
+        "ConfirmType": "替换此值？当前内容将被删除。",
         "Replace": "替换值",
         "ActualAmount": "实际花费",
         "ActualCycle": "实际花费周期",
