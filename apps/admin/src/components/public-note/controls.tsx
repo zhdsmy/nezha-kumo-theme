@@ -1,3 +1,4 @@
+import { parseDecimal } from "@/lib/number"
 import { Button, ButtonGroup, Input } from "@cloudflare/kumo"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -66,11 +67,7 @@ export function NumberInput({
 }) {
     const [draft, setDraft] = useState(value === undefined ? "" : String(value))
     useEffect(() => {
-        setDraft((previous) =>
-            (previous === "" ? undefined : Number(previous)) === value
-                ? previous
-                : String(value ?? ""),
-        )
+        setDraft((previous) => (parseDecimal(previous) === value ? previous : String(value ?? "")))
     }, [value])
     return (
         <Input
@@ -82,11 +79,11 @@ export function NumberInput({
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             onBlur={() => {
-                if (!draft.trim() && value === undefined) return
-                const number = Number(draft)
-                if (draft.trim() && number === value) return
-                if (!draft.trim()) onChange(undefined)
-                else if (Number.isFinite(number) && number >= min) onChange(number)
+                if (draft === "" && value === undefined) return
+                const number = parseDecimal(draft)
+                if (number !== undefined && number === value) return
+                if (draft === "") onChange(undefined)
+                else if (number !== undefined && number >= min) onChange(number)
                 else setDraft(value === undefined ? "" : String(value))
             }}
             onKeyDown={(event) => {

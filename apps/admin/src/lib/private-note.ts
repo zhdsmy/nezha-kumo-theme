@@ -1,4 +1,5 @@
 import { type JsonPath, isNoteObject, jsonEntries, parseJsonNote } from "./json-note"
+import { parseDecimal } from "./number"
 
 export const JSON_TYPES = ["string", "number", "boolean", "null", "object", "array"] as const
 export type JsonType = (typeof JSON_TYPES)[number]
@@ -12,8 +13,7 @@ export function convertJsonType(raw: string, type: JsonType): unknown {
     if (jsonType(value) === type) return value
     if (type === "string") return typeof value === "number" ? String(value) : ""
     if (type === "number") {
-        const number = typeof value === "string" && value.trim() ? Number(value) : NaN
-        return Number.isFinite(number) ? number : null
+        return typeof value === "string" ? (parseDecimal(value) ?? null) : null
     }
     return type === "object" ? {} : type === "array" ? [] : type === "boolean" ? false : null
 }

@@ -130,3 +130,14 @@ test("shared numeric controls commit valid drafts and restore invalid ones", () 
     fireEvent.blur(input)
     expect(change).toHaveBeenLastCalledWith(4.5)
 })
+
+test.each(["0x10", "0b1", " 12", "12 ", " "])("numeric controls reject nondecimal %s", (draft) => {
+    const change = vi.fn()
+    render(<NumberInput label="number" value={3} onChange={change} />)
+    const input = screen.getByRole("textbox", { name: "number" }) as HTMLInputElement
+    fireEvent.change(input, { target: { value: draft } })
+    expect(input.value).toBe(draft)
+    fireEvent.blur(input)
+    expect(change).not.toHaveBeenCalled()
+    expect(input.value).toBe("3")
+})
