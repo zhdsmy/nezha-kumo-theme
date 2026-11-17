@@ -2,8 +2,12 @@ import { ButtonProps, buttonVariants } from "@/components/ui/button"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { cn } from "@/lib/utils"
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
-import { ComponentProps, forwardRef } from "react"
+import { ComponentProps, forwardRef, useLayoutEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+// Full 5-page + Previous/Next text bar fits from 556 px content width
+// (880 px viewport minus 260 px expanded sidebar minus 64 px page gutter).
+const PAGINATION_FULL_WIDTH = 556
 
 const Pagination = ({ className, ...props }: ComponentProps<"nav">) => (
     <nav
@@ -59,7 +63,7 @@ const PaginationPrevious = ({ className, ...props }: ComponentProps<typeof Pagin
             {...props}
         >
             <ChevronLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">{label}</span>
+            <span className="hidden sm:inline group-data-[compact]/pagination:hidden">{label}</span>
         </PaginationLink>
     )
 }
@@ -75,7 +79,7 @@ const PaginationNext = ({ className, ...props }: ComponentProps<typeof Paginatio
             className={cn("gap-1 px-2.5", className)}
             {...props}
         >
-            <span className="hidden sm:inline">{label}</span>
+            <span className="hidden sm:inline group-data-[compact]/pagination:hidden">{label}</span>
             <ChevronRight className="h-4 w-4" />
         </PaginationLink>
     )
@@ -85,7 +89,10 @@ PaginationNext.displayName = "PaginationNext"
 const PaginationEllipsis = ({ className, ...props }: ComponentProps<"span">) => (
     <span
         aria-hidden
-        className={cn("flex h-9 w-7 items-center justify-center sm:w-9", className)}
+        className={cn(
+            "flex h-9 w-7 items-center justify-center sm:w-9 group-data-[compact]/pagination:w-7",
+            className,
+        )}
         {...props}
     >
         <MoreHorizontal className="h-4 w-4" />
@@ -136,8 +143,23 @@ type TablePaginationProps = {
 
 const TablePagination = ({ page, pageSize, total, onPageChange }: TablePaginationProps) => {
     const { t } = useTranslation()
+    const box = useRef<HTMLDivElement>(null)
     const sm = useMediaQuery("(min-width: 640px)")
+    const [narrowContainer, setNarrowContainer] = useState(false)
     const totalPages = Math.ceil(total / pageSize)
+
+    useLayoutEffect(() => {
+        const el = box.current
+        if (!el) return
+        const update = (w: number) => setNarrowContainer(w > 0 && w < PAGINATION_FULL_WIDTH)
+        update(el.clientWidth)
+        if (typeof ResizeObserver === "undefined") return
+        const observer = new ResizeObserver(([entry]) => update(entry.contentRect.width))
+        observer.observe(el)
+        return () => observer.disconnect()
+    }, [])
+
+    const compact = !sm || narrowContainer
 
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > totalPages) return
@@ -145,11 +167,17 @@ const TablePagination = ({ page, pageSize, total, onPageChange }: TablePaginatio
     }
 
     return (
-        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-2 py-4">
+        <div
+            ref={box}
+            className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-2 py-4"
+        >
             <div className="shrink-0 whitespace-nowrap text-sm text-muted-foreground tabular-nums">
                 {t("Total")}: {total}
             </div>
-            <Pagination className="mx-0 ml-auto w-auto">
+            <Pagination
+                data-compact={compact || undefined}
+                className="group/pagination mx-0 ml-auto w-auto"
+            >
                 <PaginationContent>
                     <PaginationItem>
                         <PaginationPrevious
@@ -161,7 +189,7 @@ const TablePagination = ({ page, pageSize, total, onPageChange }: TablePaginatio
                         />
                     </PaginationItem>
 
-                    {getPageNumbers(page, totalPages, !sm).map((pageNum, idx) =>
+                    {getPageNumbers(page, totalPages, compact).map((pageNum, idx) =>
                         pageNum === -1 ? (
                             <PaginationItem key={`ellipsis-${idx}`}>
                                 <PaginationEllipsis />

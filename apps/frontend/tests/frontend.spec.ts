@@ -12,6 +12,9 @@ test("fleet views, search shortcut and two-second data", async ({ page }) => {
     await page.goto("/")
     await expect(page.locator("[data-server]")).toHaveCount(20)
     await page.setViewportSize({ width: 856, height: 900 })
+    // 856 wide (>= BREAKPOINTS.sidebar = 768) uses persistent expanded sidebar and hides topbar title
+    await expect(page.locator("aside.nk-sidebar")).toHaveAttribute("data-state", "expanded")
+    await expect(page.locator(".topbar-title")).toBeHidden()
     // cards show every reading with nothing to expand
     await expect(page.locator(".server-card").first().locator(".card-facts dt")).toHaveCount(7)
     await expect(page.getByRole("button", { name: /Details/ })).toHaveCount(0)
@@ -29,8 +32,7 @@ test("fleet views, search shortcut and two-second data", async ({ page }) => {
         .getByRole("textbox", { name: "Search" })
         .fill("Server 02")
     await expect(page.locator("[data-server]")).toHaveCount(1)
-    // Sidebar group links keep inline search query; sidebar Overview resets it and restores full list
-    await page.setViewportSize({ width: 1024, height: 900 })
+    // Sidebar group links are directly reachable at 856 wide; Overview resets inline search
     await page.locator('nav a[href^="/?group="]').first().click()
     await expect(
         page.locator(".section-heading").getByRole("textbox", { name: "Search" }),
@@ -237,18 +239,31 @@ test("drawer focus, appearance and language remain reachable", async ({ page }) 
     await expect(page.getByRole("button", { name: "Open navigation" })).toBeFocused()
 })
 
-test("responsive boundaries keep a single table/card tree and no overflow", async ({ page }) => {
+test("responsive boundaries keep a single table/card tree, 767/768 drawer-to-sidebar switch, and no overflow", async ({
+    page,
+}) => {
     const errors: string[] = []
     page.on("pageerror", (e) => errors.push(e.message))
     await page.goto("/")
     await expect(page.locator("[data-server]")).toHaveCount(20)
+
+    await page.setViewportSize({ width: 767, height: 900 })
+    await expect(page.locator("aside.nk-sidebar")).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "Open navigation" })).toBeVisible()
+    await expect(page.locator(".topbar-title")).toBeVisible()
+
+    await page.setViewportSize({ width: BREAKPOINTS.sidebar, height: 900 })
+    await expect(page.locator("aside.nk-sidebar")).toHaveAttribute("data-state", "expanded")
+    await expect(page.getByRole("button", { name: "Open navigation" })).toHaveCount(0)
+    await expect(page.locator(".topbar-title")).toBeHidden()
+
     for (const width of [
         375,
         767,
-        BREAKPOINTS.gutter,
+        BREAKPOINTS.sidebar,
         856,
         879,
-        BREAKPOINTS.sidebar,
+        880,
         1024,
         1279,
         BREAKPOINTS.wide,
@@ -258,19 +273,127 @@ test("responsive boundaries keep a single table/card tree and no overflow", asyn
     ]) {
         await page.setViewportSize({ width, height: 900 })
         await expect
-            .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), {
-                message: `width ${width}`,
-            })
-            .toBe(true)
+            .poll(
+                () =>
+                    page.evaluate(
+                        () =>
+                            document.documentElement.scrollWidth -
+                            document.documentElement.clientWidth,
+                    ),
+                { message: `width ${width}` },
+            )
+            .toBe(0)
         for (const view of ["Compact", "Cards"]) {
             await page.getByRole("button", { name: view, exact: true }).click()
             expect(
-                await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+                await page.evaluate(
+                    () =>
+                        document.documentElement.scrollWidth - document.documentElement.clientWidth,
+                ),
                 `${view} at ${width}`,
-            ).toBe(true)
+            ).toBe(0)
         }
     }
     expect(errors).toEqual([])
+})
+
+test("768–879 persistent sidebar defaults expanded at 867, collapses to 57px, and keeps zero overflow across home views and node tabs", async ({
+    browser,
+}) => {
+    // Fresh context with empty localStorage: 867 wide starts expanded (260px) and collapses to 57px
+    const ctx = await browser.newContext({ viewport: { width: 867, height: 900 } })
+    const page = await ctx.newPage()
+    await mockNezha(page)
+    await page.goto("/")
+    await expect(page.locator("[data-server]")).toHaveCount(20)
+
+    const sidebar = page.locator("aside.nk-sidebar")
+    await expect(sidebar).toHaveAttribute("data-state", "expanded")
+    expect(await sidebar.evaluate((el) => Math.round(el.getBoundingClientRect().width))).toBe(260)
+    await expect(page.locator(".topbar-title")).toBeHidden()
+
+    await page.getByRole("button", { name: "Collapse navigation" }).click()
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed")
+    await expect
+        .poll(() => sidebar.evaluate((el) => Math.round(el.getBoundingClientRect().width)))
+        .toBe(57)
+    expect(await page.evaluate(() => localStorage.getItem("nkt:sidebar-collapsed"))).toBe("true")
+
+    await page.evaluate(() => localStorage.setItem("nkt:language", "en"))
+    await page.reload()
+    await expect(page.locator("[data-server]")).toHaveCount(20)
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed")
+
+    const expectZeroOverflow = async (label: string) => {
+        await expect
+            .poll(
+                () =>
+                    page.evaluate(
+                        () =>
+                            document.documentElement.scrollWidth -
+                            document.documentElement.clientWidth,
+                    ),
+                { message: label },
+            )
+            .toBe(0)
+    }
+
+    for (const state of ["expanded", "collapsed"] as const) {
+        const current = await sidebar.getAttribute("data-state")
+        if (current !== state) {
+            await page
+                .getByRole("button", {
+                    name: state === "collapsed" ? "Collapse navigation" : "Expand navigation",
+                })
+                .click()
+            await expect(sidebar).toHaveAttribute("data-state", state)
+        }
+
+        // HomePage: Cards & Compact across 768, 800, 867, 879
+        await page.goto("/")
+        await expect(page.locator("[data-server]")).toHaveCount(20)
+        for (const width of [768, 800, 867, 879]) {
+            await page.setViewportSize({ width, height: 900 })
+            await page.getByRole("button", { name: "Cards", exact: true }).click()
+            await expectZeroOverflow(`home cards ${width} ${state}`)
+
+            await page.getByRole("button", { name: "Compact", exact: true }).click()
+            await expect(page.locator(".fleet-table .server-row")).toHaveCount(20)
+            await expectZeroOverflow(`home compact ${width} ${state}`)
+            expect(
+                await page.locator(".fleet-table").evaluate((el) => getComputedStyle(el).display),
+                `fleet-table display ${width} ${state}`,
+            ).toBe(state === "expanded" ? "block" : "table")
+        }
+
+        // NodePage: all 4 tabs across 768, 800, 867, 879
+        await page.goto("/server/6")
+        await expect(page.locator(".node-live-strip")).toBeVisible()
+        for (const width of [768, 800, 867, 879]) {
+            await page.setViewportSize({ width, height: 900 })
+            await page.getByRole("tab", { name: "Overview", exact: true }).click()
+            if (state === "expanded") {
+                await expect(page.locator(".node-subtabs")).toBeVisible()
+            } else {
+                await expect(page.locator(".node-subtabs")).toBeHidden()
+            }
+            await expectZeroOverflow(`node overview ${width} ${state}`)
+
+            await page.getByRole("tab", { name: "Load", exact: true }).click()
+            await expect(page.locator(".chart svg")).toHaveCount(6)
+            await expectZeroOverflow(`node load ${width} ${state}`)
+
+            await page.getByRole("tab", { name: "Latency", exact: true }).click()
+            await expect(page.locator(".node-ping-list button")).toHaveCount(3)
+            await expectZeroOverflow(`node latency ${width} ${state}`)
+
+            await page.getByRole("tab", { name: "Reporting history", exact: true }).click()
+            await expect(page.getByText(/hours reported/)).toBeVisible()
+            await expectZeroOverflow(`node history ${width} ${state}`)
+        }
+    }
+
+    await ctx.close()
 })
 
 test("group and sort controls, locale persistence, and system theme", async ({ page }) => {

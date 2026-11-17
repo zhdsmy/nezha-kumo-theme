@@ -15,8 +15,13 @@ import type { ComponentType, ReactNode } from "react"
 export const BREAKPOINTS = {
     /** Page gutter 16 → 32 px; top-bar buttons show their text labels. */
     gutter: 768,
-    /** Below: sidebar is a 260 px drawer opened from the top bar. At/above: sidebar is always shown. */
-    sidebar: 880,
+    /**
+     * Below: sidebar is a 260 px drawer opened from the top bar.
+     * At/above: persistent sidebar (matches Kumo MOBILE_BREAKPOINT = 768), expanded by default
+     * and manually collapsible to SHELL.sidebarRailWidth; content inside .nk-main adapts to its
+     * inline container width when the expanded sidebar narrows .nk-main below 620 px (768–879 px).
+     */
+    sidebar: 768,
     /** Metric tiles 2 → 5 columns; large charts 1 → 2 columns. */
     wide: 1280,
     /** Pages with an aside get a 400 px right info panel. */
