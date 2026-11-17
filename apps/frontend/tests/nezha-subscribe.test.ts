@@ -54,7 +54,7 @@ it("keeps groups on the first live event after loadNodes (no flicker)", async ()
     // Deliver the socket's first frame without waiting for a real event-loop tick.
     await vi.advanceTimersByTimeAsync(0)
     const nodes = await loading
-    expect(vi.getTimerCount()).toBe(0)
+    expect(vi.getTimerCount()).toBe(1) // Live socket inactivity watchdog.
     const grouped = nodes.filter((n) => n.groups.length).length
     expect(grouped).toBeGreaterThan(10)
 

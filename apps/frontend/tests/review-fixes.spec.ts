@@ -94,3 +94,21 @@ test("FE04 reports settings failure and recovers history after retry", async ({ 
     await page.goto("/server/6#history")
     await expect(page.locator(".hour-grid-cell").first()).toBeVisible()
 })
+
+test("FE03 reconnects silent sockets and retains the disconnected banner until a valid frame", async ({
+    page,
+}) => {
+    await page.clock.install()
+    await mockNezha(page, { noHistory: true })
+    let connections = 0
+    await page.routeWebSocket("**/api/v1/ws/server", (ws) => {
+        if (++connections === 1)
+            ws.send(JSON.stringify({ now: Date.now(), servers: fixture.servers }))
+    })
+    await page.goto("/")
+    await expect(page.locator(".connection")).toHaveAttribute("data-open", "true")
+    await page.clock.runFor(36_000)
+    await expect(page.locator(".disconnect-banner")).toBeVisible()
+    await expect(page.locator(".connection")).toHaveAttribute("data-open", "false")
+    await expect.poll(() => connections).toBeGreaterThan(1)
+})
