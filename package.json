@@ -13,5 +13,9 @@
     "check": "pnpm typecheck && pnpm test && pnpm build",
     "package": "pnpm build && pnpm --filter frontend check:size && python3 scripts/package.py",
     "test:release": "python3 -m unittest discover -s scripts/tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhdsmy/nezha-kumo-theme.git"
   }
 }

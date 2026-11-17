@@ -1,7 +1,7 @@
 {
-    "name": "admin-frontend",
+    "name": "nezha-kumo-admin",
     "private": true,
-    "version": "0.0.0",
+    "version": "0.1.0",
     "type": "module",
     "scripts": {
         "dev": "vite",
@@ -87,5 +87,12 @@
         "typescript": "~7.0.2",
         "vite": "^8.3.4",
         "vitest": "^5.0.5"
-    }
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/zhdsmy/nezha-kumo-theme.git",
+        "directory": "apps/admin"
+    },
+    "description": "A responsive Nezha management frontend styled with Cloudflare Kumo."
 }

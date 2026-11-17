@@ -40,5 +40,11 @@
         "typescript": "~7.0.2",
         "vite": "^8.3.4",
         "vitest": "^4.1.0"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/zhdsmy/nezha-kumo-theme.git",
+        "directory": "apps/frontend"
     }
 }
