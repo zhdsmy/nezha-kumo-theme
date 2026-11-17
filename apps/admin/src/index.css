@@ -484,6 +484,14 @@ body,
     .nkt-table td[data-col="actions"] {
         display: contents;
     }
+    /* Cards: the details chevron and the actions toggle read as one pair of 32 px buttons. */
+    .nkt-table td[data-primary] {
+        padding-right: 0;
+    }
+    .nkt-table :is(.nkt-details-toggle, .nkt-actions-toggle) {
+        width: 2rem;
+        height: 2rem;
+    }
     .nkt-table .nkt-actions-toggle {
         display: inline-flex;
         grid-column: -2;
