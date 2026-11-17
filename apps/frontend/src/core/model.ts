@@ -1,5 +1,7 @@
+import type { TrafficBilling as TrafficLimitType } from "../../../../packages/shared/public-note"
+
 // Adapted from zool-theme/src/core/model.ts (MIT, luoleiorg).
-export type TrafficLimitType = "sum" | "max"
+export type { TrafficBilling as TrafficLimitType } from "../../../../packages/shared/public-note"
 
 export interface SiteInfo {
     name: string
@@ -45,6 +47,7 @@ export interface NodeInfo {
     /** Bytes; 0 = unlimited, -1 = unknown. */
     trafficLimit: number
     trafficLimitType: TrafficLimitType
+    trafficLimitTypeExplicit?: boolean
     /** Period in days, when the quota does not share the cumulative counters' window. */
     trafficLimitPeriod?: number
     bandwidth?: string

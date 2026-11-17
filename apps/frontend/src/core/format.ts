@@ -1,3 +1,4 @@
+import { currencyCode } from "../../../../packages/shared/public-note"
 // Adapted from zool-theme/src/core/format.ts (MIT, luoleiorg).
 import type { NodeInfo, Snapshot, TrafficLimitType } from "./model"
 
@@ -65,9 +66,11 @@ export function duration(seconds: number): Duration {
     }
 }
 
-/** Nezha public_note supports total or the larger direction. */
+/** Nezha public_note bills outbound, the sum or the larger direction. */
 export function trafficUsed(type: TrafficLimitType, up: number, down: number) {
     switch (type) {
+        case "out":
+            return up
         case "sum":
             return up + down
         default:
@@ -106,24 +109,6 @@ export function formatClock(at: number, withDate = false, locale?: string) {
         hour12: false,
         ...(withDate ? { month: "numeric", day: "numeric" } : {}),
     })
-}
-
-export function currencyCode(currency: string): string | null {
-    const code = currency.trim().toUpperCase()
-    return (
-        (
-            {
-                $: "USD",
-                US$: "USD",
-                "¥": "CNY",
-                "￥": "CNY",
-                RMB: "CNY",
-                "€": "EUR",
-                AUD$: "AUD",
-                A$: "AUD",
-            } as Record<string, string>
-        )[code] ?? (/^[A-Z]{3}$/.test(code) ? code : null)
-    )
 }
 
 const SYMBOLS: Record<string, string> = {

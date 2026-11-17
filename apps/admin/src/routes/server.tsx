@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/table"
 import { IconButton } from "@/components/xui/icon-button"
 import { useServer } from "@/hooks/useServer"
+import { isNoteObject, parsePublicNote } from "@/lib/public-note"
 import { selectableTableFeatures, useSelectableTable } from "@/lib/table"
 import { errorMessage } from "@/lib/utils"
 import { ModelServerTaskResponse, ModelServer as Server } from "@/types"
@@ -38,6 +39,8 @@ import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import useSWR from "swr"
 
+import { splitTags } from "../../../../packages/shared/public-note"
+
 export default function ServerPage() {
     const { t } = useTranslation()
     const { data, mutate, error, isLoading } = useSWR<Server[]>("/api/v1/server", swrFetcher, {
@@ -45,6 +48,21 @@ export default function ServerPage() {
         revalidateOnReconnect: false,
     })
     const { serverGroups } = useServer()
+    const routes = useMemo(
+        () =>
+            splitTags(
+                (data ?? [])
+                    .map((server) => {
+                        const note = parsePublicNote(server.public_note)
+                        const plan = isNoteObject(note) ? note.planDataMod : undefined
+                        return isNoteObject(plan) && typeof plan.networkRoute === "string"
+                            ? plan.networkRoute
+                            : ""
+                    })
+                    .join(","),
+            ),
+        [data],
+    )
 
     useEffect(() => {
         if (error)
@@ -219,7 +237,7 @@ export default function ServerPage() {
                         delete={{ fn: deleteServer, id: s.id, mutate: mutate }}
                     >
                         <>
-                            <ServerCard mutate={mutate} data={s} />
+                            <ServerCard mutate={mutate} data={s} routes={routes} />
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <IconButton

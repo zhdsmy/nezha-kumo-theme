@@ -1,7 +1,8 @@
 import { readStorage, writeStorage } from "@/core/storage"
 
 // Adapted from zool-theme/src/core/cost.ts (MIT, luoleiorg).
-import { currencyCode, monthlyCost } from "./format"
+import { currencyCode } from "../../../../packages/shared/public-note"
+import { monthlyCost } from "./format"
 import { request } from "./http"
 import type { ActualCost, NodeInfo, Snapshot } from "./model"
 

@@ -23,10 +23,29 @@ import type { HistoryPoint, PingData } from "@/core/model"
 import { regionName, stripFlag } from "@/core/region"
 import { hasDailyCounters, mergeHistoryTail, summariseDay } from "@/core/summary"
 import { uiLabels } from "@/i18n"
-import { Banner, RefreshButton, Tabs } from "@cloudflare/kumo"
+import { Badge, Banner, RefreshButton, Tabs } from "@cloudflare/kumo"
 import { Page } from "@nezha-kumo/ui"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+import { splitTags } from "../../../../packages/shared/public-note"
+
+function NoteTags({ value }: { value: string }) {
+    if (!/[,，]/.test(value)) return <span className="whitespace-pre-line">{value}</span>
+    return (
+        <div className="flex flex-wrap gap-1">
+            {splitTags(value).map((tag, index) => (
+                <Badge
+                    variant="secondary"
+                    key={index}
+                    className="max-w-full whitespace-normal break-words"
+                >
+                    {tag}
+                </Badge>
+            ))}
+        </div>
+    )
+}
 
 type SubTab = "system" | "network" | "billing"
 
@@ -419,7 +438,14 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                                 .filter(Boolean)
                                                 .join(" · "),
                                         ],
-                                        [t("node.networkRoute"), node.networkRoute],
+                                        [
+                                            t("node.networkRoute"),
+                                            node.networkRoute ? (
+                                                <NoteTags value={node.networkRoute} />
+                                            ) : (
+                                                ""
+                                            ),
+                                        ],
                                         [t("metric.upload"), formatBytes(snap?.totalUp ?? 0)],
                                         [t("metric.download"), formatBytes(snap?.totalDown ?? 0)],
                                         [
@@ -435,6 +461,12 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                                 : "—",
                                         ],
                                         [t("metric.quota"), billing.quota(node)],
+                                        [
+                                            t("node.trafficBilling"),
+                                            node.trafficLimitTypeExplicit
+                                                ? t(`node.traffic.${node.trafficLimitType}`)
+                                                : "",
+                                        ],
                                         [t("ui.quotaUsed"), used !== null ? formatBytes(used) : ""],
                                     ]}
                                 />
@@ -486,15 +518,20 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                             [t("metric.autoRenew"), node.autoRenewal ? "✓" : ""],
                                         ]}
                                     />
-                                    {node.note && (
-                                        <Banner
-                                            variant="secondary"
-                                            size="sm"
-                                            className="mt-3 whitespace-pre-line"
-                                        >
-                                            {node.note}
-                                        </Banner>
-                                    )}
+                                    {node.note &&
+                                        (/[,，]/.test(node.note) ? (
+                                            <div className="mt-3">
+                                                <NoteTags value={node.note} />
+                                            </div>
+                                        ) : (
+                                            <Banner
+                                                variant="secondary"
+                                                size="sm"
+                                                className="mt-3 whitespace-pre-line"
+                                            >
+                                                {node.note}
+                                            </Banner>
+                                        ))}
                                 </div>
                             )}
                         </div>

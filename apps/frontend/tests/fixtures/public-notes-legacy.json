@@ -1,0 +1,242 @@
+[
+    {
+        "public_note": "{\"planDataMod\":{\"trafficVol\":\"Unlimited/Month\"}}",
+        "expected": {
+            "price": 0,
+            "currency": "$",
+            "billingCycle": 0,
+            "autoRenewal": false,
+            "expiredAt": null,
+            "trafficLimit": 0,
+            "trafficLimitType": "max",
+            "trafficLimitPeriod": 0,
+            "bandwidth": "",
+            "networkRoute": "",
+            "note": ""
+        }
+    },
+    {
+        "public_note": "{\"planDataMod\":{\"trafficVol\":\"不限/月\"}}",
+        "expected": {
+            "price": 0,
+            "currency": "$",
+            "billingCycle": 0,
+            "autoRenewal": false,
+            "expiredAt": null,
+            "trafficLimit": 0,
+            "trafficLimitType": "max",
+            "trafficLimitPeriod": 0,
+            "bandwidth": "",
+            "networkRoute": "",
+            "note": ""
+        }
+    },
+    {
+        "public_note": "{\"planDataMod\":{\"trafficVol\":\"unmetered/Year\"}}",
+        "expected": {
+            "price": 0,
+            "currency": "$",
+            "billingCycle": 0,
+            "autoRenewal": false,
+            "expiredAt": null,
+            "trafficLimit": 0,
+            "trafficLimitType": "max",
+            "trafficLimitPeriod": 0,
+            "bandwidth": "",
+            "networkRoute": "",
+            "note": ""
+        }
+    },
+    {
+        "public_note": "{\"billingDataMod\":{\"amount\":\"免费节点\"}}",
+        "expected": {
+            "price": -1,
+            "currency": "$",
+            "billingCycle": 0,
+            "autoRenewal": false,
+            "expiredAt": null,
+            "trafficLimit": -1,
+            "trafficLimitType": "max",
+            "trafficLimitPeriod": 0,
+            "bandwidth": "",
+            "networkRoute": "",
+            "note": ""
+        }
+    },
+    {
+        "public_note": "{\"billingDataMod\":{\"amount\":\"45元\"}}",
+        "expected": {
+            "price": 45,
+            "currency": "元",
+            "billingCycle": 0,
+            "autoRenewal": false,
+            "expiredAt": null,
+            "trafficLimit": -1,
+            "trafficLimitType": "max",
+            "trafficLimitPeriod": 0,
+            "bandwidth": "",
+            "networkRoute": "",
+            "note": ""
+        }
+    },
+    {
+        "public_note": "{\"billingDataMod\":{\"amount\":\"¥ 1,200\"}}",
+        "expected": {
+            "price": 1,
+            "currency": "¥ ,2",
+            "billingCycle": 0,
+            "autoRenewal": false,
+            "expiredAt": null,
+            "trafficLimit": -1,
+            "trafficLimitType": "max",
+            "trafficLimitPeriod": 0,
+            "bandwidth": "",
+            "networkRoute": "",
+            "note": ""
+        }
+    },
+    {
+        "public_note": "{\"billingDataMod\":{\"amount\":\"0.00\"}}",
+        "expected": {
+            "price": 0,
+            "currency": "$",
+            "billingCycle": 0,
+            "autoRenewal": false,
+            "expiredAt": null,
+            "trafficLimit": -1,
+            "trafficLimitType": "max",
+            "trafficLimitPeriod": 0,
+            "bandwidth": "",
+            "networkRoute": "",
+            "note": ""
+        }
+    },
+    {
+        "public_note": "{\"billingDataMod\":{\"amount\":\"0 credits\"}}",
+        "expected": {
+            "price": 0,
+            "currency": "$",
+            "billingCycle": 0,
+            "autoRenewal": false,
+            "expiredAt": null,
+            "trafficLimit": -1,
+            "trafficLimitType": "max",
+            "trafficLimitPeriod": 0,
+            "bandwidth": "",
+            "networkRoute": "",
+            "note": ""
+        }
+    },
+    {
+        "public_note": "{\"billingDataMod\":{\"amount\":\"9.99C\"}}",
+        "expected": {
+            "price": 9.99,
+            "currency": "C",
+            "billingCycle": 0,
+            "autoRenewal": false,
+            "expiredAt": null,
+            "trafficLimit": -1,
+            "trafficLimitType": "max",
+            "trafficLimitPeriod": 0,
+            "bandwidth": "",
+            "networkRoute": "",
+            "note": ""
+        }
+    },
+    {
+        "public_note": "{\"billingDataMod\":{\"amount\":\"USD 45\"}}",
+        "expected": {
+            "price": 45,
+            "currency": "USD",
+            "billingCycle": 0,
+            "autoRenewal": false,
+            "expiredAt": null,
+            "trafficLimit": -1,
+            "trafficLimitType": "max",
+            "trafficLimitPeriod": 0,
+            "bandwidth": "",
+            "networkRoute": "",
+            "note": ""
+        }
+    },
+    {
+        "public_note": "{\"planDataMod\":{\"trafficType\":\" 2 \"}}",
+        "expected": {
+            "price": 0,
+            "currency": "$",
+            "billingCycle": 0,
+            "autoRenewal": false,
+            "expiredAt": null,
+            "trafficLimit": -1,
+            "trafficLimitType": "sum",
+            "trafficLimitPeriod": 0,
+            "bandwidth": "",
+            "networkRoute": "",
+            "note": ""
+        }
+    },
+    {
+        "public_note": "{\"planDataMod\":{}}",
+        "expected": {
+            "price": 0,
+            "currency": "$",
+            "billingCycle": 0,
+            "autoRenewal": false,
+            "expiredAt": null,
+            "trafficLimit": -1,
+            "trafficLimitType": "max",
+            "trafficLimitPeriod": 0,
+            "bandwidth": "",
+            "networkRoute": "",
+            "note": ""
+        }
+    },
+    {
+        "public_note": "{\"planDataMod\":{\"trafficType\":\"\"}}",
+        "expected": {
+            "price": 0,
+            "currency": "$",
+            "billingCycle": 0,
+            "autoRenewal": false,
+            "expiredAt": null,
+            "trafficLimit": -1,
+            "trafficLimitType": "max",
+            "trafficLimitPeriod": 0,
+            "bandwidth": "",
+            "networkRoute": "",
+            "note": ""
+        }
+    },
+    {
+        "public_note": "{\"planDataMod\":{\"extra\":\"a,a，b\",\"networkRoute\":\"a,a，b\"}}",
+        "expected": {
+            "price": 0,
+            "currency": "$",
+            "billingCycle": 0,
+            "autoRenewal": false,
+            "expiredAt": null,
+            "trafficLimit": -1,
+            "trafficLimitType": "max",
+            "trafficLimitPeriod": 0,
+            "bandwidth": "",
+            "networkRoute": "a,a，b",
+            "note": "a,a，b"
+        }
+    },
+    {
+        "public_note": "{\"planDataMod\":{\"extra\":\"a;b、c\\nsecond line\",\"networkRoute\":\"a;b、c\\nsecond line\"}}",
+        "expected": {
+            "price": 0,
+            "currency": "$",
+            "billingCycle": 0,
+            "autoRenewal": false,
+            "expiredAt": null,
+            "trafficLimit": -1,
+            "trafficLimitType": "max",
+            "trafficLimitPeriod": 0,
+            "bandwidth": "",
+            "networkRoute": "a;b、c\nsecond line",
+            "note": "a;b、c\nsecond line"
+        }
+    }
+]

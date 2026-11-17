@@ -1,182 +1,101 @@
-import { z } from "zod"
+export const isNoteObject = (value: unknown): value is Record<string, unknown> =>
+    value !== null && typeof value === "object" && !Array.isArray(value)
 
-import i18n from "./i18n"
-
-/**
- * Zod schema for PublicNote
- * Conventions:
- * - All fields are strings and may be empty
- * - IPv4/IPv6/autoRenewal must be "0" or "1"
- * - cycle is one of Day/Week/Month/Year
- * - Date fields can be empty, ISO-like, or the special value "0000-00-00T23:59:59+08:00"
- */
-export const PublicNoteSchema = z.object({
-    billingDataMod: z
-        .object({
-            startDate: z.string().optional(),
-            endDate: z.string().optional(),
-            autoRenewal: z.string().optional(),
-            cycle: z.string().optional(),
-            amount: z.string().optional(),
-        })
-        .optional(),
-    planDataMod: z
-        .object({
-            bandwidth: z.string().optional(),
-            trafficVol: z.string().optional(),
-            trafficType: z.string().optional(),
-            IPv4: z.string().optional(),
-            IPv6: z.string().optional(),
-            networkRoute: z.string().optional(),
-            extra: z.string().optional(),
-        })
-        .optional(),
-})
-
-export type PublicNote = z.infer<typeof PublicNoteSchema>
-
-export const defaultPublicNote: PublicNote = {}
-
-export const isValidISOLike = (v: string) => {
-    if (!v) return true
-    if (v === "0000-00-00T23:59:59+08:00") return true
-    const d = new Date(v)
-    return !isNaN(d.getTime())
-}
-
-export const normalizeISO = (v?: string) => {
-    if (!v) return undefined
-    if (v === "0000-00-00T23:59:59+08:00") return v
-    const date = new Date(v)
-    return isNaN(date.getTime()) ? v : date.toISOString()
-}
-
-/**
- * Parse a string into PublicNote; return the default object if not valid JSON or validation fails.
- */
-export const parsePublicNote = (s?: string): PublicNote => {
-    if (!s) return defaultPublicNote
+export function parsePublicNote(raw = ""): unknown {
     try {
-        const obj = JSON.parse(s)
-        const parsed = PublicNoteSchema.safeParse(obj)
-        if (parsed.success) {
-            return parsed.data
-        }
-        return defaultPublicNote
+        return JSON.parse(raw.trim() ? raw : "{}")
     } catch {
-        return defaultPublicNote
+        return undefined
     }
 }
+export const detectPublicNoteMode = (raw?: string): "structured" | "raw" =>
+    parsePublicNote(raw) === undefined ? "raw" : "structured"
 
-export const validatePublicNote = (pn: PublicNote) => {
-    const errors: Partial<Record<string, string>> = {}
-
-    // Structural and enum validations
-    if (pn.billingDataMod?.autoRenewal && !/^(0|1)$/.test(pn.billingDataMod.autoRenewal)) {
-        errors["billing.autoRenewal"] = i18n.t("Validation.MustBe0Or1")
-    }
-    if (pn.billingDataMod?.cycle && !/^(Day|Week|Month|Year)$/i.test(pn.billingDataMod.cycle)) {
-        errors["billing.cycle"] = i18n.t("Validation.MustBeDayWeekMonthYear")
-    }
-    if (pn.planDataMod?.trafficType && !/^(1|2)$/.test(pn.planDataMod.trafficType)) {
-        errors["plan.trafficType"] = i18n.t("Validation.MustBe1Or2")
-    }
-    if (pn.planDataMod?.IPv4 !== undefined && !/^(0|1)$/.test(pn.planDataMod.IPv4)) {
-        errors["plan.IPv4"] = i18n.t("Validation.MustBe0Or1")
-    }
-    if (pn.planDataMod?.IPv6 !== undefined && !/^(0|1)$/.test(pn.planDataMod.IPv6)) {
-        errors["plan.IPv6"] = i18n.t("Validation.MustBe0Or1")
-    }
-
-    // Date validity checks
-    if (pn.billingDataMod?.startDate && !isValidISOLike(pn.billingDataMod.startDate)) {
-        errors["billing.startDate"] = i18n.t("Validation.InvalidDate")
-    }
-    if (pn.billingDataMod?.endDate && !isValidISOLike(pn.billingDataMod.endDate)) {
-        errors["billing.endDate"] = i18n.t("Validation.InvalidDate")
-    }
-
-    return { errors, valid: Object.keys(errors).length === 0 }
+interface Member {
+    key: string
+    start: number
+    valueStart: number
+    end: number
 }
-
-/**
- * Detect default mode from string: JSON matching schema -> "structured"; otherwise "raw".
- */
-export const detectPublicNoteMode = (s?: string): "structured" | "raw" => {
-    if (!s) return "raw"
-    try {
-        const obj = JSON.parse(s)
-        const parsed = PublicNoteSchema.strict().safeParse(obj)
-        return parsed.success ? "structured" : "raw"
-    } catch {
-        return "raw"
+/** JSON.parse validates first; token spans let untouched values keep their exact bytes. */
+function members(raw: string): { fields: Member[]; end: number } {
+    const tokens = [...raw.matchAll(/"(?:\\.|[^"\\])*"|[{}[\],:]|[^{}[\],:\s]+/g)]
+    const fields: Member[] = []
+    let index = 1
+    while (tokens[index][0] !== "}") {
+        const key = tokens[index]
+        index += 2
+        const start = tokens[index]
+        if (start[0] === "{" || start[0] === "[") {
+            let depth = 0
+            do {
+                const token = tokens[index++][0]
+                if (token === "{" || token === "[") depth++
+                if (token === "}" || token === "]") depth--
+            } while (depth)
+        } else index++
+        const last = tokens[index - 1]
+        fields.push({
+            key: JSON.parse(key[0]),
+            start: key.index,
+            valueStart: start.index,
+            end: last.index + last[0].length,
+        })
+        if (tokens[index][0] === ",") index++
     }
+    return { fields, end: tokens[index].index }
 }
-
-/**
- * Immutable patch by path, for use in component wrappers around setPublicNoteObj.
- * Example path: "billingDataMod.startDate"
- */
-export const applyPublicNotePatch = (
-    obj: PublicNote,
-    path: string,
+function patchObject(raw: string, key: string, value: string | undefined): string {
+    const { fields, end } = members(raw)
+    const index = fields.map((field) => field.key).lastIndexOf(key)
+    const field = fields[index]
+    if (field) {
+        if (value !== undefined)
+            return raw.slice(0, field.valueStart) + value + raw.slice(field.end)
+        const from = index === fields.length - 1 && index > 0 ? fields[index - 1].end : field.start
+        const to = fields[index + 1]?.start ?? field.end
+        const removed = raw.slice(0, from) + raw.slice(to)
+        // Deleting a duplicate key must not reveal an earlier, shadowed value.
+        return patchObject(removed, key, undefined)
+    }
+    if (value === undefined) return raw
+    const position = fields.at(-1)?.end ?? end
+    const gap = fields.length ? raw.slice(raw.indexOf("{") + 1, fields[0].start) : ""
+    return (
+        raw.slice(0, position) +
+        (fields.length ? "," : "") +
+        gap +
+        JSON.stringify(key) +
+        ":" +
+        value +
+        raw.slice(position)
+    )
+}
+export function patchPublicNote(
+    raw: string,
+    section: string,
+    key: string,
     value: string | undefined,
-): PublicNote => {
-    const keys = path.split(".")
-    const draft: any = structuredClone ? structuredClone(obj) : JSON.parse(JSON.stringify(obj))
-    let cur: any = draft
-    for (let i = 0; i < keys.length - 1; i++) {
-        const k = keys[i]
-        cur[k] = { ...(cur[k] ?? {}) }
-        cur = cur[k]
-    }
-    cur[keys[keys.length - 1]] = value
-    return draft
+): string {
+    const source = raw.trim() ? raw : "{}"
+    const parsed = parsePublicNote(source)
+    if (!isNoteObject(parsed) || (section in parsed && !isNoteObject(parsed[section]))) return raw
+    const group = members(source)
+        .fields.filter((field) => field.key === section)
+        .pop()
+    const previous = group ? source.slice(group.valueStart, group.end) : "{}"
+    const next = patchObject(previous, key, value === undefined ? undefined : JSON.stringify(value))
+    if (next === previous) return raw
+    return patchObject(source, section, next)
 }
 
-/**
- * Update a date field while preserving time parts: if the previous value is a valid date,
- * keep hours/minutes/seconds. Path example: "billingDataMod.startDate" | "billingDataMod.endDate"
- */
-export const applyPublicNoteDate = (obj: PublicNote, path: string, date: Date): PublicNote => {
-    const keys = path.split(".")
-    const draft: any = structuredClone ? structuredClone(obj) : JSON.parse(JSON.stringify(obj))
-
-    // Read previous value to preserve time components
-    let curRead: any = draft
-    for (let i = 0; i < keys.length - 1; i++) {
-        const k = keys[i]
-        curRead = (curRead as any)[k]
-        if (!curRead) break
-    }
-    const leafKey = keys[keys.length - 1]
-    const prevVal: string | undefined = curRead ? curRead[leafKey] : undefined
-
-    const d = new Date(date)
-    if (prevVal) {
-        const pd = new Date(prevVal)
-        if (!isNaN(pd.getTime())) {
-            d.setHours(pd.getHours(), pd.getMinutes(), pd.getSeconds(), 0)
-        }
-    }
-
-    // Write back
-    let curWrite: any = draft
-    for (let i = 0; i < keys.length - 1; i++) {
-        const k = keys[i]
-        curWrite[k] = { ...(curWrite[k] ?? {}) }
-        curWrite = curWrite[k]
-    }
-    curWrite[leafKey] = d.toISOString()
-    return draft
-}
-
-/**
- * Toggle the special "no expiry" value for endDate.
- */
-export const toggleEndNoExpiry = (obj: PublicNote): PublicNote => {
-    const NO_EXPIRY = "0000-00-00T23:59:59+08:00"
-    const current = obj.billingDataMod?.endDate
-    const next = current === NO_EXPIRY ? "" : NO_EXPIRY
-    return applyPublicNotePatch(obj, "billingDataMod.endDate", next)
+export function preparePublicNote(raw: string, mode: "structured" | "raw"): string {
+    if (mode === "raw") return raw.trim()
+    const parsed = parsePublicNote(raw)
+    if (!isNoteObject(parsed)) return raw
+    let result = raw
+    for (const key of ["billingDataMod", "planDataMod"])
+        if (isNoteObject(parsed[key]) && !Object.keys(parsed[key]).length)
+            result = patchObject(result, key, undefined)
+    return Object.keys(parsePublicNote(result) as object).length ? result : ""
 }

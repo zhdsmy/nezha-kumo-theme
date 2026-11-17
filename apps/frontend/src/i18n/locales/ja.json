@@ -132,7 +132,13 @@
         "bandwidth": "帯域幅",
         "ipSupport": "IP 対応",
         "networkRoute": "ネットワーク経路",
-        "noCycleUsage": "この期間の使用量データはありません。"
+        "noCycleUsage": "この期間の使用量データはありません。",
+        "trafficBilling": "転送量の課金方式",
+        "traffic": {
+            "sum": "送受信合計",
+            "out": "送信のみ",
+            "max": "大きい方"
+        }
     },
     "auth": {
         "signIn": "ログイン",

@@ -15,6 +15,14 @@ import type {
 import { flagToRegion } from "@/core/region"
 
 import { parseGroupIcons } from "../../../../../packages/shared/group-icons"
+import {
+    cycleDays,
+    parseAmount,
+    parseCycle,
+    parseNoteDate,
+    parseTraffic,
+    parseTrafficType,
+} from "../../../../../packages/shared/public-note"
 
 /* ---------- API shapes (Nezha dashboard v1, tested on v2.0.13) ---------- */
 
@@ -137,36 +145,16 @@ interface PublicNote {
 export function parseActualCost(note: unknown): ActualCost | undefined {
     if (typeof note !== "string") return
     try {
-        const amount = text(JSON.parse(note)?.billingDataMod?.actualAmount)
-        const match = /^([A-Z]{3})\s+(\d+(?:\.\d+)?)$/i.exec(amount)
-        if (match && Number.isFinite(Number(match[2]))) {
-            return { currency: match[1].toUpperCase(), amount: Number(match[2]) }
+        const price = parseAmount(JSON.parse(note)?.billingDataMod?.actualAmount)
+        if (price && price.symbol && price.currency && price.amount >= 0) {
+            return { currency: price.currency, amount: price.amount }
         }
     } catch {
         /* Empty, plain-text or malformed private notes keep the displayed price. */
     }
 }
 
-const CYCLES: [RegExp, number][] = [
-    [/^(月|mo|month|monthly|m)$/i, 30],
-    [/^(季|季度|q|quarter|quarterly)$/i, 90],
-    [/^(半年|half|semi|semiannual|h)$/i, 182],
-    [/^(年|y|yr|year|yearly|annual|annually)$/i, 365],
-    [/^(两年|二年|2y|biennial)$/i, 730],
-    [/^(三年|3y|triennial)$/i, 1095],
-]
-
-const SIZE = /^(\d+(?:\.\d+)?)\s*([KMGTP]?)i?B?$/i
 const text = (value: unknown) => (typeof value === "string" ? value.trim() : "")
-
-function parseSize(v = ""): number {
-    if (/^(unlimited|unmetered|不限|无限(?:流量)?)$/i.test(v.trim())) return 0
-    const m = SIZE.exec(v.trim())
-    if (!m) return -1
-    const pow = " KMGTP".indexOf((m[2] || " ").toUpperCase())
-    const bytes = Number(m[1]) * 1024 ** Math.max(0, pow)
-    return Number.isFinite(bytes) && bytes > 0 ? bytes : -1
-}
 
 export function parsePublicNote(note: string | undefined) {
     const out = {
@@ -177,6 +165,7 @@ export function parsePublicNote(note: string | undefined) {
         expiredAt: null as number | null,
         trafficLimit: -1,
         trafficLimitType: "max" as NodeInfo["trafficLimitType"],
+        trafficLimitTypeExplicit: false,
         trafficLimitPeriod: 0,
         bandwidth: "",
         ipv4: undefined as boolean | undefined,
@@ -193,36 +182,33 @@ export function parsePublicNote(note: string | undefined) {
     }
     const b = parsed.billingDataMod
     if (b) {
-        const amount = text(b.amount)
-        const num = /-?\d+(?:\.\d+)?/.exec(amount)
-        if (amount === "-1") out.price = -2
-        else if (amount === "0" || /free|免费/i.test(amount)) out.price = -1
-        else if (num) {
-            const price = Number(num[0])
-            if (Number.isFinite(price) && price > 0) {
-                out.price = price
-                out.currency = amount.replace(num[0], "").trim().slice(0, 4) || "$"
-            }
+        const amount = parseAmount(b.amount)
+        if (amount) {
+            out.price =
+                amount.amount === -1
+                    ? -2
+                    : amount.amount === 0 && !amount.currency && !amount.symbol
+                      ? -1
+                      : amount.amount
+            if (amount.amount > 0) out.currency = amount.symbol.slice(0, 4) || "$"
         }
-        out.billingCycle = CYCLES.find(([re]) => re.test(text(b.cycle)))?.[1] ?? 0
+        out.billingCycle = cycleDays(
+            parseCycle(b.cycle) ?? (!text(b.cycle) ? amount?.cycle : undefined),
+        )
         out.autoRenewal = text(b.autoRenewal) === "1"
-        const endDate = text(b.endDate)
-        const end = Date.parse(endDate)
-        out.expiredAt = endDate.startsWith("0000-00-00")
-            ? 0
-            : Number.isFinite(end) && new Date(end).getUTCFullYear() > 2000
-              ? end
-              : null
+        const end = parseNoteDate(b.endDate)
+        out.expiredAt =
+            end === 0 ? 0 : end !== undefined && new Date(end).getUTCFullYear() > 2000 ? end : null
     }
     const p = parsed.planDataMod
     if (p) {
-        const parts = text(p.trafficVol).split("/")
-        const period = parts.length === 2 ? CYCLES.find(([re]) => re.test(parts[1].trim()))?.[1] : 0
-        if (parts.length <= 2 && period !== undefined) {
-            out.trafficLimit = parseSize(parts[0])
-            out.trafficLimitPeriod = out.trafficLimit > 0 ? period : 0
+        const traffic = parseTraffic(p.trafficVol)
+        if (traffic) {
+            out.trafficLimit = traffic === "unlimited" ? 0 : traffic.bytes
+            out.trafficLimitPeriod = traffic === "unlimited" ? 0 : cycleDays(traffic.cycle)
         }
-        out.trafficLimitType = text(p.trafficType) === "2" ? "sum" : "max"
+        out.trafficLimitType = parseTrafficType(p.trafficType)
+        out.trafficLimitTypeExplicit = !!text(p.trafficType)
         out.bandwidth = text(p.bandwidth)
         out.ipv4 = text(p.IPv4) === "1" ? true : text(p.IPv4) === "0" ? false : undefined
         out.ipv6 = text(p.IPv6) === "1" ? true : text(p.IPv6) === "0" ? false : undefined
