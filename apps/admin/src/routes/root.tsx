@@ -39,12 +39,14 @@ export default function Root() {
     return (
         <ThemeProvider>
             {pathname === "/dashboard/login" ? (
-                <>
-                    <div className="flex items-center justify-end gap-2 px-4 pt-3">
+                <div className="nk-shell flex flex-col">
+                    <div className="flex shrink-0 items-center justify-end gap-2 px-4 pt-3">
                         <AdminActions />
                     </div>
-                    <Outlet />
-                </>
+                    <main className="nk-main">
+                        <Outlet />
+                    </main>
+                </div>
             ) : (
                 <AdminShell
                     siteName={settingData.config?.site_name || "Nezha"}
