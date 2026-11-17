@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { parseActualCost, parsePublicNote } from "../src/adapters/nezha"
 import { trafficUsed } from "../src/core/format"
+import liveNotes from "./fixtures/public-notes-20261117.json"
 
 describe("shared public-note compatibility", () => {
     it.each([
@@ -58,4 +59,20 @@ it.each([
     const parsed = parsePublicNote(JSON.stringify({ planDataMod: { trafficType } }))
     expect(parsed.trafficLimitType).toBe(mode)
     expect(trafficUsed(parsed.trafficLimitType, 10, 100)).toBe(expected)
+})
+
+it("preserves all 21 anonymous public notes against a17fb3d except the planned outbound correction", () => {
+    expect(liveNotes).toHaveLength(21)
+    for (const { public_note, expected } of liveNotes) {
+        let outbound = false
+        try {
+            outbound = JSON.parse(public_note).planDataMod?.trafficType === "1"
+        } catch {
+            /* The free-form note is also a regression fixture. */
+        }
+        expect(parsePublicNote(public_note)).toEqual({
+            ...expected,
+            trafficLimitType: outbound ? "out" : expected.trafficLimitType,
+        })
+    }
 })
