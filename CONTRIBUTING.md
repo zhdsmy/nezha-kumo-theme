@@ -9,8 +9,8 @@ pnpm install                          # Install workspace dependencies
 pnpm check                            # Typecheck, test, and build all packages
 pnpm --filter frontend dev            # Public frontend dev server (127.0.0.1:5301)
 pnpm --filter frontend test           # Frontend Vitest + mocked Playwright E2E
-pnpm --filter admin-frontend dev      # Admin dev server (127.0.0.1, base /dashboard)
-pnpm --filter admin-frontend test     # Admin Vitest suite
+pnpm --filter nezha-kumo-admin dev      # Admin dev server (127.0.0.1, base /dashboard/)
+pnpm --filter nezha-kumo-admin test     # Admin Vitest suite
 ```
 
 All PRs must pass `pnpm check` using mocked tests—never commit real hostnames, IPs, or personal billing data.

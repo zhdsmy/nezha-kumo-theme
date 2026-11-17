@@ -248,7 +248,7 @@ pnpm build            # Build frontend and admin bundles
 ### Mock E2E & App Workflows
 
 - **Public frontend** ([`apps/frontend`](apps/frontend/README.md)): `pnpm --filter frontend test:e2e` runs Playwright against deterministic HTTP and WebSocket mocks (`apps/frontend/tests/mock.ts`) with no live Nezha panel required.
-- **Admin panel** ([`apps/admin`](apps/admin/README.md)): `pnpm --filter admin-frontend test` runs Vitest component/unit tests; Playwright E2E specs under `apps/admin/tests/e2e/` run against mocked `/api/v1/*` routes or a local test backend.
+- **Admin panel** ([`apps/admin`](apps/admin/README.md)): `pnpm --filter nezha-kumo-admin test` runs Vitest component/unit tests; Playwright E2E specs under `apps/admin/tests/e2e/` run against mocked `/api/v1/*` routes or a local test backend.
 
 ### Repository Layout
 

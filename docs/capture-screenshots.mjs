@@ -473,7 +473,7 @@ async function captureAdmin(browser, adminUrl) {
       localStorage.setItem("nkt:sidebar-collapsed", "false");
     });
     await setupAdminMock(page);
-    await page.goto(`${adminUrl}/dashboard`, { waitUntil: "networkidle" });
+    await page.goto(`${adminUrl}/dashboard/`, { waitUntil: "networkidle" });
     await page.locator("table tbody tr").nth(4).waitFor({ state: "visible" });
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(300);
@@ -513,7 +513,7 @@ async function main() {
   mkdirSync(tmpDir, { recursive: true });
 
   console.log("Building admin frontend for vite preview...");
-  execFileSync("pnpm", ["--filter", "admin-frontend", "build"], {
+  execFileSync("pnpm", ["--filter", "nezha-kumo-admin", "build"], {
     cwd: rootDir,
     stdio: "inherit",
   });
@@ -537,7 +537,7 @@ async function main() {
     "pnpm",
     [
       "--filter",
-      "admin-frontend",
+      "nezha-kumo-admin",
       "exec",
       "vite",
       "preview",
