@@ -7,6 +7,7 @@ import {
     adapter,
     backfillLive,
     getLive,
+    getTraffic,
     useSiteTitle,
     useStore,
     useVisibleNodes,
@@ -207,7 +208,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
     const day =
         dayPoints?.length && snap
             ? summariseDay(
-                  mergeHistoryTail(dayPoints, getLive(id), Date.now() - 86_400_000),
+                  mergeHistoryTail(dayPoints, getTraffic(id), Date.now() - 86_400_000),
                   snap,
                   midnight,
               )

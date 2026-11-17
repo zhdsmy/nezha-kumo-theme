@@ -2,7 +2,7 @@
 import { useDailyCounters } from "@/app/history"
 import { type MoneyPeriod, setMoneyPeriod, useMoney } from "@/app/money"
 import { Link, RESET_EVENT, navigate, usePathname } from "@/app/router"
-import { adapter, getLive, getSpark, seedLive, useStore, useVisibleNodes } from "@/app/store"
+import { adapter, getSpark, getTraffic, seedLive, useStore, useVisibleNodes } from "@/app/store"
 import { RegionFlag } from "@/components/RegionFlag"
 import { useBilling } from "@/components/billing"
 import { Meter, NoData, PageFootnote, Spark, Status, Tile } from "@/components/ui"
@@ -331,7 +331,7 @@ export function HomePage() {
                 nodes.map((n) => [
                     n.id,
                     daily[n.id]?.length
-                        ? mergeHistoryTail(daily[n.id], getLive(n.id), midnight)
+                        ? mergeHistoryTail(daily[n.id], getTraffic(n.id), midnight)
                         : [],
                 ]),
             ),

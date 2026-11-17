@@ -11,7 +11,7 @@ import {
 } from "../src/core/format"
 import { flagToRegion, stripFlag } from "../src/core/region"
 import { DEFAULT_SETTINGS, normalizeSettings } from "../src/core/settings"
-import { dailyTraffic, spikeLimit, summariseDay } from "../src/core/summary"
+import { dailyTraffic, mergeHistoryTail, spikeLimit, summariseDay } from "../src/core/summary"
 
 describe("format", () => {
     it("keeps fractional bytes and rates in base units", () => {
@@ -83,7 +83,7 @@ describe("day summary", () => {
         const midnight = 1_000
         const s = summariseDay(
             [p(500, 9, 1, 100, 200), p(1_000, 3, 7, 150, 260), p(2_000, 5, 2, 400, 300)],
-            { totalUp: 450, totalDown: 360 },
+            { at: 3000, totalUp: 450, totalDown: 360 },
             midnight,
         )
         expect(s).toMatchObject({
@@ -102,15 +102,44 @@ describe("day summary", () => {
             p(2000, 1, 1, 1500, 2200),
             p(3000, 1, 1, 100, 50),
         ]
-        expect(summariseDay(points, { totalUp: 200, totalDown: 100 }, 1000)).toMatchObject({
+        expect(
+            summariseDay(points, { at: 4000, totalUp: 200, totalDown: 100 }, 1000),
+        ).toMatchObject({
             todayUp: 700,
             todayDown: 300,
         })
         expect(dailyTraffic(points, 1000).map((p) => p.totalUp)).toEqual([0, 500, 600])
     })
 
+    it("preserves observed reset segments when sparse history overlaps live readings", () => {
+        const history = [p(1000, 0, 0, 1000, 0), p(5000, 0, 0, 200, 0)]
+        const live = [p(2000, 0, 0, 1500, 0), p(3000, 0, 0, 100, 0), p(4000, 0, 0, 200, 0)]
+        const merged = mergeHistoryTail(history, live, 1000)
+        expect(dailyTraffic(merged, 1000).at(-1)?.totalUp).toBe(700)
+        expect(dailyTraffic(mergeHistoryTail(history, merged, 1000), 1000).at(-1)?.totalUp).toBe(
+            700,
+        )
+    })
+
+    it("orders and deduplicates counters by report time including a late snapshot", () => {
+        const history = [p(1000, 0, 0, 1000, 0), p(3000, 0, 0, 1500, 0)]
+        const live = [
+            { ...p(9000, 0, 0, 1200, 0), reportedAt: 2000 },
+            { ...p(10000, 0, 0, 1200, 0), reportedAt: 2000 },
+        ]
+        const merged = mergeHistoryTail(history, live, 1000)
+        expect(merged.map((p) => p.at)).toEqual([1000, 2000, 3000])
+        expect(summariseDay(merged, { at: 2000, totalUp: 1200, totalDown: 0 }, 1000).todayUp).toBe(
+            500,
+        )
+    })
+
     it("never reports negative traffic after a counter reset", () => {
-        const s = summariseDay([p(2_000, 1, 1, 900, 900)], { totalUp: 10, totalDown: 10 }, 1_000)
+        const s = summariseDay(
+            [p(2_000, 1, 1, 900, 900)],
+            { at: 3000, totalUp: 10, totalDown: 10 },
+            1_000,
+        )
         expect(s.todayUp).toBe(10)
         expect(s.todayDown).toBe(10)
     })
@@ -163,7 +192,7 @@ describe("partial fleet daily counters", () => {
             { id: "c" },
         ] as import("../src/core/model").NodeInfo[]
         const snapshots = Object.fromEntries(
-            nodes.map((n) => [n.id, { ...emptySnapshot(), totalUp: 100, totalDown: 80 }]),
+            nodes.map((n) => [n.id, { ...emptySnapshot(), at: 2000, totalUp: 100, totalDown: 80 }]),
         )
         const point = { ...emptySnapshot(), at: 1000, totalUp: 50, totalDown: 40 }
         const result = summariseFleetDay(

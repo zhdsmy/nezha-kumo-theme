@@ -214,3 +214,52 @@ it("retains unchanged snapshot references while another row changes", async () =
     )
     expect(getState().snapshots).toBe(stable)
 })
+
+it("retains reset segments after chart eviction, handles late reports and clears yesterday", async () => {
+    vi.useFakeTimers()
+    const midnight = new Date(2026, 10, 17).getTime()
+    vi.setSystemTime(midnight + 1000)
+    const { getLive, getTraffic } = await import("../src/app/store")
+    const { dailyTraffic, mergeHistoryTail } = await import("../src/core/summary")
+    const report = (offset: number, totalUp: number) => {
+        vi.setSystemTime(midnight + 1000 + offset)
+        fake.listeners.forEach((l) =>
+            l({ snapshots: { reset: { ...snap, at: midnight + offset, totalUp } } }),
+        )
+    }
+    report(1000, 1000)
+    report(2000, 1500)
+    report(3000, 100)
+    for (let i = 0; i < 500; i++) report(4000 + i, 200 + i)
+    expect(getLive("reset")).toHaveLength(450)
+    report(1500, 1200)
+    const history = [
+        { ...snap, at: midnight + 1000, totalUp: 1000 },
+        { ...snap, at: midnight + 5000, totalUp: 699 },
+    ]
+    expect(
+        dailyTraffic(mergeHistoryTail(history, getTraffic("reset"), midnight), midnight).at(-1)
+            ?.totalUp,
+    ).toBe(1199)
+    expect(getTraffic("reset").length).toBeLessThanOrEqual(456)
+    report(86_400_000, 800)
+    expect(dailyTraffic(getTraffic("reset"), midnight + 86_400_000).map((p) => p.totalUp)).toEqual([
+        0,
+    ])
+})
+
+it("publishes counter reports even when their browser receipt timestamp is equal", async () => {
+    vi.useFakeTimers()
+    const now = new Date(2026, 10, 17, 12).getTime()
+    vi.setSystemTime(now)
+    const { getState, getTraffic } = await import("../src/app/store")
+    const { dailyTraffic } = await import("../src/core/summary")
+    const version = getState().liveVersion
+    for (const [i, totalUp] of [1000, 1500, 100, 200].entries()) {
+        fake.listeners.forEach((l) =>
+            l({ snapshots: { burst: { ...snap, at: now - 1000 + i, totalUp } } }),
+        )
+    }
+    expect(getState().liveVersion).toBe(version + 4)
+    expect(dailyTraffic(getTraffic("burst"), now - 1000).at(-1)?.totalUp).toBe(700)
+})
