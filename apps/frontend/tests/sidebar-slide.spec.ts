@@ -98,8 +98,12 @@ test.describe("sidebar sliding views (normal motion)", () => {
         )
         expect(hasOverflowX).toBe(false)
 
-        // Tab from brand skips inert root links and lands on context Back link
+        // Tab from brand hits stationary sidebarTop search, then skips inert root links to context Back link
         await page.locator(".nk-sidebar .brand").focus()
+        await page.keyboard.press("Tab")
+        expect(
+            await page.evaluate(() => document.activeElement?.closest(".nk-sidebar-top") !== null),
+        ).toBe(true)
         await page.keyboard.press("Tab")
         expect(
             await page.evaluate(() => document.activeElement?.closest(".nk-context") !== null),
