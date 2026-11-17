@@ -260,7 +260,9 @@
         "RepeatMonth_one": "Every {{count}} month",
         "RepeatMonth_other": "Every {{count}} months",
         "RepeatYear_one": "Every {{count}} year",
-        "RepeatYear_other": "Every {{count}} years"
+        "RepeatYear_other": "Every {{count}} years",
+        "Paid": "Paid",
+        "Currency": "Currency"
     },
     "Validation": {
         "InvalidDate": "Invalid date",

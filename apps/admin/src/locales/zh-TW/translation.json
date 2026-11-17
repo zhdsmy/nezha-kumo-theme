@@ -260,7 +260,9 @@
         "RepeatMonth_one": "每 {{count}} 個月",
         "RepeatMonth_other": "每 {{count}} 個月",
         "RepeatYear_one": "每 {{count}} 年",
-        "RepeatYear_other": "每 {{count}} 年"
+        "RepeatYear_other": "每 {{count}} 年",
+        "Paid": "付費",
+        "Currency": "幣別"
     },
     "Validation": {
         "InvalidDate": "日期無效",

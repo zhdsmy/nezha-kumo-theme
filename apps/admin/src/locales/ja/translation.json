@@ -260,7 +260,9 @@
         "RepeatMonth_one": "{{count}} か月ごと",
         "RepeatMonth_other": "{{count}} か月ごと",
         "RepeatYear_one": "{{count}} 年ごと",
-        "RepeatYear_other": "{{count}} 年ごと"
+        "RepeatYear_other": "{{count}} 年ごと",
+        "Paid": "有料",
+        "Currency": "通貨"
     },
     "Validation": {
         "InvalidDate": "無効な日付です",

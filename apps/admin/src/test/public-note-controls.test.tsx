@@ -1,3 +1,4 @@
+import { AmountInput } from "@/components/public-note/amount-input"
 import { CyclePicker } from "@/components/public-note/cycle-picker"
 import i18n from "@/lib/i18n"
 import { cleanup, fireEvent, render, screen } from "@testing-library/react"
@@ -28,4 +29,20 @@ test("unknown cycle shows its source and hint without writing until reselection"
     fireEvent.click(screen.getByRole("button", { name: "周期" }))
     fireEvent.click(screen.getByRole("button", { name: "每周" }))
     expect(change).toHaveBeenCalledWith("Week")
+})
+
+test("structured amount writes currency and decimals and keeps free/usage shortcuts", () => {
+    const change = vi.fn()
+    const { rerender } = render(<AmountInput label="金额" value="USD 45" onChange={change} />)
+    fireEvent.change(screen.getByRole("spinbutton", { name: "金额" }), {
+        target: { value: "12.34" },
+    })
+    expect(change).toHaveBeenLastCalledWith("USD 12.34")
+    fireEvent.click(screen.getByRole("button", { name: "免费" }))
+    expect(change).toHaveBeenLastCalledWith("0")
+    fireEvent.click(screen.getByRole("button", { name: "按量付费" }))
+    expect(change).toHaveBeenLastCalledWith("-1")
+    rerender(<AmountInput label="金额" value="special deal" onChange={change} />)
+    expect(screen.getByText("special deal")).toBeTruthy()
+    expect(screen.getByText(i18n.t("PublicNote.Unrecognized"))).toBeTruthy()
 })
