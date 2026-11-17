@@ -28,11 +28,11 @@ import {
 } from "@/components/ui/table"
 import { IconButton } from "@/components/xui/icon-button"
 import { useServer } from "@/hooks/useServer"
-import { selectableTableFeatures } from "@/lib/table"
+import { selectableTableFeatures, useSelectableTable } from "@/lib/table"
 import { errorMessage } from "@/lib/utils"
 import { ModelServerTaskResponse, ModelServer as Server } from "@/types"
 import { Page } from "@nezha-kumo/ui"
-import { ColumnDef, flexRender, useTable } from "@tanstack/react-table"
+import { ColumnDef, flexRender } from "@tanstack/react-table"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
@@ -251,11 +251,7 @@ export default function ServerPage() {
         return data ?? []
     }, [data])
 
-    const table = useTable({
-        features: selectableTableFeatures,
-        data: dataCache,
-        columns,
-    })
+    const table = useSelectableTable(dataCache, columns)
 
     const selectedRows = table.getSelectedRowModel().rows
     const selectedServerIds = selectedRows.map((r) => r.original.id)

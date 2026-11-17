@@ -1,8 +1,8 @@
-import i18n from "@/lib/i18n"
 import { HeaderBlockButtonGroup, HeaderButtonGroup } from "@/components/header-button-group"
 import { IconButton } from "@/components/xui/icon-button"
+import i18n from "@/lib/i18n"
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react"
-import { SWRConfig } from "swr"
+import { SWRConfig, useSWRConfig } from "swr"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
 
 vi.mock("@/api/api", () => ({
@@ -89,7 +89,9 @@ test("ServerPage disables batch actions with localized tooltip when unselected, 
     const deleteBtn = screen.getAllByRole("button", { name: "删除" })[0] as HTMLButtonElement
     const updateBtn = screen.getByRole("button", { name: "强制升级" }) as HTMLButtonElement
     const moveBtn = screen.getByRole("button", { name: "转移所有者" }) as HTMLButtonElement
-    const batchConfigBtn = screen.getAllByRole("button", { name: "系统设置" })[0] as HTMLButtonElement
+    const batchConfigBtn = screen.getAllByRole("button", {
+        name: "系统设置",
+    })[0] as HTMLButtonElement
     const installBtn = screen.getByRole("button", { name: "安装命令" }) as HTMLButtonElement
 
     expect(deleteBtn.disabled).toBe(true)
@@ -119,9 +121,9 @@ test("ServerPage disables batch actions with localized tooltip when unselected, 
         expect(
             (screen.getAllByRole("button", { name: "删除" })[0] as HTMLButtonElement).disabled,
         ).toBe(false)
-        expect((screen.getByRole("button", { name: "强制升级" }) as HTMLButtonElement).disabled).toBe(
-            false,
-        )
+        expect(
+            (screen.getByRole("button", { name: "强制升级" }) as HTMLButtonElement).disabled,
+        ).toBe(false)
         expect(
             (screen.getByRole("button", { name: "转移所有者" }) as HTMLButtonElement).disabled,
         ).toBe(false)
@@ -140,9 +142,9 @@ test("ServerPage disables batch actions with localized tooltip when unselected, 
         expect(
             (screen.getAllByRole("button", { name: "删除" })[0] as HTMLButtonElement).disabled,
         ).toBe(true)
-        expect((screen.getByRole("button", { name: "强制升级" }) as HTMLButtonElement).disabled).toBe(
-            true,
-        )
+        expect(
+            (screen.getByRole("button", { name: "强制升级" }) as HTMLButtonElement).disabled,
+        ).toBe(true)
         expect(
             (screen.getByRole("button", { name: "转移所有者" }) as HTMLButtonElement).disabled,
         ).toBe(true)
@@ -180,4 +182,41 @@ test("HeaderButtonGroup and HeaderBlockButtonGroup disable batch buttons while l
     expect((screen.getByRole("button", { name: "删除" }) as HTMLButtonElement).disabled).toBe(false)
     expect((screen.getByRole("button", { name: "封禁" }) as HTMLButtonElement).disabled).toBe(false)
     expect((screen.getByRole("button", { name: "创建" }) as HTMLButtonElement).disabled).toBe(false)
+})
+
+test("ADM-03: selection follows the server ID through reorder and is removed permanently after deletion", async () => {
+    const { default: ServerPage } = await import("@/routes/server")
+    const { swrFetcher } = await import("@/api/api")
+    const rows = await swrFetcher<import("@/types").ModelServer[]>("/api/v1/server")
+    let refresh: ReturnType<typeof useSWRConfig>["mutate"]
+    function Page() {
+        refresh = useSWRConfig().mutate
+        return <ServerPage />
+    }
+    render(
+        <SWRConfig value={{ provider: () => new Map() }}>
+            <Page />
+        </SWRConfig>,
+    )
+    await screen.findByText("Tokyo Edge")
+    fireEvent.click(
+        screen.getByText("Tokyo Edge").closest("tr")!.querySelector('[role="checkbox"]')!,
+    )
+    const selected = () =>
+        [...document.querySelectorAll('tbody tr[data-state="selected"]')].map(
+            (row) => row.textContent,
+        )
+    await act(async () => {
+        await refresh!("/api/v1/server", [...rows].reverse(), false)
+    })
+    expect(selected()).toHaveLength(1)
+    expect(selected()[0]).toContain("Tokyo Edge")
+    await act(async () => {
+        await refresh!("/api/v1/server", [rows[1]], false)
+    })
+    expect(selected()).toHaveLength(0)
+    await act(async () => {
+        await refresh!("/api/v1/server", rows, false)
+    })
+    expect(selected()).toHaveLength(0)
 })
