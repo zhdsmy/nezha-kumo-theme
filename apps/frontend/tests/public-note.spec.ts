@@ -34,8 +34,8 @@ for (const engine of ["chromium", "webkit"]) {
                                     planDataMod: {
                                         trafficType: "1",
                                         trafficVol: "1TB/月",
-                                        networkRoute: "CN2GIA，9929;4837[联通]",
-                                        extra: "SSD、Daily backup",
+                                        networkRoute: "CN2GIA，CN2GIA,9929;4837[联通]",
+                                        extra: "SSD、Daily backup;weekly\nsecond line",
                                     },
                                 }),
                             },
@@ -48,15 +48,24 @@ for (const engine of ["chromium", "webkit"]) {
             await expect(
                 target.locator("#node-panel-network").getByText("Outbound only", { exact: true }),
             ).toBeVisible()
-            for (const tag of ["CN2GIA", "9929", "4837[联通]"])
+            await expect(
+                target.locator("#node-panel-network").getByText("CN2GIA", { exact: true }),
+            ).toHaveCount(2)
+            for (const tag of ["9929;4837[联通]"])
                 await expect(
                     target.locator("#node-panel-network").getByText(tag, { exact: true }),
                 ).toBeVisible()
             await target.locator("#node-subtab-billing").click()
-            for (const tag of ["SSD", "Daily backup"])
+            for (const tag of ["SSD、Daily backup;weekly\nsecond line"])
                 await expect(
                     target.locator("#node-panel-billing").getByText(tag, { exact: true }),
                 ).toBeVisible()
+            expect(
+                await target
+                    .locator("#node-panel-billing")
+                    .getByText("SSD、Daily backup;weekly", { exact: false })
+                    .evaluate((el) => getComputedStyle(el).whiteSpace),
+            ).toBe("pre-line")
             await expect(target.locator("#node-panel-billing")).toContainText("$0.17/mo")
         } finally {
             await browser?.close()

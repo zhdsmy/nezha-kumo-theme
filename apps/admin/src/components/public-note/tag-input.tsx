@@ -19,7 +19,9 @@ export function TagInput({
     const tags = splitTags(value)
     const save = (next: string[]) => onChange(next.length ? next.join(",") : undefined)
     const add = (text: string) => {
-        const next = splitTags([...tags, text].join(","))
+        const next = [...tags]
+        for (const tag of splitTags(text.replace(/[;、]/g, ",")))
+            if (!next.some((item) => item.toLowerCase() === tag.toLowerCase())) next.push(tag)
         if (next.join(",") !== tags.join(",")) save(next)
         setDraft("")
     }
@@ -30,9 +32,9 @@ export function TagInput({
                 role="group"
                 aria-label={label}
             >
-                {tags.map((tag) => (
+                {tags.map((tag, index) => (
                     <span
-                        key={tag.toLowerCase()}
+                        key={index}
                         className="inline-flex max-w-full items-center rounded-full bg-muted pl-3 text-sm"
                     >
                         <span className="break-all">{tag}</span>
@@ -55,13 +57,13 @@ export function TagInput({
                     value={draft}
                     onChange={(event) => {
                         const next = event.target.value
-                        if (/[,，、]/.test(next) && !(event.nativeEvent as InputEvent).isComposing)
+                        if (/[,，、;]/.test(next) && !(event.nativeEvent as InputEvent).isComposing)
                             add(next)
                         else setDraft(next)
                     }}
                     onKeyDown={(event) => {
                         if (event.nativeEvent.isComposing) return
-                        if (event.key === "Enter" || /^(,|，|、)$/.test(event.key)) {
+                        if (event.key === "Enter" || /^(,|，|、|;)$/.test(event.key)) {
                             event.preventDefault()
                             add(draft)
                         } else if (event.key === "Backspace" && !draft && tags.length) {

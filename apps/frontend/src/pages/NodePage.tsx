@@ -31,10 +31,11 @@ import { useTranslation } from "react-i18next"
 import { splitTags } from "../../../../packages/shared/public-note"
 
 function NoteTags({ value }: { value: string }) {
+    if (!/[,，]/.test(value)) return <span className="whitespace-pre-line">{value}</span>
     return (
         <div className="flex flex-wrap gap-1">
-            {splitTags(value).map((tag) => (
-                <Badge key={tag.toLowerCase()} className="max-w-full whitespace-normal break-words">
+            {splitTags(value).map((tag, index) => (
+                <Badge key={index} className="max-w-full whitespace-normal break-words">
                     {tag}
                 </Badge>
             ))}
@@ -511,11 +512,20 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                             [t("metric.autoRenew"), node.autoRenewal ? "✓" : ""],
                                         ]}
                                     />
-                                    {node.note && (
-                                        <div className="mt-3">
-                                            <NoteTags value={node.note} />
-                                        </div>
-                                    )}
+                                    {node.note &&
+                                        (/[,，]/.test(node.note) ? (
+                                            <div className="mt-3">
+                                                <NoteTags value={node.note} />
+                                            </div>
+                                        ) : (
+                                            <Banner
+                                                variant="secondary"
+                                                size="sm"
+                                                className="mt-3 whitespace-pre-line"
+                                            >
+                                                {node.note}
+                                            </Banner>
+                                        ))}
                                 </div>
                             )}
                         </div>

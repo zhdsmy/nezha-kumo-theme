@@ -111,5 +111,5 @@ test("plan units, explicit unlimited, dates and tags", () => {
         addCycle("2026-01-31T12:00:00Z", { count: 1, unit: "Month" }),
         "2026-02-28T12:00:00.000Z",
     )
-    assert.deepEqual(splitTags(" CN2，cn2、4837[联通];CMI "), ["CN2", "4837[联通]", "CMI"])
+    assert.deepEqual(splitTags(" CN2，cn2、4837[联通];CMI "), ["CN2", "cn2、4837[联通];CMI"])
 })

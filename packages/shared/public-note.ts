@@ -171,16 +171,7 @@ export function addCycle(start: string, cycle: Cycle): string | undefined {
         : undefined
 }
 export function splitTags(value: string): string[] {
-    const seen = new Set<string>()
-    return value
-        .split(/[,，、;]/)
-        .map((tag) => tag.trim())
-        .filter((tag) => {
-            const key = tag.toLowerCase()
-            if (!tag || seen.has(key)) return false
-            seen.add(key)
-            return true
-        })
+    return value.split(/[,，]/).map((tag) => tag.trim()).filter(Boolean)
 }
 
 export const TRAFFIC_TYPES = [
