@@ -73,6 +73,16 @@ export interface ShellLinkProps {
     "aria-current"?: "page" | undefined
 }
 
+export interface ShellLabels {
+    skipToContent?: string
+    mainNav?: string
+    openNav?: string
+    closeNav?: string
+    collapseNav?: string
+    expandNav?: string
+    aside?: string
+}
+
 export interface AppShellProps {
     /** Brand row at the top of the sidebar (58 px high): mark + site name. */
     brand: ReactNode
@@ -90,6 +100,8 @@ export interface AppShellProps {
     linkComponent?: ComponentType<ShellLinkProps>
     /** Optional row under the nav at the bottom of the sidebar. */
     footer?: ReactNode
+    /** Localized accessible labels for shell landmarks and controls. Defaults to English. */
+    labels?: ShellLabels
     children: ReactNode
 }
 

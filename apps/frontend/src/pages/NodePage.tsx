@@ -13,12 +13,13 @@ import { HourGrid } from "@/components/HourGrid"
 import { LoadCharts, PingChart } from "@/components/NodeCharts"
 import { RegionFlag } from "@/components/RegionFlag"
 import { useBilling } from "@/components/billing"
-import { Info, Loading, Meter, NoData, Status } from "@/components/ui"
-import { formatBytes, formatSpeed, quotaUsage, ratio } from "@/core/format"
+import { Info, Loading, Meter, NoData, PageFootnote, Status } from "@/components/ui"
+import { formatBytes, formatSpeed, formatUsage, quotaUsage, ratio } from "@/core/format"
 import { pollVisible } from "@/core/http"
 import type { HistoryPoint, PingData } from "@/core/model"
 import { regionName, stripFlag } from "@/core/region"
 import { summariseDay } from "@/core/summary"
+import { uiLabels } from "@/i18n"
 import { Button, Tabs } from "@cloudflare/kumo"
 import { Page } from "@nezha-kumo/ui"
 import { ArrowClockwiseIcon } from "@phosphor-icons/react"
@@ -26,9 +27,6 @@ import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 type SubTab = "system" | "network" | "billing"
-
-const usage = (used: number, total: number) =>
-    total ? `${formatBytes(used)} / ${formatBytes(total)}` : "—"
 
 export default function NodePage({ id, section }: { id: string; section: Section }) {
     const { t, i18n } = useTranslation()
@@ -160,6 +158,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
                 <Link className="text-kumo-link" href={lastListHref}>
                     {t("node.back")}
                 </Link>
+                <PageFootnote />
             </Page>
         )
     const points = activeRange === 0 ? live : history?.key === dataKey ? history.points : null
@@ -180,6 +179,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
         expiry = billing.expiry(node)
     const activeSub: SubTab = hash === "#billing" && showBilling ? "billing" : subTab
     const subTabs: SubTab[] = showBilling ? ["system", "network", "billing"] : ["system", "network"]
+    const tabLabels = uiLabels("tabs")
     return (
         <Page
             maxWidth={1100}
@@ -197,6 +197,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
             tabs={
                 <Tabs
                     variant="underline"
+                    labels={tabLabels}
                     value={section}
                     onValueChange={(s) =>
                         navigate(`${adapter.nodePath(id)}#${s}`, { replace: true })
@@ -252,13 +253,13 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                 label={t("metric.memory")}
                                 value={ratio(snap?.memUsed ?? 0, mem)}
                                 kind="memory"
-                                detail={usage(snap?.memUsed ?? 0, mem)}
+                                detail={formatUsage(snap?.memUsed ?? 0, mem)}
                             />
                             <Meter
                                 label={t("metric.disk")}
                                 value={ratio(snap?.diskUsed ?? 0, disk)}
                                 kind="disk"
-                                detail={usage(snap?.diskUsed ?? 0, disk)}
+                                detail={formatUsage(snap?.diskUsed ?? 0, disk)}
                             />
                             <div className="node-net-reading">
                                 <span className="meter-label">{t("metric.network")}</span>
@@ -271,6 +272,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
                         <div className="node-subtabs">
                             <Tabs
                                 variant="segmented"
+                                labels={tabLabels}
                                 value={activeSub}
                                 onValueChange={(v) => {
                                     if (v === "billing") {
@@ -304,7 +306,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                         [t("node.arch"), node.arch],
                                         [
                                             t("node.cpu"),
-                                            `${node.cpuName}${node.cpuCores ? ` × ${node.cpuCores}` : ""}`,
+                                            `${node.cpuName}${node.cpuCores ? ` ×\u00A0${node.cpuCores}` : ""}`,
                                         ],
                                         [t("metric.memory"), mem ? formatBytes(mem) : ""],
                                         [t("metric.disk"), disk ? formatBytes(disk) : ""],
@@ -347,10 +349,10 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                             [
                                                 node.ipv4 === undefined
                                                     ? ""
-                                                    : `IPv4 ${node.ipv4 ? "✓" : "×"}`,
+                                                    : `IPv4\u00A0${node.ipv4 ? "✓" : "×"}`,
                                                 node.ipv6 === undefined
                                                     ? ""
-                                                    : `IPv6 ${node.ipv6 ? "✓" : "×"}`,
+                                                    : `IPv6\u00A0${node.ipv6 ? "✓" : "×"}`,
                                             ]
                                                 .filter(Boolean)
                                                 .join(" · "),
@@ -367,7 +369,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                         [
                                             t("node.peak"),
                                             day
-                                                ? `↑ ${formatSpeed(day.peakUp)} · ↓ ${formatSpeed(day.peakDown)}`
+                                                ? `↑\u00A0${formatSpeed(day.peakUp).replace(" ", "\u00A0")} · ↓\u00A0${formatSpeed(day.peakDown).replace(" ", "\u00A0")}`
                                                 : "—",
                                         ],
                                         [t("metric.quota"), billing.quota(node)],
@@ -523,6 +525,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
                     </>
                 )}
             </section>
+            <PageFootnote />
         </Page>
     )
 }

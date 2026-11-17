@@ -22,6 +22,9 @@ export const formatBytes = (bytes: number, digits?: number) => {
     return `${p.value} ${p.unit}`
 }
 
+export const formatUsage = (used: number, total: number) =>
+    total ? `${formatBytes(used)} / ${formatBytes(total)}` : "—"
+
 const splitSpeed = (bytesPerSecond: number, digits?: number): Parts => {
     const p = splitBytes(bytesPerSecond, digits)
     return { value: p.value, unit: `${p.unit}/s` }

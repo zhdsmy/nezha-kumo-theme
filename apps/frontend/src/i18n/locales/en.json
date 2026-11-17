@@ -180,5 +180,18 @@
         "historyHint": "Cells show whether a report was recorded in each hour. Unobserved and future hours stay empty.",
         "notFound": "Page not found",
         "dailyIncluded": "Since midnight · {{count}}/{{total}} nodes"
+    },
+    "shell": {
+        "skipToContent": "Skip to content",
+        "mainNav": "Main navigation",
+        "openNav": "Open navigation",
+        "closeNav": "Close navigation",
+        "collapseNav": "Collapse navigation",
+        "expandNav": "Expand navigation",
+        "aside": "Additional information"
+    },
+    "tabs": {
+        "scrollStart": "Scroll tabs left",
+        "scrollEnd": "Scroll tabs right"
     }
 }

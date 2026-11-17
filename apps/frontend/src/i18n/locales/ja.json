@@ -175,5 +175,18 @@
         "historyHint": "各セルは1時間ごとのレポートの有無です。未観測と未来の時間は空欄です。",
         "notFound": "ページが見つかりません",
         "dailyIncluded": "本日0時から · {{count}}/{{total}} ノード"
+    },
+    "shell": {
+        "skipToContent": "本文へスキップ",
+        "mainNav": "メインナビゲーション",
+        "openNav": "ナビゲーションを開く",
+        "closeNav": "ナビゲーションを閉じる",
+        "collapseNav": "ナビゲーションを折りたたむ",
+        "expandNav": "ナビゲーションを展開",
+        "aside": "補足情報"
+    },
+    "tabs": {
+        "scrollStart": "タブを左にスクロール",
+        "scrollEnd": "タブを右にスクロール"
     }
 }

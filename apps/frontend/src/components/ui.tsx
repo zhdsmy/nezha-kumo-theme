@@ -71,20 +71,20 @@ export function Spark({
     buckets.forEach((b, i) => {
         const x = (i * 300) / Math.max(1, buckets.length - 1)
         if (b.value === null) {
-            if (start !== null) area += `L${lastX},56L${start},56Z`
+            if (start !== null) area += `L${lastX},48L${start},48Z`
             start = null
             return
         }
-        const y = 54 - (b.value / max) * 50
+        const y = 45 - (b.value / max) * 37
         const point = `${x.toFixed(1)},${y.toFixed(1)}`
         line += `${start === null ? "M" : "L"}${point}`
         area += `${start === null ? "M" : "L"}${point}`
         if (start === null) start = x
         lastX = x
     })
-    if (start !== null) area += `L${lastX},56L${start},56Z`
+    if (start !== null) area += `L${lastX},48L${start},48Z`
     return (
-        <svg className="spark" viewBox="0 0 300 56" preserveAspectRatio="none" aria-hidden>
+        <svg className="spark" viewBox="0 0 300 48" preserveAspectRatio="none" aria-hidden>
             <defs>
                 <linearGradient id={uid} x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor={color} stopOpacity={0.12} />
@@ -152,7 +152,7 @@ export function NoData({ title, retry }: { title: string; retry?: () => void }) 
             title={title}
             contents={
                 retry && (
-                    <button className="text-kumo-link" onClick={retry}>
+                    <button className="rounded-sm text-kumo-link" onClick={retry}>
                         {t("app.retry")}
                     </button>
                 )
@@ -177,4 +177,9 @@ export function Info({ title, rows }: { title: string; rows: [string, ReactNode]
             </dl>
         </section>
     )
+}
+
+export function PageFootnote() {
+    const note = useStore((s) => s.settings.footerNote)
+    return <p className="page-footnote">{note || "Nezha · Kumo theme"}</p>
 }

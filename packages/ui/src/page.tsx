@@ -1,6 +1,7 @@
-import type { CSSProperties } from "react"
+import { type CSSProperties, useContext } from "react"
 
 import type { PageProps } from "./contract"
+import { AsideLabelContext } from "./shell"
 
 export function Page({
     title,
@@ -12,6 +13,7 @@ export function Page({
     maxWidth = 1200,
     children,
 }: PageProps) {
+    const asideLabel = useContext(AsideLabelContext)
     return (
         <div
             className={`nk-page${aside ? " nk-page-with-aside" : ""}`}
@@ -47,7 +49,7 @@ export function Page({
                 </div>
             </div>
             {aside && (
-                <aside className="nk-page-aside" aria-label="Additional information">
+                <aside className="nk-page-aside" aria-label={asideLabel}>
                     {aside}
                 </aside>
             )}

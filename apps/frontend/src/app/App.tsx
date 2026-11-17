@@ -6,7 +6,7 @@ import { groupCounts, parseFilterQuery, resolvePeerGroup } from "@/core/filter"
 import { peerNodes } from "@/core/fleet"
 import { pollVisible } from "@/core/http"
 import { stripFlag } from "@/core/region"
-import { resolveLocale, setLocale } from "@/i18n"
+import { resolveLocale, setLocale, uiLabels } from "@/i18n"
 import { HomePage } from "@/pages/HomePage"
 import { Button } from "@cloudflare/kumo"
 import { useSidebar } from "@cloudflare/kumo/components/sidebar"
@@ -200,6 +200,7 @@ export function App() {
                 brand={<BrandLink title={siteTitle} />}
                 sidebarTop={<SidebarSearch />}
                 linkComponent={ShellLink}
+                labels={uiLabels("shell")}
                 activeId={
                     nodeId ? `peer:${nodeId}` : picked.length === 1 ? `group:${picked[0]}` : "fleet"
                 }

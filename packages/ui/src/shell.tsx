@@ -4,6 +4,7 @@ import {
     type CSSProperties,
     type ComponentType,
     type Ref,
+    createContext,
     forwardRef,
     useEffect,
     useMemo,
@@ -21,26 +22,13 @@ import {
     type ShellLinkProps,
 } from "./contract"
 
+export const AsideLabelContext = createContext("Additional information")
+
 const STORAGE_KEY = "nkt:sidebar-collapsed"
 const FOCUSABLE = 'a[href], button:not([disabled]), input, select, textarea, [tabindex="0"]'
 
 // CSS media queries cannot read custom properties; derive them from the contract here.
-const responsiveStyles = `
-  @media (min-width: ${BREAKPOINTS.gutter}px) {
-    .nk-shell { --nk-gutter: 32px; }
-    .nk-action-label { display: inline; }
-  }
-  @media (min-width: ${BREAKPOINTS.aside}px) {
-    .nk-page-with-aside {
-      grid-template-columns: minmax(0, 1fr) var(--nk-aside-width);
-    }
-    .nk-page-with-aside > .nk-page-main { border-right: 1px solid var(--color-kumo-line); }
-    .nk-page-with-aside > .nk-page-aside {
-      border-top: 0;
-      padding: 32px;
-    }
-  }
-`
+const responsiveStyles = `@media (min-width:${BREAKPOINTS.gutter}px){.nk-shell{--nk-gutter:32px}.nk-action-label{display:inline}}@media (min-width:${BREAKPOINTS.aside}px){.nk-page-with-aside{grid-template-columns:minmax(0,1fr) var(--nk-aside-width)}.nk-page-with-aside>.nk-page-main{border-right:1px solid var(--color-kumo-line)}.nk-page-with-aside>.nk-page-aside{border-top:0;padding:32px}}`
 
 function Anchor(props: ShellLinkProps) {
     return <a {...props} />
@@ -177,14 +165,16 @@ function NavEntry({
 function NavSections({
     sections,
     activeId,
+    label,
     close,
 }: {
     sections: NavSection[]
     activeId?: string
+    label: string
     close: () => void
 }) {
     return (
-        <nav aria-label="Main navigation">
+        <nav aria-label={label}>
             {sections.map((section) => (
                 <Sidebar.Group key={section.id}>
                     {section.title && (
@@ -212,9 +202,11 @@ function ShellLayout({
     topbar,
     actions,
     footer,
+    labels,
     children,
     linkComponent: Link = Anchor,
 }: AppShellProps) {
+    const navLabel = labels?.mainNav ?? "Main navigation"
     const { isMobile, open, openMobile, setOpenMobile } = useSidebar()
     const sidebarRef = useRef<HTMLElement>(null)
     const triggerRef = useRef<HTMLButtonElement>(null)
@@ -294,7 +286,9 @@ function ShellLayout({
             <Sidebar ref={sidebarRef} className="nk-sidebar" contentClassName="nk-sidebar-inner">
                 <Sidebar.Header className="nk-brand-row">
                     <div className="nk-brand">{brand}</div>
-                    {isMobile && <Sidebar.Close aria-label="Close navigation" />}
+                    {isMobile && (
+                        <Sidebar.Close aria-label={labels?.closeNav ?? "Close navigation"} />
+                    )}
                 </Sidebar.Header>
                 {sidebarTop && <div className="nk-sidebar-top">{sidebarTop}</div>}
                 <Sidebar.SlidingViews activeKey={context ? "context" : "root"}>
@@ -304,6 +298,7 @@ function ShellLayout({
                                 <NavSections
                                     sections={rootNav}
                                     activeId={context ? undefined : activeId}
+                                    label={navLabel}
                                     close={closeDrawer}
                                 />
                             </Sidebar.Content>
@@ -373,6 +368,7 @@ function ShellLayout({
                                 <NavSections
                                     sections={contextView.nav}
                                     activeId={context ? activeId : undefined}
+                                    label={navLabel}
                                     close={closeDrawer}
                                 />
                             </Sidebar.Content>
@@ -383,7 +379,11 @@ function ShellLayout({
                     <Sidebar.Footer className="nk-sidebar-footer">
                         {!isMobile && (
                             <Sidebar.Trigger
-                                aria-label={open ? "Collapse navigation" : "Expand navigation"}
+                                aria-label={
+                                    open
+                                        ? (labels?.collapseNav ?? "Collapse navigation")
+                                        : (labels?.expandNav ?? "Expand navigation")
+                                }
                             />
                         )}
                         {footer && <div className="nk-footer-content">{footer}</div>}
@@ -396,7 +396,7 @@ function ShellLayout({
                         <Sidebar.Trigger
                             ref={triggerRef}
                             className="nk-drawer-trigger"
-                            aria-label="Open navigation"
+                            aria-label={labels?.openNav ?? "Open navigation"}
                             aria-expanded={openMobile}
                         >
                             <DrawerMenuIcon />
@@ -427,33 +427,35 @@ export function AppShell(props: AppShellProps) {
         }
     })
     return (
-        <Sidebar.Provider
-            className="nk-shell"
-            defaultOpen={defaultOpen}
-            mobileBreakpoint={BREAKPOINTS.sidebar}
-            collapsible="icon"
-            onOpenChange={(open) => {
-                try {
-                    localStorage.setItem(STORAGE_KEY, String(!open))
-                } catch {
-                    /* Storage may be disabled. */
+        <AsideLabelContext value={props.labels?.aside ?? "Additional information"}>
+            <Sidebar.Provider
+                className="nk-shell"
+                defaultOpen={defaultOpen}
+                mobileBreakpoint={BREAKPOINTS.sidebar}
+                collapsible="icon"
+                onOpenChange={(open) => {
+                    try {
+                        localStorage.setItem(STORAGE_KEY, String(!open))
+                    } catch {
+                        /* Storage may be disabled. */
+                    }
+                }}
+                style={
+                    {
+                        "--sidebar-width": `${SHELL.sidebarWidth}px`,
+                        "--sidebar-width-icon": `${SHELL.sidebarRailWidth}px`,
+                        "--sidebar-bg": "var(--color-kumo-canvas)",
+                        "--nk-topbar-height": `${SHELL.topbarHeight}px`,
+                        "--nk-aside-width": `${SHELL.asideWidth}px`,
+                    } as CSSProperties
                 }
-            }}
-            style={
-                {
-                    "--sidebar-width": `${SHELL.sidebarWidth}px`,
-                    "--sidebar-width-icon": `${SHELL.sidebarRailWidth}px`,
-                    "--sidebar-bg": "var(--color-kumo-canvas)",
-                    "--nk-topbar-height": `${SHELL.topbarHeight}px`,
-                    "--nk-aside-width": `${SHELL.asideWidth}px`,
-                } as CSSProperties
-            }
-        >
-            <style>{responsiveStyles}</style>
-            <a className="nk-skip-link" href="#main-content">
-                Skip to content
-            </a>
-            <ShellLayout {...props} />
-        </Sidebar.Provider>
+            >
+                <style>{responsiveStyles}</style>
+                <a className="nk-skip-link" href="#main-content">
+                    {props.labels?.skipToContent ?? "Skip to content"}
+                </a>
+                <ShellLayout {...props} />
+            </Sidebar.Provider>
+        </AsideLabelContext>
     )
 }

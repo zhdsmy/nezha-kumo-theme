@@ -48,6 +48,9 @@ export function setLocale(locale: Locale, persist = true) {
     return i18n.changeLanguage(locale)
 }
 
+export const uiLabels = <T = Record<string, string>>(key: string) =>
+    i18n.t(key, { returnObjects: true }) as T
+
 i18n.use(initReactI18next).init({
     resources: {
         en: { translation: en },

@@ -56,5 +56,12 @@
     "GroupIconLoadError": "アイコン画像を読み込めませんでした",
     "GroupIconInvalid": "絵文字または1文字、もしくは有効な https:// URLを入力してください",
     "SelectAll": "すべて選択",
-    "SelectedCount": "{{count}} 件選択中"
+    "SelectedCount": "{{count}} 件選択中",
+    "Skip to content": "本文へスキップ",
+    "Main navigation": "メインナビゲーション",
+    "Open navigation": "ナビゲーションを開く",
+    "Close navigation": "ナビゲーションを閉じる",
+    "Collapse navigation": "ナビゲーションを折りたたむ",
+    "Expand navigation": "ナビゲーションを展開",
+    "Additional information": "補足情報"
 }

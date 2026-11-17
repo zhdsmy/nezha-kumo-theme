@@ -175,5 +175,18 @@
         "historyHint": "每格表示该小时是否有上报。未观察和未来时段留空。",
         "notFound": "页面不存在",
         "dailyIncluded": "自今日零时 · 含 {{count}}/{{total}} 个节点"
+    },
+    "shell": {
+        "skipToContent": "跳至正文",
+        "mainNav": "主导航",
+        "openNav": "打开导航",
+        "closeNav": "关闭导航",
+        "collapseNav": "收起导航",
+        "expandNav": "展开导航",
+        "aside": "补充信息"
+    },
+    "tabs": {
+        "scrollStart": "向左滚动标签页",
+        "scrollEnd": "向右滚动标签页"
     }
 }
