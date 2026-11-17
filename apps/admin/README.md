@@ -1,65 +1,35 @@
-# Nezha Admin Frontend
+# Admin Panel (`apps/admin`)
 
-## Bootstrap
+Developer guide for the Kumo-reskinned Nezha admin panel (`/dashboard/`). For installation, release artifacts (`zhdsmy/nezha-kumo-admin`), and rollback instructions, see the [root README](../../README.md).
 
-```bash
-npx swagger-typescript-api -p http://localhost:8008/swagger/doc.json -o ./src/types -n api.ts --no-client --union-enums
-```
+## Commands
 
-## End-to-end tests
-
-Playwright suite lives in `tests/e2e/` and runs in CI via
-`.github/workflows/e2e.yml`. The workflow checks out the backend
-(`nezhahq/nezha` master), starts it on `127.0.0.1:8008`, then runs
-`npm run e2e` here.
-
-### Run locally
-
-First install browsers once:
+Run from the repository root:
 
 ```bash
-npm run e2e:install
+pnpm --filter admin-frontend dev      # Vite dev server on 127.0.0.1 (base /dashboard)
+pnpm --filter admin-frontend test     # Vitest + Testing Library suite (src/test/)
+pnpm --filter admin-frontend lint     # oxlint
+pnpm --filter admin-frontend format   # Prettier write
+pnpm --filter admin-frontend build    # tsc -b && vite build -> dist/
+pnpm --filter admin-frontend preview  # Serve built dist/ locally
 ```
 
-Then start the backend separately. The shape the CI workflow uses is:
+## Local Backend Proxy & Mocked E2E
 
-```bash
-# in a checkout of nezhahq/nezha
-mkdir -p cmd/dashboard/admin-dist cmd/dashboard/user-dist
-printf '<!doctype html><title>admin e2e</title>\n' > cmd/dashboard/admin-dist/index.html
-printf '<!doctype html><title>user e2e</title>\n' > cmd/dashboard/user-dist/index.html
-go install github.com/swaggo/swag/cmd/swag@latest
-"$(go env GOPATH)/bin/swag" init --pd -d cmd/dashboard -g main.go -o cmd/dashboard/docs
-go build -o /tmp/nezha-dashboard ./cmd/dashboard
+- **Local backend proxy**: `pnpm --filter admin-frontend dev` proxies `/api` (including `/api/v1/ws/*`) and `/mcp` to `NEZHA_DEV_BACKEND` (defaults to `http://127.0.0.1:8008`).
+- **Mocked Playwright E2E**: UI specs such as `tests/e2e/public-note.spec.ts` mock `/api/v1/**` in-browser via `page.route()`. Build and serve `dist/` with `vite preview`, then point Playwright at it with `E2E_SKIP_WEBSERVER=1`:
 
-NZ_LISTENHOST=127.0.0.1 NZ_LISTENPORT=8008 \
-  NZ_JWTSECRETKEY=e2e-jwt-secret-key-min-32-chars-long-ok \
-  NZ_AGENTSECRETKEY=e2e-agent-secret-32-bytes-long-ok \
-  NZ_SITENAME=nezha-e2e GIN_MODE=release \
-  /tmp/nezha-dashboard -c data/config.yaml -db data/sqlite.db
-```
+    ```bash
+    pnpm --filter admin-frontend build
+    pnpm --filter admin-frontend exec vite preview --host 127.0.0.1 --port 5382 --strictPort &
+    E2E_SKIP_WEBSERVER=1 E2E_BASE_URL=http://127.0.0.1:5382 \
+      pnpm --filter admin-frontend exec playwright test tests/e2e/public-note.spec.ts
+    ```
 
-Then back in this repo:
+- **OpenAPI types**: To regenerate `src/types/api.ts` from a local Nezha dashboard Swagger endpoint:
 
-```bash
-npm run e2e            # Vite dev server starts automatically
-npm run e2e -- --ui    # interactive runner for debugging
-```
-
-### Reusing a running stack
-
-If you already have Vite (`npm run dev`) and the backend up:
-
-```bash
-E2E_SKIP_WEBSERVER=1 E2E_BASE_URL=http://localhost:5173 npm run e2e
-```
-
-Override credentials for a non-default admin account with `E2E_ADMIN_USER`
-and `E2E_ADMIN_PASS`.
-
-### Triaging a CI failure
-
-The workflow uploads two artifacts on failure:
-
-- `playwright-report` — HTML report; open `index.html` locally.
-- `dashboard-log` — full backend stdout/stderr for the test run.
+    ```bash
+    pnpm --filter admin-frontend exec swagger-typescript-api \
+      -p http://127.0.0.1:8008/swagger/doc.json -o ./src/types -n api.ts --no-client --union-enums
+    ```

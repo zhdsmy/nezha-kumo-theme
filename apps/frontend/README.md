@@ -1,38 +1,34 @@
-# Nezha Kumo public frontend
+# Public Frontend (`apps/frontend`)
 
-Nezha v2.6.1+, React 19, Kumo 2.18.1, SVG charts. Nezha is the only backend.
+Developer guide for the public status frontend (`/`). For installation, configuration, and `public_note` schema documentation, see the [root README](../../README.md).
 
-From the repository root:
+## Commands
 
-```sh
-pnpm --filter frontend dev
-pnpm --filter frontend test
-pnpm --filter frontend package
+Run from the repository root:
+
+```bash
+pnpm --filter frontend dev           # Vite dev server on http://127.0.0.1:5301
+pnpm --filter frontend typecheck     # tsc --noEmit
+pnpm --filter frontend lint          # oxlint across packages/ui and apps/frontend
+pnpm --filter frontend format:check  # Prettier check
+pnpm --filter frontend test:unit     # Vitest unit & contract tests (tests/*.test.ts)
+pnpm --filter frontend test:e2e      # Playwright E2E suite (tests/*.spec.ts)
+pnpm --filter frontend test          # Run unit + E2E suites
+pnpm --filter frontend build         # Typecheck + production bundle in dist/
+pnpm --filter frontend check:size    # Verify bundle size budgets
+pnpm --filter frontend package       # Build, check budgets, and create release zip
 ```
 
-For local read-only data, add `NKT_UPSTREAM=https://your-monitor.example` to
-`apps/frontend/.env.local`. The dev proxy rejects write requests. Login/OAuth
-acceptance uses Playwright mocks and never sends credentials to the upstream.
+## Read-Only Dev Proxy
 
-Packaging writes `release/nezha-kumo-frontend-v0.1.0.zip` and its SHA256 file.
-The ZIP contains one folder, `kumo-dist/`, matching the Nezha folder layout.
-Mount its contents at `/dashboard/user-dist` using the panel's existing theme
-installation procedure. This package does not deploy or change the panel.
+To preview against real read-only panel data locally, create `apps/frontend/.env.local`:
 
-`config.js` belongs to the site owner and is excluded from the ZIP. On the first
-installation, copy `apps/frontend/public/config.js` next to the extracted
-`index.html`; keep the existing file on upgrades. Every setting is optional.
-Preferences use the `nkt:` namespace. Only `window.NezhaKumoConfig` is read.
+```ini
+NKT_UPSTREAM=https://status.example.com
+```
 
-The home page lists servers as cards or as a compact table (`nkt:view`). Cards
-show every reading and fill as many 320 px columns as fit; the compact table keeps
-name, status, CPU, memory, disk (wide screens) and network, and becomes a dense
-list below `BREAKPOINTS.gutter`. Groups are sidebar links (`/?group=…`) that scope
-the whole page, overview included. The fee total sits beside the title; its menu
-picks currency and period. Node sections use hash URLs, so drawer links and browser history agree.
-Guests see up to one day of history. Authenticated sessions get 7d/30d when TSDB
-is enabled. The report grid records observed hours, not an uptime SLA. Monthly
-quota usage is withheld when the API's cumulative counter window does not match
-its billing period. Daily traffic sums servers with a current-day counter baseline and labels partial coverage.
-All HTTP requests share a four-request queue; counters refresh at most every ten minutes,
-and refreshes pause while the tab is hidden.
+`vite.config.ts` proxies `/api` (HTTP `GET`/`HEAD` and WebSocket) to `NKT_UPSTREAM` and rejects all mutating HTTP methods with `405`.
+
+## Mocked E2E Tests
+
+Playwright specs in `tests/*.spec.ts` use `mockNezha()` (`tests/mock.ts`) and static JSON fixtures in `tests/fixtures/` to mock `/api/v1/*`, `/api/v1/ws/server`, and `api.frankfurter.dev`. No live Nezha backend or credentials are required. Set `NKT_PORT=<port>` to run Playwright's dev server on a non-default port.
