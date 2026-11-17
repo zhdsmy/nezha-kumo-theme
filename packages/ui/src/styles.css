@@ -280,6 +280,10 @@
     }
 }
 
+.nk-sidebar[data-mobile][data-state="collapsed"] [data-sidebar="sliding-views"] > div {
+    transition-duration: 0s !important;
+}
+
 .nk-sidebar:not([data-mobile])[data-state="collapsed"] .nk-nav-label {
     position: absolute;
     width: 1px;

@@ -495,7 +495,7 @@ test("node sidebar peer switcher: lists group peers, keeps hash & range, respect
 
     // 1. Direct entry to /server/32 (🇭🇰 香港 group: 32, 35, 38 online + 44 offline)
     await page.goto("/server/32")
-    const sidebarNav = page.locator(".nk-sidebar nav")
+    const sidebarNav = page.locator('.nk-sidebar [data-sidebar="sliding-view"]:not([inert]) nav')
     await expect(sidebarNav.locator('[data-sidebar="group-label"]')).toContainText("🇭🇰 香港 (4)")
     await expect(sidebarNav.locator("a")).toHaveCount(4)
 
@@ -554,8 +554,10 @@ test("node sidebar peer switcher: lists group peers, keeps hash & range, respect
     await expect
         .poll(() =>
             page.evaluate(() => {
-                const active = document.querySelector('.nk-sidebar nav a[aria-current="page"]')
-                const vp = document.querySelector('[data-sidebar="viewport"]')
+                const active = document.querySelector(
+                    '.nk-sidebar [data-sidebar="sliding-view"]:not([inert]) nav a[aria-current="page"]',
+                )
+                const vp = active?.closest('[data-sidebar="viewport"]')
                 const ctx = document.querySelector(".nk-sidebar .nk-context")
                 const footer = document.querySelector(".nk-sidebar-footer")
                 if (!active || !vp || !ctx || !footer) return false

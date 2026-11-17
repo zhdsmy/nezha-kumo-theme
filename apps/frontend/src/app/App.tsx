@@ -156,7 +156,7 @@ export function App() {
         if (!nodeId) return
         const frame = requestAnimationFrame(() => {
             const active = document.querySelector<HTMLElement>(
-                '.nk-sidebar nav a[aria-current="page"]',
+                '.nk-sidebar [data-sidebar="sliding-view"]:not([inert]) nav a[aria-current="page"]',
             )
             const viewport = active?.closest<HTMLElement>('[data-sidebar="viewport"]')
             if (!active || !viewport) return
