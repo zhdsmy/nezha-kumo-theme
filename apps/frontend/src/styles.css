@@ -66,13 +66,69 @@
 .connection[data-open="true"] i {
     background: var(--color-kumo-success);
 }
-/* group icons & peer switcher */
+/* sidebar search & peer switcher */
+.sidebar-search {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 34px;
+    gap: 12px;
+    padding: 0 8px;
+    border: 1px solid var(--color-kumo-line);
+    border-radius: 8px;
+    background: var(--color-kumo-base);
+    color: var(--text-color-kumo-subtle);
+    font-size: 14px;
+    line-height: 1.25;
+    cursor: pointer;
+    overflow: hidden;
+    white-space: nowrap;
+    transition:
+        border-color var(--sidebar-animation-duration) var(--sidebar-easing),
+        background-color var(--sidebar-animation-duration) var(--sidebar-easing);
+}
+.sidebar-search:hover {
+    background: light-dark(var(--color-kumo-recessed), var(--color-kumo-control));
+}
+.sidebar-search > svg {
+    flex-shrink: 0;
+    color: var(--text-color-kumo-default);
+    opacity: 0.4;
+}
+.sidebar-search-body {
+    display: flex;
+    align-items: center;
+    flex: 0 0 calc(var(--sidebar-width) - 76px);
+    width: calc(var(--sidebar-width) - 76px);
+    gap: 8px;
+    min-width: 0;
+}
+.sidebar-search-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+}
+.sidebar-search-kbd {
+    flex-shrink: 0;
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--text-color-kumo-subtle);
+}
+.nk-sidebar:not([data-mobile])[data-state="collapsed"] .sidebar-search {
+    border-color: transparent;
+    background: transparent;
+}
+.nk-sidebar:not([data-mobile])[data-state="collapsed"] .sidebar-search:hover {
+    background: var(--sidebar-active-bg);
+}
 .nk-sidebar .nk-context {
     position: sticky;
-    top: -12px;
+    top: -8px;
     z-index: 2;
-    margin-top: -12px;
-    padding-top: 12px;
+    margin-top: -8px;
+    padding-top: 8px;
     background: var(--sidebar-bg);
 }
 .nk-sidebar [data-sidebar="viewport"]:has(.nk-context) {
@@ -81,9 +137,6 @@
         black calc(100% - min(24px, var(--scroll-area-overflow-y-end, 24px))),
         transparent 100%
     );
-}
-.nk-context-title:empty {
-    display: none;
 }
 .peer-badge {
     display: inline-flex;

@@ -3,7 +3,8 @@ import { Link, navigate, usePathname } from "@/app/router"
 import { adapter, nodeHref, refresh, useStore, useVisibleNodes } from "@/app/store"
 import { stripFlag } from "@/core/region"
 import { LOCALES, type Locale, setLocale } from "@/i18n"
-import { Button, Dialog, DropdownMenu, Input, Loader } from "@cloudflare/kumo"
+import { Button, Dialog, DropdownMenu, Input, Loader, Tooltip } from "@cloudflare/kumo"
+import { useSidebar } from "@cloudflare/kumo/components/sidebar"
 import {
     GlobeIcon,
     MagnifyingGlassIcon,
@@ -12,10 +13,59 @@ import {
     UserIcon,
     XIcon,
 } from "@phosphor-icons/react"
-import { type FormEvent, useCallback, useEffect, useState } from "react"
+import { type FormEvent, useCallback, useEffect, useState, useSyncExternalStore } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Status } from "./ui"
+
+let searchOpenState = false
+const searchListeners = new Set<() => void>()
+
+function setSearchDialogOpen(next?: boolean) {
+    const value = next ?? !searchOpenState
+    if (value === searchOpenState) return
+    searchOpenState = value
+    for (const fn of searchListeners) fn()
+}
+
+function subscribeSearch(fn: () => void) {
+    searchListeners.add(fn)
+    return () => {
+        searchListeners.delete(fn)
+    }
+}
+
+export function SidebarSearch() {
+    const { t } = useTranslation()
+    const { isMobile, state, setOpenMobile } = useSidebar()
+    const label = t("toolbar.search")
+    const button = (
+        <button
+            type="button"
+            className="sidebar-search"
+            aria-label={label}
+            onClick={() => {
+                if (isMobile) setOpenMobile(false)
+                setSearchDialogOpen(true)
+            }}
+        >
+            <MagnifyingGlassIcon size={16} aria-hidden="true" />
+            <span className="sidebar-search-body">
+                <span className="sidebar-search-text">{label}…</span>
+                <kbd className="sidebar-search-kbd">⌘K</kbd>
+            </span>
+        </button>
+    )
+    if (isMobile) return button
+    return (
+        <Tooltip
+            content={`${label} (⌘K)`}
+            side="right"
+            disabled={state !== "collapsed"}
+            render={button}
+        />
+    )
+}
 
 // Login behavior adapted from zool-theme/src/components/LoginDialog.tsx (MIT, luoleiorg).
 function LoginForm({ close }: { close: () => void }) {
@@ -103,7 +153,7 @@ function LoginForm({ close }: { close: () => void }) {
 export function Actions() {
     const { t, i18n } = useTranslation()
     const appearance = useAppearance()
-    const [search, setSearch] = useState(false)
+    const search = useSyncExternalStore(subscribeSearch, () => searchOpenState)
     const [login, setLogin] = useState(false)
     const [query, setQuery] = useState("")
     const nodes = useVisibleNodes()
@@ -111,9 +161,13 @@ export function Actions() {
     const hidden = useStore((s) => s.settings.hideAdminEntry)
     const url = new URL(usePathname(), window.location.origin)
     const toggleSearch = useCallback((open?: boolean) => {
-        setSearch((v) => open ?? !v)
+        setSearchDialogOpen(open)
         setQuery("")
     }, [])
+    useEffect(() => {
+        if (!search) setQuery("")
+    }, [search])
+    useEffect(() => () => setSearchDialogOpen(false), [])
     useEffect(() => {
         const key = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -129,16 +183,6 @@ export function Actions() {
     )
     return (
         <>
-            <Button
-                variant="ghost"
-                size="sm"
-                aria-label={t("toolbar.search")}
-                title={`${t("toolbar.search")} (⌘K / Ctrl+K)`}
-                onClick={() => toggleSearch(true)}
-            >
-                <MagnifyingGlassIcon size={16} />
-                <span className="action-label">{t("toolbar.search")}</span>
-            </Button>
             <DropdownMenu>
                 <DropdownMenu.Trigger>
                     <Button

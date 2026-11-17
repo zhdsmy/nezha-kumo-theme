@@ -1,5 +1,15 @@
 import { Sidebar, useSidebar } from "@cloudflare/kumo/components/sidebar"
-import { type CSSProperties, type ComponentType, useEffect, useRef, useState } from "react"
+import { type LinkComponentProps, LinkProvider } from "@cloudflare/kumo/utils"
+import {
+    type CSSProperties,
+    type ComponentType,
+    type Ref,
+    forwardRef,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react"
 
 import {
     type AppShellProps,
@@ -36,15 +46,43 @@ function Anchor(props: ShellLinkProps) {
     return <a {...props} />
 }
 
+function DrawerMenuIcon() {
+    return (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 256 256"
+            fill="currentColor"
+            aria-hidden="true"
+            focusable="false"
+        >
+            <path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM144,184H40a8,8,0,0,0,0,16H144a8,8,0,0,0,0-16Z" />
+        </svg>
+    )
+}
+
+function BackArrowIcon() {
+    return (
+        <svg
+            width="16"
+            height="16"
+            viewBox="0 0 256 256"
+            fill="currentColor"
+            aria-hidden="true"
+            focusable="false"
+        >
+            <path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z" />
+        </svg>
+    )
+}
+
 function NavEntry({
     item,
     activeId,
-    Link,
     close,
 }: {
     item: NavItem
     activeId?: string
-    Link: ComponentType<ShellLinkProps>
     close: () => void
 }) {
     const childActive = item.children?.some((child) => child.id === activeId) ?? false
@@ -54,17 +92,16 @@ function NavEntry({
         if (childActive) setExpanded(true)
     }, [childActive])
 
-    const content = (
-        <>
-            <span className="nk-nav-icon" aria-hidden="true">
-                {item.icon ?? "·"}
-            </span>
-            <span className="nk-nav-label" title={item.label}>
-                {item.label}
-            </span>
-            {item.badge && <span className="nk-nav-badge">{item.badge}</span>}
-        </>
+    const isActive = item.id === activeId
+    const icon = (
+        <span className="nk-nav-icon" aria-hidden="true">
+            {item.icon ?? "·"}
+        </span>
     )
+    const badge =
+        item.badge != null && item.badge !== false ? (
+            <Sidebar.MenuBadge className="nk-nav-badge">{item.badge}</Sidebar.MenuBadge>
+        ) : null
 
     return (
         <Sidebar.MenuItem title={item.label}>
@@ -72,52 +109,66 @@ function NavEntry({
                 <Sidebar.Collapsible open={expanded} onOpenChange={setExpanded}>
                     <Sidebar.CollapsibleTrigger
                         render={
-                            <button
-                                type="button"
+                            <Sidebar.MenuButton
                                 className="nk-nav-link"
-                                title={item.label}
-                                aria-label={item.label}
-                                data-active={item.id === activeId || undefined}
+                                icon={icon}
+                                active={isActive}
+                                tooltip={isMobile ? undefined : item.label}
                                 onClick={() => {
                                     if (!isMobile && state === "collapsed") setOpen(true)
                                 }}
                             >
-                                {content}
+                                <span className="nk-nav-label" title={item.label}>
+                                    {item.label}
+                                </span>
+                                {badge}
                                 <Sidebar.MenuChevron />
-                            </button>
+                            </Sidebar.MenuButton>
                         }
                     />
                     <Sidebar.CollapsibleContent>
                         <Sidebar.MenuSub>
-                            {item.children.map((child) => (
-                                <Sidebar.MenuSubItem key={child.id}>
-                                    <Link
-                                        href={child.href}
-                                        className="nk-nav-link nk-nav-child"
-                                        onClick={close}
-                                        aria-current={child.id === activeId ? "page" : undefined}
-                                    >
-                                        <span className="nk-nav-label" title={child.label}>
-                                            {child.label}
-                                        </span>
-                                        {child.badge && (
-                                            <span className="nk-nav-badge">{child.badge}</span>
-                                        )}
-                                    </Link>
-                                </Sidebar.MenuSubItem>
-                            ))}
+                            {item.children.map((child) => {
+                                const childIsActive = child.id === activeId
+                                return (
+                                    <Sidebar.MenuSubItem key={child.id}>
+                                        <Sidebar.MenuSubButton
+                                            href={child.href}
+                                            className="nk-nav-link nk-nav-child"
+                                            active={childIsActive}
+                                            aria-current={childIsActive ? "page" : undefined}
+                                            onClick={close}
+                                        >
+                                            <span className="nk-nav-label" title={child.label}>
+                                                {child.label}
+                                            </span>
+                                            {child.badge != null && child.badge !== false && (
+                                                <Sidebar.MenuBadge className="nk-nav-badge">
+                                                    {child.badge}
+                                                </Sidebar.MenuBadge>
+                                            )}
+                                        </Sidebar.MenuSubButton>
+                                    </Sidebar.MenuSubItem>
+                                )
+                            })}
                         </Sidebar.MenuSub>
                     </Sidebar.CollapsibleContent>
                 </Sidebar.Collapsible>
             ) : (
-                <Link
+                <Sidebar.MenuButton
                     href={item.href}
                     className="nk-nav-link"
+                    icon={icon}
+                    active={isActive}
+                    aria-current={isActive ? "page" : undefined}
+                    tooltip={isMobile ? undefined : item.label}
                     onClick={close}
-                    aria-current={item.id === activeId ? "page" : undefined}
                 >
-                    {content}
-                </Link>
+                    <span className="nk-nav-label" title={item.label}>
+                        {item.label}
+                    </span>
+                    {badge}
+                </Sidebar.MenuButton>
             )}
         </Sidebar.MenuItem>
     )
@@ -126,12 +177,10 @@ function NavEntry({
 function NavSections({
     sections,
     activeId,
-    Link,
     close,
 }: {
     sections: NavSection[]
     activeId?: string
-    Link: ComponentType<ShellLinkProps>
     close: () => void
 }) {
     return (
@@ -145,13 +194,7 @@ function NavSections({
                     )}
                     <Sidebar.Menu>
                         {section.items.map((item) => (
-                            <NavEntry
-                                key={item.id}
-                                item={item}
-                                activeId={activeId}
-                                Link={Link}
-                                close={close}
-                            />
+                            <NavEntry key={item.id} item={item} activeId={activeId} close={close} />
                         ))}
                     </Sidebar.Menu>
                 </Sidebar.Group>
@@ -162,6 +205,7 @@ function NavSections({
 
 function ShellLayout({
     brand,
+    sidebarTop,
     nav,
     activeId,
     context,
@@ -179,6 +223,20 @@ function ShellLayout({
         context ? { context, nav } : null,
     )
     const closeDrawer = () => setOpenMobile(false)
+
+    const kumoLink = useMemo(
+        () =>
+            forwardRef<HTMLAnchorElement, LinkComponentProps>(function ShellLinkBridge(
+                { href, to, ...rest },
+                ref,
+            ) {
+                const Comp = Link as unknown as ComponentType<
+                    LinkComponentProps & { ref?: Ref<HTMLAnchorElement> }
+                >
+                return <Comp ref={ref} href={href ?? to ?? ""} {...rest} />
+            }),
+        [Link],
+    )
 
     useEffect(() => {
         if (context) lastContextRef.current = { context, nav }
@@ -221,18 +279,24 @@ function ShellLayout({
             document.body.style.overflow = previousOverflow
             document.removeEventListener("keydown", trapFocus)
             requestAnimationFrame(() => {
-                if (window.innerWidth < BREAKPOINTS.sidebar) triggerRef.current?.focus()
+                if (
+                    window.innerWidth < BREAKPOINTS.sidebar &&
+                    !document.querySelector('[role="dialog"]')
+                ) {
+                    triggerRef.current?.focus()
+                }
             })
         }
     }, [isMobile, openMobile])
 
     return (
-        <>
+        <LinkProvider component={kumoLink}>
             <Sidebar ref={sidebarRef} className="nk-sidebar" contentClassName="nk-sidebar-inner">
                 <Sidebar.Header className="nk-brand-row">
                     <div className="nk-brand">{brand}</div>
                     {isMobile && <Sidebar.Close aria-label="Close navigation" />}
                 </Sidebar.Header>
+                {sidebarTop && <div className="nk-sidebar-top">{sidebarTop}</div>}
                 <Sidebar.SlidingViews activeKey={context ? "context" : "root"}>
                     <Sidebar.SlidingView value="root">
                         {rootNav && (
@@ -240,7 +304,6 @@ function ShellLayout({
                                 <NavSections
                                     sections={rootNav}
                                     activeId={context ? undefined : activeId}
-                                    Link={Link}
                                     close={closeDrawer}
                                 />
                             </Sidebar.Content>
@@ -250,58 +313,82 @@ function ShellLayout({
                         {contextView && (
                             <Sidebar.Content>
                                 <div className="nk-context">
-                                    <Link
-                                        href={contextView.context.backHref}
-                                        className="nk-nav-link"
-                                        onClick={() => {
-                                            if (
-                                                document.activeElement instanceof HTMLElement &&
-                                                sidebarRef.current?.contains(document.activeElement)
-                                            ) {
-                                                document.activeElement.blur()
-                                            }
-                                            closeDrawer()
-                                        }}
-                                    >
-                                        <span className="nk-nav-icon" aria-hidden="true">
-                                            ←
-                                        </span>
-                                        <span
-                                            className="nk-nav-label"
-                                            title={contextView.context.backLabel}
-                                        >
-                                            {contextView.context.backLabel}
-                                        </span>
-                                    </Link>
-                                    <div
-                                        className="nk-context-title"
-                                        title={
-                                            typeof contextView.context.title === "string"
-                                                ? contextView.context.title
-                                                : undefined
-                                        }
-                                    >
-                                        {contextView.context.title}
-                                    </div>
+                                    <ul className="m-0 list-none p-0">
+                                        <Sidebar.MenuItem title={contextView.context.backLabel}>
+                                            <Sidebar.MenuButton
+                                                href={contextView.context.backHref}
+                                                className="nk-nav-link"
+                                                icon={
+                                                    <span
+                                                        className="nk-nav-icon"
+                                                        aria-hidden="true"
+                                                    >
+                                                        <BackArrowIcon />
+                                                    </span>
+                                                }
+                                                tooltip={
+                                                    isMobile
+                                                        ? undefined
+                                                        : contextView.context.backLabel
+                                                }
+                                                onClick={() => {
+                                                    if (
+                                                        document.activeElement instanceof
+                                                            HTMLElement &&
+                                                        sidebarRef.current?.contains(
+                                                            document.activeElement,
+                                                        )
+                                                    ) {
+                                                        document.activeElement.blur()
+                                                    }
+                                                    closeDrawer()
+                                                }}
+                                            >
+                                                <span
+                                                    className="nk-nav-label"
+                                                    title={contextView.context.backLabel}
+                                                >
+                                                    {contextView.context.backLabel}
+                                                </span>
+                                            </Sidebar.MenuButton>
+                                        </Sidebar.MenuItem>
+                                    </ul>
+                                    {contextView.context.title != null &&
+                                        contextView.context.title !== "" && (
+                                            <div className="nk-context-title-wrap">
+                                                <div
+                                                    className="nk-context-title"
+                                                    title={
+                                                        typeof contextView.context.title ===
+                                                        "string"
+                                                            ? contextView.context.title
+                                                            : undefined
+                                                    }
+                                                >
+                                                    {contextView.context.title}
+                                                </div>
+                                            </div>
+                                        )}
                                 </div>
                                 <NavSections
                                     sections={contextView.nav}
                                     activeId={context ? activeId : undefined}
-                                    Link={Link}
                                     close={closeDrawer}
                                 />
                             </Sidebar.Content>
                         )}
                     </Sidebar.SlidingView>
                 </Sidebar.SlidingViews>
-                <Sidebar.Footer className="nk-sidebar-footer">
-                    {footer && <div className="nk-footer-content">{footer}</div>}
-                    {!isMobile && (
-                        <Sidebar.Trigger
-                            aria-label={open ? "Collapse navigation" : "Expand navigation"}
-                        />
-                    )}
-                </Sidebar.Footer>
+                {(!isMobile || footer) && (
+                    <Sidebar.Footer className="nk-sidebar-footer">
+                        {!isMobile && (
+                            <Sidebar.Trigger
+                                aria-label={open ? "Collapse navigation" : "Expand navigation"}
+                            />
+                        )}
+                        {footer && <div className="nk-footer-content">{footer}</div>}
+                    </Sidebar.Footer>
+                )}
             </Sidebar>
             <div className="nk-shell-body" inert={isMobile && openMobile}>
                 <header className="nk-topbar">
@@ -311,7 +398,9 @@ function ShellLayout({
                             className="nk-drawer-trigger"
                             aria-label="Open navigation"
                             aria-expanded={openMobile}
-                        />
+                        >
+                            <DrawerMenuIcon />
+                        </Sidebar.Trigger>
                     )}
                     <div
                         className="nk-topbar-content"
@@ -325,7 +414,7 @@ function ShellLayout({
                     {children}
                 </main>
             </div>
-        </>
+        </LinkProvider>
     )
 }
 

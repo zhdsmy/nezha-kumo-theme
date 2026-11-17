@@ -1,4 +1,4 @@
-import { Actions } from "@/components/Actions"
+import { Actions, SidebarSearch } from "@/components/Actions"
 import { RegionFlag } from "@/components/RegionFlag"
 import { Loading, NoData } from "@/components/ui"
 import { loadExchangeRates } from "@/core/cost"
@@ -187,6 +187,7 @@ export function App() {
             <style>{responsive}</style>
             <AppShell
                 brand={<BrandLink title={siteTitle} />}
+                sidebarTop={<SidebarSearch />}
                 linkComponent={ShellLink}
                 activeId={
                     nodeId ? `peer:${nodeId}` : picked.length === 1 ? `group:${picked[0]}` : "fleet"
