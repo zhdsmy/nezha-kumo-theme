@@ -9,7 +9,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { useState } from "react"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
 
@@ -403,4 +403,20 @@ test("ADM-02: folding keeps the same editor and unsaved input mounted", async ()
         expect(screen.getByLabelText("Draft name")).toBe(input)
         expect((input as HTMLInputElement).value).toBe("UNSAVED_REVIEW")
     }
+})
+
+test("R2-ADM-06: a row's portalled editor keeps its focus return target visible", async () => {
+    width = 375
+    render(<EditableRows />)
+    const toggle = screen.getByRole("button", { name: "Actions" })
+    fireEvent.click(toggle)
+    const edit = screen.getByRole("button", { name: "Edit draft" })
+    fireEvent.click(edit)
+    fireEvent.pointerDown(screen.getByLabelText("Draft name"))
+    expect(toggle.getAttribute("aria-expanded")).toBe("true")
+    fireEvent.click(screen.getByRole("button", { name: "Close" }))
+    await waitFor(() => expect(document.activeElement).toBe(edit))
+    expect(toggle.getAttribute("aria-expanded")).toBe("true")
+    fireEvent.pointerDown(document.body)
+    expect(toggle.getAttribute("aria-expanded")).toBe("false")
 })
