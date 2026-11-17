@@ -417,8 +417,9 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                         aria-valuemax={100}
                                         aria-valuenow={Math.min(
                                             100,
-                                            ratio(used, node.trafficLimit),
+                                            Math.round(ratio(used, node.trafficLimit)),
                                         )}
+                                        aria-valuetext={formatUsage(used, node.trafficLimit)}
                                     >
                                         <span
                                             style={{

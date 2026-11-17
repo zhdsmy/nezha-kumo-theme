@@ -39,12 +39,23 @@ export function Meter({
     /** Small line under the track, for example "1.1 GB / 2 GB". */
     detail?: string
 }) {
+    const clamped = Math.max(0, Math.min(100, value))
+    const pct = `${formatPercent(value)}%`
     return (
-        <span className="meter" data-level={levelFor(kind, value)}>
+        <span
+            className="meter"
+            role="meter"
+            aria-label={label}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(clamped)}
+            aria-valuetext={detail ? `${pct} (${detail})` : pct}
+            data-level={levelFor(kind, value)}
+        >
             <span className="meter-label">{label}</span>
-            <span className="num">{formatPercent(value)}%</span>
+            <span className="num">{pct}</span>
             <span className="meter-track" aria-hidden>
-                <span style={{ width: `${Math.max(0, Math.min(100, value))}%` }} />
+                <span style={{ width: `${clamped}%` }} />
             </span>
             {detail && (
                 <span className="meter-detail num" title={detail}>
