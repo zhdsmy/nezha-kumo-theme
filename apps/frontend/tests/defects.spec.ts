@@ -343,7 +343,8 @@ test("inline search clear label, login username autofocus, and Cmd/Ctrl+K guard 
         .click()
     const clearBtn = page.locator(".search-clear")
     await expect(clearBtn).toHaveAttribute("aria-label", "Clear")
-    await expect(clearBtn).toHaveAttribute("title", "Clear")
+    await clearBtn.hover()
+    await expect(page.locator(".kumo-tooltip-popup[data-open]")).toHaveText("Clear")
 
     await page.getByRole("button", { name: "Language" }).click()
     await page.getByRole("menuitem", { name: "简体中文" }).click()

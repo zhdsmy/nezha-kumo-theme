@@ -30,7 +30,7 @@ import { regionName, stripFlag } from "@/core/region"
 import { readStorage, writeStorage } from "@/core/storage"
 import { summariseFleetDay } from "@/core/summary"
 import { uiLabels } from "@/i18n"
-import { Button, DropdownMenu, Input, Table, Tabs, Tooltip } from "@cloudflare/kumo"
+import { Button, DropdownMenu, InputGroup, Table, Tabs, Tooltip } from "@cloudflare/kumo"
 import { Page } from "@nezha-kumo/ui"
 import {
     ArrowDownIcon,
@@ -539,8 +539,11 @@ export function HomePage() {
                     </h2>
                     <div className="section-controls">
                         {searchOpen || query.length > 0 ? (
-                            <div className="inline-search">
-                                <Input
+                            <InputGroup className="inline-search">
+                                <InputGroup.Addon align="start">
+                                    <MagnifyingGlassIcon size={16} />
+                                </InputGroup.Addon>
+                                <InputGroup.Input
                                     ref={searchInputRef}
                                     autoFocus
                                     aria-label={t("toolbar.search")}
@@ -555,19 +558,21 @@ export function HomePage() {
                                         }
                                     }}
                                 />
-                                <button
-                                    type="button"
-                                    className="search-clear"
-                                    aria-label={t("toolbar.clear")}
-                                    title={t("toolbar.clear")}
-                                    onClick={() => {
-                                        setQuery("")
-                                        setSearchOpen(false)
-                                    }}
-                                >
-                                    <XIcon size={14} />
-                                </button>
-                            </div>
+                                <InputGroup.Addon align="end">
+                                    <InputGroup.Button
+                                        className="search-clear"
+                                        shape="square"
+                                        aria-label={t("toolbar.clear")}
+                                        tooltip={t("toolbar.clear")}
+                                        onClick={() => {
+                                            setQuery("")
+                                            setSearchOpen(false)
+                                        }}
+                                    >
+                                        <XIcon size={14} />
+                                    </InputGroup.Button>
+                                </InputGroup.Addon>
+                            </InputGroup>
                         ) : (
                             <Button
                                 variant="secondary"
