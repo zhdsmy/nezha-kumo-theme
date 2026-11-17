@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { parseDecimal } from "@/lib/number"
+import { Input, Radio } from "@cloudflare/kumo"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -8,12 +8,12 @@ export interface NoteControlProps {
     onChange: (value: string | undefined) => void
     label: string
 }
-export function UnknownValue({ value }: { value?: string }) {
+export function UnknownValue({ value, hint }: { value?: string; hint?: string }) {
     const { t } = useTranslation()
     return (
         <div className="space-y-1">
             <p className="break-all rounded-md border px-3 py-2 text-sm">{value}</p>
-            <p className="text-xs text-muted-foreground">{t("PublicNote.Unrecognized")}</p>
+            <p className="text-xs text-muted-foreground">{hint || t("PublicNote.Unrecognized")}</p>
         </div>
     )
 }
@@ -22,33 +22,34 @@ export function Choices({
     value,
     options,
     onChange,
+    disabledValues = [],
 }: {
     label: string
     value?: string
     options: readonly (readonly [string, string])[]
+    disabledValues?: string[]
     onChange: (value: string) => void
 }) {
     return (
-        <div
-            role="group"
-            aria-label={label}
-            className="flex min-w-0 flex-wrap gap-1 rounded-md bg-muted p-1"
+        <Radio.Group
+            appearance="segmented"
+            orientation="horizontal"
+            className="nkt-note-choices"
+            value={value ?? ""}
+            onValueChange={(next) => {
+                if (next !== (value ?? "")) onChange(next)
+            }}
         >
+            <Radio.Legend className="sr-only">{label}</Radio.Legend>
             {options.map(([key, text]) => (
-                <Button
-                    type="button"
+                <Radio.Item
                     key={key}
-                    variant={key === (value ?? "") ? "secondary" : "ghost"}
-                    aria-pressed={key === (value ?? "")}
-                    className="h-auto min-h-9 min-w-0 flex-1 whitespace-normal px-2 py-2 leading-snug"
-                    onClick={() => {
-                        if (key !== (value ?? "")) onChange(key)
-                    }}
-                >
-                    {text}
-                </Button>
+                    disabled={disabledValues.includes(key)}
+                    value={key}
+                    label={text}
+                />
             ))}
-        </div>
+        </Radio.Group>
     )
 }
 export function NumberInput({
@@ -57,34 +58,37 @@ export function NumberInput({
     label,
     min = 0,
     placeholder,
+    required,
+    invalid,
 }: {
     value?: number
     onChange: (value: number | undefined) => void
     label: string
     min?: number
     placeholder?: string
+    required?: boolean
+    invalid?: boolean
 }) {
     const [draft, setDraft] = useState(value === undefined ? "" : String(value))
     useEffect(() => {
-        setDraft((previous) =>
-            (previous === "" ? undefined : Number(previous)) === value
-                ? previous
-                : String(value ?? ""),
-        )
+        setDraft((previous) => (parseDecimal(previous) === value ? previous : String(value ?? "")))
     }, [value])
     return (
         <Input
             type="text"
+            required={required}
+            aria-invalid={invalid || undefined}
             inputMode="decimal"
             aria-label={label}
             placeholder={placeholder}
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             onBlur={() => {
-                const number = Number(draft)
-                if (draft.trim() && number === value) return
-                if (!draft.trim()) onChange(undefined)
-                else if (Number.isFinite(number) && number >= min) onChange(number)
+                if (draft === "" && value === undefined) return
+                const number = parseDecimal(draft)
+                if (number !== undefined && number === value) return
+                if (draft === "") onChange(undefined)
+                else if (number !== undefined && number >= min) onChange(number)
                 else setDraft(value === undefined ? "" : String(value))
             }}
             onKeyDown={(event) => {

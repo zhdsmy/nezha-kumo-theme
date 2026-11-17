@@ -197,12 +197,10 @@ export function addCycle(start: string, cycle: Cycle): string | undefined {
         date.setUTCDate(Math.min(day, last.getUTCDate()))
     }
     if (!Number.isFinite(date.getTime())) return
-    return zone
-        ? date.toISOString().slice(0, -1) + zone
-        : writeNoteDate(
-              new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
-              start,
-          )
+    return writeNoteDate(
+        new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+        start,
+    )
 }
 export function splitTags(value: string): string[] {
     return value

@@ -115,7 +115,7 @@ test("plan units, explicit unlimited, dates and tags", () => {
     assert.equal(parseNoteDate("0000-00-00T23:59:59+08:00"), 0)
     assert.equal(
         addCycle("2026-01-31T12:00:00Z", { count: 1, unit: "Month" }),
-        "2026-02-28T12:00:00.000Z",
+        "2026-02-28T12:00:00Z",
     )
     assert.deepEqual(splitTags(" CN2，cn2、4837[联通];CMI "), ["CN2", "cn2、4837[联通];CMI"])
 })
@@ -139,7 +139,7 @@ test("calendar edits preserve offsets and zone-less month arithmetic uses local 
         )
         assert.equal(
             addCycle("2026-01-31T00:00:00+08:00", { count: 1, unit: "Month" }),
-            "2026-02-28T00:00:00.000+08:00",
+            "2026-02-28T00:00:00+08:00",
         )
     } finally {
         if (previous === undefined) delete process.env.TZ

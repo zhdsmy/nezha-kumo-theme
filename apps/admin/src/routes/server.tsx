@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/table"
 import { IconButton } from "@/components/xui/icon-button"
 import { useServer } from "@/hooks/useServer"
-import { isNoteObject, parsePublicNote } from "@/lib/public-note"
+import { isNoteObject, parseJsonNote } from "@/lib/json-note"
 import { selectableTableFeatures, useSelectableTable } from "@/lib/table"
 import { errorMessage } from "@/lib/utils"
 import { ModelServerTaskResponse, ModelServer as Server } from "@/types"
@@ -53,7 +53,7 @@ export default function ServerPage() {
             splitTags(
                 (data ?? [])
                     .map((server) => {
-                        const note = parsePublicNote(server.public_note)
+                        const note = parseJsonNote(server.public_note)
                         const plan = isNoteObject(note) ? note.planDataMod : undefined
                         return isNoteObject(plan) && typeof plan.networkRoute === "string"
                             ? plan.networkRoute

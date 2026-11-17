@@ -1,4 +1,5 @@
 import { updateServer } from "@/api/server"
+import { PrivateNoteEditor } from "@/components/private-note/editor"
 import { PublicNoteEditor } from "@/components/public-note/editor"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -26,11 +27,13 @@ import { IconButton } from "@/components/xui/icon-button"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
 import { withCollectionDefaults } from "@/lib/form"
 import i18n from "@/lib/i18n"
-import { detectPublicNoteMode, preparePublicNote } from "@/lib/public-note"
+import { detectNoteMode, prepareJsonNote } from "@/lib/json-note"
+import { privateNoteErrors } from "@/lib/private-note"
+import { preparePublicNote } from "@/lib/public-note"
 import { asOptionalField, conv, errorMessage } from "@/lib/utils"
 import { ModelServer } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
@@ -90,13 +93,36 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate, routes }) 
 
     const [open, setOpen] = useState(false)
 
+    const [privateNoteRaw, setPrivateNoteRaw] = useState(data?.note ?? "")
+    const [privateNoteMode, setPrivateNoteMode] = useState(detectNoteMode(data?.note ?? ""))
+    const [privateNoteValid, setPrivateNoteValid] = useState(true)
+    const formRef = useRef<HTMLFormElement>(null)
+    const showNoteError = () => {
+        toast.error(t("Validation.InvalidForm"), { description: t("PrivateNote.CheckErrors") })
+        formRef.current
+            ?.querySelector<HTMLElement>(
+                '[data-private-note-editor] [aria-invalid="true"], [data-private-note-editor] input:invalid',
+            )
+            ?.focus()
+    }
+
     const [publicNoteRaw, setPublicNoteRaw] = useState(data?.public_note ?? "")
-    const [publicNoteMode, setPublicNoteMode] = useState(detectPublicNoteMode(data?.public_note))
+    const [publicNoteMode, setPublicNoteMode] = useState(detectNoteMode(data?.public_note))
 
     const { submitting, runSubmit } = useSubmitLock()
 
     const onSubmit = runSubmit(async (values: any) => {
+        if (
+            privateNoteMode === "structured" &&
+            (!privateNoteValid ||
+                privateNoteErrors(privateNoteRaw).length ||
+                formRef.current?.querySelector('[data-private-note-editor] [aria-invalid="true"]'))
+        ) {
+            showNoteError()
+            return
+        }
         try {
+            values.note = prepareJsonNote(privateNoteRaw, privateNoteMode)
             values.ddns_profiles = values.ddns_profiles_raw
                 ? conv.strToArr(values.ddns_profiles_raw).map(Number)
                 : undefined
@@ -130,8 +156,11 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate, routes }) 
                     ? JSON.stringify(data.override_ddns_domains)
                     : undefined,
             })
+            setPrivateNoteRaw(data?.note ?? "")
+            setPrivateNoteMode(detectNoteMode(data?.note ?? ""))
+            setPrivateNoteValid(true)
             setPublicNoteRaw(data?.public_note ?? "")
-            setPublicNoteMode(detectPublicNoteMode(data?.public_note))
+            setPublicNoteMode(detectNoteMode(data?.public_note))
         }
         setOpen(v)
     }
@@ -153,7 +182,21 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate, routes }) 
                             <DialogDescription />
                         </DialogHeader>
                         <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2 my-2">
+                            <form
+                                ref={formRef}
+                                onInvalid={(event) => {
+                                    if (
+                                        (event.target as HTMLElement).closest(
+                                            "[data-private-note-editor]",
+                                        )
+                                    ) {
+                                        event.preventDefault()
+                                        showNoteError()
+                                    }
+                                }}
+                                onSubmit={form.handleSubmit(onSubmit)}
+                                className="space-y-2 my-2"
+                            >
                                 <div className="grid grid-cols-[1fr_6.5rem] items-end gap-3">
                                     <FormField
                                         control={form.control}
@@ -275,22 +318,13 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate, routes }) 
                                     <></>
                                 )}
 
-                                <FormField
-                                    control={form.control}
-                                    name="note"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>{t("Private") + t("Note")}</FormLabel>
-                                            <FormControl>
-                                                <Textarea
-                                                    className="resize-y min-h-14"
-                                                    rows={2}
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
+                                <PrivateNoteEditor
+                                    value={privateNoteRaw}
+                                    onChange={(value, mode) => {
+                                        setPrivateNoteRaw(value)
+                                        if (mode) setPrivateNoteMode(mode)
+                                    }}
+                                    onValidityChange={setPrivateNoteValid}
                                 />
                                 <PublicNoteEditor
                                     value={publicNoteRaw}

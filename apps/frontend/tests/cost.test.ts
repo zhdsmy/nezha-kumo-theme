@@ -163,3 +163,17 @@ describe("exchange rates", () => {
         await expect(loadExchangeRates()).rejects.toThrow(/exchange rates/)
     })
 })
+
+it("uses the actual expense period before the public cycle and inherits only when absent", () => {
+    const nodes = [node("a", "CNY", 100, 30)]
+    expect(
+        onlineMonthlyCost(nodes, { a: online }, "CNY", rates, {
+            a: { currency: "CNY", amount: 300, cycle: 365 },
+        }),
+    ).toEqual({ amount: 25, paid: 1 })
+    expect(
+        onlineMonthlyCost(nodes, { a: online }, "CNY", rates, {
+            a: { currency: "CNY", amount: 300 },
+        }),
+    ).toEqual({ amount: 300, paid: 1 })
+})

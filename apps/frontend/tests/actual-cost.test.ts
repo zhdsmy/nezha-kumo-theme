@@ -72,3 +72,23 @@ describe("private actual expenses", () => {
         await expect(nezha.loadActualCosts!()).rejects.toThrow("Private billing unavailable")
     })
 })
+
+describe("private billing period compatibility", () => {
+    it.each(["CNY 60.00", "USD 12.50", "EUR 9.99", "HKD 300.00"])(
+        "keeps the existing currency-plus-number format without inventing a period: %s",
+        (actualAmount) => {
+            const [currency, amount] = actualAmount.split(" ")
+            expect(parseActualCost(JSON.stringify({ billingDataMod: { actualAmount } }))).toEqual({
+                currency,
+                amount: Number(amount),
+            })
+        },
+    )
+    it("returns an explicit actual-cost period without changing the no-period result", () => {
+        expect(parseActualCost('{"billingDataMod":{"actualAmount":"CNY 300.00/Year"}}')).toEqual({
+            amount: 300,
+            currency: "CNY",
+            cycle: 365,
+        })
+    })
+})

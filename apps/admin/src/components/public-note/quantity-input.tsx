@@ -1,11 +1,4 @@
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
+import { Select, Switch } from "@cloudflare/kumo"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -34,17 +27,16 @@ function UnitSelect({
     onChange: (value: string) => void
 }) {
     return (
-        <Select value={value} onValueChange={onChange}>
-            <SelectTrigger aria-label={`${label} · ${value}`}>
-                <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-                {options.map((unit) => (
-                    <SelectItem key={unit} value={unit}>
-                        {unit}
-                    </SelectItem>
-                ))}
-            </SelectContent>
+        <Select
+            value={value}
+            aria-label={`${label} · ${value}`}
+            onValueChange={(next) => next && onChange(next)}
+        >
+            {options.map((unit) => (
+                <Select.Option key={unit} value={unit}>
+                    {unit}
+                </Select.Option>
+            ))}
         </Select>
     )
 }

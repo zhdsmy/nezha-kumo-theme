@@ -1,13 +1,21 @@
-import { Combobox } from "@/components/ui/combobox"
+import { Combobox } from "@cloudflare/kumo"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { currencies, parseAmount, writeAmount } from "../../../../../packages/shared/public-note"
 import { Choices, type NoteControlProps, NumberInput, UnknownValue } from "./controls"
 
-export function AmountInput({ value, onChange, label }: NoteControlProps) {
+export function AmountInput({
+    value,
+    onChange,
+    label,
+    paidOnly = false,
+    invalid,
+}: NoteControlProps & { paidOnly?: boolean; invalid?: boolean }) {
     const { t, i18n } = useTranslation()
-    const amount = parseAmount(value)
+    const parsed = parseAmount(value)
+    const amount =
+        paidOnly && (!parsed?.currency || !parsed.symbol || parsed.amount < 0) ? undefined : parsed
     const [editingPaid, setEditingPaid] = useState(false)
     const mode =
         value && !amount
@@ -19,6 +27,8 @@ export function AmountInput({ value, onChange, label }: NoteControlProps) {
                 : "paid"
     const [currency, setCurrency] = useState("USD")
     const code = amount?.currency || currency
+    const write = (number: number, currency: string) =>
+        paidOnly ? `${currency} ${number.toFixed(2)}` : writeAmount(number, currency)
     const options = useMemo(() => {
         const names = new Intl.DisplayNames([i18n.language], { type: "currency" })
         return currencies().map((value) => ({
@@ -28,41 +38,62 @@ export function AmountInput({ value, onChange, label }: NoteControlProps) {
     }, [i18n.language])
     return (
         <div className="space-y-2">
-            <Choices
-                label={label}
-                value={mode}
-                options={[
-                    ["paid", t("PublicNote.Paid")],
-                    ["free", t("PublicNote.Free")],
-                    ["usage", t("PublicNote.PayAsYouGo")],
-                ]}
-                onChange={(next) => {
-                    setEditingPaid(next === "paid")
-                    setCurrency(code)
-                    onChange(next === "free" ? "0" : next === "usage" ? "-1" : undefined)
-                }}
-            />
+            {!paidOnly && (
+                <Choices
+                    label={label}
+                    value={mode}
+                    options={[
+                        ["paid", t("PublicNote.Paid")],
+                        ["free", t("PublicNote.Free")],
+                        ["usage", t("PublicNote.PayAsYouGo")],
+                    ]}
+                    onChange={(next) => {
+                        setEditingPaid(next === "paid")
+                        setCurrency(code)
+                        onChange(next === "free" ? "0" : next === "usage" ? "-1" : undefined)
+                    }}
+                />
+            )}
             {mode === "unknown" && <UnknownValue value={value} />}
-            {mode === "paid" && (
+            {(paidOnly || mode === "paid") && (
                 <div className="grid grid-cols-2 gap-2">
                     <Combobox
-                        key={code}
-                        allowDeselect={false}
-                        aria-label={`${t("PublicNote.Currency")} · ${options.find((item) => item.value === code)?.label || code}`}
-                        options={options}
-                        defaultValue={code}
-                        placeholder={t("PublicNote.Currency")}
+                        items={options}
+                        value={options.find((item) => item.value === code)}
                         onValueChange={(next) => {
                             if (!next) return
-                            setCurrency(next)
+                            setCurrency(next.value)
                             if (amount)
                                 onChange(
-                                    writeAmount(amount.amount, next) +
-                                        (amount.cycle ? `/${value!.split("/")[1]}` : ""),
+                                    write(amount.amount, next.value) +
+                                        (amount.cycle || (paidOnly && value?.includes("/"))
+                                            ? `/${value!.split("/")[1]}`
+                                            : ""),
                                 )
                         }}
-                    />
+                    >
+                        <Combobox.TriggerValue
+                            aria-label={`${t("PublicNote.Currency")} · ${options.find((item) => item.value === code)?.label || code}`}
+                            className="min-w-0 w-full"
+                        >
+                            {() => code}
+                        </Combobox.TriggerValue>
+                        <Combobox.Content className="w-72 max-w-[calc(100vw-2rem)]">
+                            <Combobox.Input
+                                aria-label={t("PublicNote.Currency")}
+                                placeholder={t("PublicNote.Currency")}
+                            />
+                            <Combobox.List>
+                                {(item: { value: string; label: string }) => (
+                                    <Combobox.Item key={item.value} value={item}>
+                                        {item.label}
+                                    </Combobox.Item>
+                                )}
+                            </Combobox.List>
+                        </Combobox.Content>
+                    </Combobox>
                     <NumberInput
+                        invalid={invalid}
                         label={label}
                         value={amount?.amount}
                         placeholder="45.00"
@@ -72,8 +103,10 @@ export function AmountInput({ value, onChange, label }: NoteControlProps) {
                             onChange(
                                 number === undefined
                                     ? undefined
-                                    : writeAmount(number, code) +
-                                          (amount?.cycle ? `/${value!.split("/")[1]}` : ""),
+                                    : write(number, code) +
+                                          (amount?.cycle || (paidOnly && value?.includes("/"))
+                                              ? `/${value!.split("/")[1]}`
+                                              : ""),
                             )
                         }}
                     />

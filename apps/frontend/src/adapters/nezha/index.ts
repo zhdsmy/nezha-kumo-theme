@@ -148,7 +148,11 @@ export function parseActualCost(note: unknown): ActualCost | undefined {
     try {
         const price = parseAmount(JSON.parse(note)?.billingDataMod?.actualAmount)
         if (price && price.symbol && price.currency && price.amount >= 0) {
-            return { currency: price.currency, amount: price.amount }
+            return {
+                currency: price.currency,
+                amount: price.amount,
+                ...(price.cycle ? { cycle: cycleDays(price.cycle) } : {}),
+            }
         }
     } catch {
         /* Empty, plain-text or malformed private notes keep the displayed price. */

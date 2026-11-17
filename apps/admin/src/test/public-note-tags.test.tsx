@@ -25,12 +25,15 @@ test("tags support Enter, commas, paste, dedupe and whole-tag deletion", () => {
         )
     }
     render(<Harness />)
-    const input = screen.getByRole("combobox", { name: "路由" })
+    let input = screen.getByRole("combobox", { name: "路由" })
     fireEvent.change(input, { target: { value: " CN2 " } })
     fireEvent.keyDown(input, { key: "Enter" })
     expect(change).toHaveBeenLastCalledWith("4837[联通],CN2")
     fireEvent.change(input, { target: { value: "CMI，" } })
+    input = screen.getByRole("combobox", { name: "路由" })
+    expect(document.activeElement).toBe(input)
     fireEvent.paste(input, { clipboardData: { getData: () => " cn2、9929; CMI" } })
+    input = screen.getByRole("combobox", { name: "路由" })
     expect(change).toHaveBeenLastCalledWith("4837[联通],CN2,CMI,9929")
     fireEvent.keyDown(input, { key: "Backspace" })
     expect(change).toHaveBeenLastCalledWith("4837[联通],CN2,CMI")
@@ -54,4 +57,21 @@ test("non-string tags remain unknown and unchanged until replacement", () => {
     expect(screen.getByText(i18n.t("PublicNote.Unrecognized"))).toBeTruthy()
     fireEvent.blur(screen.getByRole("textbox", { name: "备注" }))
     expect(change).not.toHaveBeenCalled()
+})
+
+test("Kumo tag draft shares its frame with chips and preserves duplicate display", () => {
+    render(<TagInput label="Tags" value="A,A" onChange={vi.fn()} />)
+    const input = screen.getByRole("textbox", { name: "Tags" }) as HTMLInputElement
+    expect(input.placeholder).toBe(i18n.t("PublicNote.TagsPlaceholder"))
+    expect(screen.getAllByText("A")).toHaveLength(2)
+    expect(input.parentElement?.textContent).toContain("A")
+})
+
+test("tags use a short placeholder and retain full screen reader instructions", () => {
+    render(<TagInput label="routes" value="CN2" onChange={vi.fn()} />)
+    const input = screen.getByRole("textbox", { name: "routes" })
+    expect(input.getAttribute("placeholder")).toBe(i18n.t("PublicNote.TagsPlaceholder"))
+    expect(document.getElementById(input.getAttribute("aria-describedby")!)?.textContent).toBe(
+        i18n.t("PublicNote.TagsHint"),
+    )
 })

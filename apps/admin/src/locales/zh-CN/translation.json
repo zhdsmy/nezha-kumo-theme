@@ -229,7 +229,7 @@
         "PayAsYouGo": "按量付费",
         "Has": "有",
         "None": "无",
-        "CustomFields": "自定义字段",
+        "CustomFields": "表单",
         "Clear": "清除",
         "RawText": "原始文本",
         "Unrecognized": "无法识别，前台可能读不出，建议重选",
@@ -262,8 +262,9 @@
             "max": "取较大"
         },
         "RemoveTag": "删除 {{tag}}",
+        "TagsPlaceholder": "回车添加",
         "TagsHint": "按 Enter 或输入逗号添加标签。",
-        "InvalidJSONHint": "此备注无法解析为 JSON。请编辑原始文本以保留内容。"
+        "Time": "时间"
     },
     "Validation": {
         "InvalidForm": "表单校验失败",
@@ -559,5 +560,39 @@
         "transferAll": "所有服务器转移权限",
         "adminAll": "用户 / WAF / 系统设置 / 在线用户管理",
         "everything": "访问所有资源的完整权限"
+    },
+    "PrivateNote": {
+        "CheckErrors": "请修正私有备注中标出的字段。",
+        "Label": "私有备注",
+        "RawText": "私有备注原始文本",
+        "Key": "键名",
+        "Value": "键值",
+        "Type": "类型",
+        "Delete": "删除行",
+        "MoveUp": "上移",
+        "MoveDown": "下移",
+        "AddRow": "添加字段",
+        "AddItem": "添加数组项",
+        "EmptyKey": "键名不能为空。",
+        "DuplicateKey": "同一对象内的键名不能重复。",
+        "NumberRequired": "请输入有效数字。",
+        "DepthLimit": "超过四层，请用原始文本编辑。",
+        "ConfirmType": "替换此值？当前内容将被删除。",
+        "Replace": "替换值",
+        "ActualAmount": "实际花费",
+        "ActualCycle": "实际花费周期",
+        "FollowPublicCycle": "跟随公开备注周期",
+        "AddActualAmount": "添加实际花费",
+        "Types": {
+            "string": "文本",
+            "number": "数字",
+            "boolean": "布尔",
+            "null": "空值",
+            "object": "对象",
+            "array": "数组"
+        }
+    },
+    "NoteEditor": {
+        "RawReason": "此备注不是 JSON 对象。请使用原始文本模式保留其内容。"
     }
 }

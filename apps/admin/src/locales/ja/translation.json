@@ -229,7 +229,7 @@
         "PayAsYouGo": "従量課金",
         "Has": "あり",
         "None": "なし",
-        "CustomFields": "カスタムフィールド",
+        "CustomFields": "フォーム",
         "Clear": "クリア",
         "RawText": "テキスト表示",
         "Unrecognized": "認識できません。フロント画面で読めない場合があります。選び直してください。",
@@ -262,8 +262,9 @@
             "max": "大きい方"
         },
         "RemoveTag": "{{tag}} を削除",
+        "TagsPlaceholder": "Enterで追加",
         "TagsHint": "Enter またはカンマでタグを追加します。",
-        "InvalidJSONHint": "この備考は JSON として解析できません。内容を保つには元のテキストを編集してください。"
+        "Time": "時刻"
     },
     "Validation": {
         "InvalidForm": "入力内容に誤りがあります",
@@ -559,5 +560,39 @@
         "transferAll": "サーバー移管のすべての権限",
         "adminAll": "ユーザー / WAF / システム設定 / オンラインユーザー管理",
         "everything": "すべてのリソースへのフルアクセス"
+    },
+    "PrivateNote": {
+        "CheckErrors": "プライベートメモの強調された項目を修正してください。",
+        "Label": "非公開メモ",
+        "RawText": "非公開メモの原文",
+        "Key": "キー",
+        "Value": "値",
+        "Type": "型",
+        "Delete": "行を削除",
+        "MoveUp": "上へ",
+        "MoveDown": "下へ",
+        "AddRow": "フィールドを追加",
+        "AddItem": "配列要素を追加",
+        "EmptyKey": "キーを入力してください。",
+        "DuplicateKey": "同じオブジェクト内のキーは重複できません。",
+        "NumberRequired": "有効な数値を入力してください。",
+        "DepthLimit": "4 階層を超えています。原文モードで編集してください。",
+        "ConfirmType": "この値を置き換えますか？現在の内容は削除されます。",
+        "Replace": "値を置換",
+        "ActualAmount": "実際の費用",
+        "ActualCycle": "実際の費用の周期",
+        "FollowPublicCycle": "公開メモの周期に従う",
+        "AddActualAmount": "実際の費用を追加",
+        "Types": {
+            "string": "文字列",
+            "number": "数値",
+            "boolean": "真偽値",
+            "null": "Null",
+            "object": "オブジェクト",
+            "array": "配列"
+        }
+    },
+    "NoteEditor": {
+        "RawReason": "このメモは JSON オブジェクトではありません。内容を保持するには原文モードを使ってください。"
     }
 }

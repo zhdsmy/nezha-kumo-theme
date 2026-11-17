@@ -37,7 +37,9 @@ export function useBilling() {
         actualPrice(n: NodeInfo) {
             if (!loggedIn || actualCosts === null) return ""
             const actual = actualCosts[n.id]
-            return actual ? money(actual.amount, actual.currency, n.billingCycle) : price(n)
+            return actual
+                ? money(actual.amount, actual.currency, actual.cycle ?? n.billingCycle)
+                : price(n)
         },
         quota(n: NodeInfo) {
             if (n.trafficLimit < 0) return t("metric.unknown")
