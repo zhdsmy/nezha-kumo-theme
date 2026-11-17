@@ -562,6 +562,7 @@
         "everything": "Full access to all resources"
     },
     "PrivateNote": {
+        "CheckErrors": "Correct the highlighted private note fields.",
         "Label": "Private note",
         "RawText": "Private note raw text",
         "Key": "Key",

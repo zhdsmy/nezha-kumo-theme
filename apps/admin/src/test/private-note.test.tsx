@@ -11,6 +11,8 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import { useState } from "react"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
 
+const toastError = vi.hoisted(() => vi.fn())
+vi.mock("sonner", () => ({ toast: { error: toastError } }))
 const update = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
 vi.mock("@/api/server", () => ({ updateServer: update }))
 beforeEach(async () => {
@@ -184,6 +186,12 @@ test("private server submission rejects duplicate keys and saves valid note byte
     })
     await act(async () => fireEvent.submit(screen.getByRole("dialog").querySelector("form")!))
     expect(update).not.toHaveBeenCalled()
+    expect(toastError).toHaveBeenCalledWith(i18n.t("Validation.InvalidForm"), {
+        description: i18n.t("PrivateNote.CheckErrors"),
+    })
+    expect(document.activeElement).toBe(
+        screen.getAllByRole("textbox", { name: label("Key", "b") })[0],
+    )
     fireEvent.change(screen.getAllByRole("textbox", { name: label("Key", "b") })[0], {
         target: { value: "a" },
     })

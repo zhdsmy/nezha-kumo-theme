@@ -145,6 +145,7 @@ export function PrivateNoteEditor({
                                         aria-label={`${t("PrivateNote.Key")} · ${label}`}
                                         value={String(entry.key)}
                                         error={error ? t(`PrivateNote.${error}`) : undefined}
+                                        aria-invalid={!!error || undefined}
                                         required
                                         onChange={(event) =>
                                             onChange(
@@ -294,6 +295,7 @@ export function PrivateNoteEditor({
                                         {t("PrivateNote.Value")}
                                     </label>
                                     <NumberInput
+                                        invalid={emptyNumbers.includes(id)}
                                         label={`${t("PrivateNote.Value")} · ${label}`}
                                         value={typeof current === "number" ? current : undefined}
                                         min={-Infinity}

@@ -562,6 +562,7 @@
         "everything": "访问所有资源的完整权限"
     },
     "PrivateNote": {
+        "CheckErrors": "请修正私有备注中标出的字段。",
         "Label": "私有备注",
         "RawText": "私有备注原始文本",
         "Key": "键名",

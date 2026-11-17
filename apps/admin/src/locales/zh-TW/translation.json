@@ -562,6 +562,7 @@
         "everything": "存取所有資源的完整權限"
     },
     "PrivateNote": {
+        "CheckErrors": "請修正私有備註中標示的欄位。",
         "Label": "私有備註",
         "RawText": "私有備註原始文字",
         "Key": "鍵名",
