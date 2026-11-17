@@ -248,8 +248,15 @@ function CreateApiTokenDialog({
                 </DialogHeader>
                 <div className="grid gap-4 py-2">
                     <div className="grid gap-2">
-                        <Label htmlFor="name">{t("Name")}</Label>
-                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+                        <Label id="api-token-name-label" htmlFor="name">
+                            {t("Name")}
+                        </Label>
+                        <Input
+                            id="name"
+                            aria-labelledby="api-token-name-label"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                        />
                     </div>
                     <div className="grid gap-2">
                         <Label>{t("Scopes")}</Label>
@@ -282,18 +289,24 @@ function CreateApiTokenDialog({
                         </div>
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="server-ids">{t("ApiTokenServerIDs")}</Label>
+                        <Label id="api-token-server-ids-label" htmlFor="server-ids">
+                            {t("ApiTokenServerIDs")}
+                        </Label>
                         <Input
                             id="server-ids"
+                            aria-labelledby="api-token-server-ids-label"
                             placeholder={t("ApiTokenServerIDsPlaceholder")}
                             value={serverIDs}
                             onChange={(e) => setServerIDs(e.target.value)}
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="expires">{t("ApiTokenExpiresInDays")}</Label>
+                        <Label id="api-token-expires-label" htmlFor="expires">
+                            {t("ApiTokenExpiresInDays")}
+                        </Label>
                         <Input
                             id="expires"
+                            aria-labelledby="api-token-expires-label"
                             type="number"
                             min={0}
                             max={3650}

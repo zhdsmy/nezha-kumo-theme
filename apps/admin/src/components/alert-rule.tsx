@@ -333,10 +333,16 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                                                             </Select>
                                                         </div>
                                                         <div>
-                                                            <Label className="text-sm">
+                                                            <Label
+                                                                id={`alert-rule-${idx}-duration-label`}
+                                                                htmlFor={`alert-rule-${idx}-duration`}
+                                                                className="text-sm"
+                                                            >
                                                                 duration
                                                             </Label>
                                                             <Input
+                                                                id={`alert-rule-${idx}-duration`}
+                                                                aria-labelledby={`alert-rule-${idx}-duration-label`}
                                                                 type="number"
                                                                 value={r.duration ?? ""}
                                                                 onChange={(e) => {
@@ -358,10 +364,16 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                                                     {!isOffline && (
                                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                             <div>
-                                                                <Label className="text-sm">
+                                                                <Label
+                                                                    id={`alert-rule-${idx}-min-label`}
+                                                                    htmlFor={`alert-rule-${idx}-min`}
+                                                                    className="text-sm"
+                                                                >
                                                                     min
                                                                 </Label>
                                                                 <Input
+                                                                    id={`alert-rule-${idx}-min`}
+                                                                    aria-labelledby={`alert-rule-${idx}-min-label`}
                                                                     type="number"
                                                                     value={r.min ?? ""}
                                                                     onChange={(e) => {
@@ -381,10 +393,16 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                                                                 />
                                                             </div>
                                                             <div>
-                                                                <Label className="text-sm">
+                                                                <Label
+                                                                    id={`alert-rule-${idx}-max-label`}
+                                                                    htmlFor={`alert-rule-${idx}-max`}
+                                                                    className="text-sm"
+                                                                >
                                                                     max
                                                                 </Label>
                                                                 <Input
+                                                                    id={`alert-rule-${idx}-max`}
+                                                                    aria-labelledby={`alert-rule-${idx}-max-label`}
                                                                     type="number"
                                                                     value={r.max ?? ""}
                                                                     onChange={(e) => {
@@ -445,13 +463,19 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                                                             </Select>
                                                         </div>
                                                         <div>
-                                                            <Label className="text-sm">
+                                                            <Label
+                                                                id={`alert-rule-${idx}-ignore-label`}
+                                                                htmlFor={`alert-rule-${idx}-ignore`}
+                                                                className="text-sm"
+                                                            >
                                                                 {t("AlertRules.IgnoreHint", {
                                                                     server: t("Server"),
                                                                 })}
                                                             </Label>
                                                             {/* 简化：以 JSON 对象输入 */}
                                                             <Textarea
+                                                                id={`alert-rule-${idx}-ignore`}
+                                                                aria-labelledby={`alert-rule-${idx}-ignore-label`}
                                                                 className="resize-y"
                                                                 value={(() => {
                                                                     try {
@@ -492,10 +516,16 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                                                     {isCycle && (
                                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                                             <div className="sm:col-span-2">
-                                                                <Label className="text-sm">
+                                                                <Label
+                                                                    id={`alert-rule-${idx}-cycle-start-label`}
+                                                                    htmlFor={`alert-rule-${idx}-cycle-start`}
+                                                                    className="text-sm"
+                                                                >
                                                                     cycle_start (RFC3339)
                                                                 </Label>
                                                                 <Input
+                                                                    id={`alert-rule-${idx}-cycle-start`}
+                                                                    aria-labelledby={`alert-rule-${idx}-cycle-start-label`}
                                                                     value={r.cycle_start ?? ""}
                                                                     onChange={(e) => {
                                                                         const next = [...rulesUI]
@@ -511,10 +541,16 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                                                                 />
                                                             </div>
                                                             <div>
-                                                                <Label className="text-sm">
+                                                                <Label
+                                                                    id={`alert-rule-${idx}-cycle-interval-label`}
+                                                                    htmlFor={`alert-rule-${idx}-cycle-interval`}
+                                                                    className="text-sm"
+                                                                >
                                                                     cycle_interval
                                                                 </Label>
                                                                 <Input
+                                                                    id={`alert-rule-${idx}-cycle-interval`}
+                                                                    aria-labelledby={`alert-rule-${idx}-cycle-interval-label`}
                                                                     type="number"
                                                                     value={r.cycle_interval ?? ""}
                                                                     onChange={(e) => {

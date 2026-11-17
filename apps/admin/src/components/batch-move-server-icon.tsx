@@ -98,15 +98,28 @@ export const BatchMoveServerIcon: React.FC<BatchMoveServerIconProps> = ({
                             <DialogDescription />
                         </DialogHeader>
                         <div className="flex flex-col gap-3 mt-4">
-                            <Label>{t("Servers")}</Label>
-                            <Textarea disabled>{serverIds.join(", ")}</Textarea>
-                            <Label>{t("ToUser")}</Label>
+                            <Label id="batch-move-servers-label" htmlFor="batch-move-servers">
+                                {t("Servers")}
+                            </Label>
+                            <Textarea
+                                id="batch-move-servers"
+                                aria-labelledby="batch-move-servers-label"
+                                disabled
+                                readOnly
+                                value={serverIds.join(", ")}
+                            />
+                            <Label id="batch-move-to-user-label" htmlFor="batch-move-to-user">
+                                {t("ToUser")}
+                            </Label>
                             <Input
+                                id="batch-move-to-user"
+                                aria-labelledby="batch-move-to-user-label"
                                 type="number"
                                 placeholder="User ID"
-                                value={toUserId}
+                                value={toUserId ?? ""}
                                 onChange={(e) => {
-                                    setToUserId(parseInt(e.target.value, 10))
+                                    const parsed = parseInt(e.target.value, 10)
+                                    setToUserId(Number.isNaN(parsed) ? undefined : parsed)
                                 }}
                             />
                             <DialogFooter className="justify-end">

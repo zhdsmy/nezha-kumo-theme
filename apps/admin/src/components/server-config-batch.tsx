@@ -79,8 +79,12 @@ export const ServerConfigCardBatch: React.FC<ServerConfigCardBatchProps> = ({ si
                             <DialogDescription />
                         </DialogHeader>
                         <div className="flex flex-col gap-3 mt-4">
-                            <Label>{t("Option")}</Label>
+                            <Label id="batch-config-option-label" htmlFor="batch-config-option">
+                                {t("Option")}
+                            </Label>
                             <Input
+                                id="batch-config-option"
+                                aria-labelledby="batch-config-option-label"
                                 type="text"
                                 placeholder="option"
                                 value={currentKey}
@@ -88,8 +92,12 @@ export const ServerConfigCardBatch: React.FC<ServerConfigCardBatchProps> = ({ si
                                     setCurrentKey(e.target.value)
                                 }}
                             />
-                            <Label>{t("Value")}</Label>
+                            <Label id="batch-config-value-label" htmlFor="batch-config-value">
+                                {t("Value")}
+                            </Label>
                             <Textarea
+                                id="batch-config-value"
+                                aria-labelledby="batch-config-value-label"
                                 className="resize-y"
                                 value={currentVal}
                                 onChange={(e) => {

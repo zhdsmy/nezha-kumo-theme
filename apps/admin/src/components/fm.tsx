@@ -365,6 +365,7 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
                             <AlertDialogDescription />
                         </AlertDialogHeader>
                         <Input
+                            aria-label={t("Goto")}
                             className="mb-1"
                             placeholder="Path"
                             value={gotoPath}

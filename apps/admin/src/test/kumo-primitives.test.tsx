@@ -250,4 +250,104 @@ test("button maps variants and icon size to Kumo Button, supports loading/disabl
     expect(await screen.findByRole("dialog", { name: "编辑对话框" })).toBeTruthy()
 })
 
+test("badge, neutral switch, input, password-input, and textarea delegate to Kumo with controlled behavior and zero accessible-name warnings", async () => {
+    const { useState } = await import("react")
+    const { useForm } = await import("react-hook-form")
+    const { Badge, badgeVariants } = await import("@/components/ui/badge")
+    const { Switch } = await import("@/components/ui/switch")
+    const { Input } = await import("@/components/ui/input")
+    const { PasswordInput } = await import("@/components/ui/password-input")
+    const { Textarea } = await import("@/components/ui/textarea")
+    const { Form, FormControl, FormField, FormItem, FormLabel } = await import(
+        "@/components/ui/form"
+    )
 
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+
+    function ControlledHarness() {
+        const [enabled, setEnabled] = useState(false)
+        const [notes, setNotes] = useState("init")
+        const form = useForm({ defaultValues: { host: "node-1", secret: "pw-1" } })
+
+        return (
+            <Form {...form}>
+                <Badge variant="default">Pending</Badge>
+                <Badge variant="destructive" data-testid="err-badge">
+                    Failed
+                </Badge>
+                <Switch
+                    aria-label="Auto renewal"
+                    checked={enabled}
+                    onCheckedChange={setEnabled}
+                />
+                <FormField
+                    control={form.control}
+                    name="host"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Hostname</FormLabel>
+                            <FormControl>
+                                <Input {...field} />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="secret"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Agent Secret</FormLabel>
+                            <FormControl>
+                                <PasswordInput {...field} />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
+                <Textarea
+                    aria-label="Notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                />
+            </Form>
+        )
+    }
+
+    render(<ControlledHarness />)
+
+    expect(warnSpy).not.toHaveBeenCalled()
+
+    const pendingBadge = screen.getByText("Pending")
+    expect(pendingBadge.getAttribute("data-kumo-component")).toBe("Badge")
+    expect(pendingBadge.className).toContain("bg-kumo-badge-inverted")
+    const failedWrapper = screen.getByTestId("err-badge")
+    expect(
+        failedWrapper.querySelector('[data-kumo-component="Badge"]')?.className,
+    ).toContain("bg-kumo-danger-tint")
+    expect(badgeVariants({ variant: "outline" })).toContain("border-kumo-fill")
+
+    const sw = screen.getByRole("switch", { name: "Auto renewal" })
+    expect(sw.getAttribute("data-kumo-component")).toBe("Switch")
+    expect(sw.getAttribute("aria-checked")).toBe("false")
+    expect(sw.className).toContain("bg-neutral-150")
+    fireEvent.click(sw)
+    expect(sw.getAttribute("aria-checked")).toBe("true")
+    expect(sw.className).toContain("bg-neutral-500")
+
+    const hostInput = screen.getByLabelText("Hostname") as HTMLInputElement
+    expect(hostInput.value).toBe("node-1")
+    expect(hostInput.className).toContain("ring-kumo-line")
+    fireEvent.change(hostInput, { target: { value: "node-2" } })
+    expect(hostInput.value).toBe("node-2")
+
+    const secretInput = screen.getByLabelText("Agent Secret") as HTMLInputElement
+    expect(secretInput.type).toBe("password")
+    fireEvent.click(screen.getByRole("button", { name: /Show password|显示密码/ }))
+    expect(secretInput.type).toBe("text")
+
+    const notesArea = screen.getByRole("textbox", { name: "Notes" }) as HTMLTextAreaElement
+    expect(notesArea.value).toBe("init")
+    expect(notesArea.className).toContain("ring-kumo-line")
+    fireEvent.change(notesArea, { target: { value: "updated note" } })
+    expect(notesArea.value).toBe("updated note")
+})

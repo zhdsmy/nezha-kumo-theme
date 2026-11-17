@@ -117,11 +117,12 @@ export default function FrontendsPage() {
                         }}
                         className="space-y-3"
                     >
-                        <Label htmlFor="frontend-repository">
+                        <Label id="frontend-repository-label" htmlFor="frontend-repository">
                             {t("FrontendManager.Repository")}
                         </Label>
                         <Input
                             id="frontend-repository"
+                            aria-labelledby="frontend-repository-label"
                             type="url"
                             required
                             placeholder="https://github.com/owner/frontend"

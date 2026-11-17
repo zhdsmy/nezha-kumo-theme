@@ -1,29 +1,50 @@
-import { cn } from "@/lib/utils"
+import { Badge as KumoBadge, type BadgeVariant as KumoBadgeVariant } from "@cloudflare/kumo"
 import { type VariantProps, cva } from "class-variance-authority"
 import { HTMLAttributes } from "react"
 
 const badgeVariants = cva(
-    "inline-flex items-center whitespace-nowrap rounded-full border px-2 py-0.5 text-xs leading-4 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+    "inline-flex w-fit flex-none shrink-0 items-center justify-self-start gap-1 rounded-full px-2 py-0.5 text-xs/4 font-medium whitespace-nowrap",
     {
-        variants: {
-            variant: {
-                default: "border-border bg-card text-foreground",
-                secondary: "border-border bg-muted text-secondary-foreground",
-                destructive: "border-kumo-danger/20 bg-kumo-danger-tint text-kumo-danger",
-                outline: "text-foreground",
-            },
-        },
-        defaultVariants: {
-            variant: "default",
+    variants: {
+        variant: {
+            default: "bg-kumo-badge-inverted text-kumo-badge-inverted",
+            secondary: "bg-kumo-fill text-kumo-badge-neutral-subtle",
+            destructive: "bg-kumo-danger-tint text-kumo-danger",
+            outline: "border border-kumo-fill bg-kumo-base text-kumo-default",
         },
     },
-)
+    defaultVariants: {
+        variant: "default",
+    },
+})
+
+type AdminBadgeVariant = NonNullable<VariantProps<typeof badgeVariants>["variant"]>
+
+const KUMO_VARIANT_MAP: Record<AdminBadgeVariant, KumoBadgeVariant> = {
+    default: "primary",
+    secondary: "secondary",
+    destructive: "error",
+    outline: "outline",
+}
 
 export interface BadgeProps
-    extends HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {}
+    extends HTMLAttributes<HTMLSpanElement>, VariantProps<typeof badgeVariants> {}
 
-function Badge({ className, variant, ...props }: BadgeProps) {
-    return <div className={cn(badgeVariants({ variant }), className)} {...props} />
+function Badge({ className, variant, children, ...props }: BadgeProps) {
+    const kumoVariant = KUMO_VARIANT_MAP[variant ?? "default"]
+    const badge = (
+        <KumoBadge variant={kumoVariant} className={className}>
+            {children}
+        </KumoBadge>
+    )
+    if (Object.keys(props).length === 0) {
+        return badge
+    }
+    return (
+        <span className="inline-flex" {...props}>
+            {badge}
+        </span>
+    )
 }
 
 export { Badge, badgeVariants }

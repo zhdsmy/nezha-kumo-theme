@@ -412,29 +412,34 @@ export default function SettingsPage() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>{t("WebRealIPHeader")}</FormLabel>
-                                    <FormControl>
-                                        <div className="flex items-center">
+                                    <div className="flex items-center">
+                                        <FormControl>
                                             <Input
                                                 disabled={field.value == "NZ::Use-Peer-IP"}
                                                 className="w-1/2"
                                                 placeholder="CF-Connecting-IP"
                                                 {...field}
                                             />
-                                            <Checkbox
-                                                checked={field.value == "NZ::Use-Peer-IP"}
-                                                className="ml-2"
-                                                onCheckedChange={(checked) => {
-                                                    form.setValue(
-                                                        "web_real_ip_header",
-                                                        checked ? "NZ::Use-Peer-IP" : "",
-                                                    )
-                                                }}
-                                            />
-                                            <FormLabel className="font-normal ml-2">
-                                                {t("UseDirectConnectingIP")}
-                                            </FormLabel>
-                                        </div>
-                                    </FormControl>
+                                        </FormControl>
+                                        <Checkbox
+                                            id="web_real_ip_header_direct"
+                                            checked={field.value == "NZ::Use-Peer-IP"}
+                                            className="ml-2"
+                                            onCheckedChange={(checked) => {
+                                                form.setValue(
+                                                    "web_real_ip_header",
+                                                    checked ? "NZ::Use-Peer-IP" : "",
+                                                )
+                                            }}
+                                        />
+                                        <Label
+                                            id="web_real_ip_header_direct-label"
+                                            htmlFor="web_real_ip_header_direct"
+                                            className="font-normal ml-2"
+                                        >
+                                            {t("UseDirectConnectingIP")}
+                                        </Label>
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -445,29 +450,34 @@ export default function SettingsPage() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>{t("AgentRealIPHeader")}</FormLabel>
-                                    <FormControl>
-                                        <div className="flex items-center">
+                                    <div className="flex items-center">
+                                        <FormControl>
                                             <Input
                                                 disabled={field.value == "NZ::Use-Peer-IP"}
                                                 className="w-1/2"
                                                 placeholder="CF-Connecting-IP"
                                                 {...field}
                                             />
-                                            <Checkbox
-                                                checked={field.value == "NZ::Use-Peer-IP"}
-                                                className="ml-2"
-                                                onCheckedChange={(checked) => {
-                                                    form.setValue(
-                                                        "agent_real_ip_header",
-                                                        checked ? "NZ::Use-Peer-IP" : "",
-                                                    )
-                                                }}
-                                            />
-                                            <FormLabel className="font-normal ml-2">
-                                                {t("UseDirectConnectingIP")}
-                                            </FormLabel>
-                                        </div>
-                                    </FormControl>
+                                        </FormControl>
+                                        <Checkbox
+                                            id="agent_real_ip_header_direct"
+                                            checked={field.value == "NZ::Use-Peer-IP"}
+                                            className="ml-2"
+                                            onCheckedChange={(checked) => {
+                                                form.setValue(
+                                                    "agent_real_ip_header",
+                                                    checked ? "NZ::Use-Peer-IP" : "",
+                                                )
+                                            }}
+                                        />
+                                        <Label
+                                            id="agent_real_ip_header_direct-label"
+                                            htmlFor="agent_real_ip_header_direct"
+                                            className="font-normal ml-2"
+                                        >
+                                            {t("UseDirectConnectingIP")}
+                                        </Label>
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )}
