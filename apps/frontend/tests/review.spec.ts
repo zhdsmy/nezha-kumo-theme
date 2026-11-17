@@ -334,7 +334,7 @@ test("cold home requests one profile and exactly five series per node with at mo
     await expect(page.getByText("Public server information")).toBeVisible()
     const loaded = finished
     await page.getByRole("tab", { name: "Reporting history", exact: true }).click()
-    await expect(page.getByText(/hours reported/)).toBeVisible()
+    await expect(page.getByText(/\d+(?:\.\d+)?% · \d+\/\d+ hours?/)).toBeVisible()
     await page.getByRole("tab", { name: "Overview", exact: true }).click()
     await expect(page.getByText("Public server information")).toBeVisible()
     await page.waitForTimeout(100)

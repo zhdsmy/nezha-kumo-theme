@@ -514,8 +514,10 @@ export function Loading({ variant = "home" }: { variant?: LoadingVariant } = {})
             )}
             {variant === "history" && (
                 <div className="chart-card" aria-hidden="true">
-                    <div className="flex items-center justify-between" style={{ height: 21 }}>
-                        <SkeletonLine minWidth={25} maxWidth={40} className="h-3.5" />
+                    <div className="chart-heading">
+                        <div className="flex flex-1 items-center" style={{ height: 21 }}>
+                            <SkeletonLine minWidth={25} maxWidth={40} className="h-3.5" />
+                        </div>
                         <SkeletonLine minWidth={20} maxWidth={30} />
                     </div>
                     <div className="hour-grid-rows">

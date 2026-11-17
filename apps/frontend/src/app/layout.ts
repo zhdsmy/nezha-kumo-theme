@@ -33,7 +33,7 @@ ${FT} td,${FT} th { vertical-align:middle; overflow-wrap:anywhere; }
   .metric-tile { min-height:146px; }
   .tile-value { font-size:24px; line-height:30px; }
   .tile-heading { padding:12px 16px 0; }
-  .hour-grid-rows { margin-top:12px; gap:3px; }
+  .hour-grid-rows { gap:3px; }
   .hour-grid-cell { height:10px; }
   .section-heading[data-search-open="true"] .sort-button { display:inline-flex; }
   ${FT} thead { display:table-header-group; }

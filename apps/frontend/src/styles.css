@@ -581,8 +581,7 @@
     gap: 8px;
     margin-bottom: 24px;
 }
-.chart-toolbar > button,
-.section-heading > button {
+.chart-toolbar > button {
     width: 32px;
     height: 32px;
     min-width: 32px;
@@ -891,7 +890,6 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-    margin-top: 8px;
 }
 .hour-grid-cell {
     height: 8px;

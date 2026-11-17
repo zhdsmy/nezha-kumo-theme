@@ -236,28 +236,42 @@ export default function NodePage({ id, section }: { id: string; section: Section
             }
         >
             <section aria-label={t(`ui.${section}`)}>
-                {(section === "load" || section === "latency") && (
+                {section !== "overview" && (
                     <div className="chart-toolbar">
-                        <div className="min-w-0" aria-label={t("money.period")}>
-                            <Tabs
-                                variant="segmented"
-                                size="sm"
-                                activateOnFocus
-                                className="w-fit max-w-full"
-                                labels={tabLabels}
-                                value={String(activeRange)}
-                                onValueChange={(v) => setRange(Number(v))}
-                                tabs={ranges.map((h) => ({
-                                    value: String(h),
-                                    label: labelRange(h),
-                                }))}
-                            />
-                        </div>
+                        {section === "history" ? (
+                            <span className="muted num text-sm">
+                                {reportHours > 24
+                                    ? t("node.recentDays", { count: reportHours / 24 })
+                                    : t("node.recentHours", { count: reportHours })}
+                            </span>
+                        ) : (
+                            <div className="min-w-0" aria-label={t("money.period")}>
+                                <Tabs
+                                    variant="segmented"
+                                    size="sm"
+                                    activateOnFocus
+                                    className="w-fit max-w-full"
+                                    labels={tabLabels}
+                                    value={String(activeRange)}
+                                    onValueChange={(v) => setRange(Number(v))}
+                                    tabs={ranges.map((h) => ({
+                                        value: String(h),
+                                        label: labelRange(h),
+                                    }))}
+                                />
+                            </div>
+                        )}
                         <RefreshButton
                             size="sm"
                             aria-label={t("node.refresh")}
                             title={t("node.refresh")}
-                            loading={section === "load" ? loadPending : pingPending}
+                            loading={
+                                section === "load"
+                                    ? loadPending
+                                    : section === "latency"
+                                      ? pingPending
+                                      : reportPending
+                            }
                             onClick={triggerRefresh}
                         />
                     </div>
@@ -573,16 +587,6 @@ export default function NodePage({ id, section }: { id: string; section: Section
                 )}
                 {section === "history" && (
                     <>
-                        <div className="section-heading">
-                            <h2>{t("ui.history")}</h2>
-                            <RefreshButton
-                                size="sm"
-                                aria-label={t("node.refresh")}
-                                title={t("node.refresh")}
-                                loading={reportPending}
-                                onClick={triggerRefresh}
-                            />
-                        </div>
                         {!recordHours ? (
                             <NoData title={t("node.liveOnly")} />
                         ) : reportError === reportKey ? (
@@ -591,17 +595,19 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                 onRetry={triggerRefresh}
                             />
                         ) : reports !== null && reports.length > 0 ? (
-                            <div className="chart-card transition-opacity">
+                            <div
+                                className={
+                                    reportPending
+                                        ? "opacity-50 transition-opacity"
+                                        : "transition-opacity"
+                                }
+                                aria-busy={reportPending || undefined}
+                            >
                                 <HourGrid points={reports} days={reportHours / 24} />
-                                <p className="muted mt-4 text-xs">{t("ui.historyHint")}</p>
                             </div>
                         ) : staleReports ? (
-                            <div
-                                className="chart-card opacity-50 transition-opacity"
-                                aria-busy="true"
-                            >
+                            <div className="opacity-50 transition-opacity" aria-busy="true">
                                 <HourGrid points={staleReports} days={reportHours / 24} />
-                                <p className="muted mt-4 text-xs">{t("ui.historyHint")}</p>
                             </div>
                         ) : reports === null ? (
                             <Loading variant="history" />

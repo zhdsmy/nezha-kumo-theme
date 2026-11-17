@@ -128,22 +128,22 @@ function NodeLoadingShell({
                 <Loading variant="node" />
             ) : (
                 <>
-                    {(section === "load" || section === "latency") && (
-                        <div className="chart-toolbar" aria-hidden="true">
+                    <div className="chart-toolbar" aria-hidden="true">
+                        {section === "history" ? (
+                            <div className="flex items-center" style={{ height: 20 }}>
+                                <SkeletonLine
+                                    minWidth={100}
+                                    maxWidth={100}
+                                    className="h-3.5 w-20"
+                                />
+                            </div>
+                        ) : (
                             <div className="flex h-6.5 w-64 max-w-full items-center rounded-lg bg-kumo-recessed px-2">
                                 <SkeletonLine minWidth={100} maxWidth={100} />
                             </div>
-                            <div className="h-6.5 w-6.5 rounded-md border border-kumo-line bg-kumo-control" />
-                        </div>
-                    )}
-                    {section === "history" && (
-                        <div className="section-heading" aria-hidden="true">
-                            <div className="flex items-center" style={{ height: 24 }}>
-                                <SkeletonLine minWidth={100} maxWidth={100} className="h-4 w-20" />
-                            </div>
-                            <div className="h-6.5 w-6.5 rounded-md" />
-                        </div>
-                    )}
+                        )}
+                        <div className="h-6.5 w-6.5 rounded-md border border-kumo-line bg-kumo-control" />
+                    </div>
                     <Loading
                         variant={
                             section === "load"

@@ -121,7 +121,7 @@ test("node tabs hash navigation, overview responsive panels, #billing link and l
 
     await page.getByRole("tab", { name: "Reporting history", exact: true }).click()
     await expect(page).toHaveURL(/\/server\/6#history$/)
-    await expect(page.getByText(/hours reported/)).toBeVisible()
+    await expect(page.getByText(/\d+(?:\.\d+)?% · \d+\/\d+ hours?/)).toBeVisible()
 
     await page.getByRole("tab", { name: "Overview", exact: true }).click()
     await expect(page).toHaveURL(/\/server\/6#overview$/)
@@ -408,7 +408,7 @@ test("768–879 persistent sidebar defaults expanded at 867, collapses to 57px, 
             await expectZeroOverflow(`node latency ${width} ${state}`)
 
             await page.getByRole("tab", { name: "Reporting history", exact: true }).click()
-            await expect(page.getByText(/hours reported/)).toBeVisible()
+            await expect(page.getByText(/\d+(?:\.\d+)?% · \d+\/\d+ hours?/)).toBeVisible()
             await expectZeroOverflow(`node history ${width} ${state}`)
         }
     }
