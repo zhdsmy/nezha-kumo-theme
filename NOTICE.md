@@ -1,8 +1,22 @@
 # Third-party notices
 
-- **Kumo** (`@cloudflare/kumo`), MIT License, Copyright (c) 2026 Cloudflare, Inc. Used as a dependency for components and design tokens.
-- **apps/admin** starts from [nezhahq/admin-frontend](https://github.com/nezhahq/admin-frontend) through the fork [zhdsmy/nezha-admin-frontend](https://github.com/zhdsmy/nezha-admin-frontend) at commit 8496d82 (v2.6.1-zool.4). Upstream license: WTFPL, kept in `apps/admin/LICENSE.upstream-WTFPL`.
-- **apps/frontend** reuses the Nezha data layer of [zool-theme](https://github.com/foru17/zool-theme) (MIT, Copyright (c) luoleiorg) through the fork [zhdsmy/zool-theme](https://github.com/zhdsmy/zool-theme). Copied files keep a header that names their source.
-- **flag-icons** ([lipis/flag-icons](https://github.com/lipis/flag-icons) v7.3.2, commit `fe15c16`), MIT License, Copyright (c) 2013 Panayiotis Lipiridis. 4:3 SVG region flags in `apps/frontend/public/flags/` (license kept in `apps/frontend/public/flags/LICENSE.txt`).
+## Libraries & Fonts
+
+- **Kumo** (`@cloudflare/kumo`), MIT License, Copyright (c) 2026 Cloudflare, Inc. Used as a dependency for UI components and design tokens.
+- **Inter** (`@fontsource-variable/inter`, packaged by [Fontsource](https://github.com/fontsource/fontsource) from [rsms/inter](https://github.com/rsms/inter)), SIL Open Font License 1.1 (`OFL-1.1`), Copyright (c) 2016 The Inter Project Authors, with Reserved Font Name "Inter".
+
+## Upstream Codebases
+
+- **apps/admin** starts from [nezhahq/admin-frontend](https://github.com/nezhahq/admin-frontend) through the fork [zhdsmy/nezha-admin-frontend](https://github.com/zhdsmy/nezha-admin-frontend) at commit `8496d82` (`v2.6.1-zool.4`). Upstream license: WTFPL, kept in [`apps/admin/LICENSE.upstream-WTFPL`](apps/admin/LICENSE.upstream-WTFPL).
+- **apps/frontend** reuses the Nezha data layer of [zool-theme](https://github.com/foru17/zool-theme) (MIT, Copyright (c) luoleiorg) through the fork [zhdsmy/zool-theme](https://github.com/zhdsmy/zool-theme). Copied and adapted files keep a header comment naming their source.
+
+## Public Assets (`public/`)
+
+- **`apps/frontend/public/flags/*.svg`** (4:3 SVG region flags): from [lipis/flag-icons](https://github.com/lipis/flag-icons) v7.3.2 (commit `fe15c16`), MIT License, Copyright (c) 2013 Panayiotis Lipiridis (license kept in [`apps/frontend/public/flags/LICENSE.txt`](apps/frontend/public/flags/LICENSE.txt)).
+- **`apps/frontend/public/assets/apple-touch-icon.svg`**, **`apps/frontend/public/assets/apple-touch-icon.png`**, and **`apps/frontend/public/assets/apple-touch-icon-512.png`**: original Nezha "N" badge vector and rasterized PNG icons authored by `zhdsmy` for this project, licensed under the repository [MIT License](LICENSE).
+- **`apps/admin/public/logo.svg`**: imported from [nezhahq/admin-frontend](https://github.com/nezhahq/admin-frontend) (`public/logo.svg`, commit `017e6cf`), distributed under upstream WTFPL ([`apps/admin/LICENSE.upstream-WTFPL`](apps/admin/LICENSE.upstream-WTFPL)).
+- **`apps/admin/public/animated-man.webp`**: imported from [nezhahq/admin-frontend](https://github.com/nezhahq/admin-frontend) (`public/animated-man.webp`, commit `0314765`), which distributes repository contents under WTFPL ([`apps/admin/LICENSE.upstream-WTFPL`](apps/admin/LICENSE.upstream-WTFPL)). Upstream does not record the original illustration source prior to that import; the file is unreferenced by the reskinned admin UI.
+
+## Trademark Disclaimer
 
 This project is not affiliated with or endorsed by Cloudflare, Inc. "Cloudflare" and the Cloudflare logo are trademarks of Cloudflare, Inc. and are not used in this theme.
