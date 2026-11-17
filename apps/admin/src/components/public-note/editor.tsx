@@ -275,19 +275,25 @@ export function PublicNoteEditor({
                                 plan,
                                 "networkRoute",
                                 t("PublicNote.NetworkRoute"),
-                                (value, onChange) => (
+                                (_, onChange) => (
                                     <TagInput
                                         label={t("PublicNote.NetworkRoute")}
-                                        value={value}
+                                        value={
+                                            isNoteObject(object[plan])
+                                                ? object[plan].networkRoute
+                                                : undefined
+                                        }
                                         onChange={onChange}
                                         suggestions={routes}
                                     />
                                 ),
                             )}
-                            {field(plan, "extra", t("PublicNote.Extra"), (value, onChange) => (
+                            {field(plan, "extra", t("PublicNote.Extra"), (_, onChange) => (
                                 <TagInput
                                     label={t("PublicNote.Extra")}
-                                    value={value}
+                                    value={
+                                        isNoteObject(object[plan]) ? object[plan].extra : undefined
+                                    }
                                     onChange={onChange}
                                 />
                             ))}

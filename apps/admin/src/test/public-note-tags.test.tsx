@@ -37,3 +37,21 @@ test("tags support Enter, commas, paste, dedupe and whole-tag deletion", () => {
     fireEvent.click(screen.getByRole("button", { name: "删除 CN2" }))
     expect(change).toHaveBeenLastCalledWith("4837[联通],CMI")
 })
+
+test("paste replaces the selection and splits newlines", () => {
+    const change = vi.fn()
+    render(<TagInput label="路由" onChange={change} />)
+    const input = screen.getByRole("textbox", { name: "路由" }) as HTMLInputElement
+    fireEvent.change(input, { target: { value: "preTARGETpost" } })
+    input.setSelectionRange(3, 9)
+    fireEvent.paste(input, { clipboardData: { getData: () => "A\r\nB" } })
+    expect(change).toHaveBeenLastCalledWith("preA,Bpost")
+})
+test("non-string tags remain unknown and unchanged until replacement", () => {
+    const change = vi.fn()
+    render(<TagInput label="备注" value={["a", "b"]} onChange={change} />)
+    expect(screen.getByText('["a","b"]')).toBeTruthy()
+    expect(screen.getByText(i18n.t("PublicNote.Unrecognized"))).toBeTruthy()
+    fireEvent.blur(screen.getByRole("textbox", { name: "备注" }))
+    expect(change).not.toHaveBeenCalled()
+})

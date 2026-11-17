@@ -109,3 +109,13 @@ test.each(["clear", "replace"])("edits the amount-suffix cycle at its source: %s
     expect(saved.billingDataMod.cycle).toBe(action === "clear" ? undefined : "Week")
     expect(saved.unknown).toBe(100)
 })
+
+test("array extras are shown as unknown and survive edits to other fields", () => {
+    const change = vi.fn()
+    const value = '{"planDataMod":{"extra":["a","b"],"networkRoute":["CN2"]}}'
+    render(<PublicNoteEditor value={value} onChange={change} />)
+    expect(screen.getByText('["a","b"]')).toBeTruthy()
+    expect(screen.getByText('["CN2"]')).toBeTruthy()
+    fireEvent.click(screen.getByRole("switch", { name: "自动续费" }))
+    expect(change.mock.calls[0][0]).toContain('"extra":["a","b"],"networkRoute":["CN2"]')
+})

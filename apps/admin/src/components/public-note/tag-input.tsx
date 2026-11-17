@@ -5,28 +5,30 @@ import { useId, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { splitTags } from "../../../../../packages/shared/public-note"
-import { type NoteControlProps } from "./cycle-picker"
+import { type NoteControlProps, UnknownValue } from "./cycle-picker"
 
 export function TagInput({
     value = "",
     onChange,
     label,
     suggestions = [],
-}: NoteControlProps & { suggestions?: string[] }) {
+}: Omit<NoteControlProps, "value"> & { value?: unknown; suggestions?: string[] }) {
     const { t } = useTranslation()
     const listId = useId()
     const [draft, setDraft] = useState("")
-    const tags = splitTags(value)
+    const unknown = typeof value !== "string"
+    const tags = unknown ? [] : splitTags(value)
     const save = (next: string[]) => onChange(next.length ? next.join(",") : undefined)
     const add = (text: string) => {
         const next = [...tags]
-        for (const tag of splitTags(text.replace(/[;、]/g, ",")))
+        for (const tag of splitTags(text.replace(/[;、\r\n]/g, ",")))
             if (!next.some((item) => item.toLowerCase() === tag.toLowerCase())) next.push(tag)
         if (next.join(",") !== tags.join(",")) save(next)
         setDraft("")
     }
     return (
         <div className="space-y-1">
+            {unknown && <UnknownValue value={JSON.stringify(value)} />}
             <div
                 className="flex flex-wrap items-center gap-1 rounded-md border p-2"
                 role="group"
@@ -43,7 +45,7 @@ export function TagInput({
                             variant="ghost"
                             className="h-11 w-11 shrink-0 rounded-full p-0"
                             aria-label={t("PublicNote.RemoveTag", { tag })}
-                            onClick={() => save(tags.filter((item) => item !== tag))}
+                            onClick={() => save(tags.filter((_, current) => current !== index))}
                         >
                             <X className="size-3" aria-hidden="true" />
                         </Button>
@@ -73,7 +75,12 @@ export function TagInput({
                     }}
                     onPaste={(event) => {
                         event.preventDefault()
-                        add(draft + event.clipboardData.getData("text"))
+                        const input = event.currentTarget
+                        add(
+                            draft.slice(0, input.selectionStart ?? draft.length) +
+                                event.clipboardData.getData("text") +
+                                draft.slice(input.selectionEnd ?? draft.length),
+                        )
                     }}
                     onBlur={() => {
                         if (draft.trim()) add(draft)
