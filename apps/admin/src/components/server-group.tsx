@@ -30,7 +30,7 @@ import { errorMessage } from "@/lib/utils"
 import { ModelServerGroupResponseItem } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { AlertCircle, Folder, ImageOff } from "lucide-react"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
@@ -57,11 +57,9 @@ export const ServerGroupCard: React.FC<ServerGroupCardProps> = ({ data, mutate }
             z.object({
                 name: z.string().min(1),
                 servers: z.array(z.number()),
-                icon: z
-                    .string()
-                    .refine((val) => !val.trim() || classifyGroupIcon(val) !== null, {
-                        message: t("GroupIconInvalid"),
-                    }),
+                icon: z.string().refine((val) => !val.trim() || classifyGroupIcon(val) !== null, {
+                    message: t("GroupIconInvalid"),
+                }),
             }),
         [t],
     )
@@ -80,6 +78,7 @@ export const ServerGroupCard: React.FC<ServerGroupCardProps> = ({ data, mutate }
         },
     })
 
+    const savedGroup = useRef<{ id: number; payload: string } | null>(null)
     const [open, setOpen] = useState(false)
     const [failedUrl, setFailedUrl] = useState<string | null>(null)
 
@@ -91,6 +90,7 @@ export const ServerGroupCard: React.FC<ServerGroupCardProps> = ({ data, mutate }
 
     const handleOpenChange = (nextOpen: boolean) => {
         if (nextOpen) {
+            savedGroup.current = null
             setFailedUrl(null)
             form.reset({
                 name: data?.group.name ?? "",
@@ -104,13 +104,18 @@ export const ServerGroupCard: React.FC<ServerGroupCardProps> = ({ data, mutate }
     const { submitting, runSubmit } = useSubmitLock()
 
     const onSubmit = runSubmit(async (values: FormValues) => {
-        let groupId = data?.group.id
+        let groupId = savedGroup.current?.id ?? data?.group.id
         try {
             const payload = { name: values.name, servers: values.servers }
-            if (groupId) {
-                await updateServerGroup(groupId, payload)
-            } else {
-                groupId = await createServerGroup(payload)
+            const serialized = JSON.stringify(payload)
+            if (savedGroup.current?.payload !== serialized) {
+                if (groupId) {
+                    await updateServerGroup(groupId, payload)
+                } else {
+                    groupId = await createServerGroup(payload)
+                }
+                // Keep the successful write while the separate icon save is retried.
+                savedGroup.current = { id: groupId, payload: serialized }
             }
         } catch (e) {
             console.error(e)
@@ -175,7 +180,10 @@ export const ServerGroupCard: React.FC<ServerGroupCardProps> = ({ data, mutate }
                                         <FormItem>
                                             <FormLabel>{t("Name")}</FormLabel>
                                             <FormControl>
-                                                <Input placeholder={t("Placeholders.GroupName")} {...field} />
+                                                <Input
+                                                    placeholder={t("Placeholders.GroupName")}
+                                                    {...field}
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -217,7 +225,9 @@ export const ServerGroupCard: React.FC<ServerGroupCardProps> = ({ data, mutate }
                                                             referrerPolicy="no-referrer"
                                                             className="h-5 w-5 rounded object-contain"
                                                             onLoad={() => {
-                                                                if (failedUrl === parsedIcon.value) {
+                                                                if (
+                                                                    failedUrl === parsedIcon.value
+                                                                ) {
                                                                     setFailedUrl(null)
                                                                 }
                                                             }}

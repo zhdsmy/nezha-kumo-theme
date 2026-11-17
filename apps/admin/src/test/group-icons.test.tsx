@@ -13,7 +13,14 @@ import {
     updateGroupIconsInCustomCode,
 } from "../../../../packages/shared/group-icons"
 
-vi.mock("sonner", () => ({ toast: Object.assign(vi.fn(), { error: vi.fn(), success: vi.fn(), warning: vi.fn(), info: vi.fn() }) }))
+vi.mock("sonner", () => ({
+    toast: Object.assign(vi.fn(), {
+        error: vi.fn(),
+        success: vi.fn(),
+        warning: vi.fn(),
+        info: vi.fn(),
+    }),
+}))
 vi.mock("@/hooks/useServer", () => ({
     useServer: () => ({
         servers: [
@@ -349,7 +356,9 @@ describe("admin group-icons save, preview, delete, and i18n", () => {
         const block = serializeGroupIconsBlock({ "1": "https://example.com/a.svg?x=</script>" })
         expect(block).toContain("<\\/script>")
         expect(
-            parseGroupIcons(updateGroupIconsInCustomCode("", { "1": "https://example.com/a.svg?x=</script>" })),
+            parseGroupIcons(
+                updateGroupIconsInCustomCode("", { "1": "https://example.com/a.svg?x=</script>" }),
+            ),
         ).toEqual({ "1": "https://example.com/a.svg?x=</script>" })
 
         for (const lng of ["zh-CN", "zh-TW", "en-US", "ja-JP", "fr-FR"]) {
@@ -368,3 +377,57 @@ describe("admin group-icons save, preview, delete, and i18n", () => {
         }
     })
 })
+
+test.each([false, true])(
+    "ADM-04: retries the failed icon save without duplicating the group (edit=%s)",
+    async (edit) => {
+        const request = vi.mocked(fetch).getMockImplementation()!
+        let deny = true
+        vi.mocked(fetch).mockImplementation(async (input, init) => {
+            if (deny && init?.method === "PATCH" && String(input).endsWith("/api/v1/setting")) {
+                deny = false
+                return new Response(JSON.stringify({ success: false, error: "icon denied" }))
+            }
+            return request(input, init)
+        })
+        renderFresh(<ServerGroupCard mutate={vi.fn().mockResolvedValue(undefined)} />)
+        fireEvent.click(screen.getByRole("button"))
+        const dialog = await screen.findByRole("dialog")
+        fireEvent.change(within(dialog).getByPlaceholderText("Group Name"), {
+            target: { value: "Retry group" },
+        })
+        fireEvent.change(within(dialog).getByLabelText("Icon"), { target: { value: "☁" } })
+        await act(async () => {
+            fireEvent.click(within(dialog).getByRole("button", { name: "Confirm" }))
+        })
+        expect(currentGroups.filter((item) => item.group.name === "Retry group")).toHaveLength(1)
+        if (edit)
+            fireEvent.change(within(dialog).getByPlaceholderText("Group Name"), {
+                target: { value: "Updated group" },
+            })
+        await act(async () => {
+            fireEvent.click(within(dialog).getByRole("button", { name: "Confirm" }))
+        })
+        await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
+        expect(
+            calls.filter((call) => call.method === "POST" && call.url.endsWith("/server-group")),
+        ).toHaveLength(1)
+        expect(
+            calls.filter(
+                (call) => call.method === "PATCH" && call.url.endsWith("/server-group/42"),
+            ),
+        ).toHaveLength(edit ? 1 : 0)
+        expect(parseGroupIcons(currentSetting.config.custom_code)["42"]).toBe("☁")
+        // A new dialog starts a new creation, rather than reusing the finished ID.
+        fireEvent.click(screen.getByRole("button"))
+        fireEvent.change(screen.getByPlaceholderText("Group Name"), {
+            target: { value: "Another group" },
+        })
+        await act(async () => {
+            fireEvent.click(screen.getByRole("button", { name: "Confirm" }))
+        })
+        expect(
+            calls.filter((call) => call.method === "POST" && call.url.endsWith("/server-group")),
+        ).toHaveLength(2)
+    },
+)
