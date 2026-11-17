@@ -5,6 +5,7 @@ import {
     patchPublicNote,
 } from "@/lib/public-note"
 import { Button, KumoPortalProvider, Switch, Textarea } from "@cloudflare/kumo"
+import { X } from "lucide-react"
 import { type ReactNode, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -53,22 +54,25 @@ export function PublicNoteEditor({
     ) => {
         const current = get(section, key)
         return (
-            <div className="min-w-0 space-y-2" data-note-field={key}>
-                <div className="flex min-h-9 items-center justify-between gap-2">
+            <div className="nkt-note-field" data-note-field={key}>
+                <div className="nkt-note-label">
                     <span className="text-sm font-medium">{label}</span>
                     {(current !== undefined || (key === "cycle" && cycle !== undefined)) && (
                         <Button
                             type="button"
                             variant="ghost"
-                            size="sm"
+                            className="nkt-note-clear"
+                            shape="square"
                             aria-label={`${t("PublicNote.Clear")} · ${label}`}
                             onClick={() => patch(section, key, undefined)}
                         >
-                            {t("PublicNote.Clear")}
+                            <X className="size-4" aria-hidden="true" />
                         </Button>
                     )}
                 </div>
-                {control(current, (next) => patch(section, key, next))}
+                <div className="nkt-note-control">
+                    {control(current, (next) => patch(section, key, next))}
+                </div>
             </div>
         )
     }
@@ -81,21 +85,21 @@ export function PublicNoteEditor({
             : undefined)
     const section = (key: string, title: string, children: ReactNode) => (
         <fieldset
-            className="min-w-0 rounded-lg border p-3"
+            className="min-w-0 rounded-lg border p-2"
             disabled={!isNoteObject(parsed) || (key in object && !isNoteObject(object[key]))}
         >
             <legend className="px-1 text-sm font-semibold">{title}</legend>
             {key in object && !isNoteObject(object[key]) ? (
                 <UnknownValue value={JSON.stringify(object[key])} />
             ) : (
-                <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">{children}</div>
+                <div className="nkt-note-grid">{children}</div>
             )}
         </fieldset>
     )
     return (
         <section
             ref={portal}
-            className="space-y-4 nkt-note-editor"
+            className="space-y-2 nkt-note-editor"
             aria-label={t("PublicNote.Label")}
             data-public-note-editor
         >
@@ -248,51 +252,58 @@ export function PublicNoteEditor({
                                         />
                                     ),
                                 )}
-                                {field(
-                                    plan,
-                                    "trafficType",
-                                    t("PublicNote.TrafficType"),
-                                    (value, onChange) => (
-                                        <>
-                                            <Choices
-                                                label={t("PublicNote.TrafficType")}
-                                                value={value}
-                                                options={TRAFFIC_TYPES.map(
-                                                    ({ value, mode }) =>
-                                                        [
-                                                            value,
-                                                            t(`PublicNote.TrafficModes.${mode}`),
-                                                        ] as const,
-                                                )}
-                                                onChange={onChange}
-                                            />
-                                            {value !== undefined && !/^[123]$/.test(value) && (
-                                                <UnknownValue value={value} />
-                                            )}
-                                        </>
-                                    ),
-                                )}
-                                {(["IPv4", "IPv6"] as const).map((key) => (
-                                    <div key={key}>
-                                        {field(plan, key, key, (value, onChange) => (
+                                <div className="nkt-note-flags">
+                                    {field(
+                                        plan,
+                                        "trafficType",
+                                        t("PublicNote.TrafficType"),
+                                        (value, onChange) => (
                                             <>
                                                 <Choices
-                                                    label={key}
+                                                    label={t("PublicNote.TrafficType")}
                                                     value={value}
-                                                    options={[
-                                                        ["", t("PublicNote.Unset")],
-                                                        ["1", t("PublicNote.Has")],
-                                                        ["0", t("PublicNote.None")],
-                                                    ]}
-                                                    onChange={(next) => onChange(next || undefined)}
+                                                    options={TRAFFIC_TYPES.map(
+                                                        ({ value, mode }) =>
+                                                            [
+                                                                value,
+                                                                t(
+                                                                    `PublicNote.TrafficModes.${mode}`,
+                                                                ),
+                                                            ] as const,
+                                                    )}
+                                                    onChange={onChange}
                                                 />
-                                                {value !== undefined && !/^[01]$/.test(value) && (
+                                                {value !== undefined && !/^[123]$/.test(value) && (
                                                     <UnknownValue value={value} />
                                                 )}
                                             </>
-                                        ))}
-                                    </div>
-                                ))}
+                                        ),
+                                    )}
+                                    {(["IPv4", "IPv6"] as const).map((key) => (
+                                        <div key={key} data-note-ip>
+                                            {field(plan, key, key, (value, onChange) => (
+                                                <>
+                                                    <Choices
+                                                        label={key}
+                                                        value={value}
+                                                        options={[
+                                                            ["", t("PublicNote.Unset")],
+                                                            ["1", t("PublicNote.Has")],
+                                                            ["0", t("PublicNote.None")],
+                                                        ]}
+                                                        onChange={(next) =>
+                                                            onChange(next || undefined)
+                                                        }
+                                                    />
+                                                    {value !== undefined &&
+                                                        !/^[01]$/.test(value) && (
+                                                            <UnknownValue value={value} />
+                                                        )}
+                                                </>
+                                            ))}
+                                        </div>
+                                    ))}
+                                </div>
                                 {field(
                                     plan,
                                     "networkRoute",

@@ -578,3 +578,98 @@ body,
     min-width: 0;
     max-width: 100%;
 }
+
+/* Note editors keep labels visible and put clear actions beside the first control. */
+.nkt-note-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 12px;
+}
+.nkt-note-grid > :not([data-note-ip]) {
+    grid-column: 1 / -1;
+}
+@media (min-width: 640px) {
+    .nkt-note-grid > :not([data-note-ip]) {
+        grid-column: auto;
+    }
+    .nkt-note-grid > :is([data-note-field="networkRoute"], [data-note-field="extra"]) {
+        grid-column: 1 / -1;
+    }
+}
+.nkt-note-field {
+    position: relative;
+    min-width: 0;
+}
+.nkt-note-label {
+    min-height: 20px;
+    margin-bottom: 4px;
+}
+.nkt-note-field:has(.nkt-note-clear) > .nkt-note-control {
+    padding-right: 36px;
+}
+.nkt-note-clear {
+    position: absolute;
+    top: 24px;
+    right: 0;
+    width: 36px;
+    height: 36px;
+}
+.nkt-note-editor :is(button, input, select),
+[data-note-calendar] :is(button, select) {
+    min-height: 36px;
+}
+.nkt-note-editor :is(input, textarea, select) {
+    font-size: 16px;
+}
+.nkt-note-editor [data-note-field="autoRenewal"] [role="switch"] {
+    margin-block: 0;
+}
+.nkt-note-editor [data-note-ip] .nkt-note-control {
+    padding-right: 0;
+}
+.nkt-note-editor [data-note-ip] .nkt-note-label {
+    min-height: 36px;
+}
+.nkt-note-editor [data-note-ip] .nkt-note-clear {
+    top: 0;
+}
+.nkt-note-editor [data-note-field] :is(input, [role="combobox"]) {
+    min-width: 0;
+    width: 100%;
+}
+.nkt-note-editor [data-note-field] input[list] {
+    min-width: 8rem;
+}
+.nkt-note-editor [data-note-field] span:has(> button[aria-label]) {
+    height: auto;
+    min-height: 36px;
+}
+.nkt-note-grid > :is([data-note-field="autoRenewal"], [data-note-field="cycle"]) {
+    grid-column: auto;
+}
+.nkt-note-grid > .nkt-note-flags {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 12px;
+}
+.nkt-note-flags > [data-note-field="trafficType"] {
+    grid-column: 1 / -1;
+}
+@media (min-width: 640px) {
+    .nkt-note-grid > .nkt-note-flags {
+        grid-template-columns: 1.4fr 1fr 1fr;
+    }
+    .nkt-note-flags > [data-note-field="trafficType"] {
+        grid-column: auto;
+    }
+    .nkt-note-flags > [data-note-field="trafficType"] .nkt-note-control {
+        padding-right: 0;
+    }
+    .nkt-note-flags > [data-note-field="trafficType"] .nkt-note-label {
+        min-height: 36px;
+    }
+    .nkt-note-flags > [data-note-field="trafficType"] .nkt-note-clear {
+        top: 0;
+    }
+}
