@@ -524,7 +524,7 @@ test.describe("AppShell scroll container invariants and behaviors", () => {
             expect(collapsedAfter.footer).toEqual(collapsedBefore.footer)
             await ctx.close()
 
-            // 4. Non-AppShell admin login page (/dashboard/login) at 375×400 scrolls via document
+            // 4. Admin login page (/dashboard/login) at 375×400 scrolls inside .nk-main, never the document
             const loginCtx = await browser.newContext({
                 viewport: { width: 375, height: 400 },
                 reducedMotion: "reduce",
@@ -534,21 +534,25 @@ test.describe("AppShell scroll container invariants and behaviors", () => {
             await loginPage.goto(adminBase + "/dashboard/login")
             const submitBtn = loginPage.locator('button[type="submit"]')
             await expect(submitBtn).toBeVisible()
-            await expect(loginPage.locator(".nk-shell")).toHaveCount(0)
             const loginScroll = await loginPage.evaluate(() => {
-                const max = document.documentElement.scrollHeight - window.innerHeight
-                window.scrollTo(0, max)
+                const main = document.querySelector<HTMLElement>(".nk-main")!
+                const max = main.scrollHeight - main.clientHeight
+                main.scrollTop = max
+                window.scrollTo(0, 9999)
                 const btnRect = document
                     .querySelector('button[type="submit"]')!
                     .getBoundingClientRect()
                 return {
                     max,
+                    mainScrollTop: main.scrollTop,
                     scrollY: window.scrollY,
-                    submitInView: btnRect.bottom <= window.innerHeight && btnRect.top >= -200,
+                    submitInView: btnRect.bottom <= window.innerHeight && btnRect.top >= 0,
                 }
             })
             expect(loginScroll.max).toBeGreaterThan(50)
-            expect(loginScroll.scrollY).toBeGreaterThan(50)
+            expect(loginScroll.mainScrollTop).toBeGreaterThan(50)
+            expect(loginScroll.scrollY).toBe(0)
+            expect(loginScroll.submitInView).toBe(true)
             await loginCtx.close()
         })
     }
