@@ -27,6 +27,8 @@ type ShellState = {
     mainScrollTop: number
     mainMaxScroll: number
     positions: { sidebar: string; topbar: string }
+    shell: RectSnap
+    main: RectSnap
     topbar: RectSnap
     sidebar: RectSnap | null
     footer: RectSnap | null
@@ -164,6 +166,8 @@ async function readShellState(page: Page, desktop: boolean): Promise<ShellState>
                 sidebar: getComputedStyle(sidebarEl).position,
                 topbar: getComputedStyle(topbarEl).position,
             },
+            shell: snap(".nk-shell")!,
+            main: snap(".nk-main")!,
             topbar: snap(".nk-topbar")!,
             sidebar: isDesktop ? snap('.nk-sidebar [data-sidebar="content-container"]') : null,
             footer: isDesktop ? snap(".nk-sidebar-footer") : null,
@@ -200,6 +204,12 @@ async function assertPinnedAcrossMainScroll(page: Page, width: number, label: st
         before.bodyScrollHeight,
         `${label}: body scrollHeight <= innerHeight`,
     ).toBeLessThanOrEqual(before.innerHeight)
+    expect(before.shell, `${label}: shell fills viewport`).toMatchObject({
+        top: 0,
+        bottom: before.innerHeight,
+        height: before.innerHeight,
+    })
+    expect(before.main.bottom, `${label}: main reaches viewport bottom`).toBe(before.innerHeight)
     expect(before.scrollY, `${label}: window.scrollY at top`).toBe(0)
     expect(before.positions.topbar, `${label}: topbar is ordinary flex item`).not.toMatch(
         /^(fixed|sticky)$/,
@@ -393,6 +403,7 @@ test.describe("AppShell scroll container invariants and behaviors", () => {
             const browser = engineName === "chromium" ? chromiumBrowser : webkitBrowser
             const feBase = baseURL!
 
+            const unfolded = new Map<string, ShellState>()
             // 1. Outer (375×667, dpr 3, touch) → open/close drawer → unfold to Inner (952×670) without reload
             for (const app of ["fe", "admin"] as const) {
                 const ctx = await browser.newContext({
@@ -412,6 +423,7 @@ test.describe("AppShell scroll container invariants and behaviors", () => {
                     await expect(p.locator("table tbody tr").first()).toBeVisible()
                 }
 
+                const outer = await readShellState(p, false)
                 const openBtn = p.locator(".nk-topbar button").first()
                 await expect(openBtn).toHaveAttribute("aria-expanded", "false")
                 await openBtn.click()
@@ -419,15 +431,26 @@ test.describe("AppShell scroll container invariants and behaviors", () => {
                 await p.keyboard.press("Escape")
                 await expect(openBtn).toHaveAttribute("aria-expanded", "false")
 
-                await setShellViewport(p, 952, 420)
+                await setShellViewport(p, 952, 670)
                 await assertPinnedAcrossMainScroll(p, 952, `${engineName} ${app} 375->952 unfolded`)
+                unfolded.set(app, await readShellState(p, true))
+                await setShellViewport(p, 375, 667)
+                await assertPinnedAcrossMainScroll(
+                    p,
+                    375,
+                    `${engineName} ${app} 375->952->375 folded`,
+                )
+                const folded = await readShellState(p, false)
+                expect(folded.shell).toEqual(outer.shell)
+                expect(folded.main).toEqual(outer.main)
+                expect(folded.topbar).toEqual(outer.topbar)
                 await ctx.close()
             }
 
             // 2. Reverse: Inner (952×670) → fold to Outer (375×667) → open/close drawer → scroll
             for (const app of ["fe", "admin"] as const) {
                 const ctx = await browser.newContext({
-                    viewport: { width: 952, height: 420 },
+                    viewport: { width: 952, height: 670 },
                     deviceScaleFactor: 2,
                     hasTouch: true,
                     reducedMotion: "reduce",
@@ -444,7 +467,11 @@ test.describe("AppShell scroll container invariants and behaviors", () => {
                 }
 
                 await assertPinnedAcrossMainScroll(p, 952, `${engineName} ${app} 952 initial`)
-                await setShellViewport(p, 375, 420)
+                const direct = await readShellState(p, true)
+                expect(direct.shell).toEqual(unfolded.get(app)!.shell)
+                expect(direct.main).toEqual(unfolded.get(app)!.main)
+                expect(direct.topbar).toEqual(unfolded.get(app)!.topbar)
+                await setShellViewport(p, 375, 667)
                 const openBtn = p.locator(".nk-topbar button").first()
                 await openBtn.click()
                 await expect(openBtn).toHaveAttribute("aria-expanded", "true")
