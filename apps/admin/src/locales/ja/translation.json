@@ -270,7 +270,10 @@
             "sum": "送受信合計",
             "out": "送信のみ",
             "max": "大きい方"
-        }
+        },
+        "RemoveTag": "{{tag}} を削除",
+        "TagsHint": "Enter またはカンマでタグを追加します。",
+        "InvalidJSONHint": "この備考は JSON として解析できません。内容を保つには元のテキストを編集してください。"
     },
     "Validation": {
         "InvalidDate": "無効な日付です",

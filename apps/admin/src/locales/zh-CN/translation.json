@@ -270,7 +270,10 @@
             "sum": "双向",
             "out": "仅出站",
             "max": "取较大"
-        }
+        },
+        "RemoveTag": "删除 {{tag}}",
+        "TagsHint": "按 Enter 或输入逗号添加标签。",
+        "InvalidJSONHint": "此备注无法解析为 JSON。请编辑原始文本以保留内容。"
     },
     "Validation": {
         "InvalidDate": "无效的日期格式",

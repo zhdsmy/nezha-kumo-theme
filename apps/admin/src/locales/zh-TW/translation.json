@@ -270,7 +270,10 @@
             "sum": "雙向",
             "out": "僅出站",
             "max": "取較大"
-        }
+        },
+        "RemoveTag": "刪除 {{tag}}",
+        "TagsHint": "按 Enter 或輸入逗號新增標籤。",
+        "InvalidJSONHint": "此備註無法解析為 JSON。請編輯原始文字以保留內容。"
     },
     "Validation": {
         "InvalidDate": "日期無效",

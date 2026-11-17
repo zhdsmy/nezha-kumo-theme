@@ -270,7 +270,10 @@
             "sum": "Both directions",
             "out": "Outbound only",
             "max": "Larger direction"
-        }
+        },
+        "RemoveTag": "Remove {{tag}}",
+        "TagsHint": "Press Enter or comma to add a tag.",
+        "InvalidJSONHint": "This note is not valid JSON. Edit the original text to keep its content."
     },
     "Validation": {
         "InvalidDate": "Invalid date",
