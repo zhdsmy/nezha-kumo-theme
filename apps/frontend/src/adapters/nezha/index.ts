@@ -187,7 +187,7 @@ export function parsePublicNote(note: string | undefined) {
             out.price =
                 amount.amount === -1
                     ? -2
-                    : amount.amount === 0 && !amount.currency
+                    : amount.amount === 0 && !amount.currency && !amount.symbol
                       ? -1
                       : amount.amount
             if (amount.amount > 0) out.currency = amount.symbol.slice(0, 4) || "$"

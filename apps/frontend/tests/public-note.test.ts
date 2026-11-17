@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import { parseActualCost, parsePublicNote } from "../src/adapters/nezha"
 import { trafficUsed } from "../src/core/format"
 import liveNotes from "./fixtures/public-notes-20261117.json"
+import legacyNotes from "./fixtures/public-notes-legacy.json"
 
 describe("shared public-note compatibility", () => {
     it.each([
@@ -100,4 +101,16 @@ it.each([undefined, "", "  "])("keeps implicit traffic mode hidden for %s", (tra
         trafficLimitType: "max",
         trafficLimitTypeExplicit: false,
     })
+})
+
+it("matches a17fb3d for legacy formats with explicit thousands-separator correction", () => {
+    for (const { public_note, expected } of legacyNotes) {
+        const source = JSON.parse(public_note)
+        const grouped = source.billingDataMod?.amount === "¥ 1,200"
+        expect(parsePublicNote(public_note)).toEqual({
+            ...expected,
+            ...(grouped ? { price: 1200, currency: "¥" } : {}),
+            trafficLimitTypeExplicit: !!source.planDataMod?.trafficType?.trim(),
+        })
+    }
 })
