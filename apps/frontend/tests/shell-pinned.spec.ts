@@ -749,7 +749,8 @@ test.describe("AppShell scroll container invariants and behaviors", () => {
         )
         await page.keyboard.press("Control+k")
         const dialog = page.getByRole("dialog")
-        await expect(dialog).toBeVisible()
+        // The lazy palette swaps its loading shell for the real dialog; measure after the swap.
+        await expect(dialog.locator("input:not([aria-hidden])")).toBeFocused()
         const dialogBox = await dialog.boundingBox()
         expect(dialogBox).not.toBeNull()
         expect(dialogBox!.y).toBeGreaterThanOrEqual(0)
