@@ -229,7 +229,7 @@
         "PayAsYouGo": "按用量計費",
         "Has": "有",
         "None": "無",
-        "CustomFields": "自訂欄位",
+        "CustomFields": "表單",
         "Clear": "清除",
         "RawText": "原始文字",
         "Unrecognized": "無法識別，前台可能讀不出，建議重新選擇",
@@ -263,7 +263,8 @@
         },
         "RemoveTag": "刪除 {{tag}}",
         "TagsHint": "按 Enter 或輸入逗號新增標籤。",
-        "InvalidJSONHint": "此備註無法解析為 JSON。請編輯原始文字以保留內容。"
+        "InvalidJSONHint": "此備註無法解析為 JSON。請編輯原始文字以保留內容。",
+        "Time": "時間"
     },
     "Validation": {
         "InvalidForm": "表單無效",
@@ -559,5 +560,36 @@
         "transferAll": "所有伺服器轉移權限",
         "adminAll": "使用者 / WAF / 系統設定 / 線上使用者管理",
         "everything": "存取所有資源的完整權限"
+    },
+    "PrivateNote": {
+        "Label": "私有備註",
+        "RawText": "私有備註原始文字",
+        "Key": "鍵名",
+        "Value": "鍵值",
+        "Type": "類型",
+        "Delete": "刪除列",
+        "MoveUp": "上移",
+        "MoveDown": "下移",
+        "AddRow": "新增欄位",
+        "AddItem": "新增陣列項目",
+        "EmptyKey": "鍵名不得為空。",
+        "DuplicateKey": "同一物件內的鍵名不得重複。",
+        "NumberRequired": "請輸入有效數字。",
+        "DepthLimit": "超過四層，請用原始文字編輯。",
+        "ConfirmType": "要替換為空物件或陣列嗎？目前值的內容會被刪除。",
+        "Replace": "替換值",
+        "ActualAmount": "實際花費",
+        "ActualCycle": "實際花費週期",
+        "FollowPublicCycle": "跟隨公開備註週期",
+        "AddActualAmount": "新增實際花費",
+        "RawReason": "此備註不是 JSON 物件。請使用原始文字模式保留其內容。",
+        "Types": {
+            "string": "文字",
+            "number": "數字",
+            "boolean": "布林",
+            "null": "空值",
+            "object": "物件",
+            "array": "陣列"
+        }
     }
 }

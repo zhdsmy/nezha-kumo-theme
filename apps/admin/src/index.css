@@ -621,8 +621,20 @@ body,
 .nkt-note-editor :is(input, textarea, select) {
     font-size: 16px;
 }
-.nkt-note-editor [data-note-field="autoRenewal"] [role="switch"] {
-    margin-block: 0;
+.nkt-note-editor textarea {
+    width: 100%;
+    resize: vertical;
+}
+.nkt-note-editor button[role="switch"] {
+    min-height: 18px;
+    margin-block: 9px;
+    flex-shrink: 0;
+}
+/* Extend the touch target without stretching Kumo's track and thumb. */
+.nkt-note-editor button[role="switch"]::after {
+    content: "";
+    position: absolute;
+    inset: -9px 0;
 }
 .nkt-note-editor [data-note-ip] .nkt-note-control {
     padding-right: 0;

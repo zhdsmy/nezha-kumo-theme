@@ -128,6 +128,7 @@ for (const [engine, driver] of Object.entries({ chromium, webkit }))
                         })
                     await page.getByRole("button", { name: "自定义", exact: true }).click()
                     const count = page.getByRole("spinbutton", { name: "数量" })
+                    await expect(page.getByRole("combobox", { name: "单位 · 月" })).toHaveText("月")
                     await expect(count).toHaveValue("3")
                     await expect(count).toBeFocused()
                     await expect

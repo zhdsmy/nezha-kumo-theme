@@ -229,7 +229,7 @@
         "PayAsYouGo": "Pay as you go",
         "Has": "Has",
         "None": "None",
-        "CustomFields": "Custom Fields",
+        "CustomFields": "Form",
         "Clear": "Clear",
         "RawText": "Raw Text",
         "Unrecognized": "Unrecognized value. The frontend may not read it; choose a new value.",
@@ -263,7 +263,8 @@
         },
         "RemoveTag": "Remove {{tag}}",
         "TagsHint": "Press Enter or comma to add a tag.",
-        "InvalidJSONHint": "This note is not valid JSON. Edit the original text to keep its content."
+        "InvalidJSONHint": "This note is not valid JSON. Edit the original text to keep its content.",
+        "Time": "Time"
     },
     "Validation": {
         "InvalidForm": "Invalid form",
@@ -559,5 +560,36 @@
         "transferAll": "Every transfer permission",
         "adminAll": "User / WAF / Setting / Online-user management",
         "everything": "Full access to all resources"
+    },
+    "PrivateNote": {
+        "Label": "Private note",
+        "RawText": "Private note raw text",
+        "Key": "Key",
+        "Value": "Value",
+        "Type": "Type",
+        "Delete": "Delete row",
+        "MoveUp": "Move up",
+        "MoveDown": "Move down",
+        "AddRow": "Add field",
+        "AddItem": "Add item",
+        "EmptyKey": "Enter a key.",
+        "DuplicateKey": "Keys in the same object must be unique.",
+        "NumberRequired": "Enter a valid number.",
+        "DepthLimit": "More than four container levels. Edit this value in raw text.",
+        "ConfirmType": "Replace this value with an empty object or array? Its current content will be removed.",
+        "Replace": "Replace value",
+        "ActualAmount": "Actual expense",
+        "ActualCycle": "Actual expense period",
+        "FollowPublicCycle": "Follow public billing period",
+        "AddActualAmount": "Add actual expense",
+        "RawReason": "This note is not a JSON object. Edit it as raw text to preserve its content.",
+        "Types": {
+            "string": "Text",
+            "number": "Number",
+            "boolean": "Boolean",
+            "null": "Null",
+            "object": "Object",
+            "array": "Array"
+        }
     }
 }

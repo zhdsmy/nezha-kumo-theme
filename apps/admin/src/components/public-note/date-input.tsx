@@ -1,6 +1,6 @@
 import { Button, DatePicker, Input, Popover, Switch } from "@cloudflare/kumo"
 import { enUS, ja, zhCN, zhTW } from "date-fns/locale"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
@@ -22,6 +22,19 @@ export function DateInput({
 }: NoteControlProps & { end?: boolean; start?: string; cycle?: string }) {
     const { t, i18n } = useTranslation()
     const [open, setOpen] = useState(false)
+    const trigger = useRef<HTMLButtonElement>(null)
+    const changeOpen = (next: boolean) => {
+        const button = trigger.current
+        const dialog = button?.closest<HTMLElement>(".nkt-dialog")
+        if (next && button && dialog) {
+            const anchor = button.getBoundingClientRect()
+            const frame = dialog.getBoundingClientRect()
+            // Make room inside the scrollable dialog when neither side fits the calendar.
+            if (Math.max(anchor.top - frame.top, frame.bottom - anchor.bottom) < 440)
+                dialog.scrollTop += anchor.top - frame.top - 16
+        }
+        setOpen(next)
+    }
     const time = parseNoteDate(value)
     const noExpiry = end && time === 0
     const selected = time
@@ -46,9 +59,10 @@ export function DateInput({
           : value || t("PublicNote.Unset")
     return (
         <div className="space-y-2">
-            <Popover open={open} onOpenChange={setOpen}>
+            <Popover open={open} onOpenChange={changeOpen}>
                 <Popover.Trigger asChild>
                     <Button
+                        ref={trigger}
                         type="button"
                         variant="secondary"
                         aria-label={`${label} · ${display}`}
@@ -60,7 +74,10 @@ export function DateInput({
                 </Popover.Trigger>
                 <Popover.Portal>
                     <Popover.Positioner align="start" sideOffset={8} collisionPadding={8}>
-                        <Popover.Popup className="w-auto max-h-[var(--available-height)] overflow-y-auto p-3">
+                        <Popover.Popup
+                            finalFocus={trigger}
+                            className="w-auto max-h-[var(--available-height)] overflow-y-auto p-3"
+                        >
                             <div data-note-calendar>
                                 <DatePicker
                                     navLayout="around"

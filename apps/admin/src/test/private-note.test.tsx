@@ -232,3 +232,23 @@ test("the actual-cost shortcut creates the nested path and leaves unrelated byte
         }).textContent,
     ).toContain(i18n.t("PrivateNote.FollowPublicCycle"))
 })
+
+test("replacing a container clears incomplete numeric drafts in its removed children", async () => {
+    const valid = vi.fn()
+    render(<Harness raw='{"parent":{"n":"bad"}}' valid={valid} />)
+    const selectType = async (path: string, next: string) => {
+        fireEvent.click(
+            screen.getByRole("combobox", { name: new RegExp("^" + label("Type", path) + " · ") }),
+        )
+        fireEvent.keyDown(
+            screen.getByRole("option", { name: i18n.t("PrivateNote.Types." + next) }),
+            { key: "Enter" },
+        )
+        await waitFor(() => expect(screen.queryAllByRole("option")).toHaveLength(0))
+    }
+    await selectType("parent.n", "number")
+    expect(valid).toHaveBeenLastCalledWith(false)
+    await selectType("parent", "string")
+    expect(saved()).toBe('{"parent":""}')
+    expect(valid).toHaveBeenLastCalledWith(true)
+})

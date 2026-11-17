@@ -46,7 +46,12 @@ export function PrivateNoteEditor({
     const valid = mode === "raw" || (!errors.length && !emptyNumbers.length)
     useEffect(() => onValidityChange(valid), [valid, onValidityChange])
     const patch = (path: JsonPath, next: unknown) => {
-        setEmptyNumbers((items) => items.filter((item) => item !== JSON.stringify(path)))
+        setEmptyNumbers((items) =>
+            items.filter((item) => {
+                const current = JSON.parse(item) as JsonPath
+                return !path.every((part, i) => current[i] === part)
+            }),
+        )
         onChange(patchJsonNote(value, path, next), "structured")
     }
     const changeType = (path: JsonPath, type: JsonType) => {
@@ -118,6 +123,7 @@ export function PrivateNoteEditor({
                                     label={t("PrivateNote.Type")}
                                     aria-label={`${t("PrivateNote.Type")} · ${label} · ${t(`PrivateNote.Types.${type}`)}`}
                                     value={type}
+                                    renderValue={(type) => t(`PrivateNote.Types.${type}`)}
                                     disabled={readonly}
                                     onValueChange={(next) => {
                                         if (!next || next === type) return
