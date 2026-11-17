@@ -206,9 +206,7 @@ export default function AdminShell({
                     onClick={(e) => {
                         e.currentTarget
                             .closest(".nk-brand-row")
-                            ?.querySelector<HTMLButtonElement>(
-                                'button[aria-label="Close navigation"]',
-                            )
+                            ?.querySelector<HTMLButtonElement>('button[data-sidebar="close"]')
                             ?.click()
                     }}
                     className="flex min-w-0 items-center gap-2 rounded-md py-1 text-inherit no-underline transition-colors hover:bg-muted dark:hover:bg-kumo-control focus-visible:bg-muted dark:focus-visible:bg-kumo-control focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
@@ -220,6 +218,15 @@ export default function AdminShell({
             nav={nav}
             activeId={activeId}
             linkComponent={RouterLink}
+            labels={{
+                skipToContent: t("Skip to content"),
+                mainNav: t("Main navigation"),
+                openNav: t("Open navigation"),
+                closeNav: t("Close navigation"),
+                collapseNav: t("Collapse navigation"),
+                expandNav: t("Expand navigation"),
+                aside: t("Additional information"),
+            }}
             // The sidebar brand shows the site name from BREAKPOINTS.sidebar up; the top bar
             // repeats it only while the sidebar is a drawer (same rule as the frontend).
             topbar={

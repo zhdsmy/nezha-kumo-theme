@@ -407,5 +407,12 @@
     "SelectAll": "Select all",
     "SelectedCount": "{{count}} selected",
     "ShowPassword": "Show password",
-    "HidePassword": "Hide password"
+    "HidePassword": "Hide password",
+    "Skip to content": "Skip to content",
+    "Main navigation": "Main navigation",
+    "Open navigation": "Open navigation",
+    "Close navigation": "Close navigation",
+    "Collapse navigation": "Collapse navigation",
+    "Expand navigation": "Expand navigation",
+    "Additional information": "Additional information"
 }

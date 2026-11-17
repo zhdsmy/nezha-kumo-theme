@@ -5,7 +5,7 @@ import { Link, RESET_EVENT, navigate, usePathname } from "@/app/router"
 import { adapter, getLive, getSpark, seedLive, useStore, useVisibleNodes } from "@/app/store"
 import { RegionFlag } from "@/components/RegionFlag"
 import { useBilling } from "@/components/billing"
-import { Meter, NoData, Spark, Status, Tile } from "@/components/ui"
+import { Meter, NoData, PageFootnote, Spark, Status, Tile } from "@/components/ui"
 import { onlineMonthlyCost } from "@/core/cost"
 import {
     matchGroups,
@@ -21,6 +21,7 @@ import {
     formatMoney,
     formatPercent,
     formatSpeed,
+    formatUsage,
     ratio,
 } from "@/core/format"
 import { recentBuckets } from "@/core/live"
@@ -28,6 +29,7 @@ import type { NodeInfo, Snapshot } from "@/core/model"
 import { regionName, stripFlag } from "@/core/region"
 import { readStorage, writeStorage } from "@/core/storage"
 import { summariseFleetDay } from "@/core/summary"
+import { uiLabels } from "@/i18n"
 import { Button, DropdownMenu, Input, Table, Tabs } from "@cloudflare/kumo"
 import { Page } from "@nezha-kumo/ui"
 import {
@@ -106,9 +108,6 @@ interface RowProps {
     showRegions: boolean
 }
 
-const usage = (used: number, total: number) =>
-    total ? `${formatBytes(used)} / ${formatBytes(total)}` : "—"
-
 /** Card view: everything the list knows about a node, with nothing left behind an expander. */
 const ServerCard = memo(function ServerCard({ node, snap, showBilling, showRegions }: RowProps) {
     const { t } = useTranslation()
@@ -140,13 +139,13 @@ const ServerCard = memo(function ServerCard({ node, snap, showBilling, showRegio
                     label={t("metric.memory")}
                     value={ratio(snap?.memUsed ?? 0, memTotal)}
                     kind="memory"
-                    detail={usage(snap?.memUsed ?? 0, memTotal)}
+                    detail={formatUsage(snap?.memUsed ?? 0, memTotal)}
                 />
                 <Meter
                     label={t("metric.disk")}
                     value={ratio(snap?.diskUsed ?? 0, diskTotal)}
                     kind="disk"
-                    detail={usage(snap?.diskUsed ?? 0, diskTotal)}
+                    detail={formatUsage(snap?.diskUsed ?? 0, diskTotal)}
                 />
             </div>
             <ServerFacts
@@ -649,6 +648,7 @@ export function HomePage() {
                         <Tabs
                             variant="segmented"
                             className="region-tabs"
+                            labels={uiLabels("tabs")}
                             value={pickedRegion ?? "all"}
                             onValueChange={(v) =>
                                 navigate(
@@ -738,7 +738,7 @@ export function HomePage() {
                     </div>
                 )}
             </section>
-            <p className="page-footnote">{settings.footerNote || "Nezha · Kumo theme"}</p>
+            <PageFootnote />
         </Page>
     )
 }

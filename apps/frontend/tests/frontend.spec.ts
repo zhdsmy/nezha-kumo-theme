@@ -233,10 +233,10 @@ test("drawer focus, appearance and language remain reachable", async ({ page }) 
     await page.getByRole("button", { name: "Language", exact: true }).click()
     await page.getByRole("menuitem", { name: "简体中文", exact: true }).click()
     await expect(page.getByRole("heading", { name: "概览", exact: true })).toBeVisible()
-    await page.getByRole("button", { name: "Open navigation" }).click()
+    await page.getByRole("button", { name: "打开导航" }).click()
     await expect(page.locator(".nk-sidebar")).toBeVisible()
     await page.keyboard.press("Escape")
-    await expect(page.getByRole("button", { name: "Open navigation" })).toBeFocused()
+    await expect(page.getByRole("button", { name: "打开导航" })).toBeFocused()
 })
 
 test("responsive boundaries keep a single table/card tree, 767/768 drawer-to-sidebar switch, and no overflow", async ({

@@ -25,8 +25,13 @@
         color: var(--text-color-kumo-default);
     }
     :focus-visible {
-        outline: 2px solid var(--color-kumo-focus);
+        outline: 2px solid transparent;
         outline-offset: 2px;
+        box-shadow: 0 0 0 2px var(--color-kumo-brand);
+    }
+    [tabindex="-1"]:focus {
+        outline: none;
+        box-shadow: none;
     }
 }
 
@@ -60,10 +65,15 @@
 .nk-brand {
     flex: 1;
     min-width: 0;
+    margin: -2px;
+    padding: 2px;
     overflow: hidden;
 }
 .nk-sidebar:not([data-mobile]) .nk-brand > * {
     width: calc(var(--sidebar-width) - 29px);
+}
+.nk-sidebar:not([data-mobile])[data-state="collapsed"] .nk-brand > :focus-visible {
+    width: 100%;
 }
 .nk-sidebar-top {
     flex-shrink: 0;
@@ -91,6 +101,8 @@
 .nk-topbar-content {
     flex: 1;
     min-width: 0;
+    margin: -2px;
+    padding: 2px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -125,6 +137,14 @@
 }
 .nk-sidebar [data-sidebar="group-label"] > div > div {
     padding-inline: 9px;
+}
+.nk-sidebar [data-sidebar="menu-item"]:has(:focus-visible),
+.nk-sidebar [data-sidebar="menu-sub"]:has(:focus-visible) {
+    overflow: visible;
+    z-index: 1;
+}
+.nk-sidebar [data-sidebar="menu-sub-item"]:has(:focus-visible) {
+    z-index: 1;
 }
 .nk-sidebar [data-sidebar="menu-button"],
 .nk-sidebar [data-sidebar="menu-sub-button"] {
@@ -282,10 +302,14 @@
 }
 .nk-page-tabs {
     min-width: 0;
-    overflow-x: auto;
 }
 .nk-page-tabs > * {
     min-width: 0;
+}
+.nk-page-tabs .kumo-tabs-list {
+    margin: -2px -2px 0;
+    padding: 2px 2px 8px;
+    height: 32px;
 }
 .nk-page-content {
     min-width: 0;

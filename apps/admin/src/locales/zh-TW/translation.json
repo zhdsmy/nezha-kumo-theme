@@ -383,5 +383,12 @@
     "SelectAll": "全選",
     "SelectedCount": "已選 {{count}} 項",
     "ShowPassword": "顯示密碼",
-    "HidePassword": "隱藏密碼"
+    "HidePassword": "隱藏密碼",
+    "Skip to content": "跳至內文",
+    "Main navigation": "主導覽",
+    "Open navigation": "開啟導覽",
+    "Close navigation": "關閉導覽",
+    "Collapse navigation": "收合導覽",
+    "Expand navigation": "展開導覽",
+    "Additional information": "補充資訊"
 }

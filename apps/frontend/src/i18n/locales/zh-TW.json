@@ -174,5 +174,18 @@
         "historyHint": "每格表示該小時是否有回報。未觀察和未來時段留空。",
         "notFound": "頁面不存在",
         "dailyIncluded": "自今日零時 · 含 {{count}}/{{total}} 個節點"
+    },
+    "shell": {
+        "skipToContent": "跳至內文",
+        "mainNav": "主導覽",
+        "openNav": "開啟導覽",
+        "closeNav": "關閉導覽",
+        "collapseNav": "收合導覽",
+        "expandNav": "展開導覽",
+        "aside": "補充資訊"
+    },
+    "tabs": {
+        "scrollStart": "向左捲動分頁",
+        "scrollEnd": "向右捲動分頁"
     }
 }
