@@ -126,10 +126,10 @@ export interface Traffic {
 }
 export function parseTraffic(value: unknown): Traffic | "unlimited" | undefined {
     if (typeof value !== "string") return
-    if (isUnlimited(value)) return "unlimited"
     const [size, period, ...rest] = value.trim().split("/")
     const cycle = period === undefined ? undefined : parseCycle(period)
     if (rest.length || (period !== undefined && !cycle)) return
+    if (isUnlimited(size)) return "unlimited"
     const match = /^(\d+(?:\.\d+)?)\s*([KMGTP]?)i?B?$/i.exec(size.trim())
     if (!match) return
     const amount = Number(match[1])

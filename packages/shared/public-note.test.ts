@@ -96,6 +96,8 @@ test("plan units, explicit unlimited, dates and tags", () => {
         assert.equal(writeBandwidth(parsed), text)
     }
     assert.equal(parseTraffic("Unlimited"), "unlimited")
+    for (const value of ["Unlimited/Month", "不限/月", "unmetered/Year"])
+        assert.equal(parseTraffic(value), "unlimited")
     assert.equal(parseBandwidth("Unlimited"), "unlimited")
     for (const invalid of ["1GB/nope", "1GB/Month/Year", "0GB", {}, "1..5TB"])
         assert.equal(parseTraffic(invalid), undefined)
