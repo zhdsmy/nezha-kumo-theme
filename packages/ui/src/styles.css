@@ -35,6 +35,15 @@
     }
 }
 
+/* iOS zooms the page when a focused field's text is under 16px. Unlayered so it beats utility sizes. */
+@media (pointer: coarse) {
+    input:not([type="checkbox"], [type="radio"], [type="range"]),
+    textarea,
+    select {
+        font-size: 16px;
+    }
+}
+
 body {
     font-family: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
     font-size: 14px;
