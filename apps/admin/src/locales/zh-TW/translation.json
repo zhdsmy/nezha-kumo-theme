@@ -383,5 +383,7 @@
     "SelectAll": "全選",
     "SelectedCount": "已選 {{count}} 項",
     "ShowPassword": "顯示密碼",
-    "HidePassword": "隱藏密碼"
+    "HidePassword": "隱藏密碼",
+    "ScrollTabsLeft": "向左捲動分頁",
+    "ScrollTabsRight": "向右捲動分頁"
 }

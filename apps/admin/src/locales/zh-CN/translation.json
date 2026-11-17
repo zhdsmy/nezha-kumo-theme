@@ -407,5 +407,7 @@
     "SelectAll": "全选",
     "SelectedCount": "已选 {{count}} 项",
     "ShowPassword": "显示密码",
-    "HidePassword": "隐藏密码"
+    "HidePassword": "隐藏密码",
+    "ScrollTabsLeft": "向左滚动标签页",
+    "ScrollTabsRight": "向右滚动标签页"
 }

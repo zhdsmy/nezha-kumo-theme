@@ -9,8 +9,8 @@ export const NotificationTab = ({ className }: { className?: string }) => {
     const activeTab = location.pathname.replace(/\/+$/, "") || "/"
 
     return (
-        <Tabs value={activeTab} className={className}>
-            <TabsList className="flex w-max max-w-full overflow-x-auto justify-start">
+        <Tabs value={activeTab} variant="underline" className={className}>
+            <TabsList>
                 <TabsTrigger value="/dashboard/notification" asChild>
                     <Link to="/dashboard/notification">{t("Notifier")}</Link>
                 </TabsTrigger>

@@ -407,5 +407,7 @@
     "SelectAll": "Select all",
     "SelectedCount": "{{count}} selected",
     "ShowPassword": "Show password",
-    "HidePassword": "Hide password"
+    "HidePassword": "Hide password",
+    "ScrollTabsLeft": "Scroll tabs left",
+    "ScrollTabsRight": "Scroll tabs right"
 }
