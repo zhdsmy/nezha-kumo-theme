@@ -31,7 +31,7 @@ import {
 import { IconButton } from "@/components/xui/icon-button"
 import { useNotification } from "@/hooks/useNotfication"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
-import { withArrayDefaults } from "@/lib/form"
+import { withCollectionDefaults } from "@/lib/form"
 import i18n from "@/lib/i18n"
 import { conv, errorMessage } from "@/lib/utils"
 import { ModelAlertRule } from "@/types"
@@ -94,7 +94,21 @@ const alertRuleFormSchema = z.object({
 })
 
 export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) => {
-    data = data && withArrayDefaults(data, ["rules", "fail_trigger_tasks", "recover_trigger_tasks"])
+    data =
+        data &&
+        withCollectionDefaults(data, ["rules", "fail_trigger_tasks", "recover_trigger_tasks"])
+    if (data && Array.isArray(data.rules)) {
+        data = {
+            ...data,
+            rules: data.rules.map((rule) =>
+                withCollectionDefaults<z.infer<typeof ruleSchema>>(
+                    rule,
+                    [],
+                    ["ignore", "next_transfer_at"],
+                ),
+            ),
+        }
+    }
     const { t } = useTranslation()
 
     type AlertRuleEntry = z.output<typeof ruleSchema>

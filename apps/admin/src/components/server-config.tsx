@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { IconButton } from "@/components/xui/icon-button"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { withCollectionDefaults } from "@/lib/form"
 import i18n from "@/lib/i18n"
 import { asOptionalField, errorMessage } from "@/lib/utils"
 import { ModelServerTaskResponse } from "@/types"
@@ -116,7 +117,9 @@ export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConf
         const fetchData = async () => {
             try {
                 const result = await getServerConfig(sid)
-                setData(JSON.parse(result))
+                setData(
+                    withCollectionDefaults<AgentConfig>(JSON.parse(result), [], ["nic_allowlist"]),
+                )
             } catch (error) {
                 console.error(error)
                 toast.error(t("Error"), {
@@ -327,11 +330,7 @@ export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConf
                                                 {t("Close")}
                                             </Button>
                                         </DialogClose>
-                                        <Button
-                                            type="submit"
-                                            className="my-2"
-                                            loading={submitting}
-                                        >
+                                        <Button type="submit" className="my-2" loading={submitting}>
                                             {t("Submit")}
                                         </Button>
                                     </DialogFooter>

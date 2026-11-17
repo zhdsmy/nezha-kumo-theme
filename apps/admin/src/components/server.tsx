@@ -34,7 +34,7 @@ import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { IconButton } from "@/components/xui/icon-button"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
-import { withArrayDefaults } from "@/lib/form"
+import { withCollectionDefaults } from "@/lib/form"
 import i18n from "@/lib/i18n"
 import {
     type PublicNote,
@@ -107,7 +107,7 @@ const serverFormSchema = z.object({
 })
 
 export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
-    data = withArrayDefaults(data, ["ddns_profiles"])
+    data = withCollectionDefaults(data, ["ddns_profiles"], ["override_ddns_domains"])
     const { t } = useTranslation()
     const form = useForm({
         resolver: zodResolver(serverFormSchema) as any,
