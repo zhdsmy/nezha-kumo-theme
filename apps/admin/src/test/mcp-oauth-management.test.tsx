@@ -86,7 +86,7 @@ function openManagement() {
 }
 
 function selectTab(name: string) {
-    fireEvent.mouseDown(screen.getByRole("tab", { name }), { button: 0, ctrlKey: false })
+    fireEvent.click(screen.getByRole("tab", { name }))
 }
 
 test("members see only their authorizations and confirm revocation", async () => {

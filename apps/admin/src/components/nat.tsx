@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { IconButton } from "@/components/xui/icon-button"
+import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { errorMessage } from "@/lib/utils"
 import { ModelNAT } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
@@ -30,7 +32,6 @@ import { KeyedMutator } from "swr"
 import { z } from "zod"
 
 import { Checkbox } from "./ui/checkbox"
-import { Label } from "./ui/label"
 
 interface NATCardProps {
     data?: ModelNAT
@@ -73,8 +74,9 @@ export const NATCard: React.FC<NATCardProps> = ({ data, mutate }) => {
     })
 
     const [open, setOpen] = useState(false)
+    const { submitting, runSubmit } = useSubmitLock()
 
-    const onSubmit = async (values: NatFormData) => {
+    const onSubmit = runSubmit(async (values: NatFormData) => {
         try {
             if (data?.id) {
                 await updateNAT(data.id, values)
@@ -84,15 +86,14 @@ export const NATCard: React.FC<NATCardProps> = ({ data, mutate }) => {
         } catch (e: unknown) {
             console.error(e)
             toast(t("Error"), {
-                description:
-                    e instanceof Error && e.message ? e.message : t("Results.UnExpectedError"),
+                description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
         }
         setOpen(false)
         await mutate()
         form.reset()
-    }
+    })
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -179,15 +180,17 @@ export const NATCard: React.FC<NATCardProps> = ({ data, mutate }) => {
                                     name="enabled"
                                     render={({ field }) => (
                                         <FormItem className="flex items-center space-x-2">
-                                            <FormControl>
-                                                <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <FormControl>
                                                     <Checkbox
                                                         checked={field.value === true}
                                                         onCheckedChange={field.onChange}
                                                     />
-                                                    <Label className="text-sm">{t("Enable")}</Label>
-                                                </div>
-                                            </FormControl>
+                                                </FormControl>
+                                                <FormLabel className="text-sm cursor-pointer">
+                                                    {t("Enable")}
+                                                </FormLabel>
+                                            </div>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -198,7 +201,7 @@ export const NATCard: React.FC<NATCardProps> = ({ data, mutate }) => {
                                             {t("Close")}
                                         </Button>
                                     </DialogClose>
-                                    <Button type="submit" className="my-2">
+                                    <Button type="submit" className="my-2" loading={submitting}>
                                         {t("Confirm")}
                                     </Button>
                                 </DialogFooter>

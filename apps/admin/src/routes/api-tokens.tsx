@@ -32,7 +32,8 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { useAuth } from "@/hooks/useAuth"
-import { copyToClipboard } from "@/lib/utils"
+import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { copyToClipboard, errorMessage } from "@/lib/utils"
 import { Page } from "@nezha-kumo/ui"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -193,13 +194,13 @@ function CreateApiTokenDialog({
     const [scopes, setScopes] = useState<string[]>([])
     const [serverIDs, setServerIDs] = useState("")
     const [expiresInDays, setExpiresInDays] = useState<string>("90")
-    const [submitting, setSubmitting] = useState(false)
+    const { submitting, runSubmit } = useSubmitLock()
 
     const toggleScope = (s: string) => {
         setScopes((cur) => (cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s]))
     }
 
-    const submit = async () => {
+    const submit = runSubmit(async () => {
         if (!name.trim()) {
             toast(t("Error"), { description: t("NameRequired") })
             return
@@ -220,7 +221,6 @@ function CreateApiTokenDialog({
             return
         }
         const expDays = expRes.value
-        setSubmitting(true)
         try {
             const res = await createApiToken({
                 name: name.trim(),
@@ -234,12 +234,10 @@ function CreateApiTokenDialog({
             setScopes([])
             setServerIDs("")
             setExpiresInDays("90")
-        } catch (e: any) {
-            toast(t("Error"), { description: e.message })
-        } finally {
-            setSubmitting(false)
+        } catch (e: unknown) {
+            toast(t("Error"), { description: errorMessage(e, t("Results.UnExpectedError")) })
         }
-    }
+    })
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -250,8 +248,15 @@ function CreateApiTokenDialog({
                 </DialogHeader>
                 <div className="grid gap-4 py-2">
                     <div className="grid gap-2">
-                        <Label htmlFor="name">{t("Name")}</Label>
-                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+                        <Label id="api-token-name-label" htmlFor="name">
+                            {t("Name")}
+                        </Label>
+                        <Input
+                            id="name"
+                            aria-labelledby="api-token-name-label"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                        />
                     </div>
                     <div className="grid gap-2">
                         <Label>{t("Scopes")}</Label>
@@ -263,9 +268,10 @@ function CreateApiTokenDialog({
                                 return (
                                     <label
                                         key={s.value}
-                                        className={`flex items-start gap-2 text-sm ${disabled ? "opacity-40" : ""}`}
+                                        className={`flex items-start gap-2 text-sm ${disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
                                     >
                                         <Checkbox
+                                            aria-label={s.value}
                                             checked={scopes.includes(s.value)}
                                             onCheckedChange={() =>
                                                 !disabled && toggleScope(s.value)
@@ -284,18 +290,24 @@ function CreateApiTokenDialog({
                         </div>
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="server-ids">{t("ApiTokenServerIDs")}</Label>
+                        <Label id="api-token-server-ids-label" htmlFor="server-ids">
+                            {t("ApiTokenServerIDs")}
+                        </Label>
                         <Input
                             id="server-ids"
+                            aria-labelledby="api-token-server-ids-label"
                             placeholder={t("ApiTokenServerIDsPlaceholder")}
                             value={serverIDs}
                             onChange={(e) => setServerIDs(e.target.value)}
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="expires">{t("ApiTokenExpiresInDays")}</Label>
+                        <Label id="api-token-expires-label" htmlFor="expires">
+                            {t("ApiTokenExpiresInDays")}
+                        </Label>
                         <Input
                             id="expires"
+                            aria-labelledby="api-token-expires-label"
                             type="number"
                             min={0}
                             max={3650}
@@ -308,8 +320,8 @@ function CreateApiTokenDialog({
                     <DialogClose asChild>
                         <Button variant="outline">{t("Cancel")}</Button>
                     </DialogClose>
-                    <Button onClick={submit} disabled={submitting}>
-                        {submitting ? t("Loading") + "..." : t("CreateApiToken")}
+                    <Button onClick={submit} loading={submitting}>
+                        {t("CreateApiToken")}
                     </Button>
                 </DialogFooter>
             </DialogContent>

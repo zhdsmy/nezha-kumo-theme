@@ -44,8 +44,8 @@ import {
     toggleEndNoExpiry,
     validatePublicNote,
 } from "@/lib/public-note"
-import { conv } from "@/lib/utils"
-import { asOptionalField } from "@/lib/utils"
+import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { asOptionalField, conv, errorMessage } from "@/lib/utils"
 import { ModelServer } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { HelpCircle } from "lucide-react"
@@ -163,7 +163,9 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
         setPublicNoteObj((prev) => toggleEndNoExpiry(prev))
     }
 
-    const onSubmit = async (values: any) => {
+    const { submitting, runSubmit } = useSubmitLock()
+
+    const onSubmit = runSubmit(async (values: any) => {
         try {
             values.ddns_profiles = values.ddns_profiles_raw
                 ? conv.strToArr(values.ddns_profiles_raw).map(Number)
@@ -206,14 +208,14 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
         } catch (e) {
             console.error(e)
             toast(t("Error"), {
-                description: t("Results.UnExpectedError"),
+                description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
         }
         setOpen(false)
         await mutate()
         form.reset()
-    }
+    })
 
     const handleOpenChange = (v: boolean) => {
         if (v) {
@@ -297,17 +299,17 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                         name="enable_ddns"
                                         render={({ field }) => (
                                             <FormItem className="flex items-center space-y-0">
-                                                <FormControl>
-                                                    <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-2">
+                                                    <FormControl>
                                                         <Checkbox
                                                             checked={field.value}
                                                             onCheckedChange={field.onChange}
                                                         />
-                                                        <Label className="text-sm">
-                                                            {t("EnableDDNS")}
-                                                        </Label>
-                                                    </div>
-                                                </FormControl>
+                                                    </FormControl>
+                                                    <FormLabel className="text-sm cursor-pointer">
+                                                        {t("EnableDDNS")}
+                                                    </FormLabel>
+                                                </div>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -317,17 +319,17 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                         name="hide_for_guest"
                                         render={({ field }) => (
                                             <FormItem className="flex items-center space-y-0">
-                                                <FormControl>
-                                                    <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-2">
+                                                    <FormControl>
                                                         <Checkbox
                                                             checked={field.value}
                                                             onCheckedChange={field.onChange}
                                                         />
-                                                        <Label className="text-sm">
-                                                            {t("HideForGuest")}
-                                                        </Label>
-                                                    </div>
-                                                </FormControl>
+                                                    </FormControl>
+                                                    <FormLabel className="text-sm cursor-pointer">
+                                                        {t("HideForGuest")}
+                                                    </FormLabel>
+                                                </div>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -651,7 +653,10 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                     </div>
                                                     <div className="space-y-1">
                                                         <div className="flex items-center gap-2">
-                                                            <Label className="text-xs">
+                                                            <Label
+                                                                htmlFor="public-note-auto-renewal"
+                                                                className="text-xs"
+                                                            >
                                                                 {t("PublicNote.AutoRenewal")}
                                                             </Label>
                                                         </div>
@@ -660,6 +665,10 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                                 {t("PublicNote.Disabled")}
                                                             </span>
                                                             <Switch
+                                                                id="public-note-auto-renewal"
+                                                                aria-label={t(
+                                                                    "PublicNote.AutoRenewal",
+                                                                )}
                                                                 checked={
                                                                     publicNoteObj.billingDataMod
                                                                         ?.autoRenewal === "1"
@@ -744,7 +753,11 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                     </div>
                                                     <div className="space-y-1 col-span-2">
                                                         <div className="flex items-center gap-2">
-                                                            <Label className="text-xs">
+                                                            <Label
+                                                                id="public-note-amount-label"
+                                                                htmlFor="public-note-amount"
+                                                                className="text-xs"
+                                                            >
                                                                 {t("PublicNote.Amount")}
                                                             </Label>
                                                             <Button
@@ -775,9 +788,12 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                             </Button>
                                                         </div>
                                                         <Input
+                                                            id="public-note-amount"
+                                                            aria-labelledby="public-note-amount-label"
                                                             placeholder="200EUR"
                                                             value={
-                                                                publicNoteObj.billingDataMod?.amount
+                                                                publicNoteObj.billingDataMod
+                                                                    ?.amount ?? ""
                                                             }
                                                             onChange={(e) =>
                                                                 patchPublicNote(
@@ -796,13 +812,20 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <div className="space-y-1">
-                                                        <Label className="text-xs">
+                                                        <Label
+                                                            id="public-note-bandwidth-label"
+                                                            htmlFor="public-note-bandwidth"
+                                                            className="text-xs"
+                                                        >
                                                             {t("PublicNote.Bandwidth")}
                                                         </Label>
                                                         <Input
+                                                            id="public-note-bandwidth"
+                                                            aria-labelledby="public-note-bandwidth-label"
                                                             placeholder="30Mbps"
                                                             value={
-                                                                publicNoteObj.planDataMod?.bandwidth
+                                                                publicNoteObj.planDataMod
+                                                                    ?.bandwidth ?? ""
                                                             }
                                                             onChange={(e) =>
                                                                 patchPublicNote(
@@ -813,14 +836,20 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                         />
                                                     </div>
                                                     <div className="space-y-1">
-                                                        <Label className="text-xs">
+                                                        <Label
+                                                            id="public-note-traffic-vol-label"
+                                                            htmlFor="public-note-traffic-vol"
+                                                            className="text-xs"
+                                                        >
                                                             {t("PublicNote.TrafficVolume")}
                                                         </Label>
                                                         <Input
+                                                            id="public-note-traffic-vol"
+                                                            aria-labelledby="public-note-traffic-vol-label"
                                                             placeholder="1TB/Month"
                                                             value={
                                                                 publicNoteObj.planDataMod
-                                                                    ?.trafficVol
+                                                                    ?.trafficVol ?? ""
                                                             }
                                                             onChange={(e) =>
                                                                 patchPublicNote(
@@ -884,10 +913,16 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                         )}
                                                     </div>
                                                     <div className="space-y-1">
-                                                        <Label className="text-xs">
+                                                        <Label
+                                                            id="public-note-network-route-label"
+                                                            htmlFor="public-note-network-route"
+                                                            className="text-xs"
+                                                        >
                                                             {t("PublicNote.NetworkRoute")}
                                                         </Label>
                                                         <Input
+                                                            id="public-note-network-route"
+                                                            aria-labelledby="public-note-network-route-label"
                                                             placeholder={t(
                                                                 "PublicNote.CommaSeparated",
                                                             )}
@@ -904,7 +939,10 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                         />
                                                     </div>
                                                     <div className="space-y-1">
-                                                        <Label className="text-xs">
+                                                        <Label
+                                                            htmlFor="public-note-ipv4"
+                                                            className="text-xs"
+                                                        >
                                                             {t("PublicNote.IPv4")}
                                                         </Label>
                                                         <div className="flex items-center gap-2 mt-2">
@@ -912,6 +950,8 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                                 {t("PublicNote.None")}
                                                             </span>
                                                             <Switch
+                                                                id="public-note-ipv4"
+                                                                aria-label={t("PublicNote.IPv4")}
                                                                 checked={
                                                                     publicNoteObj.planDataMod
                                                                         ?.IPv4 === "1"
@@ -934,7 +974,10 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                         )}
                                                     </div>
                                                     <div className="space-y-1">
-                                                        <Label className="text-xs">
+                                                        <Label
+                                                            htmlFor="public-note-ipv6"
+                                                            className="text-xs"
+                                                        >
                                                             {t("PublicNote.IPv6")}
                                                         </Label>
                                                         <div className="flex items-center gap-2 mt-2">
@@ -942,6 +985,8 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                                 {t("PublicNote.None")}
                                                             </span>
                                                             <Switch
+                                                                id="public-note-ipv6"
+                                                                aria-label={t("PublicNote.IPv6")}
                                                                 checked={
                                                                     publicNoteObj.planDataMod
                                                                         ?.IPv6 === "1"
@@ -964,10 +1009,16 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                         )}
                                                     </div>
                                                     <div className="space-y-1 col-span-2">
-                                                        <Label className="text-xs">
+                                                        <Label
+                                                            id="public-note-extra-label"
+                                                            htmlFor="public-note-extra"
+                                                            className="text-xs"
+                                                        >
                                                             {t("PublicNote.Extra")}
                                                         </Label>
                                                         <Input
+                                                            id="public-note-extra"
+                                                            aria-labelledby="public-note-extra-label"
                                                             placeholder={t(
                                                                 "PublicNote.CommaSeparated",
                                                             )}
@@ -994,7 +1045,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                             {t("Close")}
                                         </Button>
                                     </DialogClose>
-                                    <Button type="submit" className="my-2">
+                                    <Button type="submit" className="my-2" loading={submitting}>
                                         {t("Submit")}
                                     </Button>
                                 </DialogFooter>

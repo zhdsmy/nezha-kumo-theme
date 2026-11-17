@@ -1,5 +1,9 @@
 {
-    "Navigation": { "Monitoring": "监控", "Automation": "自动化", "System": "系统" },
+    "Navigation": {
+        "Monitoring": "监控",
+        "Automation": "自动化",
+        "System": "系统"
+    },
     "TableDetails": "行详情",
     "nezha": "哪吒监控",
     "theme": {
@@ -414,5 +418,19 @@
     "Close navigation": "关闭导航",
     "Collapse navigation": "收起导航",
     "Expand navigation": "展开导航",
-    "Additional information": "补充信息"
+    "Additional information": "补充信息",
+    "ScrollTabsLeft": "向左滚动标签页",
+    "ScrollTabsRight": "向右滚动标签页",
+    "Edit": "编辑",
+    "Create": "创建",
+    "ForceUpdate": "强制升级",
+    "Run": "运行",
+    "Download": "下载",
+    "Upload": "上传",
+    "Menu": "菜单",
+    "Block": "封禁",
+    "Expand": "展开",
+    "Remove": "移除",
+    "ChangeOwner": "转移所有者",
+    "More": "更多"
 }

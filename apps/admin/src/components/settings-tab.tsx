@@ -12,8 +12,8 @@ export const SettingsTab = ({ className }: { className?: string }) => {
     const activeTab = pathname.replace(/\/+$/, "") || "/"
 
     return (
-        <Tabs value={activeTab} className={className}>
-            <TabsList className="flex w-max max-w-full overflow-x-auto justify-start">
+        <Tabs value={activeTab} variant="underline" className={className}>
+            <TabsList>
                 {isAdmin && (
                     <>
                         <TabsTrigger value="/dashboard/settings" asChild>

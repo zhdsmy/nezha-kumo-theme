@@ -1,5 +1,9 @@
 {
-    "Navigation": { "Monitoring": "監控", "Automation": "自動化", "System": "系統" },
+    "Navigation": {
+        "Monitoring": "監控",
+        "Automation": "自動化",
+        "System": "系統"
+    },
     "TableDetails": "列詳情",
     "nezha": "哪吒監控",
     "theme": {
@@ -390,5 +394,19 @@
     "Close navigation": "關閉導覽",
     "Collapse navigation": "收合導覽",
     "Expand navigation": "展開導覽",
-    "Additional information": "補充資訊"
+    "Additional information": "補充資訊",
+    "ScrollTabsLeft": "向左捲動分頁",
+    "ScrollTabsRight": "向右捲動分頁",
+    "Edit": "編輯",
+    "Create": "建立",
+    "ForceUpdate": "強制升級",
+    "Run": "執行",
+    "Download": "下載",
+    "Upload": "上傳",
+    "Menu": "選單",
+    "Block": "封鎖",
+    "Expand": "展開",
+    "Remove": "移除",
+    "ChangeOwner": "轉移擁有者",
+    "More": "更多"
 }

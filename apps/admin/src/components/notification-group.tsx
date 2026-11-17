@@ -22,6 +22,8 @@ import { Input } from "@/components/ui/input"
 import { IconButton } from "@/components/xui/icon-button"
 import { MultiSelect } from "@/components/xui/multi-select"
 import { useNotification } from "@/hooks/useNotfication"
+import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { errorMessage } from "@/lib/utils"
 import { ModelNotificationGroupResponseItem } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
@@ -60,8 +62,9 @@ export const NotificationGroupCard: React.FC<NotificationGroupCardProps> = ({ da
     })
 
     const [open, setOpen] = useState(false)
+    const { submitting, runSubmit } = useSubmitLock()
 
-    const onSubmit = async (values: z.infer<typeof notificationGroupFormSchema>) => {
+    const onSubmit = runSubmit(async (values: z.infer<typeof notificationGroupFormSchema>) => {
         try {
             if (data?.group.id) {
                 await updateNotificationGroup(data.group.id, values)
@@ -71,14 +74,14 @@ export const NotificationGroupCard: React.FC<NotificationGroupCardProps> = ({ da
         } catch (e) {
             console.error(e)
             toast(t("Error"), {
-                description: t("Results.UnExpectedError"),
+                description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
         }
         setOpen(false)
         await mutate()
         form.reset()
-    }
+    })
 
     const { notifiers } = useNotification()
     const notifierList = notifiers?.map((n) => ({
@@ -139,7 +142,7 @@ export const NotificationGroupCard: React.FC<NotificationGroupCardProps> = ({ da
                                             {t("Close")}
                                         </Button>
                                     </DialogClose>
-                                    <Button type="submit" className="my-2">
+                                    <Button type="submit" className="my-2" loading={submitting}>
                                         {t("Confirm")}
                                     </Button>
                                 </DialogFooter>

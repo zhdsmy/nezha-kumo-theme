@@ -400,6 +400,10 @@ body,
     flex-direction: column;
     gap: 0.25rem;
 }
+.nkt-row-actions > div > span {
+    display: flex;
+    width: 100%;
+}
 .nkt-row-actions button {
     width: 100%;
     justify-content: flex-start;

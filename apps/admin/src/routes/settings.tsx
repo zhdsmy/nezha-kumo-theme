@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/hooks/useAuth"
 import { useNotification } from "@/hooks/useNotfication"
 import useSetting from "@/hooks/useSetting"
+import { useSubmitLock } from "@/hooks/useSubmitLock"
 import { asOptionalField, safeExternalHref } from "@/lib/utils"
 import { nezhaLang, settingCoverageTypes } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -114,6 +115,8 @@ export default function SettingsPage() {
         }
     }, [config?.config, form])
 
+    const { submitting, runSubmit } = useSubmitLock()
+
     if (authLoading) {
         return null
     }
@@ -121,7 +124,7 @@ export default function SettingsPage() {
         return <Navigate to="/dashboard/settings/api-tokens" replace />
     }
 
-    const onSubmit = async (values: any) => {
+    const onSubmit = runSubmit(async (values: any) => {
         try {
             await updateSettings({
                 ...values,
@@ -145,7 +148,7 @@ export default function SettingsPage() {
             i18n.changeLanguage(values.language)
         }
         toast(t("Success"))
-    }
+    })
 
     return (
         <Page title={t("Settings")} tabs={<SettingsTab />}>
@@ -373,15 +376,17 @@ export default function SettingsPage() {
                             name="tls"
                             render={({ field }) => (
                                 <FormItem className="flex items-center space-x-2">
-                                    <FormControl>
-                                        <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <FormControl>
                                             <Checkbox
                                                 checked={field.value}
                                                 onCheckedChange={field.onChange}
                                             />
-                                            <Label className="text-sm">{t("ConfigTLS")}</Label>
-                                        </div>
-                                    </FormControl>
+                                        </FormControl>
+                                        <FormLabel className="text-sm cursor-pointer">
+                                            {t("ConfigTLS")}
+                                        </FormLabel>
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -409,29 +414,35 @@ export default function SettingsPage() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>{t("WebRealIPHeader")}</FormLabel>
-                                    <FormControl>
-                                        <div className="flex items-center">
+                                    <div className="flex items-center">
+                                        <FormControl>
                                             <Input
                                                 disabled={field.value == "NZ::Use-Peer-IP"}
                                                 className="w-1/2"
                                                 placeholder="CF-Connecting-IP"
                                                 {...field}
                                             />
-                                            <Checkbox
-                                                checked={field.value == "NZ::Use-Peer-IP"}
-                                                className="ml-2"
-                                                onCheckedChange={(checked) => {
-                                                    form.setValue(
-                                                        "web_real_ip_header",
-                                                        checked ? "NZ::Use-Peer-IP" : "",
-                                                    )
-                                                }}
-                                            />
-                                            <FormLabel className="font-normal ml-2">
-                                                {t("UseDirectConnectingIP")}
-                                            </FormLabel>
-                                        </div>
-                                    </FormControl>
+                                        </FormControl>
+                                        <Checkbox
+                                            id="web_real_ip_header_direct"
+                                            aria-labelledby="web_real_ip_header_direct-label"
+                                            checked={field.value == "NZ::Use-Peer-IP"}
+                                            className="ml-2"
+                                            onCheckedChange={(checked) => {
+                                                form.setValue(
+                                                    "web_real_ip_header",
+                                                    checked ? "NZ::Use-Peer-IP" : "",
+                                                )
+                                            }}
+                                        />
+                                        <Label
+                                            id="web_real_ip_header_direct-label"
+                                            htmlFor="web_real_ip_header_direct"
+                                            className="font-normal ml-2 cursor-pointer"
+                                        >
+                                            {t("UseDirectConnectingIP")}
+                                        </Label>
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -442,29 +453,35 @@ export default function SettingsPage() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>{t("AgentRealIPHeader")}</FormLabel>
-                                    <FormControl>
-                                        <div className="flex items-center">
+                                    <div className="flex items-center">
+                                        <FormControl>
                                             <Input
                                                 disabled={field.value == "NZ::Use-Peer-IP"}
                                                 className="w-1/2"
                                                 placeholder="CF-Connecting-IP"
                                                 {...field}
                                             />
-                                            <Checkbox
-                                                checked={field.value == "NZ::Use-Peer-IP"}
-                                                className="ml-2"
-                                                onCheckedChange={(checked) => {
-                                                    form.setValue(
-                                                        "agent_real_ip_header",
-                                                        checked ? "NZ::Use-Peer-IP" : "",
-                                                    )
-                                                }}
-                                            />
-                                            <FormLabel className="font-normal ml-2">
-                                                {t("UseDirectConnectingIP")}
-                                            </FormLabel>
-                                        </div>
-                                    </FormControl>
+                                        </FormControl>
+                                        <Checkbox
+                                            id="agent_real_ip_header_direct"
+                                            aria-labelledby="agent_real_ip_header_direct-label"
+                                            checked={field.value == "NZ::Use-Peer-IP"}
+                                            className="ml-2"
+                                            onCheckedChange={(checked) => {
+                                                form.setValue(
+                                                    "agent_real_ip_header",
+                                                    checked ? "NZ::Use-Peer-IP" : "",
+                                                )
+                                            }}
+                                        />
+                                        <Label
+                                            id="agent_real_ip_header_direct-label"
+                                            htmlFor="agent_real_ip_header_direct"
+                                            className="font-normal ml-2 cursor-pointer"
+                                        >
+                                            {t("UseDirectConnectingIP")}
+                                        </Label>
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -543,17 +560,17 @@ export default function SettingsPage() {
                                             name="enable_ip_change_notification"
                                             render={({ field }) => (
                                                 <FormItem className="flex items-center space-x-2">
-                                                    <FormControl>
-                                                        <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <FormControl>
                                                             <Checkbox
                                                                 checked={field.value}
                                                                 onCheckedChange={field.onChange}
                                                             />
-                                                            <Label className="text-sm">
-                                                                {t("Enable")}
-                                                            </Label>
-                                                        </div>
-                                                    </FormControl>
+                                                        </FormControl>
+                                                        <FormLabel className="text-sm cursor-pointer">
+                                                            {t("Enable")}
+                                                        </FormLabel>
+                                                    </div>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
@@ -567,17 +584,17 @@ export default function SettingsPage() {
                             name="enable_plain_ip_in_notification"
                             render={({ field }) => (
                                 <FormItem className="flex items-center space-x-2">
-                                    <FormControl>
-                                        <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <FormControl>
                                             <Checkbox
                                                 checked={field.value}
                                                 onCheckedChange={field.onChange}
                                             />
-                                            <Label className="text-sm">
-                                                {t("FullIPNotification")}
-                                            </Label>
-                                        </div>
-                                    </FormControl>
+                                        </FormControl>
+                                        <FormLabel className="text-sm cursor-pointer">
+                                            {t("FullIPNotification")}
+                                        </FormLabel>
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -587,15 +604,17 @@ export default function SettingsPage() {
                             name="enable_mcp"
                             render={({ field }) => (
                                 <FormItem className="flex items-center space-x-2">
-                                    <FormControl>
-                                        <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <FormControl>
                                             <Checkbox
                                                 checked={field.value}
                                                 onCheckedChange={field.onChange}
                                             />
-                                            <Label className="text-sm">{t("EnableMCP")}</Label>
-                                        </div>
-                                    </FormControl>
+                                        </FormControl>
+                                        <FormLabel className="text-sm cursor-pointer">
+                                            {t("EnableMCP")}
+                                        </FormLabel>
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -620,7 +639,9 @@ export default function SettingsPage() {
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit">{t("Confirm")}</Button>
+                        <Button type="submit" loading={submitting}>
+                            {t("Confirm")}
+                        </Button>
                     </form>
                 </Form>
             </div>

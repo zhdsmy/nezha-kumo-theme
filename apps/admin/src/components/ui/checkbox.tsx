@@ -1,32 +1,73 @@
-import { cn } from "@/lib/utils"
-import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
-import { Check, Minus } from "lucide-react"
-import { ComponentPropsWithoutRef, ComponentRef, forwardRef } from "react"
+import {
+    Checkbox as KumoCheckbox,
+    type CheckboxProps as KumoCheckboxProps,
+} from "@cloudflare/kumo"
+import { ButtonHTMLAttributes, forwardRef } from "react"
 
-const Checkbox = forwardRef<
-    ComponentRef<typeof CheckboxPrimitive.Root>,
-    ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
->(({ className, checked, ...props }, ref) => (
-    <CheckboxPrimitive.Root
-        ref={ref}
-        checked={checked}
-        className={cn(
-            "relative flex peer h-4 w-4 shrink-0 rounded border border-kumo-interact bg-card ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-kumo-contrast data-[state=checked]:border-kumo-contrast data-[state=checked]:text-kumo-inverse data-[state=indeterminate]:bg-kumo-contrast data-[state=indeterminate]:text-kumo-inverse",
+export type CheckboxCheckedState = boolean | "indeterminate"
+
+export type CheckboxProps = Omit<
+    ButtonHTMLAttributes<HTMLButtonElement>,
+    "checked" | "defaultChecked" | "onChange"
+> &
+    Omit<KumoCheckboxProps, "checked" | "onCheckedChange"> & {
+        checked?: CheckboxCheckedState
+        defaultChecked?: CheckboxCheckedState
+        onCheckedChange?: (checked: boolean) => void
+    }
+
+const Checkbox = forwardRef<HTMLButtonElement, CheckboxProps>(
+    (
+        {
             className,
-        )}
-        {...props}
-    >
-        <CheckboxPrimitive.Indicator
-            className={cn("flex items-center justify-center text-current")}
-        >
-            {checked === "indeterminate" ? (
-                <Minus className="size-3" />
-            ) : (
-                <Check className="size-3" />
-            )}
-        </CheckboxPrimitive.Indicator>
-    </CheckboxPrimitive.Root>
-))
-Checkbox.displayName = CheckboxPrimitive.Root.displayName
+            checked,
+            defaultChecked,
+            indeterminate,
+            onCheckedChange,
+            label,
+            "aria-label": ariaLabel,
+            "aria-labelledby": ariaLabelledBy,
+            ...props
+        },
+        ref,
+    ) => {
+        const inferredLabelledBy =
+            !label &&
+            !ariaLabel &&
+            !ariaLabelledBy &&
+            typeof props.id === "string" &&
+            props.id.endsWith("-form-item")
+                ? `${props.id}-label`
+                : ariaLabelledBy
+
+        const resolvedIndeterminate =
+            indeterminate ?? (checked === "indeterminate" || defaultChecked === "indeterminate")
+        const resolvedChecked = checked === "indeterminate" ? false : checked
+        const resolvedDefaultChecked =
+            defaultChecked === "indeterminate" ? false : defaultChecked
+
+        const extraProps: Record<string, unknown> = { ...props }
+        if (resolvedDefaultChecked !== undefined) {
+            extraProps.defaultChecked = resolvedDefaultChecked
+        }
+
+        return (
+            <KumoCheckbox
+                ref={ref}
+                label={label}
+                aria-label={ariaLabel}
+                aria-labelledby={inferredLabelledBy}
+                checked={resolvedChecked}
+                indeterminate={resolvedIndeterminate}
+                onCheckedChange={
+                    onCheckedChange ? (next) => onCheckedChange(Boolean(next)) : undefined
+                }
+                className={className}
+                {...(extraProps as Partial<KumoCheckboxProps>)}
+            />
+        )
+    },
+)
+Checkbox.displayName = "Checkbox"
 
 export { Checkbox }

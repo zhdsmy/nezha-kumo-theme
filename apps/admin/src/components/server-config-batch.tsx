@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { IconButton } from "@/components/xui/icon-button"
+import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { errorMessage } from "@/lib/utils"
 import { ModelServerTaskResponse } from "@/types"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -31,15 +33,16 @@ export const ServerConfigCardBatch: React.FC<ServerConfigCardBatchProps> = ({ si
     const [open, setOpen] = useState(false)
     const [currentKey, setCurrentKey] = useState<string>("")
     const [currentVal, setCurrentVal] = useState<string>("")
+    const { submitting, runSubmit } = useSubmitLock()
 
-    const onSubmit = async () => {
+    const onSubmit = runSubmit(async () => {
         let resp: ModelServerTaskResponse = {}
         try {
             resp = await setServerConfig({ config: JSON.stringify(data), servers: sid })
         } catch (e) {
             console.error(e)
             toast(t("Error"), {
-                description: t("Results.UnExpectedError"),
+                description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
         }
@@ -51,7 +54,7 @@ export const ServerConfigCardBatch: React.FC<ServerConfigCardBatchProps> = ({ si
                 (resp.offline?.length ? t(`Offline`) + ` [${resp.offline.join(",")}]` : ""),
         })
         setOpen(false)
-    }
+    })
 
     return sid.length < 1 ? (
         <IconButton
@@ -76,8 +79,12 @@ export const ServerConfigCardBatch: React.FC<ServerConfigCardBatchProps> = ({ si
                             <DialogDescription />
                         </DialogHeader>
                         <div className="flex flex-col gap-3 mt-4">
-                            <Label>{t("Option")}</Label>
+                            <Label id="batch-config-option-label" htmlFor="batch-config-option">
+                                {t("Option")}
+                            </Label>
                             <Input
+                                id="batch-config-option"
+                                aria-labelledby="batch-config-option-label"
                                 type="text"
                                 placeholder="option"
                                 value={currentKey}
@@ -85,8 +92,12 @@ export const ServerConfigCardBatch: React.FC<ServerConfigCardBatchProps> = ({ si
                                     setCurrentKey(e.target.value)
                                 }}
                             />
-                            <Label>{t("Value")}</Label>
+                            <Label id="batch-config-value-label" htmlFor="batch-config-value">
+                                {t("Value")}
+                            </Label>
                             <Textarea
+                                id="batch-config-value"
+                                aria-labelledby="batch-config-value-label"
                                 className="resize-y"
                                 value={currentVal}
                                 onChange={(e) => {
@@ -100,7 +111,12 @@ export const ServerConfigCardBatch: React.FC<ServerConfigCardBatchProps> = ({ si
                                         {t("Close")}
                                     </Button>
                                 </DialogClose>
-                                <Button type="submit" className="my-2" onClick={onSubmit}>
+                                <Button
+                                    type="submit"
+                                    className="my-2"
+                                    loading={submitting}
+                                    onClick={onSubmit}
+                                >
                                     {t("Submit")}
                                 </Button>
                             </DialogFooter>

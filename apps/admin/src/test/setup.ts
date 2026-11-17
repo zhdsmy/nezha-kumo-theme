@@ -49,4 +49,6 @@ globalThis.matchMedia = (media: string) => ({
 })
 
 Element.prototype.getAnimations ??= () => []
+Element.prototype.scrollIntoView ??= () => {}
+
 

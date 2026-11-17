@@ -68,26 +68,26 @@ const iconLabels: Record<IconButtonProps["icon"], string> = {
 
 // Confirmed destructive actions use the filled danger variant in their dialog.
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-    ({ variant, className, ...props }, ref) => {
+    ({ variant, className, title, "aria-label": ariaLabel, icon, ...props }, ref) => {
         const { t } = useTranslation()
-        const filled = props.icon === "plus" && (!variant || variant === "default")
+        const filled = icon === "plus" && (!variant || variant === "default")
+        const label = title ?? ariaLabel ?? t(iconLabels[icon])
         return (
             <Button
                 {...props}
-                aria-label={props["aria-label"] || props.title || t(iconLabels[props.icon])}
+                title={label}
+                aria-label={ariaLabel || label}
                 variant={filled ? "default" : variant === "ghost" ? "ghost" : "outline"}
                 className={cn(
-                    "rounded-lg",
-                    !filled && variant !== "ghost" && "bg-card",
                     variant === "destructive" &&
-                        "hover:border-destructive/60 hover:bg-destructive/10 hover:text-destructive focus-visible:text-destructive",
+                        "not-disabled:hover:!text-kumo-danger not-disabled:hover:ring-kumo-danger/30 not-disabled:hover:bg-kumo-danger/10 focus-visible:!text-kumo-danger",
                     className,
                 )}
                 ref={ref}
                 size="icon"
             >
                 {(() => {
-                    switch (props.icon) {
+                    switch (icon) {
                         case "clipboard": {
                             return <Clipboard />
                         }

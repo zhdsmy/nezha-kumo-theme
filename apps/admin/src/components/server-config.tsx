@@ -20,10 +20,10 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { IconButton } from "@/components/xui/icon-button"
-import { asOptionalField } from "@/lib/utils"
+import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { asOptionalField, errorMessage } from "@/lib/utils"
 import { ModelServerTaskResponse } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { CogIcon } from "lucide-react"
@@ -156,7 +156,9 @@ export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConf
         }
     }, [data, form])
 
-    const onSubmit = async (values: any) => {
+    const { submitting, runSubmit } = useSubmitLock()
+
+    const onSubmit = runSubmit(async (values: any) => {
         let resp: ModelServerTaskResponse = {}
         try {
             values.nic_allowlist = values.nic_allowlist_raw
@@ -169,7 +171,7 @@ export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConf
         } catch (e) {
             console.error(e)
             toast(t("Error"), {
-                description: t("Results.UnExpectedError"),
+                description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
         }
@@ -182,7 +184,7 @@ export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConf
         })
         setOpen(false)
         form.reset()
-    }
+    })
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -291,8 +293,8 @@ export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConf
                                                     name={field}
                                                     render={({ field: controllerField }) => (
                                                         <FormItem className="flex items-center w-full">
-                                                            <FormControl>
-                                                                <div className="flex items-center gap-2">
+                                                            <div className="flex items-center gap-2">
+                                                                <FormControl>
                                                                     <Checkbox
                                                                         checked={
                                                                             !!controllerField.value
@@ -301,11 +303,11 @@ export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConf
                                                                             controllerField.onChange
                                                                         }
                                                                     />
-                                                                    <Label className="text-sm">
-                                                                        {t(field)}
-                                                                    </Label>
-                                                                </div>
-                                                            </FormControl>
+                                                                </FormControl>
+                                                                <FormLabel className="text-sm cursor-pointer">
+                                                                    {t(field)}
+                                                                </FormLabel>
+                                                            </div>
                                                             <FormMessage />
                                                         </FormItem>
                                                     )}
@@ -323,7 +325,11 @@ export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConf
                                                 {t("Close")}
                                             </Button>
                                         </DialogClose>
-                                        <Button type="submit" className="my-2">
+                                        <Button
+                                            type="submit"
+                                            className="my-2"
+                                            loading={submitting}
+                                        >
                                             {t("Submit")}
                                         </Button>
                                     </DialogFooter>
