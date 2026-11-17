@@ -1,5 +1,6 @@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
+import { TablePagination } from "@/components/ui/pagination"
 import {
     Table,
     TableBody,
@@ -268,5 +269,75 @@ test("table without select column does not render cards select-all row", () => {
     expect(document.querySelector(".nkt-table")?.getAttribute("data-layout")).toBe("cards")
     expect(document.querySelector(".nkt-cards-select-all")).toBeNull()
     expect(screen.queryByText("SelectAll")).toBeNull()
+})
+
+test("table expands ID and whitespace-nowrap columns to fit intrinsic content width", () => {
+    width = 1000
+    containerWidth = 800
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(containerWidth)
+    vi.spyOn(HTMLElement.prototype, "scrollWidth", "get").mockImplementation(function (
+        this: HTMLElement,
+    ) {
+        if (this.textContent?.includes("1234 · 100")) return 76
+        if (this.classList.contains("whitespace-nowrap")) return 84
+        return 0
+    })
+    render(
+        <Table
+            columnPriority={[
+                ["id", 64],
+                ["status", 100],
+            ]}
+        >
+            <TableHeader>
+                <TableRow>
+                    <TableHead data-col="id">ID</TableHead>
+                    <TableHead data-col="name">Name</TableHead>
+                    <TableHead data-col="status">Status</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                <TableRow>
+                    <TableCell data-col="id">
+                        <span className="whitespace-nowrap">1234 · 100</span>
+                    </TableCell>
+                    <TableCell data-col="name">Guangzhou General</TableCell>
+                    <TableCell data-col="status">
+                        <span className="whitespace-nowrap">Cancelled</span>
+                    </TableCell>
+                </TableRow>
+            </TableBody>
+        </Table>,
+    )
+    expect(
+        document.querySelector<HTMLElement>(".nkt-table")?.style.getPropertyValue("--nkt-table-columns"),
+    ).toBe("108px minmax(0, 1fr) 116px")
+})
+
+test.each([
+    [375, ["1", "500", "1235"]],
+    [1024, ["1", "499", "500", "501", "1235"]],
+])("TablePagination localizes Previous/Next, keeps Total nowrap, and fits viewport %s", (w, pages) => {
+    width = Number(w)
+    const onPageChange = vi.fn()
+    render(<TablePagination page={500} pageSize={10} total={12345} onPageChange={onPageChange} />)
+
+    const totalEl = screen.getByText("Total: 12345")
+    expect(totalEl.className).toContain("whitespace-nowrap")
+    expect(totalEl.className).toContain("shrink-0")
+
+    const prev = screen.getByLabelText("MCPOAuthManager.Previous")
+    const next = screen.getByLabelText("MCPOAuthManager.Next")
+    expect(prev.textContent).toBe("MCPOAuthManager.Previous")
+    expect(next.textContent).toBe("MCPOAuthManager.Next")
+
+    const renderedPages = Array.from(
+        document.querySelectorAll("nav[aria-label='pagination'] a"),
+        (a) => a.textContent,
+    ).filter((txt) => txt && /^\d+$/.test(txt))
+    expect(renderedPages).toEqual(pages)
+
+    fireEvent.click(next)
+    expect(onPageChange).toHaveBeenCalledWith(501)
 })
 

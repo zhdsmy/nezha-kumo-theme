@@ -213,8 +213,8 @@ export default function ServicePage() {
         >
             <Table
                 columnPriority={[
-                    ["id", 64],
-                    ["type", 90],
+                    ["id", 108],
+                    ["type", 104],
                     ["target", 160],
                     ["duration", 100],
                     ["ngroup", 110],

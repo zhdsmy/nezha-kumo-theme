@@ -283,9 +283,17 @@ body,
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
 }
-.nkt-cell-value > * {
+.nkt-cell-value > :not(.whitespace-nowrap) {
     min-width: 0;
     max-width: 100%;
+}
+.nkt-table:not([data-layout="cards"])
+    :is(th, td)[data-col="id"]:not([data-primary], [data-hidden])
+    > .nkt-cell-value {
+    display: block;
+    width: max-content;
+    max-width: 100%;
+    white-space: nowrap;
 }
 .nkt-table [data-hidden] {
     display: none;

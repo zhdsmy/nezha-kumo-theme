@@ -184,7 +184,7 @@ export default function TransferPage() {
                 columnPriority={[
                     ["id", 160],
                     ["server", 90],
-                    ["status", 100],
+                    ["status", 112],
                     ["from", 90],
                     ["to", 90],
                     ["created", 150],

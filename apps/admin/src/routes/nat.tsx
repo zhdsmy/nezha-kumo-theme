@@ -149,7 +149,7 @@ export default function NATPage() {
             <Table
                 columnPriority={[
                     ["id", 64],
-                    ["enabled", 80],
+                    ["enabled", 88],
                     ["serverID", 100],
                     ["domain", 160],
                     ["host", 160],

@@ -302,10 +302,10 @@ export default function ServerPage() {
             <div>
                 <Table
                     columnPriority={[
-                        ["id", 64],
+                        ["id", 108],
                         ["groups", 80],
                         ["geoip", 156],
-                        ["host_version", 88],
+                        ["host_version", 92],
                         ["owner", 120],
                         ["enableDDNS", 100],
                         ["hideForGuest", 110],

@@ -1,7 +1,9 @@
 import { ButtonProps, buttonVariants } from "@/components/ui/button"
+import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { cn } from "@/lib/utils"
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
 import { ComponentProps, forwardRef } from "react"
+import { useTranslation } from "react-i18next"
 
 const Pagination = ({ className, ...props }: ComponentProps<"nav">) => (
     <nav
@@ -38,6 +40,7 @@ const PaginationLink = ({ className, isActive, size = "icon", ...props }: Pagina
                 variant: isActive ? "outline" : "ghost",
                 size,
             }),
+            size === "icon" && "w-auto min-w-9 px-2 tabular-nums",
             className,
         )}
         {...props}
@@ -45,36 +48,44 @@ const PaginationLink = ({ className, isActive, size = "icon", ...props }: Pagina
 )
 PaginationLink.displayName = "PaginationLink"
 
-const PaginationPrevious = ({ className, ...props }: ComponentProps<typeof PaginationLink>) => (
-    <PaginationLink
-        aria-label="Go to previous page"
-        size="default"
-        className={cn("gap-1 pl-2.5", className)}
-        {...props}
-    >
-        <ChevronLeft className="h-4 w-4" />
-        <span>Previous</span>
-    </PaginationLink>
-)
+const PaginationPrevious = ({ className, ...props }: ComponentProps<typeof PaginationLink>) => {
+    const { t } = useTranslation()
+    const label = t("MCPOAuthManager.Previous")
+    return (
+        <PaginationLink
+            aria-label={label}
+            size="default"
+            className={cn("gap-1 px-2.5", className)}
+            {...props}
+        >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">{label}</span>
+        </PaginationLink>
+    )
+}
 PaginationPrevious.displayName = "PaginationPrevious"
 
-const PaginationNext = ({ className, ...props }: ComponentProps<typeof PaginationLink>) => (
-    <PaginationLink
-        aria-label="Go to next page"
-        size="default"
-        className={cn("gap-1 pr-2.5", className)}
-        {...props}
-    >
-        <span>Next</span>
-        <ChevronRight className="h-4 w-4" />
-    </PaginationLink>
-)
+const PaginationNext = ({ className, ...props }: ComponentProps<typeof PaginationLink>) => {
+    const { t } = useTranslation()
+    const label = t("MCPOAuthManager.Next")
+    return (
+        <PaginationLink
+            aria-label={label}
+            size="default"
+            className={cn("gap-1 px-2.5", className)}
+            {...props}
+        >
+            <span className="hidden sm:inline">{label}</span>
+            <ChevronRight className="h-4 w-4" />
+        </PaginationLink>
+    )
+}
 PaginationNext.displayName = "PaginationNext"
 
 const PaginationEllipsis = ({ className, ...props }: ComponentProps<"span">) => (
     <span
         aria-hidden
-        className={cn("flex h-9 w-9 items-center justify-center", className)}
+        className={cn("flex h-9 w-7 items-center justify-center sm:w-9", className)}
         {...props}
     >
         <MoreHorizontal className="h-4 w-4" />
@@ -82,6 +93,109 @@ const PaginationEllipsis = ({ className, ...props }: ComponentProps<"span">) => 
     </span>
 )
 PaginationEllipsis.displayName = "PaginationEllipsis"
+
+function getPageNumbers(page: number, totalPages: number, compact: boolean) {
+    const maxVisiblePages = compact ? 3 : 5
+    if (totalPages <= maxVisiblePages) {
+        return Array.from({ length: totalPages }, (_, i) => i + 1)
+    }
+
+    const pages: number[] = [1]
+    const neighbors = compact ? 0 : 1
+    let startPage = Math.max(2, page - neighbors)
+    let endPage = Math.min(totalPages - 1, page + neighbors)
+
+    if (compact) {
+        if (page <= 2) {
+            startPage = 2
+            endPage = Math.min(2, totalPages - 1)
+        } else if (page >= totalPages - 1) {
+            startPage = Math.max(2, totalPages - 1)
+            endPage = totalPages - 1
+        }
+    } else if (page <= 3) {
+        endPage = Math.min(maxVisiblePages - 1, totalPages - 1)
+    } else if (page >= totalPages - 2) {
+        startPage = Math.max(2, totalPages - (maxVisiblePages - 2))
+    }
+
+    if (startPage > 2) pages.push(-1)
+    for (let i = startPage; i <= endPage; i++) pages.push(i)
+    if (endPage < totalPages - 1) pages.push(-1)
+    if (totalPages > 1) pages.push(totalPages)
+
+    return pages
+}
+
+type TablePaginationProps = {
+    page: number
+    pageSize: number
+    total: number
+    onPageChange: (page: number) => void
+}
+
+const TablePagination = ({ page, pageSize, total, onPageChange }: TablePaginationProps) => {
+    const { t } = useTranslation()
+    const sm = useMediaQuery("(min-width: 640px)")
+    const totalPages = Math.ceil(total / pageSize)
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage < 1 || newPage > totalPages) return
+        onPageChange(newPage)
+    }
+
+    return (
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-2 py-4">
+            <div className="shrink-0 whitespace-nowrap text-sm text-muted-foreground tabular-nums">
+                {t("Total")}: {total}
+            </div>
+            <Pagination className="mx-0 ml-auto w-auto">
+                <PaginationContent>
+                    <PaginationItem>
+                        <PaginationPrevious
+                            onClick={() => handlePageChange(page - 1)}
+                            aria-disabled={page <= 1 || undefined}
+                            className={
+                                page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
+                            }
+                        />
+                    </PaginationItem>
+
+                    {getPageNumbers(page, totalPages, !sm).map((pageNum, idx) =>
+                        pageNum === -1 ? (
+                            <PaginationItem key={`ellipsis-${idx}`}>
+                                <PaginationEllipsis />
+                            </PaginationItem>
+                        ) : (
+                            <PaginationItem key={pageNum}>
+                                <PaginationLink
+                                    onClick={() => handlePageChange(pageNum)}
+                                    isActive={pageNum === page}
+                                    className="cursor-pointer"
+                                >
+                                    {pageNum}
+                                </PaginationLink>
+                            </PaginationItem>
+                        ),
+                    )}
+
+                    <PaginationItem>
+                        <PaginationNext
+                            onClick={() => handlePageChange(page + 1)}
+                            aria-disabled={page >= totalPages || undefined}
+                            className={
+                                page >= totalPages
+                                    ? "pointer-events-none opacity-50"
+                                    : "cursor-pointer"
+                            }
+                        />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
+        </div>
+    )
+}
+TablePagination.displayName = "TablePagination"
 
 export {
     Pagination,
@@ -91,4 +205,5 @@ export {
     PaginationLink,
     PaginationNext,
     PaginationPrevious,
+    TablePagination,
 }
