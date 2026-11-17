@@ -10,6 +10,7 @@ import {
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import useTerminal from "@/hooks/useTerminal"
 import { type TerminalKey, controlSequenceForInput, terminalKeySequence } from "@/lib/terminal-keys"
+import { cn } from "@/lib/utils"
 import { BREAKPOINTS, Page } from "@nezha-kumo/ui"
 import { FitAddon } from "@xterm/addon-fit"
 import { Terminal } from "@xterm/xterm"
@@ -17,6 +18,7 @@ import "@xterm/xterm/css/xterm.css"
 import { Terminal as TerminalIcon } from "lucide-react"
 import {
     JSX,
+    Ref,
     forwardRef,
     useCallback,
     useEffect,
@@ -29,7 +31,7 @@ import { useParams } from "react-router-dom"
 import { toast } from "sonner"
 
 import { FMCard } from "./fm"
-import { Button } from "./ui/button"
+import { Button, ButtonProps } from "./ui/button"
 import { IconButton } from "./xui/icon-button"
 
 interface XtermProps {
@@ -389,7 +391,9 @@ export const TerminalPage = () => {
             <AlertDialog open={open} onOpenChange={setOpen}>
                 <AlertDialogContent className="sm:max-w-lg">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{t("TerminalControls.SessionCompleted")}</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            {t("TerminalControls.SessionCompleted")}
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
                             {t("TerminalControls.CloseWindowHint")}
                         </AlertDialogDescription>
@@ -405,24 +409,46 @@ export const TerminalPage = () => {
     )
 }
 
-export const TerminalButton = ({ id, menuItem = false }: { id: number; menuItem?: boolean }) => {
+export const TerminalButton = ({
+    id,
+    menuItem = false,
+    ref,
+    onClick,
+    ...props
+}: Omit<ButtonProps, "id"> & { id: number; menuItem?: boolean; ref?: Ref<HTMLButtonElement> }) => {
     const { t } = useTranslation()
-    const handleOpenNewTab = () => {
+    const handleOpenNewTab: NonNullable<ButtonProps["onClick"]> = (event) => {
+        onClick?.(event)
+        if (event.defaultPrevented) return
         window.open(`/dashboard/terminal/${id}`, "_blank")
     }
 
     if (menuItem) {
         return (
-            <button
+            <Button
+                variant="ghost"
+                {...props}
+                ref={ref}
                 type="button"
                 onClick={handleOpenNewTab}
-                className="flex w-full items-center text-sm px-2 py-2 hover:bg-accent hover:text-accent-foreground"
+                className={cn(
+                    "flex w-full items-center text-sm px-2 py-2 hover:bg-accent hover:text-accent-foreground",
+                    props.className,
+                )}
             >
                 <TerminalIcon className="h-4 w-4 mr-2" />
                 <span>{t("Terminal")}</span>
-            </button>
+            </Button>
         )
     }
 
-    return <IconButton variant="outline" icon="terminal" onClick={handleOpenNewTab} />
+    return (
+        <IconButton
+            variant="outline"
+            {...props}
+            ref={ref}
+            icon="terminal"
+            onClick={handleOpenNewTab}
+        />
+    )
 }
