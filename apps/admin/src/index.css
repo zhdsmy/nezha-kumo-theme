@@ -602,7 +602,7 @@ body,
 .nkt-note-choices > [data-kumo-part="items"] {
     display: grid;
     grid-auto-flow: column;
-    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-columns: auto;
     width: 100%;
 }
 .nkt-note-choices [data-kumo-part="item-label"] {
@@ -611,6 +611,9 @@ body,
     margin-left: 0;
     height: 36px;
     padding-inline: 6px;
+}
+.nkt-note-choices [data-kumo-part="item-label"]::before {
+    inset-inline: 0;
 }
 .nkt-note-grid > :not([data-note-ip]) {
     grid-column: 1 / -1;
@@ -621,6 +624,24 @@ body,
     }
     .nkt-note-grid > :is([data-note-field="networkRoute"], [data-note-field="extra"]) {
         grid-column: 1 / -1;
+    }
+}
+.nkt-note-billing-column {
+    display: contents;
+}
+.nkt-note-billing-column > [data-note-field] {
+    grid-column: 1 / -1;
+}
+.nkt-note-billing-column > :is([data-note-field="autoRenewal"], [data-note-field="cycle"]) {
+    grid-column: auto;
+}
+@media (min-width: 640px) {
+    .nkt-note-grid > .nkt-note-billing-column {
+        display: grid;
+        grid-column: auto;
+        grid-template-columns: minmax(0, 1fr);
+        align-content: start;
+        gap: 4px;
     }
 }
 .nkt-note-field {
@@ -676,15 +697,13 @@ body,
     min-width: 0;
     width: 100%;
 }
-.nkt-note-editor [data-note-field] input[list] {
+.nkt-note-editor [data-note-field] input[list],
+.nkt-note-editor [data-note-field="extra"] input {
     min-width: 8rem;
 }
 .nkt-note-editor [data-note-field] span:has(> button[aria-label]) {
     height: auto;
     min-height: 36px;
-}
-.nkt-note-grid > :is([data-note-field="autoRenewal"], [data-note-field="cycle"]) {
-    grid-column: auto;
 }
 .nkt-note-grid > .nkt-note-flags {
     grid-column: 1 / -1;
@@ -694,23 +713,6 @@ body,
 }
 .nkt-note-flags > [data-note-field="trafficType"] {
     grid-column: 1 / -1;
-}
-@media (min-width: 640px) {
-    .nkt-note-grid > .nkt-note-flags {
-        grid-template-columns: 1.4fr 1fr 1fr;
-    }
-    .nkt-note-flags > [data-note-field="trafficType"] {
-        grid-column: auto;
-    }
-    .nkt-note-flags > [data-note-field="trafficType"] .nkt-note-control {
-        padding-right: 0;
-    }
-    .nkt-note-flags > [data-note-field="trafficType"] .nkt-note-label {
-        min-height: 36px;
-    }
-    .nkt-note-flags > [data-note-field="trafficType"] .nkt-note-clear {
-        top: 0;
-    }
 }
 
 .nkt-json-rows {

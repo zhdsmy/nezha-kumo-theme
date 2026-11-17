@@ -1,5 +1,10 @@
-import { chromium, expect, test, webkit } from "@playwright/test"
+import { type Page, chromium, expect, test, webkit } from "@playwright/test"
 import { mkdirSync, writeFileSync } from "node:fs"
+
+import en from "../../src/locales/en/translation.json" with { type: "json" }
+import ja from "../../src/locales/ja/translation.json" with { type: "json" }
+import zhCN from "../../src/locales/zh-CN/translation.json" with { type: "json" }
+import zhTW from "../../src/locales/zh-TW/translation.json" with { type: "json" }
 
 const artifact = process.env.NKT_NOTE_ARTIFACTS
 const baseline = !!process.env.NKT_NOTE_BASELINE
@@ -10,6 +15,183 @@ const privateNote =
 const originalHeights = {
     webkit: { 375: 1545.96875, 1440: 1136.5625 },
     chromium: { 375: 1540.5625, 1440: 1088.5625 },
+}
+
+async function expectChoicesToFit(page: Page) {
+    for (const group of await page.locator(".nkt-note-choices").all()) {
+        expect(await group.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true)
+        const bounds = await group.boundingBox()
+        const options = await group.locator('[data-kumo-part="item-label"]').evaluateAll((els) =>
+            els.map((el) => {
+                const box = el.getBoundingClientRect()
+                const text = el.querySelector("span")!.getBoundingClientRect()
+                return {
+                    label: el.textContent,
+                    scroll: el.scrollWidth,
+                    width: el.clientWidth,
+                    left: box.left,
+                    right: box.right,
+                    top: box.top,
+                    bottom: box.bottom,
+                    textLeft: text.left,
+                    textRight: text.right,
+                }
+            }),
+        )
+        for (const [index, option] of options.entries()) {
+            expect(option.scroll, option.label ?? "").toBeLessThanOrEqual(option.width)
+            expect(option.textLeft).toBeGreaterThanOrEqual(option.left)
+            expect(option.textRight).toBeLessThanOrEqual(option.right)
+            expect(option.left).toBeGreaterThanOrEqual(bounds!.x)
+            expect(option.right).toBeLessThanOrEqual(bounds!.x + bounds!.width)
+            if (index)
+                expect(
+                    option.left >= options[index - 1].right ||
+                        option.top >= options[index - 1].bottom,
+                ).toBe(true)
+        }
+    }
+}
+
+for (const [engine, driver] of Object.entries({ webkit, chromium }))
+    for (const [language, messages] of Object.entries({ en, ja, "zh-CN": zhCN, "zh-TW": zhTW }))
+        for (const width of [375, 952, 1440])
+            test(`note layout ${engine} ${language} ${width}: translated choices and aligned billing`, async ({
+                baseURL,
+            }) => {
+                const browser = await driver.launch()
+                try {
+                    const page = await browser.newPage({
+                        viewport: { width, height: 900 },
+                        locale: language,
+                        reducedMotion: "reduce",
+                    })
+                    await page.addInitScript(
+                        (language) => localStorage.setItem("language", language),
+                        language,
+                    )
+                    await mockNotes(page, language)
+                    await page.goto(`${baseURL}/dashboard/`)
+                    if (width === 375)
+                        await page
+                            .getByRole("button", { name: messages.Actions, exact: true })
+                            .first()
+                            .click()
+                    await page
+                        .getByRole("button", { name: messages.Edit, exact: true })
+                        .first()
+                        .click()
+                    await expect(page.locator("[data-public-note-editor]")).toBeVisible()
+                    await page.evaluate(() => document.fonts.ready)
+                    await expectChoicesToFit(page)
+                    const billing = page.locator("[data-public-note-editor] > fieldset").first()
+                    if (width >= 640) {
+                        const geometry = await billing.evaluate((el) => {
+                            const box = (field: string) =>
+                                el
+                                    .querySelector(`[data-note-field="${field}"]`)!
+                                    .getBoundingClientRect()
+                            const start = box("startDate"),
+                                end = box("endDate"),
+                                renewal = box("autoRenewal")
+                            return {
+                                startTop: start.top,
+                                endTop: end.top,
+                                startBottom: el
+                                    .querySelector(
+                                        '[data-note-field="startDate"] .nkt-note-control',
+                                    )!
+                                    .getBoundingClientRect().bottom,
+                                renewalTop: renewal.top,
+                            }
+                        })
+                        expect(Math.abs(geometry.startTop - geometry.endTop)).toBeLessThanOrEqual(1)
+                        expect(geometry.renewalTop - geometry.startBottom).toBeLessThanOrEqual(8)
+                    }
+                    const endTrigger = await page
+                        .getByRole("button", {
+                            name: new RegExp("^" + messages.PublicNote.EndDate + " · "),
+                        })
+                        .boundingBox()
+                    const estimate = await page
+                        .getByRole("button", {
+                            name: messages.PublicNote.EstimateExpiry,
+                            exact: true,
+                        })
+                        .boundingBox()
+                    expect(estimate!.y - endTrigger!.y - endTrigger!.height).toBeLessThanOrEqual(8)
+                    if (artifact && ["en", "ja"].includes(language) && width !== 952) {
+                        mkdirSync(artifact, { recursive: true })
+                        await page.setViewportSize({ width, height: 3000 })
+                        for (const theme of ["light", "dark"]) {
+                            await page.emulateMedia({ colorScheme: theme })
+                            await page.evaluate(
+                                (theme) =>
+                                    document.documentElement.classList.toggle(
+                                        "dark",
+                                        theme === "dark",
+                                    ),
+                                theme,
+                            )
+                            for (const kind of ["public", "private"])
+                                await page.locator(`[data-${kind}-note-editor]`).screenshot({
+                                    path: `${artifact}/${engine}-${language}-${width}-${theme}-${kind}.png`,
+                                    animations: "disabled",
+                                })
+                        }
+                    }
+                } finally {
+                    await browser.close()
+                }
+            })
+
+async function mockNotes(page: Page, language = "zh-CN") {
+    const writes: { note: string; public_note: string }[] = []
+    await page.route("**/api/v1/**", async (route) => {
+        const path = new URL(route.request().url()).pathname.slice(8)
+        if (route.request().method() === "PATCH") {
+            writes.push(route.request().postDataJSON())
+            return route.fulfill({ json: { success: true } })
+        }
+        const data =
+            path === "profile"
+                ? { id: 1, role: 0, username: "mock" }
+                : path === "setting"
+                  ? {
+                        config: {
+                            site_name: "Mock",
+                            language,
+                            oauth2_providers: [],
+                            custom_code: "",
+                            custom_code_dashboard: "",
+                        },
+                    }
+                  : path === "server"
+                    ? [
+                          {
+                              id: 1,
+                              name: "Mock note forms",
+                              display_index: 0,
+                              note: privateNote,
+                              public_note: publicNote,
+                              host: {},
+                              geoip: {},
+                              owner: { username: "mock" },
+                          },
+                          {
+                              id: 2,
+                              name: "Other mock",
+                              display_index: 0,
+                              public_note: '{"planDataMod":{"networkRoute":"CMI,CN2GIA"}}',
+                              host: {},
+                              geoip: {},
+                              owner: { username: "mock" },
+                          },
+                      ]
+                    : []
+        await route.fulfill({ json: { success: true, data } })
+    })
+    return writes
 }
 
 for (const [engine, driver] of Object.entries({ webkit, chromium }))
@@ -39,52 +221,7 @@ for (const [engine, driver] of Object.entries({ webkit, chromium }))
                         },
                         { theme },
                     )
-                    const writes: { note: string; public_note: string }[] = []
-                    await page.route("**/api/v1/**", async (route) => {
-                        const path = new URL(route.request().url()).pathname.slice(8)
-                        if (route.request().method() === "PATCH") {
-                            writes.push(route.request().postDataJSON())
-                            return route.fulfill({ json: { success: true } })
-                        }
-                        const data =
-                            path === "profile"
-                                ? { id: 1, role: 0, username: "mock" }
-                                : path === "setting"
-                                  ? {
-                                        config: {
-                                            site_name: "Mock",
-                                            language: "zh-CN",
-                                            oauth2_providers: [],
-                                            custom_code: "",
-                                            custom_code_dashboard: "",
-                                        },
-                                    }
-                                  : path === "server"
-                                    ? [
-                                          {
-                                              id: 1,
-                                              name: "Mock note forms",
-                                              display_index: 0,
-                                              note: privateNote,
-                                              public_note: publicNote,
-                                              host: {},
-                                              geoip: {},
-                                              owner: { username: "mock" },
-                                          },
-                                          {
-                                              id: 2,
-                                              name: "Other mock",
-                                              display_index: 0,
-                                              public_note:
-                                                  '{"planDataMod":{"networkRoute":"CMI,CN2GIA"}}',
-                                              host: {},
-                                              geoip: {},
-                                              owner: { username: "mock" },
-                                          },
-                                      ]
-                                    : []
-                        await route.fulfill({ json: { success: true, data } })
-                    })
+                    const writes = await mockNotes(page)
                     await page.goto(`${baseURL}/dashboard/`)
                     if (width === 375)
                         await page
@@ -137,14 +274,7 @@ for (const [engine, driver] of Object.entries({ webkit, chromium }))
                                 expect(item.scroll).toBeLessThanOrEqual(item.width + 1)
                             }
                         }
-                        for (const group of await page.locator(".nkt-note-choices").all()) {
-                            const widths = await group
-                                .locator("[data-kumo-part=item-label]")
-                                .evaluateAll((els) =>
-                                    els.map((el) => el.getBoundingClientRect().width),
-                                )
-                            expect(Math.max(...widths) - Math.min(...widths)).toBeLessThanOrEqual(1)
-                        }
+                        await expectChoicesToFit(page)
                     }
                     if (!baseline)
                         expect(total).toBeLessThanOrEqual(

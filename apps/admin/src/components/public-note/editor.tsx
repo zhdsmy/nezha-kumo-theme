@@ -104,54 +104,63 @@ export function PublicNoteEditor({
                 billing,
                 t("PublicNote.Billing"),
                 <>
-                    {field(billing, "startDate", t("PublicNote.StartDate"), (value, onChange) => (
-                        <DateInput
-                            label={t("PublicNote.StartDate")}
-                            value={value}
-                            onChange={onChange}
-                        />
-                    ))}
-                    {field(billing, "endDate", t("PublicNote.EndDate"), (value, onChange) => (
-                        <DateInput
-                            end
-                            label={t("PublicNote.EndDate")}
-                            value={value}
-                            onChange={onChange}
-                            start={get(billing, "startDate")}
-                            cycle={cycle}
-                        />
-                    ))}
-                    {field(
-                        billing,
-                        "autoRenewal",
-                        t("PublicNote.AutoRenewal"),
-                        (value, onChange) => (
-                            <>
-                                <Switch
-                                    aria-label={t("PublicNote.AutoRenewal")}
-                                    checked={value === "1"}
-                                    onCheckedChange={(checked) => onChange(checked ? "1" : "0")}
+                    <div className="nkt-note-billing-column">
+                        {field(
+                            billing,
+                            "startDate",
+                            t("PublicNote.StartDate"),
+                            (value, onChange) => (
+                                <DateInput
+                                    label={t("PublicNote.StartDate")}
+                                    value={value}
+                                    onChange={onChange}
                                 />
-                                {value !== undefined && !/^[01]$/.test(value) && (
-                                    <UnknownValue value={value} />
-                                )}
-                            </>
-                        ),
-                    )}
-                    {field(billing, "cycle", t("PublicNote.Cycle"), (value, onChange) => (
-                        <CyclePicker
-                            label={t("PublicNote.Cycle")}
-                            value={value || cycle}
-                            onChange={onChange}
-                        />
-                    ))}
-                    {field(billing, "amount", t("PublicNote.Amount"), (value, onChange) => (
-                        <AmountInput
-                            label={t("PublicNote.Amount")}
-                            value={value}
-                            onChange={onChange}
-                        />
-                    ))}
+                            ),
+                        )}
+                        {field(
+                            billing,
+                            "autoRenewal",
+                            t("PublicNote.AutoRenewal"),
+                            (value, onChange) => (
+                                <>
+                                    <Switch
+                                        aria-label={t("PublicNote.AutoRenewal")}
+                                        checked={value === "1"}
+                                        onCheckedChange={(checked) => onChange(checked ? "1" : "0")}
+                                    />
+                                    {value !== undefined && !/^[01]$/.test(value) && (
+                                        <UnknownValue value={value} />
+                                    )}
+                                </>
+                            ),
+                        )}
+                        {field(billing, "cycle", t("PublicNote.Cycle"), (value, onChange) => (
+                            <CyclePicker
+                                label={t("PublicNote.Cycle")}
+                                value={value || cycle}
+                                onChange={onChange}
+                            />
+                        ))}
+                    </div>
+                    <div className="nkt-note-billing-column">
+                        {field(billing, "endDate", t("PublicNote.EndDate"), (value, onChange) => (
+                            <DateInput
+                                end
+                                label={t("PublicNote.EndDate")}
+                                value={value}
+                                onChange={onChange}
+                                start={get(billing, "startDate")}
+                                cycle={cycle}
+                            />
+                        ))}
+                        {field(billing, "amount", t("PublicNote.Amount"), (value, onChange) => (
+                            <AmountInput
+                                label={t("PublicNote.Amount")}
+                                value={value}
+                                onChange={onChange}
+                            />
+                        ))}
+                    </div>
                 </>,
             )}
             {section(

@@ -226,7 +226,7 @@
         "Year": "Year",
         "NoExpiry": "No Expiry",
         "Free": "Free",
-        "PayAsYouGo": "Pay as you go",
+        "PayAsYouGo": "Metered",
         "Has": "Has",
         "None": "None",
         "CustomFields": "Form",
@@ -255,11 +255,11 @@
         "Currency": "Currency",
         "Unlimited": "Unlimited",
         "TrafficCycle": "Traffic period",
-        "EstimateExpiry": "Calculate from cycle",
+        "EstimateExpiry": "From cycle",
         "TrafficModes": {
-            "sum": "Both directions",
-            "out": "Outbound only",
-            "max": "Larger direction"
+            "sum": "In + out",
+            "out": "Out only",
+            "max": "Larger"
         },
         "RemoveTag": "Remove {{tag}}",
         "TagsPlaceholder": "Enter to add",
