@@ -105,7 +105,7 @@ export function QuantityInput({
     const unit = quantity?.unit || selectedUnit
     const cycle = quantity && "cycle" in quantity ? quantity.cycle : undefined
     const period = quantity ? (cycle ? writeCycle(cycle) : undefined) : selectedCycle
-    const write = (amount: number | undefined, nextUnit = unit, nextCycle = period) => {
+    const write = (amount: number | undefined, nextUnit: string, nextCycle: string | undefined) => {
         if (amount === undefined) return onChange(undefined)
         onChange(
             traffic

@@ -19,3 +19,11 @@ test("traffic uses the shared cycle picker and canonical units without normalizi
     fireEvent.click(screen.getByRole("switch", { name: "流量配额 · 不限" }))
     expect(change).toHaveBeenLastCalledWith("Unlimited")
 })
+
+test("clearing a traffic period removes its suffix", () => {
+    const change = vi.fn()
+    render(<QuantityInput traffic label="流量配额" value="1TB/Month" onChange={change} />)
+    fireEvent.click(screen.getByRole("button", { name: "流量周期" }))
+    fireEvent.click(screen.getByRole("button", { name: "清除" }))
+    expect(change).toHaveBeenLastCalledWith("1TB")
+})
