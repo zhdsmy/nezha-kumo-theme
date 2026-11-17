@@ -6,18 +6,8 @@ export const settingCoverageTypes: Record<number, string> = {
 export const nezhaLang: Record<string, string> = {
     "zh-CN": "简体中文（中国大陆）",
     "zh-TW": "正體中文（台灣）",
-    "en-US": "English",
-    "ru-RU": "Русский",
-    "es-ES": "Español",
-    "de-DE": "Deutsch",
-    "ta-IN": "தமிழ்",
-    "it-IT": "Italiano",
-    "fr-FR": "Français",
-    "id-ID": "Bahasa Indonesia",
-    "ja-JP": "日本語",
-    "ro-RO": "Română",
-    "uk-UA": "Українська",
-    "gl-ES": "Galego",
+    en: "English",
+    ja: "日本語",
 }
 
 export const wafBlockReasons: Record<number, string> = {
