@@ -294,10 +294,17 @@ test.describe("Layout polish (fe2)", () => {
 
                 await assertNoMeterTruncation(page, `cards ${width}px ${state} top`)
 
-                // Also verify after scrolling down (scrollY > 0)
-                await page.evaluate(() => window.scrollTo(0, 320))
-                const scrollY = await page.evaluate(() => window.scrollY)
-                expect(scrollY, `${width}px ${state}: expected scrollable page`).toBeGreaterThan(0)
+                // Also verify after scrolling down (scrollTop > 0)
+                await page.evaluate(() => {
+                    document.querySelector(".nk-main")!.scrollTop = 320
+                })
+                const scrollTop = await page.evaluate(
+                    () => document.querySelector(".nk-main")!.scrollTop,
+                )
+                expect(
+                    scrollTop,
+                    `${width}px ${state}: expected scrollable content area`,
+                ).toBeGreaterThan(0)
                 await assertNoMeterTruncation(page, `cards ${width}px ${state} scrolled`)
             }
         }
@@ -340,8 +347,12 @@ test.describe("Layout polish (fe2)", () => {
             }
 
             await page.setViewportSize({ width: 768, height: 640 })
-            await page.evaluate(() => window.scrollTo(0, 260))
-            expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+            await page.evaluate(() => {
+                document.querySelector(".nk-main")!.scrollTop = 260
+            })
+            expect(
+                await page.evaluate(() => document.querySelector(".nk-main")!.scrollTop),
+            ).toBeGreaterThan(0)
             await assertNodeOverviewWrapping(page, `node ${lang} 768px scrolled`)
         }
     })
@@ -508,8 +519,12 @@ test.describe("Layout polish (fe2)", () => {
                 )
                 await assertNoMeterTruncation(page, `webkit ${width}px top`)
 
-                await page.evaluate(() => window.scrollTo(0, 300))
-                expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+                await page.evaluate(() => {
+                    document.querySelector(".nk-main")!.scrollTop = 300
+                })
+                expect(
+                    await page.evaluate(() => document.querySelector(".nk-main")!.scrollTop),
+                ).toBeGreaterThan(0)
                 await assertNoMeterTruncation(page, `webkit ${width}px scrolled`)
 
                 // Activate keyboard focus-visible modality in WebKit and compare focus rings
@@ -542,7 +557,9 @@ test.describe("Layout polish (fe2)", () => {
                 await page.goto("/server/6")
                 await expect(page.locator(".info-section").first()).toBeVisible()
                 await assertNodeOverviewWrapping(page, `webkit node ${width}px`)
-                await page.evaluate(() => window.scrollTo(0, 220))
+                await page.evaluate(() => {
+                    document.querySelector(".nk-main")!.scrollTop = 220
+                })
                 await assertNodeOverviewWrapping(page, `webkit node ${width}px scrolled`)
 
                 await context.close()

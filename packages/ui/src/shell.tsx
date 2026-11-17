@@ -21,6 +21,7 @@ import {
     type ShellContext,
     type ShellLinkProps,
 } from "./contract"
+import { getShellScroller } from "./scroller"
 
 export const AsideLabelContext = createContext("Additional information")
 
@@ -240,8 +241,6 @@ function ShellLayout({
 
     useEffect(() => {
         if (!isMobile || !openMobile) return
-        const previousOverflow = document.body.style.overflow
-        document.body.style.overflow = "hidden"
         // Kumo handles Escape and initial focus; keep Tab within the open drawer too.
         const trapFocus = (event: KeyboardEvent) => {
             if (event.key !== "Tab") return
@@ -268,7 +267,6 @@ function ShellLayout({
         }
         document.addEventListener("keydown", trapFocus)
         return () => {
-            document.body.style.overflow = previousOverflow
             document.removeEventListener("keydown", trapFocus)
             requestAnimationFrame(() => {
                 if (
@@ -283,7 +281,7 @@ function ShellLayout({
 
     return (
         <LinkProvider component={kumoLink}>
-            <Sidebar ref={sidebarRef} className="nk-sidebar" contentClassName="nk-sidebar-inner">
+            <Sidebar ref={sidebarRef} className="nk-sidebar">
                 <Sidebar.Header className="nk-brand-row">
                     <div className="nk-brand">{brand}</div>
                     {isMobile && (
@@ -451,7 +449,17 @@ export function AppShell(props: AppShellProps) {
                 }
             >
                 <style>{responsiveStyles}</style>
-                <a className="nk-skip-link" href="#main-content">
+                <a
+                    className="nk-skip-link"
+                    href="#main-content"
+                    onClick={(event) => {
+                        const main = getShellScroller()
+                        if (main) {
+                            event.preventDefault()
+                            main.focus({ preventScroll: true })
+                        }
+                    }}
+                >
                     {props.labels?.skipToContent ?? "Skip to content"}
                 </a>
                 <ShellLayout {...props} />

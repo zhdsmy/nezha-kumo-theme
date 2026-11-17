@@ -590,20 +590,27 @@ test("navigation: clickable brand/topbar reset filters, back link preserves list
     ).toHaveCount(0)
     await expect(page.locator("[data-server]")).toHaveCount(20)
 
-    // 2. HomePage scroll behavior: region tab keeps scrollY > 0, sidebar group resets scrollY to 0
+    // 2. HomePage scroll behavior: region tab keeps scrollTop > 0, sidebar group resets scrollTop to 0
+    const mainScrollTop = () =>
+        page.evaluate(() => Math.round(document.querySelector(".nk-main")!.scrollTop))
+    const scrollMainTo = (top: number) =>
+        page.evaluate((y) => {
+            document.querySelector(".nk-main")!.scrollTop = y
+        }, top)
+
     await page.setViewportSize({ width: 1024, height: 640 })
     await page.goto("/")
     await expect(page.locator("[data-server]")).toHaveCount(20)
-    await page.evaluate(() => window.scrollTo({ top: 220 }))
-    const beforeTabScroll = await page.evaluate(() => window.scrollY)
+    await scrollMainTo(220)
+    const beforeTabScroll = await mainScrollTop()
     expect(beforeTabScroll).toBeGreaterThan(150)
     await page.locator(".region-tabs").getByRole("tab", { name: /HK/ }).click()
     await expect(page).toHaveURL(/\/\?region=HK$/)
-    expect(await page.evaluate(() => window.scrollY)).toBe(beforeTabScroll)
+    expect(await mainScrollTop()).toBe(beforeTabScroll)
 
     await page.locator('nav a[href^="/?group="]').first().click()
     await expect(page).toHaveURL(/\/\?group=/)
-    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+    expect(await mainScrollTop()).toBe(0)
 
     // 3. Filtered list (?group=...&region=...) -> node -> Back link & Browser Back after 3 tab switches
     const listQuery = new URLSearchParams({ group: "🇺🇸 美国", region: "US" }).toString()
@@ -612,7 +619,7 @@ test("navigation: clickable brand/topbar reset filters, back link preserves list
     await expect(page.locator("[data-server]")).toHaveCount(2)
     const cardLink = page.locator("[data-server] a").last()
     await cardLink.scrollIntoViewIfNeeded()
-    const savedY = await page.evaluate(() => window.scrollY)
+    const savedY = await mainScrollTop()
     expect(savedY).toBeGreaterThan(100)
 
     await cardLink.click()
@@ -624,12 +631,12 @@ test("navigation: clickable brand/topbar reset filters, back link preserves list
 
     // Switch 3 tabs on node page: scroll stays > 0 and history is replaced, so 1 Back returns to list
     await expect(page.locator(".node-live-strip")).toBeVisible()
-    await page.evaluate(() => window.scrollTo({ top: 55 }))
-    const nodeScrollY = await page.evaluate(() => window.scrollY)
+    await scrollMainTo(55)
+    const nodeScrollY = await mainScrollTop()
     expect(nodeScrollY).toBeGreaterThan(40)
     await page.getByRole("tab", { name: "Load", exact: true }).click()
     await expect(page.locator(".chart svg")).toHaveCount(6)
-    expect(await page.evaluate(() => window.scrollY)).toBe(nodeScrollY)
+    expect(await mainScrollTop()).toBe(nodeScrollY)
     await page.getByRole("tab", { name: "Latency", exact: true }).click()
     await page.getByRole("tab", { name: "Reporting history", exact: true }).click()
     await expect(page).toHaveURL(/#history$/)
@@ -638,20 +645,16 @@ test("navigation: clickable brand/topbar reset filters, back link preserves list
     await expect(page).toHaveURL(
         new RegExp(`\\/\\?${listQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`),
     )
-    await expect
-        .poll(() => page.evaluate(() => Math.round(window.scrollY)))
-        .toBeCloseTo(Math.round(savedY), -1)
+    await expect.poll(mainScrollTop).toBeCloseTo(savedY, -1)
 
-    // Clicking Back to list link also returns to the same filtered list and restores scrollY
+    // Clicking Back to list link also returns to the same filtered list and restores scrollTop
     await cardLink.click()
     await expect(page).toHaveURL(/\/server\/\d+$/)
     await page.locator(".nk-context a").click()
     await expect(page).toHaveURL(
         new RegExp(`\\/\\?${listQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`),
     )
-    await expect
-        .poll(() => page.evaluate(() => Math.round(window.scrollY)))
-        .toBeCloseTo(Math.round(savedY), -1)
+    await expect.poll(mainScrollTop).toBeCloseTo(savedY, -1)
 
     // 4. Direct entry to node page without prior list history falls back to "/"
     const directCtx = await browser.newContext({ viewport: { width: 1440, height: 700 } })
@@ -697,13 +700,17 @@ test("node sidebar peer switcher: lists group peers, keeps hash & range, respect
     await range7d.click()
     await expect(range7d).toHaveAttribute("aria-pressed", "true")
     await page.setViewportSize({ width: 1440, height: 420 })
-    await page.evaluate(() => window.scrollTo({ top: 120 }))
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(50)
+    await page.evaluate(() => {
+        document.querySelector(".nk-main")!.scrollTop = 120
+    })
+    expect(
+        await page.evaluate(() => document.querySelector(".nk-main")!.scrollTop),
+    ).toBeGreaterThan(50)
 
     await onlinePeer.click()
     await expect(page).toHaveURL(/\/server\/35#latency$/)
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Server 13")
-    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+    expect(await page.evaluate(() => document.querySelector(".nk-main")!.scrollTop)).toBe(0)
     await expect(sidebarNav.locator('a[aria-current="page"] .nk-nav-label')).toHaveText("Server 13")
     // Range state ("7 d") is preserved across peer navigation
     await expect(page.getByRole("button", { name: "7 d", exact: true })).toHaveAttribute(

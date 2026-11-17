@@ -10,7 +10,7 @@ import UserMenu from "@/components/user-menu"
 import { useAuth } from "@/hooks/useAuth"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { nezhaLang } from "@/types/settings"
-import { AppShell, BREAKPOINTS, NavSection, ShellLinkProps } from "@nezha-kumo/ui"
+import { AppShell, BREAKPOINTS, NavSection, ShellLinkProps, getShellScroller } from "@nezha-kumo/ui"
 import {
     Activity,
     Bell,
@@ -31,7 +31,7 @@ import {
     Users,
     Workflow,
 } from "lucide-react"
-import { ReactNode } from "react"
+import { ReactNode, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useLocation } from "react-router-dom"
 
@@ -52,6 +52,10 @@ export default function AdminShell({
     const { profile } = useAuth()
     const sidebarShown = useMediaQuery(`(min-width: ${BREAKPOINTS.sidebar}px)`)
     const { pathname } = useLocation()
+    useEffect(() => {
+        const scroller = getShellScroller()
+        if (scroller) scroller.scrollTop = 0
+    }, [pathname])
     const isAdmin = profile?.role === 0
     const nav: NavSection[] = [
         {

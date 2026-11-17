@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
+    "./scroller": "./src/scroller.ts",
     "./styles.css": "./src/styles.css"
   },
   "scripts": {

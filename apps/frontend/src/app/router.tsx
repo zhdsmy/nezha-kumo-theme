@@ -1,4 +1,5 @@
 // Adapted from zool-theme/src/app/router.tsx (MIT, luoleiorg).
+import { getShellScroller } from "@nezha-kumo/ui/scroller"
 import { type AnchorHTMLAttributes, type MouseEvent, useSyncExternalStore } from "react"
 
 const EVENT = "nkt:navigate"
@@ -6,10 +7,9 @@ export const RESET_EVENT = "nkt:reset"
 const scrollPositions = new Map<string, number>()
 
 const pageKey = (u: Pick<Location | URL, "pathname" | "search">) => u.pathname + u.search
+let currentKey = typeof window !== "undefined" ? pageKey(window.location) : "/"
 let lastListHref =
-    typeof window !== "undefined" && window.location.pathname === "/"
-        ? pageKey(window.location)
-        : "/"
+    typeof window !== "undefined" && window.location.pathname === "/" ? currentKey : "/"
 
 if (typeof history !== "undefined" && "scrollRestoration" in history) {
     history.scrollRestoration = "manual"
@@ -20,9 +20,15 @@ const syncLastList = () => {
 }
 
 const restoreScroll = (y: number) => {
-    window.scrollTo({ top: y })
+    const scroller = getShellScroller()
+    if (scroller) scroller.scrollTop = y
     if (y > 0) {
-        requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo({ top: y })))
+        requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+                const next = getShellScroller()
+                if (next) next.scrollTop = y
+            }),
+        )
     }
 }
 
@@ -60,7 +66,7 @@ export function navigate(to: string, opts: NavigateOptions = {}) {
     const currentFull = window.location.pathname + window.location.search + window.location.hash
     if (opts.reset) window.dispatchEvent(new Event(RESET_EVENT))
     if (to === currentFull) {
-        if (opts.reset) window.scrollTo({ top: 0 })
+        if (opts.reset) restoreScroll(0)
         return
     }
     const fromPath = window.location.pathname
@@ -71,13 +77,15 @@ export function navigate(to: string, opts: NavigateOptions = {}) {
         opts.replace ?? (!opts.reset && toKey === fromKey && target.hash !== window.location.hash)
     if (inPage) {
         history.replaceState(null, "", to)
+        currentKey = toKey
         syncLastList()
         window.dispatchEvent(new Event(EVENT))
         return
     }
     const returningToList = !opts.reset && fromPath !== "/" && toKey === lastListHref
-    scrollPositions.set(fromKey, window.scrollY)
+    scrollPositions.set(fromKey, getShellScroller()?.scrollTop ?? 0)
     history.pushState(null, "", to)
+    currentKey = toKey
     syncLastList()
     window.dispatchEvent(new Event(EVENT))
     restoreScroll(returningToList ? (scrollPositions.get(toKey) ?? 0) : 0)
@@ -85,8 +93,13 @@ export function navigate(to: string, opts: NavigateOptions = {}) {
 
 if (typeof window !== "undefined") {
     window.addEventListener("popstate", () => {
+        const nextKey = pageKey(window.location)
+        if (nextKey !== currentKey) {
+            scrollPositions.set(currentKey, getShellScroller()?.scrollTop ?? 0)
+            currentKey = nextKey
+        }
         syncLastList()
-        restoreScroll(scrollPositions.get(pageKey(window.location)) ?? 0)
+        restoreScroll(scrollPositions.get(nextKey) ?? 0)
     })
 }
 
