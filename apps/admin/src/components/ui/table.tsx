@@ -92,6 +92,33 @@ const Table = forwardRef<
             sizes.set("actions", actionWidth)
             if (!sizes.has(primaryColumn)) sizes.set(primaryColumn, 180)
             const size = (id: string) => sizes.get(id) ?? 120
+            const measureColumns = () => {
+                let changed = false
+                container
+                    .querySelectorAll<HTMLElement>("[data-col]:not([data-hidden])")
+                    .forEach((cell) => {
+                        const col = cell.dataset.col
+                        if (!col || col === "select" || col === "actions" || col === primaryColumn)
+                            return
+                        const target =
+                            col === "id" && !cell.hasAttribute("data-primary")
+                                ? (cell.firstElementChild as HTMLElement | null)
+                                : cell.tagName === "TD"
+                                  ? cell.querySelector<HTMLElement>(".whitespace-nowrap")
+                                  : null
+                        if (!target) return
+                        const contentWidth = Math.ceil(
+                            Math.max(target.offsetWidth, target.scrollWidth),
+                        )
+                        if (contentWidth <= 0) return
+                        const needed = Math.min(200, contentWidth + 32)
+                        if (needed > size(col)) {
+                            sizes.set(col, needed)
+                            changed = true
+                        }
+                    })
+                return changed
+            }
             const update = (width: number) => {
                 const visible = new Set(
                     columns.filter((id) => ["select", "actions", primaryColumn].includes(id)),
@@ -116,10 +143,18 @@ const Table = forwardRef<
                         .join(" "),
                 )
             }
+            measureColumns()
             update(container.clientWidth)
+            let active = true
+            document.fonts?.ready?.then(() => {
+                if (active && box.current === container && measureColumns()) {
+                    update(container.clientWidth)
+                }
+            })
             const observer = new ResizeObserver(([entry]) => update(entry.contentRect.width))
             observer.observe(container)
             return () => {
+                active = false
                 observer.disconnect()
                 selectionObserver?.disconnect()
             }

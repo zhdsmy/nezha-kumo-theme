@@ -4,15 +4,7 @@ import { ActionButtonGroup } from "@/components/action-button-group"
 import { HeaderButtonGroup } from "@/components/header-button-group"
 import { SettingsTab } from "@/components/settings-tab"
 import { Checkbox } from "@/components/ui/checkbox"
-import {
-    Pagination,
-    PaginationContent,
-    PaginationEllipsis,
-    PaginationItem,
-    PaginationLink,
-    PaginationNext,
-    PaginationPrevious,
-} from "@/components/ui/pagination"
+import { TablePagination } from "@/components/ui/pagination"
 import {
     Table,
     TableBody,
@@ -156,107 +148,6 @@ export default function WAFPage() {
 
     const selectedRows = table.getSelectedRowModel().rows
 
-    const renderPagination = () => {
-        if (!data?.pagination) return null
-
-        const { total } = data.pagination
-        const totalPages = Math.ceil(total / pageSize)
-
-        const handlePageChange = (newPage: number) => {
-            if (newPage < 1 || newPage > totalPages) return
-            setSearchParams({ page: newPage.toString(), pageSize: pageSize.toString() })
-        }
-
-        // 计算要显示的页码范围
-        const getPageNumbers = () => {
-            const pages: number[] = []
-            const maxVisiblePages = 5
-
-            if (totalPages <= maxVisiblePages) {
-                return Array.from({ length: totalPages }, (_, i) => i + 1)
-            }
-
-            // 始终显示第一页
-            pages.push(1)
-
-            let startPage = Math.max(2, page - 1)
-            let endPage = Math.min(totalPages - 1, page + 1)
-
-            if (page <= 3) {
-                endPage = Math.min(maxVisiblePages - 1, totalPages - 1)
-            } else if (page >= totalPages - 2) {
-                startPage = Math.max(2, totalPages - (maxVisiblePages - 2))
-            }
-
-            if (startPage > 2) {
-                pages.push(-1) // 表示省略号
-            }
-
-            for (let i = startPage; i <= endPage; i++) {
-                pages.push(i)
-            }
-
-            if (endPage < totalPages - 1) {
-                pages.push(-1) // 表示省略号
-            }
-
-            // 始终显示最后一页
-            if (totalPages > 1) {
-                pages.push(totalPages)
-            }
-
-            return pages
-        }
-
-        return (
-            <div className="flex items-center justify-between px-2 py-4">
-                <div className="text-sm text-muted-foreground">
-                    {t("Total")}: {total}
-                </div>
-                <Pagination>
-                    <PaginationContent>
-                        <PaginationItem>
-                            <PaginationPrevious
-                                onClick={() => handlePageChange(page - 1)}
-                                className={
-                                    page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
-                                }
-                            />
-                        </PaginationItem>
-
-                        {getPageNumbers().map((pageNum, idx) =>
-                            pageNum === -1 ? (
-                                <PaginationItem key={`ellipsis-${idx}`}>
-                                    <PaginationEllipsis />
-                                </PaginationItem>
-                            ) : (
-                                <PaginationItem key={pageNum}>
-                                    <PaginationLink
-                                        onClick={() => handlePageChange(pageNum)}
-                                        isActive={pageNum === page}
-                                    >
-                                        {pageNum}
-                                    </PaginationLink>
-                                </PaginationItem>
-                            ),
-                        )}
-
-                        <PaginationItem>
-                            <PaginationNext
-                                onClick={() => handlePageChange(page + 1)}
-                                className={
-                                    page >= totalPages
-                                        ? "pointer-events-none opacity-50"
-                                        : "cursor-pointer"
-                                }
-                            />
-                        </PaginationItem>
-                    </PaginationContent>
-                </Pagination>
-            </div>
-        )
-    }
-
     return (
         <Page
             title={t("WAF")}
@@ -337,7 +228,16 @@ export default function WAFPage() {
                     )}
                 </TableBody>
             </Table>
-            {renderPagination()}
+            {data?.pagination && (
+                <TablePagination
+                    page={page}
+                    pageSize={pageSize}
+                    total={data.pagination.total}
+                    onPageChange={(newPage) =>
+                        setSearchParams({ page: newPage.toString(), pageSize: pageSize.toString() })
+                    }
+                />
+            )}
         </Page>
     )
 }
