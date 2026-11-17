@@ -35,7 +35,7 @@ type DialogContentProps = ComponentPropsWithoutRef<typeof DialogPrimitive.Conten
 }
 
 const DialogContent = forwardRef<ComponentRef<typeof DialogPrimitive.Content>, DialogContentProps>(
-    ({ className, children, hideCloseButton = false, ...props }, ref) => {
+    ({ className, children, hideCloseButton = false, onFocusCapture, ...props }, ref) => {
         const sheet = !useMediaQuery(`(min-width: ${BREAKPOINTS.gutter}px)`)
         const { t } = useTranslation()
         return (
@@ -43,6 +43,22 @@ const DialogContent = forwardRef<ComponentRef<typeof DialogPrimitive.Content>, D
                 <DialogOverlay />
                 <DialogPrimitive.Content
                     ref={ref}
+                    onFocusCapture={(event) => {
+                        onFocusCapture?.(event)
+                        if (event.defaultPrevented) return
+                        const dialog = event.currentTarget
+                        const control = event.target as HTMLElement
+                        requestAnimationFrame(() => {
+                            if (!dialog.contains(control)) return
+                            const field = control.getBoundingClientRect()
+                            const bounds = dialog.getBoundingClientRect()
+                            // Native focus scrolling can reveal only the caret of a textarea.
+                            if (field.bottom > bounds.bottom - 8)
+                                dialog.scrollTop += field.bottom - bounds.bottom + 8
+                            else if (field.top < bounds.top + 8)
+                                dialog.scrollTop += field.top - bounds.top - 8
+                        })
+                    }}
                     data-layout={sheet ? "sheet" : "dialog"}
                     className={cn(
                         "nkt-dialog max-w-lg fixed z-50 flex flex-col gap-4 border bg-card p-6 shadow-lg duration-150 motion-reduce:animate-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
@@ -72,7 +88,7 @@ DialogHeader.displayName = "DialogHeader"
 const DialogFooter = ({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) => (
     <div
         className={cn(
-            "nkt-dialog-footer sticky z-10 mt-auto flex shrink-0 flex-row flex-wrap justify-end gap-2 border-t bg-card pt-3",
+            "nkt-dialog-footer mt-auto flex shrink-0 flex-row flex-wrap justify-end gap-2 border-t bg-card pt-3",
             className,
         )}
         {...props}
