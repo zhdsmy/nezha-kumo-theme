@@ -1,0 +1,34 @@
+name: Feature Request
+description: Suggest an enhancement for the Nezha Kumo user frontend or admin panel
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - User Frontend (nezha-kumo-theme)
+        - Admin Panel (nezha-kumo-admin)
+        - Both / Shared Shell
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or Use Case
+      description: What workflow or problem would this feature solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: Describe how you envision the feature working, keeping Nezha's existing API capabilities in mind.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Alternatives or Additional Context
+      description: Any workarounds, prior art, or mockups?
