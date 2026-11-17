@@ -85,7 +85,7 @@ export const NATCard: React.FC<NATCardProps> = ({ data, mutate }) => {
             }
         } catch (e: unknown) {
             console.error(e)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return

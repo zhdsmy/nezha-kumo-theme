@@ -109,7 +109,7 @@ export const NotifierCard: React.FC<NotifierCardProps> = ({ data, mutate }) => {
             }
         } catch (e) {
             console.error(e)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return

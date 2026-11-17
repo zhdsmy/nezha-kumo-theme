@@ -49,7 +49,7 @@ export default function WAFPage() {
 
     useEffect(() => {
         if (error)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: t("Results.ErrorFetchingResource", { error: error.message }),
             })
         // eslint-disable-next-line react-hooks/exhaustive-deps

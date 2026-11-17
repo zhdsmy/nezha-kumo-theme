@@ -19,7 +19,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { virtualizedTableFeatures } from "@/lib/table"
-import { copyToClipboard, fm, formatPath, fmWorker as worker } from "@/lib/utils"
+import { copyToClipboard, errorMessage, fm, formatPath, fmWorker as worker } from "@/lib/utils"
 import {
     FMEntry,
     FMIdentifier,
@@ -231,7 +231,7 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
         }
         ws.onerror = (e) => {
             console.error(e)
-            toast(tRef.current("WebsocketError"), {
+            toast.error(tRef.current("WebsocketError"), {
                 description: tRef.current("Results.UnExpectedError"),
             })
         }
@@ -272,8 +272,8 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
                 }
             } catch (error) {
                 console.error("Error processing received data:", error)
-                toast(tRef.current("FileManagerError"), {
-                    description: tRef.current("Results.UnExpectedError"),
+                toast.error(tRef.current("FileManagerError"), {
+                    description: errorMessage(error, tRef.current("Results.UnExpectedError")),
                 })
                 setdOpen(false)
                 setuOpen(false)
@@ -345,7 +345,7 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
                                             error instanceof Error
                                                 ? error.message
                                                 : t("Results.UnExpectedError")
-                                        toast(t("FileManagerError"), {
+                                        toast.error(t("FileManagerError"), {
                                             description,
                                         })
                                         console.error("copy error: ", error)
@@ -445,8 +445,8 @@ export const FMCard = ({ id }: { id?: string }) => {
                 const createdFM = await createFM(id)
                 setFM(createdFM)
             } catch (e) {
-                toast(t("Error"), {
-                    description: t("Results.UnExpectedError"),
+                toast.error(t("Error"), {
+                    description: errorMessage(e, t("Results.UnExpectedError")),
                 })
                 console.error("fetch error", e)
                 return

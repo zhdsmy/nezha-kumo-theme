@@ -52,7 +52,7 @@ export default function ApiTokensPage() {
 
     useEffect(() => {
         if (!error) return
-        toast(t("Error"), {
+        toast.error(t("Error"), {
             description: t("Results.ErrorFetchingResource", {
                 error: (error as Error)?.message ?? String(error),
             }),
@@ -65,10 +65,10 @@ export default function ApiTokensPage() {
     const handleDelete = async (id: number) => {
         try {
             await deleteApiToken(id)
-            toast(t("ApiTokenRevoked"))
+            toast.success(t("ApiTokenRevoked"))
             await mutate()
         } catch (e: any) {
-            toast(t("Error"), { description: e.message })
+            toast.error(t("Error"), { description: e.message })
         }
     }
 
@@ -202,22 +202,22 @@ function CreateApiTokenDialog({
 
     const submit = runSubmit(async () => {
         if (!name.trim()) {
-            toast(t("Error"), { description: t("NameRequired") })
+            toast.error(t("Error"), { description: t("NameRequired") })
             return
         }
         if (scopes.length === 0) {
-            toast(t("Error"), { description: t("ApiTokenScopeRequired") })
+            toast.error(t("Error"), { description: t("ApiTokenScopeRequired") })
             return
         }
         const parsedRes = parseServerIDsInput(serverIDs)
         if (!parsedRes.ok) {
-            toast(t("Error"), { description: t("ApiTokenServersInvalid") })
+            toast.error(t("Error"), { description: t("ApiTokenServersInvalid") })
             return
         }
         const parsedServers = parsedRes.value
         const expRes = parseExpiresInDaysInput(expiresInDays)
         if (!expRes.ok) {
-            toast(t("Error"), { description: t("ApiTokenExpiryInvalid") })
+            toast.error(t("Error"), { description: t("ApiTokenExpiryInvalid") })
             return
         }
         const expDays = expRes.value
@@ -235,7 +235,7 @@ function CreateApiTokenDialog({
             setServerIDs("")
             setExpiresInDays("90")
         } catch (e: unknown) {
-            toast(t("Error"), { description: errorMessage(e, t("Results.UnExpectedError")) })
+            toast.error(t("Error"), { description: errorMessage(e, t("Results.UnExpectedError")) })
         }
     })
 
@@ -365,9 +365,9 @@ export function RevealedTokenDialog({
                             onClick={async () => {
                                 try {
                                     await copyToClipboard(token.token)
-                                    toast(t("Copied"))
+                                    toast.success(t("Copied"))
                                 } catch {
-                                    toast(t("Error"), {
+                                    toast.error(t("Error"), {
                                         description: t("ClipboardWriteFailed"),
                                     })
                                 }

@@ -1,7 +1,7 @@
 import { act, render } from "@testing-library/react"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
 
-vi.mock("sonner", () => ({ toast: () => {} }))
+vi.mock("sonner", () => ({ toast: Object.assign(() => {}, { error: () => {}, success: () => {}, warning: () => {}, info: () => {} }) }))
 
 vi.mock("react-i18next", () => ({
     useTranslation: () => ({

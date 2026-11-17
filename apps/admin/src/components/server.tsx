@@ -186,7 +186,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                 const { errors, valid } = validatePublicNote(publicNoteObj)
                 if (!valid) {
                     setPublicNoteErrors(errors)
-                    toast(t("Error"), { description: t("Validation.InvalidForm") })
+                    toast.error(t("Error"), { description: t("Validation.InvalidForm") })
                     return
                 }
                 setPublicNoteErrors({})
@@ -208,7 +208,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
             await updateServer(data!.id!, values)
         } catch (e) {
             console.error(e)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return

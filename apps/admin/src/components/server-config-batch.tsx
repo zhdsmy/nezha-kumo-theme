@@ -41,12 +41,13 @@ export const ServerConfigCardBatch: React.FC<ServerConfigCardBatchProps> = ({ si
             resp = await setServerConfig({ config: JSON.stringify(data), servers: sid })
         } catch (e) {
             console.error(e)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
         }
-        toast(t("Done"), {
+        const notify = resp.failure?.length || resp.offline?.length ? toast.warning : toast.success
+        notify(t("Done"), {
             description:
                 t("Results.ForceUpdate") +
                 (resp.success?.length ? t(`Success`) + ` [${resp.success.join(",")}]` : "") +
@@ -61,7 +62,7 @@ export const ServerConfigCardBatch: React.FC<ServerConfigCardBatchProps> = ({ si
             {...props}
             icon="cog"
             onClick={() => {
-                toast(t("Error"), {
+                toast.error(t("Error"), {
                     description: t("Results.NoRowsAreSelected"),
                 })
             }}

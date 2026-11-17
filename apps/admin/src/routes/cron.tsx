@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table"
 import { IconButton } from "@/components/xui/icon-button"
 import { selectableTableFeatures } from "@/lib/table"
+import { errorMessage } from "@/lib/utils"
 import { ModelCron } from "@/types"
 import { cronTypes } from "@/types"
 import { Page } from "@nezha-kumo/ui"
@@ -31,7 +32,7 @@ export default function CronPage() {
 
     useEffect(() => {
         if (error)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: t("Results.ErrorFetchingResource", {
                     error: error.message,
                 }),
@@ -179,13 +180,16 @@ export default function CronPage() {
                                         await runCron(s.id)
                                     } catch (e) {
                                         console.error(e)
-                                        toast(t("Error"), {
-                                            description: t("Results.UnExpectedError"),
+                                        toast.error(t("Error"), {
+                                            description: errorMessage(
+                                                e,
+                                                t("Results.UnExpectedError"),
+                                            ),
                                         })
                                         await mutate()
                                         return
                                     }
-                                    toast(t("Success"), {
+                                    toast.success(t("Success"), {
                                         description: t("Results.TaskTriggeredSuccessfully"),
                                     })
                                     await mutate()

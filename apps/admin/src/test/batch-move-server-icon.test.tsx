@@ -2,12 +2,21 @@ import { BatchMoveServerIcon } from "@/components/batch-move-server-icon"
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
 
-const toastCalls: Array<{ title: string; description: string }> = []
-vi.mock("sonner", () => ({
-    toast: (title: string, opts?: { description?: string }) => {
-        toastCalls.push({ title, description: opts?.description ?? "" })
-    },
-}))
+const toastCalls: Array<{ variant: string; title: string; description: string }> = []
+vi.mock("sonner", () => {
+    const record =
+        (variant: string) => (title: string, opts?: { description?: string }) => {
+            toastCalls.push({ variant, title, description: opts?.description ?? "" })
+        }
+    return {
+        toast: Object.assign(record("default"), {
+            error: record("error"),
+            success: record("success"),
+            warning: record("warning"),
+            info: record("info"),
+        }),
+    }
+})
 
 vi.mock("react-i18next", () => ({
     useTranslation: () => ({
@@ -64,6 +73,7 @@ test("BatchMoveServer toast surfaces agent_too_old count so operator sees the fa
     expect(batchMoveServer).toHaveBeenCalledOnce()
     const summary = toastCalls[toastCalls.length - 1]
     expect(summary, "submission must surface a toast").toBeDefined()
+    expect(summary.variant).toBe("warning")
     expect(summary.description, "toast must include the agent_too_old count").toContain(
         "Transfer.AgentTooOldCount=1",
     )

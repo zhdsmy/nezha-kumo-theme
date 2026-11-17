@@ -28,7 +28,7 @@ export default function NATPage() {
 
     useEffect(() => {
         if (error)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: t("Results.ErrorFetchingResource", {
                     error: error.message,
                 }),

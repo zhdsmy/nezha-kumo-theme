@@ -37,7 +37,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
                     const ng = await getNotificationGroups()
                     setNotifierGroup(ng)
                 } catch (error: any) {
-                    toast(t("Error"), {
+                    toast.error(t("Error"), {
                         description: error.message,
                     })
                     setNotifierGroup(undefined)
@@ -50,7 +50,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
                     const nData = n.map(({ id, name }) => ({ id, name }))
                     setNotifier(nData)
                 } catch (error: any) {
-                    toast(t("Error"), {
+                    toast.error(t("Error"), {
                         description: error.message,
                     })
                     setNotifier(undefined)

@@ -38,7 +38,7 @@ export function HeaderButtonGroup<E, U>({
         try {
             await fn(id)
         } catch (error: any) {
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: error.message,
             })
         }
@@ -53,7 +53,7 @@ export function HeaderButtonGroup<E, U>({
                         icon="trash"
 
                         onClick={() => {
-                            toast(t("Error"), {
+                            toast.error(t("Error"), {
                                 description: t("Results.NoRowsAreSelected"),
                             })
                         }}
@@ -104,7 +104,7 @@ export function HeaderBlockButtonGroup<E, U>({
         try {
             await fn(id)
         } catch (error: any) {
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: error.message,
             })
         }
@@ -119,7 +119,7 @@ export function HeaderBlockButtonGroup<E, U>({
                         icon="ban"
 
                         onClick={() => {
-                            toast(t("Error"), {
+                            toast.error(t("Error"), {
                                 description: t("Results.NoRowsAreSelected"),
                             })
                         }}

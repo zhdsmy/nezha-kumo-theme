@@ -77,7 +77,7 @@ export function ActionButtonGroup<E, U>({
         try {
             await fn([id])
         } catch (error: any) {
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: error.message,
             })
         }
@@ -108,7 +108,7 @@ export function BlockButtonGroup<E, U>({
         try {
             await fn([id])
         } catch (error: any) {
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: error.message,
             })
         }

@@ -46,7 +46,7 @@ export const InstallCommandsMenu = forwardRef<HTMLButtonElement, InstallCommands
                     )
                 } catch (e: Error | any) {
                     console.error(e)
-                    toast(t("Error"), {
+                    toast.error(t("Error"), {
                         description: e.message,
                     })
                 } finally {

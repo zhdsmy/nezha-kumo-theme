@@ -119,8 +119,8 @@ export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConf
                 setData(JSON.parse(result))
             } catch (error) {
                 console.error(error)
-                toast(t("Error"), {
-                    description: (error as Error).message,
+                toast.error(t("Error"), {
+                    description: errorMessage(error, t("Results.UnExpectedError")),
                 })
                 setOpen(false)
                 return
@@ -171,12 +171,13 @@ export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConf
             resp = await setServerConfig({ config: JSON.stringify(values), servers: [sid] })
         } catch (e) {
             console.error(e)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
         }
-        toast(t("Done"), {
+        const notify = resp.failure?.length || resp.offline?.length ? toast.warning : toast.success
+        notify(t("Done"), {
             description:
                 t("Results.ForceUpdate") +
                 (resp.success?.length ? t(`Success`) + ` [${resp.success.join(",")}]` : "") +

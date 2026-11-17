@@ -192,7 +192,7 @@ export const XtermComponent = forwardRef<HTMLDivElement, XtermProps & JSX.Intrin
             }
             ws.onerror = (event) => {
                 console.error(event)
-                toast(tRef.current("WebsocketError"), {
+                toast.error(tRef.current("WebsocketError"), {
                     description: tRef.current("Results.UnExpectedError"),
                 })
             }
@@ -249,7 +249,7 @@ export const XtermComponent = forwardRef<HTMLDivElement, XtermProps & JSX.Intrin
         const pasteClipboard = async () => {
             if (pasteBusy || connectionState !== "connected") return
             if (!navigator.clipboard?.readText) {
-                toast(t("TerminalControls.ClipboardUnavailable"), {
+                toast.warning(t("TerminalControls.ClipboardUnavailable"), {
                     description: t("TerminalControls.ClipboardUnavailableDesc"),
                 })
                 terminalRef.current?.focus()
@@ -266,7 +266,7 @@ export const XtermComponent = forwardRef<HTMLDivElement, XtermProps & JSX.Intrin
                     return
                 }
                 if (new TextEncoder().encode(text).length > maxClipboardBytes) {
-                    toast(t("TerminalControls.ClipboardTooLarge"), {
+                    toast.warning(t("TerminalControls.ClipboardTooLarge"), {
                         description: t("TerminalControls.ClipboardTooLargeDesc"),
                     })
                     return
@@ -282,7 +282,7 @@ export const XtermComponent = forwardRef<HTMLDivElement, XtermProps & JSX.Intrin
                 terminal.focus()
             } catch {
                 if (pasteRequestRef.current === requestID) {
-                    toast(t("ClipboardReadFailed"), {
+                    toast.error(t("ClipboardReadFailed"), {
                         description: t("TerminalControls.ClipboardReadFailedDesc"),
                     })
                 }

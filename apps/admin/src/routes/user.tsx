@@ -28,8 +28,8 @@ export default function UserPage() {
 
     useEffect(() => {
         if (error)
-            toast(t("Error"), {
-                description: t("Results.UnExpectedError", {
+            toast.error(t("Error"), {
+                description: t("Results.ErrorFetchingResource", {
                     error: error.message,
                 }),
             })

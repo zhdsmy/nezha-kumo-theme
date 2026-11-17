@@ -50,8 +50,8 @@ export default function TransferPage() {
 
     useEffect(() => {
         if (error) {
-            toast(t("Error"), {
-                description: t("Results.UnExpectedError", { error: error.message }),
+            toast.error(t("Error"), {
+                description: t("Results.ErrorFetchingResource", { error: error.message }),
             })
         }
     }, [error, t])
@@ -151,11 +151,11 @@ export default function TransferPage() {
         async (id: number) => {
             try {
                 await cancelServerTransfer(id)
-                toast(t("Transfer.CancelRequested"))
+                toast.success(t("Transfer.CancelRequested"))
                 mutate()
             } catch (e: unknown) {
                 const msg = e instanceof Error ? e.message : String(e)
-                toast(t("Error"), { description: msg })
+                toast.error(t("Error"), { description: msg })
             }
         },
         [mutate, t],
@@ -165,11 +165,11 @@ export default function TransferPage() {
         async (id: number) => {
             try {
                 await retryServerTransfer(id)
-                toast(t("Transfer.RetryRequested"))
+                toast.success(t("Transfer.RetryRequested"))
                 mutate()
             } catch (e: unknown) {
                 const msg = e instanceof Error ? e.message : String(e)
-                toast(t("Error"), { description: msg })
+                toast.error(t("Error"), { description: msg })
             }
         },
         [mutate, t],

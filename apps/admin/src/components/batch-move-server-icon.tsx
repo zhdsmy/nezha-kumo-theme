@@ -43,7 +43,7 @@ export const BatchMoveServerIcon: React.FC<BatchMoveServerIconProps> = ({
             })
         } catch (e) {
             console.error(e)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
@@ -69,7 +69,8 @@ export const BatchMoveServerIcon: React.FC<BatchMoveServerIconProps> = ({
         if (same) parts.push(t("Transfer.SameOwnerCount", { count: same }))
         if (tooOld) parts.push(t("Transfer.AgentTooOldCount", { count: tooOld }))
 
-        toast(t("Transfer.BatchSubmitted"), {
+        const notify = denied || dup || missing || same || tooOld ? toast.warning : toast.success
+        notify(t("Transfer.BatchSubmitted"), {
             description: parts.join(" · ") || t("Done"),
         })
         setOpen(false)
@@ -80,7 +81,7 @@ export const BatchMoveServerIcon: React.FC<BatchMoveServerIconProps> = ({
             {...props}
             icon="user-pen"
             onClick={() => {
-                toast(t("Error"), {
+                toast.error(t("Error"), {
                     description: t("Results.NoRowsAreSelected"),
                 })
             }}

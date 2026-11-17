@@ -16,7 +16,7 @@ vi.mock("react-i18next", () => ({
     useTranslation: () => ({ t: (k: string) => k }),
 }))
 
-vi.mock("sonner", () => ({ toast: () => {} }))
+vi.mock("sonner", () => ({ toast: Object.assign(() => {}, { error: () => {}, success: () => {}, warning: () => {}, info: () => {} }) }))
 
 const navigate = vi.fn()
 vi.mock("react-router-dom", () => ({

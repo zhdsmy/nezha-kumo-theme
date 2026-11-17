@@ -29,6 +29,7 @@ import {
 import { IconButton } from "@/components/xui/icon-button"
 import { useServer } from "@/hooks/useServer"
 import { selectableTableFeatures } from "@/lib/table"
+import { errorMessage } from "@/lib/utils"
 import { ModelServerTaskResponse, ModelServer as Server } from "@/types"
 import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender, useTable } from "@tanstack/react-table"
@@ -47,7 +48,7 @@ export default function ServerPage() {
 
     useEffect(() => {
         if (error)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: t("Results.ErrorFetchingResource", { error: error.message }),
             })
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -275,7 +276,7 @@ export default function ServerPage() {
                         onClick={async () => {
                             const id = selectedRows.map((r) => r.original.id)
                             if (id.length < 1) {
-                                toast(t("Error"), {
+                                toast.error(t("Error"), {
                                     description: t("Results.SelectAtLeastOneServer"),
                                 })
                                 return
@@ -286,12 +287,16 @@ export default function ServerPage() {
                                 resp = await forceUpdateServer(id)
                             } catch (e) {
                                 console.error(e)
-                                toast(t("Error"), {
-                                    description: t("Results.UnExpectedError"),
+                                toast.error(t("Error"), {
+                                    description: errorMessage(e, t("Results.UnExpectedError")),
                                 })
                                 return
                             }
-                            toast(t("Done"), {
+                            const notify =
+                                resp.failure?.length || resp.offline?.length
+                                    ? toast.warning
+                                    : toast.success
+                            notify(t("Done"), {
                                 description:
                                     t("Results.ForceUpdate") +
                                     (resp.success?.length

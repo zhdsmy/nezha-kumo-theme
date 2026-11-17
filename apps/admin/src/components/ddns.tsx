@@ -124,7 +124,7 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
             }
         } catch (e) {
             console.error(e)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return

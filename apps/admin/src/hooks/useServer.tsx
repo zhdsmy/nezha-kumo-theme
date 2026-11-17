@@ -37,7 +37,7 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({
                     const sg = await getServerGroups()
                     setServerGroup(sg)
                 } catch (error: any) {
-                    toast(t("Error"), {
+                    toast.error(t("Error"), {
                         description: error.message,
                     })
                     setServerGroup(undefined)
@@ -50,7 +50,7 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({
                     const serverData = s.map(({ id, name }) => ({ id, name }))
                     setServer(serverData)
                 } catch (error: any) {
-                    toast(t("Error"), {
+                    toast.error(t("Error"), {
                         description: error.message,
                     })
                     setServer(undefined)

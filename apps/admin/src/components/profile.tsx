@@ -65,7 +65,7 @@ export const ProfileCard = ({ className }: { className: string }) => {
             setProfile(nextProfile)
         } catch (e) {
             console.error(e)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
