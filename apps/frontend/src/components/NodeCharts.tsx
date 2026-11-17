@@ -130,16 +130,18 @@ export const LoadCharts = memo(function LoadCharts({
         label,
         color,
         area,
-        points: points.map((p) => ({ t: p.at, v: pick(p) })),
+        points: points.map((p) => ({ t: p.at, v: Number.isFinite(pick(p)) ? pick(p) : null })),
     })
     const common = { height, formatTime: fmt.axis, formatTooltipTime: fmt.tooltip }
     const last = points[points.length - 1]
+    const reading = (value: number, format: (value: number) => string) =>
+        Number.isFinite(value) ? format(value) : "—"
 
     return (
         <div className="chart-grid">
             <ChartCard
                 title={t("metric.cpu")}
-                value={last ? `${formatPercent(last.cpu)}%` : undefined}
+                value={last ? reading(last.cpu, (v) => `${formatPercent(v)}%`) : undefined}
             >
                 <Chart
                     {...common}
@@ -152,7 +154,11 @@ export const LoadCharts = memo(function LoadCharts({
             </ChartCard>
             <ChartCard
                 title={t("metric.memory")}
-                value={last ? `${formatBytes(last.memUsed)} / ${formatBytes(memTotal)}` : undefined}
+                value={
+                    last
+                        ? `${reading(last.memUsed, formatBytes)} / ${formatBytes(memTotal)}`
+                        : undefined
+                }
             >
                 <Chart
                     {...common}
@@ -172,7 +178,9 @@ export const LoadCharts = memo(function LoadCharts({
             <ChartCard
                 title={t("metric.disk")}
                 value={
-                    last ? `${formatBytes(last.diskUsed)} / ${formatBytes(diskTotal)}` : undefined
+                    last
+                        ? `${reading(last.diskUsed, formatBytes)} / ${formatBytes(diskTotal)}`
+                        : undefined
                 }
             >
                 <Chart
@@ -192,8 +200,10 @@ export const LoadCharts = memo(function LoadCharts({
                 value={
                     last ? (
                         <>
-                            <SeriesDot color={CHART_PALETTE[0]} />↑ {formatSpeed(last.netUp)} ·{" "}
-                            <SeriesDot color={CHART_PALETTE[1]} />↓ {formatSpeed(last.netDown)}
+                            <SeriesDot color={CHART_PALETTE[0]} />↑{" "}
+                            {reading(last.netUp, formatSpeed)} ·{" "}
+                            <SeriesDot color={CHART_PALETTE[1]} />↓{" "}
+                            {reading(last.netDown, formatSpeed)}
                         </>
                     ) : undefined
                 }
@@ -216,8 +226,9 @@ export const LoadCharts = memo(function LoadCharts({
                     last ? (
                         <>
                             <SeriesDot color={CHART_PALETTE[0]} />
-                            TCP {formatNumber(last.tcp, 0)} · <SeriesDot color={CHART_PALETTE[3]} />
-                            UDP {formatNumber(last.udp, 0)}
+                            TCP {reading(last.tcp, (v) => formatNumber(v, 0))} ·{" "}
+                            <SeriesDot color={CHART_PALETTE[3]} />
+                            UDP {reading(last.udp, (v) => formatNumber(v, 0))}
                         </>
                     ) : undefined
                 }
@@ -238,7 +249,7 @@ export const LoadCharts = memo(function LoadCharts({
                 title={`${t("metric.load")} · ${t("metric.process")}`}
                 value={
                     last
-                        ? `${formatNumber(last.load1)} · ${formatNumber(last.process, 0)}`
+                        ? `${reading(last.load1, formatNumber)} · ${reading(last.process, (v) => formatNumber(v, 0))}`
                         : undefined
                 }
             >

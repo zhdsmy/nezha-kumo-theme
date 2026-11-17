@@ -19,6 +19,17 @@ const point = (at: number, netUp = 0): HistoryPoint => ({
 })
 
 describe("bucketSeries", () => {
+    it("skips missing metrics without diluting real measurements", () => {
+        const buckets = bucketSeries(
+            [point(0, NaN), point(10, 8), point(100, NaN), point(200, 0)],
+            (p) => p.netUp,
+            3,
+            0,
+            300,
+        )
+        expect(buckets.map((b) => b.value)).toEqual([8, null, 0])
+    })
+
     it("averages samples and leaves empty buckets null", () => {
         // Buckets are 100 ms wide: 0 and 50 share the first one, 100 starts the second.
         const points = [point(0, 10), point(50, 20), point(100, 7), point(900, 5)]

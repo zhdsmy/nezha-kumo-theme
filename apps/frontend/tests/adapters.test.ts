@@ -233,6 +233,24 @@ describe("nezha mapServices", () => {
 })
 
 describe("nezha mergeMetrics", () => {
+    it("preserves missing metrics while retaining measured zero", () => {
+        const points = mergeMetrics(
+            {
+                cpu: {
+                    data_points: [
+                        { ts: 1000, value: 30 },
+                        { ts: 2000, value: 40 },
+                    ],
+                },
+                memory: { data_points: [{ ts: 1000, value: 0 }] },
+            },
+            0,
+        )
+        expect(points[0].memUsed).toBe(0)
+        expect(points[1].memUsed).toBeNaN()
+        expect(points[1].netUp).toBeNaN()
+    })
+
     it("joins TSDB series by timestamp, maps in/out to down/up and drops points before `since`", () => {
         const pts = mergeMetrics(
             {
@@ -256,7 +274,8 @@ describe("nezha mergeMetrics", () => {
         )
         expect(pts.map((p) => p.at)).toEqual([2000, 3000])
         expect(pts[0]).toMatchObject({ cpu: 3, netUp: 40, netDown: 7 })
-        expect(pts[1]).toMatchObject({ cpu: 4, netUp: 50, netDown: 0 })
+        expect(pts[1]).toMatchObject({ cpu: 4, netUp: 50 })
+        expect(pts[1].netDown).toBeNaN()
         expect(pts[0].totalDown).toBeUndefined()
     })
 })

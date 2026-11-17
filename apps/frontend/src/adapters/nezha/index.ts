@@ -498,18 +498,19 @@ export function mergeMetrics(
             if (ts < since || !Number.isFinite(value)) continue
             let point = byTs.get(ts)
             if (!point) {
+                // NaN preserves per-metric gaps without changing the numeric history contract.
                 point = {
                     at: ts,
-                    cpu: 0,
-                    memUsed: 0,
-                    swapUsed: 0,
-                    diskUsed: 0,
-                    netUp: 0,
-                    netDown: 0,
-                    load1: 0,
-                    tcp: 0,
-                    udp: 0,
-                    process: 0,
+                    cpu: NaN,
+                    memUsed: NaN,
+                    swapUsed: NaN,
+                    diskUsed: NaN,
+                    netUp: NaN,
+                    netDown: NaN,
+                    load1: NaN,
+                    tcp: NaN,
+                    udp: NaN,
+                    process: NaN,
                 }
                 byTs.set(ts, point)
             }
