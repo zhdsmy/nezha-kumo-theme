@@ -190,4 +190,4 @@ export const TRAFFIC_TYPES = [
 ] as const
 export type TrafficBilling = (typeof TRAFFIC_TYPES)[number]["mode"]
 export const parseTrafficType = (value: unknown): TrafficBilling =>
-    TRAFFIC_TYPES.find((item) => item.value === value)?.mode ?? "max"
+    TRAFFIC_TYPES.find((item) => item.value === (typeof value === "string" ? value.trim() : value))?.mode ?? "max"

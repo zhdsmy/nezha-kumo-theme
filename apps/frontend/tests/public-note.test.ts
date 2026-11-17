@@ -53,6 +53,8 @@ describe("shared public-note compatibility", () => {
 it.each([
     ["1", 10, "out"],
     ["2", 110, "sum"],
+    [" 2 ", 110, "sum"],
+    [" 1 ", 10, "out"],
     ["3", 100, "max"],
     [undefined, 100, "max"],
 ])("trafficType %s bills the correct direction", (trafficType, expected, mode) => {
