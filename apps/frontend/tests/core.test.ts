@@ -1,12 +1,27 @@
 // Adapted from zool-theme/tests/core.test.ts (MIT, luoleiorg).
 import { describe, expect, it } from "vitest"
 
-import { daysUntil, formatBytes, formatNumber, monthlyCost, trafficUsed } from "../src/core/format"
+import {
+    daysUntil,
+    formatBytes,
+    formatNumber,
+    formatSpeed,
+    monthlyCost,
+    trafficUsed,
+} from "../src/core/format"
 import { flagToRegion, stripFlag } from "../src/core/region"
 import { DEFAULT_SETTINGS, normalizeSettings } from "../src/core/settings"
 import { spikeLimit, summariseDay } from "../src/core/summary"
 
 describe("format", () => {
+    it("keeps fractional bytes and rates in base units", () => {
+        for (const n of [0.1, 0.5, 0.99]) {
+            expect(formatBytes(n)).toBe(`${n.toFixed(2)} B`)
+            expect(formatSpeed(n)).toBe(`${n.toFixed(2)} B/s`)
+        }
+        expect(formatBytes(0.5, 1)).toBe("0.5 B")
+        expect(formatSpeed(1)).toBe("1 B/s")
+    })
     it("formats bytes with sensible precision", () => {
         expect(formatBytes(0)).toBe("0 B")
         expect(formatBytes(512)).toBe("512 B")
