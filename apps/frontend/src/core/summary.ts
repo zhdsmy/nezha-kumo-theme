@@ -10,8 +10,45 @@ interface DaySummary {
     peakDownAt: number
 }
 
+/** Keep recorded history authoritative and append only newer live samples. */
+export function mergeHistoryTail(
+    history: readonly HistoryPoint[],
+    live: readonly HistoryPoint[],
+    since: number,
+) {
+    return [...history, ...live.filter((p) => p.at > (history.at(-1)?.at ?? -Infinity))].filter(
+        (p) => p.at >= since,
+    )
+}
+
+/** Counter drops start a new segment; its first reading is traffic observed since reset. */
+export function dailyTraffic(points: readonly HistoryPoint[], midnight: number): HistoryPoint[] {
+    let previousUp: number | undefined, previousDown: number | undefined
+    let up = 0,
+        down = 0
+    return points
+        .filter((p) => p.at >= midnight)
+        .map((p) => {
+            if (p.totalUp !== undefined) {
+                if (previousUp !== undefined)
+                    up += p.totalUp >= previousUp ? p.totalUp - previousUp : p.totalUp
+                previousUp = p.totalUp
+            }
+            if (p.totalDown !== undefined) {
+                if (previousDown !== undefined)
+                    down += p.totalDown >= previousDown ? p.totalDown - previousDown : p.totalDown
+                previousDown = p.totalDown
+            }
+            return {
+                ...p,
+                totalUp: previousUp === undefined ? undefined : up,
+                totalDown: previousDown === undefined ? undefined : down,
+            }
+        })
+}
+
 /**
- * Today's traffic is the growth of the cumulative counters since local midnight, so it
+ * Today's traffic sums counter increments since local midnight, including resets, so it
  * does not depend on how the backend buckets its records. Peaks are the highest recorded
  * averages in the given points (the node page passes the last 24 hours).
  */
@@ -38,13 +75,16 @@ export function summariseDay(
             s.peakDownAt = p.at
         }
     }
-    const first = points.find(
-        (p) => p.at >= midnight && p.totalUp !== undefined && p.totalDown !== undefined,
-    )
-    if (first && now) {
-        s.todayUp = Math.max(0, now.totalUp - (first.totalUp ?? 0))
-        s.todayDown = Math.max(0, now.totalDown - (first.totalDown ?? 0))
-    }
+    const readings =
+        now && points.length
+            ? [
+                  ...points,
+                  { ...points[points.length - 1], totalUp: now.totalUp, totalDown: now.totalDown },
+              ]
+            : points
+    const total = dailyTraffic(readings, midnight).at(-1)
+    s.todayUp = total?.totalUp ?? 0
+    s.todayDown = total?.totalDown ?? 0
     return s
 }
 

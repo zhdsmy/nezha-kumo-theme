@@ -11,7 +11,7 @@ import {
 } from "../src/core/format"
 import { flagToRegion, stripFlag } from "../src/core/region"
 import { DEFAULT_SETTINGS, normalizeSettings } from "../src/core/settings"
-import { spikeLimit, summariseDay } from "../src/core/summary"
+import { dailyTraffic, spikeLimit, summariseDay } from "../src/core/summary"
 
 describe("format", () => {
     it("keeps fractional bytes and rates in base units", () => {
@@ -96,10 +96,23 @@ describe("day summary", () => {
         })
     })
 
+    it("keeps traffic accumulated before and after counter resets", () => {
+        const points = [
+            p(1000, 1, 1, 1000, 2000),
+            p(2000, 1, 1, 1500, 2200),
+            p(3000, 1, 1, 100, 50),
+        ]
+        expect(summariseDay(points, { totalUp: 200, totalDown: 100 }, 1000)).toMatchObject({
+            todayUp: 700,
+            todayDown: 300,
+        })
+        expect(dailyTraffic(points, 1000).map((p) => p.totalUp)).toEqual([0, 500, 600])
+    })
+
     it("never reports negative traffic after a counter reset", () => {
         const s = summariseDay([p(2_000, 1, 1, 900, 900)], { totalUp: 10, totalDown: 10 }, 1_000)
-        expect(s.todayUp).toBe(0)
-        expect(s.todayDown).toBe(0)
+        expect(s.todayUp).toBe(10)
+        expect(s.todayDown).toBe(10)
     })
 })
 
