@@ -17,8 +17,8 @@ import {
 } from "./public-note.ts"
 
 const dialects: [string, number, "Day" | "Week" | "Month" | "Year"][] = [
-    ["d day days daily 天 日 日間 每天 每日", 1, "Day"],
-    ["w wk week weeks weekly 周 週 週間 每周 每週", 1, "Week"],
+    ["d day days daily 天 日 日間 每天 每日 毎日", 1, "Day"],
+    ["w wk week weeks weekly 周 週 週間 每周 每週 毎週", 1, "Week"],
     ["月 m mo month monthly months 个月 個月 か月 ヶ月 箇月 每月 毎月", 1, "Month"],
     ["q qr quarter quarterly 季 季度", 3, "Month"],
     ["h half halfyear half-year semi semiannual semiannually semi-annually 半 半年", 6, "Month"],

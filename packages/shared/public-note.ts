@@ -6,8 +6,8 @@ export interface Cycle {
     unit: CycleUnit
 }
 const CYCLE_ALIASES: [RegExp, CycleUnit, number][] = [
-    [/^(d|days?|daily|天|日|日間|每天|每日)$/, "Day", 1],
-    [/^(w|wk|weeks?|weekly|周|週|週間|每周|每週)$/, "Week", 1],
+    [/^(d|days?|daily|天|日|日間|每天|每日|毎日)$/, "Day", 1],
+    [/^(w|wk|weeks?|weekly|周|週|週間|每周|每週|毎週)$/, "Week", 1],
     [/^(m|mo|months?|monthly|月|个月|個月|か月|ヶ月|箇月|每月|毎月)$/, "Month", 1],
     [/^(q|qr|quarter|quarterly|季|季度)$/, "Month", 3],
     [/^(h|half|halfyear|semi|semiannual|semiannually|半|半年)$/, "Month", 6],
