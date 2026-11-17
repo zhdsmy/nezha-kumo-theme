@@ -50,11 +50,11 @@ export function writeCycle({ count, unit }: Cycle): string {
             : `${count}${unit}`
 }
 
-export const COMMON_CURRENCIES = ["CNY", "USD", "EUR", "HKD", "JPY", "GBP", "AUD"]
+const COMMON_CURRENCIES = ["CNY", "USD", "EUR", "HKD", "JPY", "GBP", "AUD"]
 export function currencies(): string[] {
     return [...new Set([...COMMON_CURRENCIES, ...Intl.supportedValuesOf("currency")])]
 }
-export const CURRENCY_SYMBOLS: Record<string, string> = {
+const CURRENCY_SYMBOLS: Record<string, string> = {
     "¥": "CNY",
     "￥": "CNY",
     元: "CNY",
@@ -78,7 +78,7 @@ export function currencyCode(value: string): string | null {
     const code = value.trim().toUpperCase()
     return CURRENCY_SYMBOLS[code] ?? (/^[A-Z]{3}$/.test(code) ? code : null)
 }
-export interface Amount {
+interface Amount {
     amount: number
     currency: string
     symbol: string
@@ -107,9 +107,9 @@ export function writeAmount(amount: number, currency: string): string {
 
 export const BANDWIDTH_UNITS = ["Mbps", "Gbps"] as const
 export const TRAFFIC_UNITS = ["GB", "TB"] as const
-export const isUnlimited = (value: string) =>
+const isUnlimited = (value: string) =>
     /^(unlimited|unmetered|不限|无限(?:流量)?|無限(?:流量)?)$/i.test(value.trim())
-export interface Bandwidth {
+interface Bandwidth {
     amount: number
     unit: (typeof BANDWIDTH_UNITS)[number]
 }
@@ -124,7 +124,7 @@ export function parseBandwidth(value: unknown): Bandwidth | "unlimited" | undefi
         }
 }
 export const writeBandwidth = ({ amount, unit }: Bandwidth) => `${amount}${unit}`
-export interface Traffic {
+interface Traffic {
     amount: number
     unit: string
     bytes: number

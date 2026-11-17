@@ -13,7 +13,7 @@ import {
     parseNoteDate,
     writeNoteDate,
 } from "../../../../../packages/shared/public-note"
-import { type NoteControlProps } from "./cycle-picker"
+import { type NoteControlProps } from "./controls"
 
 export function DateInput({
     value,

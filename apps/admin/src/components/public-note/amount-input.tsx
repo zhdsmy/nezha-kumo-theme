@@ -1,46 +1,10 @@
-import { Button } from "@/components/ui/button"
 import { Combobox } from "@/components/ui/combobox"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { currencies, parseAmount, writeAmount } from "../../../../../packages/shared/public-note"
-import { type NoteControlProps, UnknownValue } from "./cycle-picker"
-import { NumberInput } from "./quantity-input"
+import { Choices, type NoteControlProps, NumberInput, UnknownValue } from "./controls"
 
-export function Choices({
-    label,
-    value,
-    options,
-    onChange,
-}: {
-    label: string
-    value?: string
-    options: readonly (readonly [string, string])[]
-    onChange: (value: string) => void
-}) {
-    return (
-        <div
-            role="group"
-            aria-label={label}
-            className="flex min-w-0 flex-wrap gap-1 rounded-md bg-muted p-1"
-        >
-            {options.map(([key, text]) => (
-                <Button
-                    type="button"
-                    key={key}
-                    variant={key === (value ?? "") ? "secondary" : "ghost"}
-                    aria-pressed={key === (value ?? "")}
-                    className="h-auto min-h-9 min-w-0 flex-1 whitespace-normal px-2 py-2 leading-snug"
-                    onClick={() => {
-                        if (key !== (value ?? "")) onChange(key)
-                    }}
-                >
-                    {text}
-                </Button>
-            ))}
-        </div>
-    )
-}
 export function AmountInput({ value, onChange, label }: NoteControlProps) {
     const { t, i18n } = useTranslation()
     const amount = parseAmount(value)

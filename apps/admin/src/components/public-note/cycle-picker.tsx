@@ -19,21 +19,8 @@ import {
     parseCycle,
     writeCycle,
 } from "../../../../../packages/shared/public-note"
+import { type NoteControlProps } from "./controls"
 
-export interface NoteControlProps {
-    value?: string
-    onChange: (value: string | undefined) => void
-    label: string
-}
-export function UnknownValue({ value }: { value?: string }) {
-    const { t } = useTranslation()
-    return (
-        <div className="space-y-1">
-            <p className="break-all rounded-md border px-3 py-2 text-sm">{value}</p>
-            <p className="text-xs text-muted-foreground">{t("PublicNote.Unrecognized")}</p>
-        </div>
-    )
-}
 export function CyclePicker({ value, onChange, label }: NoteControlProps) {
     const { t } = useTranslation()
     const hint = useId()

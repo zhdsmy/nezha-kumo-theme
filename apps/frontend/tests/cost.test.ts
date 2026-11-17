@@ -1,13 +1,14 @@
 // Adapted from zool-theme/tests/cost.test.ts (MIT, luoleiorg).
 import { afterEach, describe, expect, it, vi } from "vitest"
 
+import { currencyCode } from "../../../packages/shared/public-note"
 import {
     convertAmount,
     displayCurrency,
     loadExchangeRates,
     onlineMonthlyCost,
 } from "../src/core/cost"
-import { currencyCode, formatMoney } from "../src/core/format"
+import { formatMoney } from "../src/core/format"
 import type { NodeInfo, Snapshot } from "../src/core/model"
 
 const rates = { USD: 1, CNY: 7, HKD: 7.8, JPY: 150, EUR: 0.9, AUD: 1.5 }

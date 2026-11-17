@@ -1,4 +1,3 @@
-import { Input } from "@/components/ui/input"
 import {
     Select,
     SelectContent,
@@ -7,7 +6,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
@@ -20,50 +19,9 @@ import {
     writeCycle,
     writeTraffic,
 } from "../../../../../packages/shared/public-note"
-import { CyclePicker, type NoteControlProps, UnknownValue } from "./cycle-picker"
+import { type NoteControlProps, NumberInput, UnknownValue } from "./controls"
+import { CyclePicker } from "./cycle-picker"
 
-export function NumberInput({
-    value,
-    onChange,
-    label,
-    min = 0,
-    placeholder,
-}: {
-    value?: number
-    onChange: (value: number | undefined) => void
-    label: string
-    min?: number
-    placeholder?: string
-}) {
-    const [draft, setDraft] = useState(value === undefined ? "" : String(value))
-    useEffect(() => {
-        setDraft((previous) =>
-            (previous === "" ? undefined : Number(previous)) === value
-                ? previous
-                : String(value ?? ""),
-        )
-    }, [value])
-    return (
-        <Input
-            type="text"
-            inputMode="decimal"
-            aria-label={label}
-            placeholder={placeholder}
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            onBlur={() => {
-                const number = Number(draft)
-                if (draft.trim() && number === value) return
-                if (!draft.trim()) onChange(undefined)
-                else if (Number.isFinite(number) && number >= min) onChange(number)
-                else setDraft(value === undefined ? "" : String(value))
-            }}
-            onKeyDown={(event) => {
-                if (event.key === "Enter") event.currentTarget.blur()
-            }}
-        />
-    )
-}
 function UnitSelect({
     label,
     value,

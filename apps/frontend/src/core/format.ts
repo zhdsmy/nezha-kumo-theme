@@ -2,8 +2,6 @@ import { currencyCode } from "../../../../packages/shared/public-note"
 // Adapted from zool-theme/src/core/format.ts (MIT, luoleiorg).
 import type { NodeInfo, Snapshot, TrafficLimitType } from "./model"
 
-export { currencyCode } from "../../../../packages/shared/public-note"
-
 const BYTE_UNITS = ["B", "KB", "MB", "GB", "TB", "PB", "EB"]
 
 interface Parts {

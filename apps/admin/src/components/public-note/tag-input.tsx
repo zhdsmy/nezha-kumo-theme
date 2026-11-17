@@ -5,7 +5,7 @@ import { useId, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { splitTags } from "../../../../../packages/shared/public-note"
-import { type NoteControlProps, UnknownValue } from "./cycle-picker"
+import { type NoteControlProps, UnknownValue } from "./controls"
 
 export function TagInput({
     value = "",
@@ -92,7 +92,7 @@ export function TagInput({
             </p>
             {suggestions.length > 0 && (
                 <datalist id={listId}>
-                    {suggestions
+                    {[...new Set(suggestions)]
                         .filter(
                             (item) => !tags.some((tag) => tag.toLowerCase() === item.toLowerCase()),
                         )

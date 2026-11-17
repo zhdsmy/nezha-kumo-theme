@@ -1,4 +1,5 @@
 import { AmountInput } from "@/components/public-note/amount-input"
+import { NumberInput } from "@/components/public-note/controls"
 import { CyclePicker } from "@/components/public-note/cycle-picker"
 import i18n from "@/lib/i18n"
 import { cleanup, fireEvent, render, screen } from "@testing-library/react"
@@ -115,4 +116,17 @@ test("numeric drafts keep precision and incomplete input never removes a stored 
         fireEvent.blur(input)
         expect(change).not.toHaveBeenCalled()
     }
+})
+
+test("shared numeric controls commit valid drafts and restore invalid ones", () => {
+    const change = vi.fn()
+    render(<NumberInput label="number" value={3} onChange={change} />)
+    const input = screen.getByRole("textbox", { name: "number" }) as HTMLInputElement
+    fireEvent.change(input, { target: { value: "1e" } })
+    fireEvent.blur(input)
+    expect(input.value).toBe("3")
+    expect(change).not.toHaveBeenCalled()
+    fireEvent.change(input, { target: { value: "4.5" } })
+    fireEvent.blur(input)
+    expect(change).toHaveBeenLastCalledWith(4.5)
 })
