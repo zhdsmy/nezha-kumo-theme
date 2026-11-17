@@ -17,7 +17,8 @@
         "connecting": "接続中",
         "reconnecting": "再接続中",
         "online": "オンライン",
-        "offline": "オフライン"
+        "offline": "オフライン",
+        "disconnectedBanner": "ライブ接続が切断されました。自動再接続しています…"
     },
     "overview": {
         "nodes": "オンラインのノード",

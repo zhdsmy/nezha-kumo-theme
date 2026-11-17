@@ -14,7 +14,7 @@ export function useDailyCounters(nodes: readonly NodeInfo[]) {
     })
     useEffect(() => {
         if (!hours) return
-        let active = true
+        const ctrl = new AbortController()
         const stop = pollVisible(async () => {
             const entries = await Promise.all(
                 key
@@ -24,14 +24,16 @@ export function useDailyCounters(nodes: readonly NodeInfo[]) {
                         async (id) =>
                             [
                                 id,
-                                await nezha.loadHistory(id, 24, "counters").catch(() => []),
+                                await nezha
+                                    .loadHistory(id, 24, "counters", ctrl.signal)
+                                    .catch(() => []),
                             ] as const,
                     ),
             )
-            if (active) setResult({ key, points: Object.fromEntries(entries) })
+            if (!ctrl.signal.aborted) setResult({ key, points: Object.fromEntries(entries) })
         }, HISTORY_CACHE_MS)
         return () => {
-            active = false
+            ctrl.abort()
             stop()
         }
     }, [key, hours])

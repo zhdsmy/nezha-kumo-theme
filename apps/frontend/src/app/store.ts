@@ -2,6 +2,7 @@
 import { nezha as adapter } from "@/adapters/nezha"
 import { cleanSnapshot } from "@/core/condition"
 import type { ExchangeRates } from "@/core/cost"
+import { isCanceledError } from "@/core/http"
 import type {
     ActualCost,
     ConnectionStatus,
@@ -232,13 +233,13 @@ function connect() {
  * Backfill the ledger sparks from server history so they are full on arrival instead of
  * drawing a sliver at the right edge for the first minutes.
  */
-export async function seedLive(nodes: readonly NodeInfo[]) {
+export async function seedLive(nodes: readonly NodeInfo[], signal?: AbortSignal) {
     if (!state.site?.recordHours) return
     const queue = nodes.map((n) => n.id)
     const worker = async () => {
-        for (let id = queue.shift(); id; id = queue.shift()) {
-            const seed = await adapter.loadHistory(id, 0.25, "spark").catch(() => [])
-            if (!seed.length) continue
+        for (let id = queue.shift(); id && !signal?.aborted; id = queue.shift()) {
+            const seed = await adapter.loadHistory(id, 0.25, "spark", signal).catch(() => [])
+            if (!seed.length || signal?.aborted) continue
             sparkSeeds.set(id, seed)
             set({ liveVersion: state.liveVersion + 1 })
         }
@@ -247,9 +248,10 @@ export async function seedLive(nodes: readonly NodeInfo[]) {
 }
 
 /** Fill the 15 minutes before the page opened with complete history points, for the node page. */
-export async function backfillLive(id: string) {
+export async function backfillLive(id: string, signal?: AbortSignal) {
     if (!state.site?.recordHours) return
-    const points = await adapter.loadHistory(id, 1).catch(() => [])
+    const points = await adapter.loadHistory(id, 1, "overview", signal).catch(() => [])
+    if (signal?.aborted) return
     const buf = getLive(id)
     const first = buf[0]?.at ?? Infinity
     const older = points.filter((p) => p.at < first && p.at >= Date.now() - 15 * 60_000)
@@ -263,6 +265,7 @@ export async function start() {
     try {
         await load()
     } catch (err) {
+        if (isCanceledError(err)) return
         console.error("[nezha-kumo] failed to load", err)
         set({ phase: "error" })
         return
@@ -282,7 +285,9 @@ export async function refresh() {
     unsubscribe?.()
     unsubscribe = null
     adapter.reset()
-    await load().catch((err) => console.error("[nezha-kumo] refresh failed", err))
+    await load().catch((err) => {
+        if (!isCanceledError(err)) console.error("[nezha-kumo] refresh failed", err)
+    })
     connect()
 }
 

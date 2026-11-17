@@ -18,9 +18,37 @@ function pump() {
 }
 if (typeof document !== "undefined") document.addEventListener("visibilitychange", pump)
 
+let unloading = false
+if (typeof window !== "undefined") {
+    for (const ev of ["beforeunload", "pagehide"])
+        window.addEventListener?.(ev, () => {
+            unloading = true
+        })
+    window.addEventListener?.("pageshow", () => {
+        unloading = false
+    })
+}
+
+export const abortError = (signal?: AbortSignal) =>
+    signal?.reason instanceof Error ? signal.reason : new DOMException("Aborted", "AbortError")
+
+export function isCanceledError(error: unknown, signal?: AbortSignal, sameOrigin = false) {
+    if (signal?.aborted || unloading) return true
+    if (!(error instanceof Error)) return false
+    if (error.name === "AbortError") return true
+    return sameOrigin && error.name === "TypeError" && /access control checks/i.test(error.message)
+}
+
 export function request<T>(url: string, init: RequestInit = {}, timeoutMs = 15_000): Promise<T> {
+    const ext = init.signal ?? undefined
+    if (ext?.aborted) return Promise.reject(abortError(ext))
     return new Promise((resolve, reject) => {
-        queue.push(() => {
+        const start = () => {
+            ext?.removeEventListener("abort", onQueueAbort)
+            if (ext?.aborted) {
+                reject(abortError(ext))
+                return
+            }
             running++
             void fetchRequest<T>(url, init, timeoutMs)
                 .then(resolve, reject)
@@ -28,7 +56,14 @@ export function request<T>(url: string, init: RequestInit = {}, timeoutMs = 15_0
                     running--
                     pump()
                 })
-        })
+        }
+        const onQueueAbort = () => {
+            const idx = queue.indexOf(start)
+            if (idx >= 0) queue.splice(idx, 1)
+            reject(abortError(ext))
+        }
+        ext?.addEventListener("abort", onQueueAbort, { once: true })
+        queue.push(start)
         pump()
     })
 }
@@ -49,6 +84,8 @@ export function pollVisible(load: () => Promise<unknown>, interval: number) {
         busy = true
         try {
             await load()
+        } catch (err) {
+            if (!isCanceledError(err)) console.error("[nezha-kumo] poll failed", err)
         } finally {
             busy = false
             due = Date.now() + interval
@@ -70,7 +107,14 @@ async function fetchRequest<T>(
     timeoutMs = 15_000,
 ): Promise<T> {
     const ctrl = new AbortController()
-    const timer = setTimeout(() => ctrl.abort(), timeoutMs)
+    let timedOut = false
+    const ext = init.signal ?? undefined
+    const onAbort = () => ctrl.abort(ext?.reason)
+    ext?.addEventListener("abort", onAbort, { once: true })
+    const timer = setTimeout(() => {
+        timedOut = true
+        ctrl.abort()
+    }, timeoutMs)
     try {
         const res = await fetch(url, {
             credentials: "same-origin",
@@ -91,8 +135,13 @@ async function fetchRequest<T>(
         }
         if (!res.ok) throw new HttpError(res.status, body)
         return body as T
+    } catch (err) {
+        if (timedOut) throw new Error("Request timeout")
+        if (isCanceledError(err, ext, url.startsWith("/"))) throw abortError(ext)
+        throw err
     } finally {
         clearTimeout(timer)
+        ext?.removeEventListener("abort", onAbort)
     }
 }
 

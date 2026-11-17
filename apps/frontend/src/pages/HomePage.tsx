@@ -30,7 +30,7 @@ import { regionName, stripFlag } from "@/core/region"
 import { readStorage, writeStorage } from "@/core/storage"
 import { summariseFleetDay } from "@/core/summary"
 import { uiLabels } from "@/i18n"
-import { Button, DropdownMenu, Input, Table, Tabs, Tooltip } from "@cloudflare/kumo"
+import { Button, DropdownMenu, InputGroup, Table, Tabs, Tooltip } from "@cloudflare/kumo"
 import { Page } from "@nezha-kumo/ui"
 import {
     ArrowDownIcon,
@@ -119,8 +119,10 @@ const ServerCard = memo(function ServerCard({ node, snap, showBilling, showRegio
             <header className="card-head">
                 <div className="min-w-0">
                     <Link className="card-name" href={adapter.nodePath(node.id)} title={node.name}>
-                        {showRegions && <RegionFlag code={node.region} className="mr-1.5" />}
-                        {stripFlag(node.name)}
+                        <span className="card-name-text">
+                            {showRegions && <RegionFlag code={node.region} className="mr-1.5" />}
+                            {stripFlag(node.name)}
+                        </span>
                     </Link>
                     <span className="card-meta muted" title={meta}>
                         {meta || "—"}
@@ -165,8 +167,10 @@ const ServerRow = memo(function ServerRow({ node, snap, showRegions }: RowProps)
         <Table.Row className="server-row" data-server={node.id}>
             <Table.Cell className="server-name">
                 <Link href={adapter.nodePath(node.id)} title={node.name}>
-                    {showRegions && <RegionFlag code={node.region} className="mr-1.5" />}
-                    {stripFlag(node.name)}
+                    <span className="block truncate">
+                        {showRegions && <RegionFlag code={node.region} className="mr-1.5" />}
+                        {stripFlag(node.name)}
+                    </span>
                 </Link>
                 <span className="muted truncate" title={`${node.os} · ${node.groups.join(" · ")}`}>
                     {node.os || node.groups.join(" · ")}
@@ -253,7 +257,10 @@ export function HomePage() {
     // Counters and live seeds cover every node, so switching groups refetches nothing.
     const daily = useDailyCounters(settings.showOverview ? all : [])
     useEffect(() => {
-        if (settings.showOverview) void seedLive(all)
+        if (!settings.showOverview) return
+        const ctrl = new AbortController()
+        void seedLive(all, ctrl.signal).catch(() => {})
+        return () => ctrl.abort()
     }, [all, settings.showOverview])
     useEffect(() => {
         writeStorage("nkt:sort", JSON.stringify(sort))
@@ -539,8 +546,11 @@ export function HomePage() {
                     </h2>
                     <div className="section-controls">
                         {searchOpen || query.length > 0 ? (
-                            <div className="inline-search">
-                                <Input
+                            <InputGroup className="inline-search">
+                                <InputGroup.Addon align="start">
+                                    <MagnifyingGlassIcon size={16} />
+                                </InputGroup.Addon>
+                                <InputGroup.Input
                                     ref={searchInputRef}
                                     autoFocus
                                     aria-label={t("toolbar.search")}
@@ -555,19 +565,21 @@ export function HomePage() {
                                         }
                                     }}
                                 />
-                                <button
-                                    type="button"
-                                    className="search-clear"
-                                    aria-label={t("toolbar.clear")}
-                                    title={t("toolbar.clear")}
-                                    onClick={() => {
-                                        setQuery("")
-                                        setSearchOpen(false)
-                                    }}
-                                >
-                                    <XIcon size={14} />
-                                </button>
-                            </div>
+                                <InputGroup.Addon align="end">
+                                    <InputGroup.Button
+                                        className="search-clear"
+                                        shape="square"
+                                        aria-label={t("toolbar.clear")}
+                                        tooltip={t("toolbar.clear")}
+                                        onClick={() => {
+                                            setQuery("")
+                                            setSearchOpen(false)
+                                        }}
+                                    >
+                                        <XIcon size={14} />
+                                    </InputGroup.Button>
+                                </InputGroup.Addon>
+                            </InputGroup>
                         ) : (
                             <Button
                                 variant="secondary"

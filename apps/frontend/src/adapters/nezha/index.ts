@@ -1,5 +1,5 @@
 // Adapted from zool-theme/src/adapters/nezha/index.ts (MIT, luoleiorg).
-import { request, resilientSocket, wsUrl } from "@/core/http"
+import { abortError, request, resilientSocket, wsUrl } from "@/core/http"
 import type {
     ActualCost,
     ConnectionStatus,
@@ -539,19 +539,64 @@ const METRIC_SETS = {
         "process_count",
     ],
 } as const
-const historyCache = new Map<string, { at: number; promise: Promise<unknown> }>()
-function cached<T>(key: string, load: () => Promise<T>, ttl = HISTORY_CACHE_MS): Promise<T> {
-    const saved = historyCache.get(key)
-    if (saved && Date.now() - saved.at < ttl) return saved.promise as Promise<T>
-    const entry = {
-        at: Date.now(),
-        promise: load().catch((error) => {
-            if (historyCache.get(key) === entry) historyCache.delete(key)
-            throw error
-        }),
+interface CacheEntry {
+    at: number
+    promise: Promise<unknown>
+    ctrl: AbortController
+    waiters: number
+    settled: boolean
+}
+const historyCache = new Map<string, CacheEntry>()
+function cached<T>(
+    key: string,
+    load: (signal: AbortSignal) => Promise<T>,
+    ttl = HISTORY_CACHE_MS,
+    signal?: AbortSignal,
+): Promise<T> {
+    if (signal?.aborted) return Promise.reject(abortError(signal))
+    let entry = historyCache.get(key)
+    if (!entry || Date.now() - entry.at >= ttl) {
+        const ctrl = new AbortController()
+        const next: CacheEntry = {
+            at: Date.now(),
+            ctrl,
+            waiters: 0,
+            settled: false,
+            promise: Promise.resolve(),
+        }
+        next.promise = load(ctrl.signal).then(
+            (val) => ((next.settled = true), val),
+            (error) => {
+                next.settled = true
+                if (historyCache.get(key) === next) historyCache.delete(key)
+                throw error
+            },
+        )
+        next.promise.catch(() => {})
+        historyCache.set(key, next)
+        entry = next
     }
-    historyCache.set(key, entry)
-    return entry.promise
+    if (!signal || entry.settled) return entry.promise as Promise<T>
+    const active = entry
+    active.waiters++
+    return new Promise<T>((resolve, reject) => {
+        const onAbort = () => {
+            if (--active.waiters <= 0 && !active.settled) {
+                if (historyCache.get(key) === active) historyCache.delete(key)
+                active.ctrl.abort()
+            }
+            reject(abortError(signal))
+        }
+        const done = () => {
+            signal.removeEventListener("abort", onAbort)
+            active.waiters = Math.max(0, active.waiters - 1)
+        }
+        signal.addEventListener("abort", onAbort, { once: true })
+        active.promise.then(
+            (val) => (done(), resolve(val as T)),
+            (err) => (done(), reject(err)),
+        )
+    })
 }
 
 /* ---------- adapter ---------- */
@@ -613,7 +658,7 @@ export const nezha = {
     },
 
     subscribe(listener: (event: LiveEvent) => void, onStatus?: (status: ConnectionStatus) => void) {
-        loadGroups()
+        void loadGroups()
         return hub.listen((frame) => listener(mapFrame(frame, groupsCache)), onStatus)
     },
 
@@ -623,16 +668,30 @@ export const nezha = {
         historyCache.clear()
     },
 
-    async loadHistory(id: string, hours: number, kind: keyof typeof METRIC_SETS = "overview") {
+    async loadHistory(
+        id: string,
+        hours: number,
+        kind: keyof typeof METRIC_SETS = "overview",
+        signal?: AbortSignal,
+    ) {
         const names = METRIC_SETS[kind]
         const series = await Promise.all(
             names.map(async (metric) => {
                 const url = `/api/v1/server/${encodeURIComponent(id)}/metrics?period=${period(hours)}&metric=${metric}`
-                const data = await cached(url, async () => {
-                    const res = await request<Common<NezhaMetricSeries>>(url, {}, 60_000)
-                    if (!res.success) throw new Error("Nezha history unavailable")
-                    return res.data ?? {}
-                })
+                const data = await cached(
+                    url,
+                    async (reqSignal) => {
+                        const res = await request<Common<NezhaMetricSeries>>(
+                            url,
+                            { signal: reqSignal },
+                            60_000,
+                        )
+                        if (!res.success) throw new Error("Nezha history unavailable")
+                        return res.data ?? {}
+                    },
+                    HISTORY_CACHE_MS,
+                    signal,
+                )
                 return [metric, data] as const
             }),
         )
@@ -644,16 +703,17 @@ export const nezha = {
         for (const key of historyCache.keys()) if (key.startsWith(prefix)) historyCache.delete(key)
     },
 
-    async loadPing(id: string, hours: number): Promise<PingData> {
+    async loadPing(id: string, hours: number, signal?: AbortSignal): Promise<PingData> {
         const url = `/api/v1/server/${encodeURIComponent(id)}/service?period=${period(hours)}`
         const data = await cached(
             url,
-            async () => {
-                const res = await request<Common<NezhaServiceInfo[]>>(url)
+            async (reqSignal) => {
+                const res = await request<Common<NezhaServiceInfo[]>>(url, { signal: reqSignal })
                 if (!res.success) throw new Error("Nezha latency unavailable")
                 return res.data ?? []
             },
             hours < 1 ? 30_000 : HISTORY_CACHE_MS,
+            signal,
         )
         return mapServices(data, Date.now() - hours * 3_600_000)
     },

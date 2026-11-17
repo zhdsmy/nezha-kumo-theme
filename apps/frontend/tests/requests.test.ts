@@ -97,3 +97,94 @@ it("shares metric periods across tabs, fetches only requested series and expires
     await nezha.loadHistory("6", 24, "counters")
     expect(fetch).toHaveBeenCalledTimes(8)
 })
+
+it("cancels queued and in-flight requests cleanly, normalizes WebKit canceled fetches, and keeps timeouts as real errors", async () => {
+    vi.resetModules()
+    vi.useFakeTimers()
+    const signals: AbortSignal[] = []
+    vi.stubGlobal(
+        "fetch",
+        (url: string, init?: RequestInit) =>
+            new Promise((_resolve, reject) => {
+                const sig = init?.signal!
+                signals.push(sig)
+                if (url === "/webkit-unload") {
+                    reject(
+                        new TypeError(
+                            "Fetch API cannot load http://127.0.0.1:5401/webkit-unload due to access control checks.",
+                        ),
+                    )
+                    return
+                }
+                sig.addEventListener(
+                    "abort",
+                    () => reject(new DOMException("Aborted", "AbortError")),
+                    { once: true },
+                )
+            }),
+    )
+    const { request, isCanceledError } = await import("../src/core/http")
+    const slow = Array.from({ length: 4 }, (_, i) =>
+        request(`/slow/${i}`, {}, 10_000).catch((e: unknown) => e),
+    )
+    const queuedCtrl = new AbortController()
+    const queued = request("/queued", { signal: queuedCtrl.signal })
+    queuedCtrl.abort()
+    await expect(queued).rejects.toMatchObject({ name: "AbortError" })
+    expect(signals).toHaveLength(4)
+
+    await vi.advanceTimersByTimeAsync(10_000)
+    for (const err of await Promise.all(slow)) {
+        expect(isCanceledError(err)).toBe(false)
+    }
+
+    const wkErr = await request("/webkit-unload").catch((e: unknown) => e)
+    expect(isCanceledError(wkErr)).toBe(true)
+})
+
+it("aborts underlying metric fetch only when all shared cache waiters cancel", async () => {
+    vi.resetModules()
+    const signals: AbortSignal[] = []
+    let release!: () => void
+    const fetch = vi.fn(
+        (_url: string, init?: RequestInit) =>
+            new Promise<Response>((resolve, reject) => {
+                signals.push(init!.signal!)
+                init!.signal!.addEventListener(
+                    "abort",
+                    () => reject(new DOMException("Aborted", "AbortError")),
+                    { once: true },
+                )
+                release = () =>
+                    resolve(
+                        new Response(
+                            JSON.stringify({
+                                success: true,
+                                data: { data_points: [{ ts: Date.now(), value: 2 }] },
+                            }),
+                        ),
+                    )
+            }),
+    )
+    vi.stubGlobal("fetch", fetch)
+    const { nezha } = await import("../src/adapters/nezha")
+
+    // Single waiter: abort cancels underlying fetch and evicts cache so next call refetches
+    const c1 = new AbortController()
+    const p1 = nezha.loadHistory("6", 1, "reports", c1.signal)
+    c1.abort()
+    await expect(p1).rejects.toMatchObject({ name: "AbortError" })
+    expect(signals[0].aborted).toBe(true)
+
+    // Shared waiters: aborting first waiter keeps underlying fetch alive for second waiter
+    const c2 = new AbortController()
+    const c3 = new AbortController()
+    const p2 = nezha.loadHistory("6", 1, "reports", c2.signal)
+    const p3 = nezha.loadHistory("6", 1, "reports", c3.signal)
+    expect(fetch).toHaveBeenCalledTimes(2)
+    c2.abort()
+    await expect(p2).rejects.toMatchObject({ name: "AbortError" })
+    expect(signals[1].aborted).toBe(false)
+    release()
+    await expect(p3).resolves.toHaveLength(1)
+})

@@ -1,22 +1,49 @@
 import { setAppearance, useAppearance } from "@/app/prefs"
-import { Link, navigate, usePathname } from "@/app/router"
-import { adapter, nodeHref, refresh, useStore, useVisibleNodes } from "@/app/store"
-import { stripFlag } from "@/core/region"
+import { adapter, useStore } from "@/app/store"
+import type { Appearance } from "@/core/settings"
 import { LOCALES, type Locale, setLocale } from "@/i18n"
-import { Button, Dialog, DropdownMenu, Input, Loader, Tooltip } from "@cloudflare/kumo"
+import { Button, DropdownMenu, LinkButton, Loader, Tooltip } from "@cloudflare/kumo"
 import { useSidebar } from "@cloudflare/kumo/components/sidebar"
-import {
-    GlobeIcon,
-    MagnifyingGlassIcon,
-    MoonIcon,
-    SunIcon,
-    UserIcon,
-    XIcon,
-} from "@phosphor-icons/react"
-import { type FormEvent, useCallback, useEffect, useState, useSyncExternalStore } from "react"
+import { LinkProvider } from "@cloudflare/kumo/utils"
+import { GlobeIcon, MagnifyingGlassIcon, MoonIcon, SunIcon, UserIcon } from "@phosphor-icons/react"
+import { type ComponentType, useCallback, useEffect, useState, useSyncExternalStore } from "react"
+import { createPortal } from "react-dom"
 import { useTranslation } from "react-i18next"
 
-import { Status } from "./ui"
+import type { LoginDialogProps } from "./LoginDialog"
+import type { SearchPaletteProps } from "./SearchPalette"
+
+let cachedPalette: ComponentType<SearchPaletteProps> | null = null
+let palettePromise: Promise<ComponentType<SearchPaletteProps>> | null = null
+
+function loadSearchPalette() {
+    palettePromise ??= import("./SearchPalette")
+        .then((m) => {
+            cachedPalette = m.SearchPalette
+            return m.SearchPalette
+        })
+        .catch((err) => {
+            palettePromise = null
+            throw err
+        })
+    return palettePromise
+}
+
+let cachedLogin: ComponentType<LoginDialogProps> | null = null
+let loginPromise: Promise<ComponentType<LoginDialogProps>> | null = null
+
+function loadLoginDialog() {
+    loginPromise ??= import("./LoginDialog")
+        .then((m) => {
+            cachedLogin = m.LoginDialog
+            return m.LoginDialog
+        })
+        .catch((err) => {
+            loginPromise = null
+            throw err
+        })
+    return loginPromise
+}
 
 let searchOpenState = false
 const searchListeners = new Set<() => void>()
@@ -67,110 +94,58 @@ export function SidebarSearch() {
     )
 }
 
-// Login behavior adapted from zool-theme/src/components/LoginDialog.tsx (MIT, luoleiorg).
-function LoginForm({ close }: { close: () => void }) {
-    const { t } = useTranslation()
-    const site = useStore((s) => s.site)
-    const [username, setUsername] = useState("")
-    const [password, setPassword] = useState("")
-    const [busy, setBusy] = useState(false)
-    const [message, setMessage] = useState("")
-    const submit = async (e: FormEvent) => {
-        e.preventDefault()
-        if (busy) return
-        setBusy(true)
-        setMessage("")
-        const result = await adapter.login(username.trim(), password)
-        if (result.ok) {
-            await refresh()
-            close()
-        } else setMessage(t(`auth.${result.reason}`))
-        setBusy(false)
-    }
-    const oauth = async (provider: string) => {
-        if (busy || !site) return
-        setBusy(true)
-        setMessage("")
-        try {
-            const url = await adapter.oauthUrl(site, provider)
-            if (!url) throw new Error("Unavailable")
-            window.location.assign(url)
-        } catch {
-            setMessage(t("auth.network"))
-        } finally {
-            setBusy(false)
-        }
-    }
-    return (
-        <>
-            <Dialog.Title className="dialog-title">{t("auth.title")}</Dialog.Title>
-            <Dialog.Description className="muted mb-6">
-                {t("auth.subtitle", { site: site?.name })}
-            </Dialog.Description>
-            <form onSubmit={submit} className="login-form">
-                <Input
-                    autoFocus
-                    label={t("auth.username")}
-                    autoComplete="username"
-                    required
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                />
-                <Input
-                    label={t("auth.password")}
-                    type="password"
-                    autoComplete="current-password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-                <Button variant="primary" type="submit" disabled={busy}>
-                    {busy ? (
-                        <Loader size="sm" aria-label={t("auth.submitting")} />
-                    ) : (
-                        t("auth.submit")
-                    )}
-                </Button>
-            </form>
-            {site?.oauth && (
-                <div className="oauth-actions">
-                    {site.oauthProviders?.map((p) => (
-                        <Button key={p} disabled={busy} onClick={() => void oauth(p)}>
-                            {t("auth.oauth", { provider: p })}
-                        </Button>
-                    ))}
-                </div>
-            )}
-            {message && (
-                <p role="alert" className="text-kumo-danger mt-4">
-                    {message}
-                </p>
-            )}
-            <p className="muted mt-5 text-xs">{t("auth.wafHint")}</p>
-        </>
-    )
-}
-
 export function Actions() {
     const { t, i18n } = useTranslation()
     const appearance = useAppearance()
     const search = useSyncExternalStore(subscribeSearch, () => searchOpenState)
     const [login, setLogin] = useState(false)
-    const [query, setQuery] = useState("")
-    const nodes = useVisibleNodes()
+    const [Palette, setPalette] = useState<ComponentType<SearchPaletteProps> | null>(
+        () => cachedPalette,
+    )
+    const [LoginModal, setLoginModal] = useState<ComponentType<LoginDialogProps> | null>(
+        () => cachedLogin,
+    )
     const session = useStore((s) => s.session)
     const hidden = useStore((s) => s.settings.hideAdminEntry)
-    const url = new URL(usePathname(), window.location.origin)
     const toggleSearch = useCallback((open?: boolean) => {
         setSearchDialogOpen(open)
-        setQuery("")
     }, [])
-    useEffect(() => {
-        if (!search) setQuery("")
-    }, [search])
     useEffect(() => () => setSearchDialogOpen(false), [])
     useEffect(() => {
+        if (!search || Palette) return
+        let cancelled = false
+        void loadSearchPalette()
+            .then((Comp) => {
+                if (!cancelled) setPalette(() => Comp)
+            })
+            .catch(() => {
+                if (!cancelled) setSearchDialogOpen(false)
+            })
+        return () => {
+            cancelled = true
+        }
+    }, [search, Palette])
+    useEffect(() => {
+        if (!login || LoginModal) return
+        let cancelled = false
+        void loadLoginDialog()
+            .then((Comp) => {
+                if (!cancelled) setLoginModal(() => Comp)
+            })
+            .catch(() => {
+                if (!cancelled) setLogin(false)
+            })
+        return () => {
+            cancelled = true
+        }
+    }, [login, LoginModal])
+    useEffect(() => {
         const key = (e: KeyboardEvent) => {
+            if (e.key === "Escape" && search && !Palette) {
+                e.preventDefault()
+                toggleSearch(false)
+                return
+            }
             if (login) return
             if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
                 e.preventDefault()
@@ -179,10 +154,7 @@ export function Actions() {
         }
         window.addEventListener("keydown", key)
         return () => window.removeEventListener("keydown", key)
-    }, [login, toggleSearch])
-    const matches = nodes.filter((n) =>
-        `${n.name} ${n.region} ${n.groups.join(" ")}`.toLowerCase().includes(query.toLowerCase()),
-    )
+    }, [login, search, Palette, toggleSearch])
     return (
         <>
             <DropdownMenu>
@@ -197,16 +169,18 @@ export function Actions() {
                         <span className="action-label">{t(`prefs.${appearance}`)}</span>
                     </Button>
                 </DropdownMenu.Trigger>
-                <DropdownMenu.Content align="end">
-                    {(["light", "dark", "system"] as const).map((a) => (
-                        <DropdownMenu.Item
-                            key={a}
-                            onClick={() => setAppearance(a)}
-                            aria-current={a === appearance ? "true" : undefined}
-                        >
-                            {t(`prefs.${a}`)}
-                        </DropdownMenu.Item>
-                    ))}
+                <DropdownMenu.Content align="end" className="min-w-36">
+                    <DropdownMenu.RadioGroup
+                        value={appearance}
+                        onValueChange={(v: string) => setAppearance(v as Appearance)}
+                    >
+                        {(["light", "dark", "system"] as const).map((a) => (
+                            <DropdownMenu.RadioItem key={a} value={a} closeOnClick>
+                                {t(`prefs.${a}`)}
+                                <DropdownMenu.RadioItemIndicator />
+                            </DropdownMenu.RadioItem>
+                        ))}
+                    </DropdownMenu.RadioGroup>
                 </DropdownMenu.Content>
             </DropdownMenu>
             <DropdownMenu>
@@ -223,98 +197,80 @@ export function Actions() {
                         </span>
                     </Button>
                 </DropdownMenu.Trigger>
-                <DropdownMenu.Content align="end">
-                    {LOCALES.map((l) => (
-                        <DropdownMenu.Item
-                            key={l.code}
-                            onClick={() => void setLocale(l.code as Locale)}
-                            lang={l.code}
-                        >
-                            {l.label}
-                        </DropdownMenu.Item>
-                    ))}
+                <DropdownMenu.Content align="end" className="min-w-40">
+                    <DropdownMenu.RadioGroup
+                        value={
+                            LOCALES.find((l) => l.code === i18n.language)?.code ??
+                            LOCALES.find((l) => i18n.language.startsWith(l.code))?.code ??
+                            "en"
+                        }
+                        onValueChange={(v: string) => void setLocale(v as Locale).catch(() => {})}
+                    >
+                        {LOCALES.map((l) => (
+                            <DropdownMenu.RadioItem
+                                key={l.code}
+                                value={l.code}
+                                lang={l.code}
+                                closeOnClick
+                            >
+                                {l.label}
+                                <DropdownMenu.RadioItemIndicator />
+                            </DropdownMenu.RadioItem>
+                        ))}
+                    </DropdownMenu.RadioGroup>
                 </DropdownMenu.Content>
             </DropdownMenu>
             {!hidden &&
                 (session.loggedIn ? (
-                    <a href={adapter.adminUrl} className="account-link" title={t("auth.dashboard")}>
-                        <UserIcon size={16} />
-                        <span className="action-label">{t("auth.dashboard")}</span>
-                    </a>
+                    <LinkProvider>
+                        <LinkButton
+                            href={adapter.adminUrl}
+                            variant="secondary"
+                            size="sm"
+                            aria-label={t("auth.dashboard")}
+                            title={t("auth.dashboard")}
+                        >
+                            <UserIcon size={16} />
+                            <span className="action-label">{t("auth.dashboard")}</span>
+                        </LinkButton>
+                    </LinkProvider>
                 ) : (
                     <Button
                         variant="secondary"
                         size="sm"
                         aria-label={t("auth.signIn")}
+                        onPointerEnter={() => void loadLoginDialog().catch(() => {})}
+                        onFocus={() => void loadLoginDialog().catch(() => {})}
                         onClick={() => setLogin(true)}
                     >
                         <UserIcon size={16} />
                         <span className="action-label">{t("auth.signIn")}</span>
                     </Button>
                 ))}
-            <Dialog.Root open={login} onOpenChange={setLogin}>
-                <Dialog className="p-6">
-                    <Button
-                        className="dialog-close"
-                        size="sm"
-                        variant="ghost"
-                        shape="square"
-                        aria-label={t("auth.close")}
-                        onClick={() => setLogin(false)}
+            {LoginModal && <LoginModal open={login} onOpenChange={setLogin} />}
+            {Palette ? (
+                <Palette open={search} onOpenChange={toggleSearch} />
+            ) : search ? (
+                createPortal(
+                    <div
+                        className="fixed inset-0 z-50 flex items-start justify-center bg-kumo-overlay/80 px-4 pt-[15vh]"
+                        onMouseDown={() => toggleSearch(false)}
                     >
-                        <XIcon size={16} />
-                    </Button>
-                    {login && <LoginForm close={() => setLogin(false)} />}
-                </Dialog>
-            </Dialog.Root>
-            <Dialog.Root open={search} onOpenChange={toggleSearch}>
-                <Dialog size="lg" className="p-5">
-                    <Dialog.Title className="dialog-title">{t("toolbar.search")}</Dialog.Title>
-                    <Dialog.Description className="muted mb-4">
-                        {t("toolbar.searchHint")}
-                    </Dialog.Description>
-                    <Input
-                        className="w-full"
-                        aria-label={t("toolbar.search")}
-                        placeholder={t("toolbar.searchPlaceholder")}
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter" && matches[0]) {
-                                navigate(nodeHref(matches[0].id, url))
-                                toggleSearch(false)
-                            }
-                        }}
-                    />
-                    <div className="search-results">
-                        {matches.length ? (
-                            matches.map((n) => (
-                                <Link
-                                    className="search-result"
-                                    key={n.id}
-                                    href={nodeHref(n.id, url)}
-                                    onClick={() => toggleSearch(false)}
-                                >
-                                    <span className="truncate" title={n.name}>
-                                        {stripFlag(n.name)}
-                                    </span>
-                                    <SearchStatus id={n.id} />
-                                </Link>
-                            ))
-                        ) : (
-                            <p className="muted p-4">{t("toolbar.noResults")}</p>
-                        )}
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={() => toggleSearch(false)}>
-                        {t("auth.close")}
-                    </Button>
-                </Dialog>
-            </Dialog.Root>
+                        <div
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label={t("toolbar.search")}
+                            className="w-full max-w-xl rounded-xl bg-kumo-base p-6 ring ring-kumo-line"
+                            onMouseDown={(e) => e.stopPropagation()}
+                        >
+                            <div className="flex items-center justify-center py-8" role="status">
+                                <Loader size="base" aria-label={t("toolbar.search")} />
+                            </div>
+                        </div>
+                    </div>,
+                    document.body,
+                )
+            ) : null}
         </>
     )
-}
-
-function SearchStatus({ id }: { id: string }) {
-    const snapshot = useStore((s) => s.snapshots[id])
-    return <Status snapshot={snapshot} />
 }

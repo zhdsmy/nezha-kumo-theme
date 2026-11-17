@@ -6,10 +6,15 @@
     align-items: center;
     gap: 12px;
     min-width: 0;
+    min-height: 32px;
     border-radius: 6px;
     color: inherit;
     font-weight: 600;
     text-decoration: none;
+}
+.nk-sidebar[data-mobile] .brand,
+.nk-sidebar:not([data-state="collapsed"]) .brand {
+    min-width: 32px;
 }
 .brand svg {
     flex-shrink: 0;
@@ -18,7 +23,10 @@
 .topbar-title {
     display: block;
     width: fit-content;
+    min-width: 32px;
     max-width: 28vw;
+    min-height: 32px;
+    line-height: 32px;
     overflow: hidden;
     border-radius: 6px;
     color: inherit;
@@ -27,21 +35,16 @@
     font-weight: 500;
     text-decoration: none;
 }
+.nk-topbar-actions > a {
+    height: 32px;
+    min-width: 32px;
+}
 .brand:hover,
 .topbar-title:hover {
     opacity: 0.75;
 }
 .action-label {
     display: none;
-}
-.account-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 8px;
-    border: 1px solid var(--color-kumo-line);
-    border-radius: 8px;
-    font-size: 12px;
 }
 .connection {
     display: flex;
@@ -50,8 +53,7 @@
     font-size: 12px;
     color: var(--text-color-kumo-subtle);
 }
-.connection i,
-.status i {
+.connection i {
     display: inline-block;
     flex-shrink: 0;
     width: 6px;
@@ -261,6 +263,7 @@
     color: var(--text-color-kumo-warning);
 }
 .status-trigger {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -273,6 +276,17 @@
     line-height: inherit;
     cursor: pointer;
     text-align: left;
+}
+.status-trigger::after,
+.card-name::after,
+.fleet-table .server-name > a::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 32px);
+    height: max(100%, 32px);
+    transform: translate(-50%, -50%);
 }
 .status-trigger:hover {
     text-decoration: underline;
@@ -338,35 +352,9 @@
     min-width: 0;
 }
 .inline-search {
-    position: relative;
-    display: flex;
-    align-items: center;
     flex: 1 1 180px;
     max-width: 260px;
     min-width: 0;
-}
-.inline-search input {
-    width: 100%;
-    min-width: 0;
-    padding-right: 30px;
-}
-.search-clear {
-    position: absolute;
-    right: 4px;
-    display: grid;
-    place-items: center;
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    border: 0;
-    border-radius: 6px;
-    background: transparent;
-    color: var(--text-color-kumo-subtle);
-    cursor: pointer;
-}
-.search-clear:hover {
-    color: var(--text-color-kumo-default);
-    background: var(--color-kumo-tint);
 }
 .sort-button {
     gap: 6px;
@@ -419,14 +407,8 @@
 .status[data-status="online"] {
     color: var(--text-color-kumo-success);
 }
-.status[data-status="online"] i {
-    background: var(--color-kumo-success);
-}
 .status[data-status="offline"] {
     color: var(--text-color-kumo-danger);
-}
-.status[data-status="offline"] i {
-    background: var(--color-kumo-danger);
 }
 .meter {
     display: grid;
@@ -458,6 +440,7 @@
     display: block;
     height: 100%;
     background: var(--color-kumo-success);
+    transition: width 200ms ease-out;
 }
 .meter[data-level="warn"] .meter-track > span {
     background: var(--color-kumo-warning);
@@ -530,18 +513,22 @@
     border-radius: 4px;
 }
 .card-name {
+    position: relative;
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    border-radius: 4px;
+    color: var(--text-color-kumo-link);
+}
+.card-name-text {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
-    width: fit-content;
-    max-width: 100%;
     overflow: hidden;
-    border-radius: 4px;
     overflow-wrap: anywhere;
     font-size: 15px;
     line-height: 20px;
     font-weight: 500;
-    color: var(--text-color-kumo-link);
 }
 .card-meta {
     display: block;
@@ -594,16 +581,22 @@
     gap: 8px;
     margin-bottom: 24px;
 }
-.ranges {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    min-width: 0;
-    overflow-x: auto;
-    padding: 3px;
+.chart-toolbar > button,
+.section-heading > button {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
 }
-.ranges > button {
-    flex-shrink: 0;
+@media (max-width: 767px) {
+    .chart-toolbar [data-kumo-component="Tabs"] > div:first-child,
+    .chart-toolbar .kumo-tabs-list {
+        height: 36px;
+    }
+    .chart-toolbar [role="tab"] {
+        min-width: 32px;
+        justify-content: center;
+    }
 }
 .chart-grid {
     display: grid;
@@ -676,6 +669,16 @@
 .nk-page:has(.nk-page-title-row > .nk-page-actions > .status) .nk-page-tabs {
     margin-top: -12px;
 }
+.nk-page-tabs .kumo-tabs-list {
+    margin: -9px -2px 0;
+    padding: 2px 2px 4px;
+    height: 39px;
+}
+.nk-page-tabs [role="tab"] {
+    min-width: 32px;
+    justify-content: center;
+    padding-block: 0;
+}
 .node-live-strip {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -739,16 +742,14 @@
     text-wrap: balance;
     text-align: right;
 }
-.notice {
-    margin: 16px 0 24px;
-    color: var(--text-color-kumo-subtle);
-    font-size: 12px;
-    line-height: 20px;
+.disconnect-banner-wrap {
+    width: 100%;
+    max-width: calc(var(--nk-page-max, 1280px) + 2 * var(--nk-gutter));
+    padding: 16px var(--nk-gutter) 0;
+    margin: 0 auto;
 }
-.node-info-panel .notice {
-    margin: 12px 0 0;
-    padding-top: 10px;
-    border-top: 1px solid var(--color-kumo-line);
+.disconnect-banner-wrap[data-node] {
+    --nk-page-max: 1100px;
 }
 .quota-track {
     height: 8px;
@@ -761,31 +762,34 @@
     display: block;
     height: 100%;
     background: var(--color-kumo-brand);
+    transition: width 200ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+    .meter-track > span,
+    .quota-track span {
+        transition: none;
+    }
 }
 .cell-empty {
     background: var(--color-kumo-fill);
 }
 .loading-state {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 24px 0;
+    display: block;
+    min-width: 0;
 }
-.skeleton {
-    height: 48px;
-    border-radius: 8px;
-    background: var(--color-kumo-fill);
-    animation: pulse 1.5s ease-in-out infinite;
+.skeleton-line {
+    background-color: rgb(0 0 0 / 0.08);
 }
-@keyframes pulse {
-    50% {
-        opacity: 0.4;
-    }
+[data-mode="dark"] .skeleton-line {
+    background-color: rgb(255 255 255 / 0.14);
 }
-@media (prefers-reduced-motion: reduce) {
-    .skeleton {
-        animation: none;
-    }
+[data-mode="dark"] .skeleton-line::after {
+    background: linear-gradient(
+        90deg,
+        rgb(255 255 255 / 0) 0%,
+        rgb(255 255 255 / 0.14) 50%,
+        rgb(255 255 255 / 0) 100%
+    );
 }
 .dialog-title {
     font-size: 20px;
@@ -796,8 +800,16 @@
 }
 .dialog-close {
     position: absolute;
-    top: 16px;
-    right: 16px;
+    top: 14px;
+    right: 14px;
+}
+.dialog-close,
+.dialog-close-btn,
+.nk-sidebar [data-sidebar="close"] {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
 }
 .login-form {
     display: flex;
@@ -815,23 +827,37 @@
     padding-top: 20px;
     border-top: 1px solid var(--color-kumo-line);
 }
-.search-results {
-    max-height: 50svh;
-    overflow-y: auto;
-    margin: 8px -11px;
-    padding: 4px 3px;
+[role="dialog"]:has(.nk-search-palette) {
+    width: min(42rem, calc(100vw - 32px));
 }
 .search-result {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
     min-height: 44px;
     padding: 8px;
-    border-radius: 8px;
+    font-size: 14px;
 }
+.search-result[data-highlighted],
 .search-result:hover {
     background: var(--color-kumo-tint);
+}
+.search-result-main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    gap: 2px;
+}
+.search-result-name,
+.search-result-groups {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.search-result-name {
+    font-weight: 500;
+}
+.search-result-groups {
+    font-size: 12px;
+    line-height: 16px;
 }
 
 .numeric-text {
