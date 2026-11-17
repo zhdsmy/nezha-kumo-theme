@@ -28,7 +28,7 @@ import { recentBuckets } from "@/core/live"
 import type { NodeInfo, Snapshot } from "@/core/model"
 import { regionName, stripFlag } from "@/core/region"
 import { readStorage, writeStorage } from "@/core/storage"
-import { summariseFleetDay } from "@/core/summary"
+import { dailyTraffic, mergeHistoryTail, summariseFleetDay } from "@/core/summary"
 import { uiLabels } from "@/i18n"
 import { Button, DropdownMenu, InputGroup, Table, Tabs, Tooltip } from "@cloudflare/kumo"
 import { Page } from "@nezha-kumo/ui"
@@ -324,7 +324,25 @@ export function HomePage() {
             ? formatMoney(cost.amount * (money.period === "year" ? 12 : 1), money.currency)
             : "—"
     const midnight = new Date().setHours(0, 0, 0, 0)
-    const { amount: traffic, included } = summariseFleetDay(nodes, snapshots, daily, midnight)
+    const trafficPoints = useMemo(
+        () =>
+            daily &&
+            Object.fromEntries(
+                nodes.map((n) => [
+                    n.id,
+                    daily[n.id]?.length
+                        ? mergeHistoryTail(daily[n.id], getLive(n.id), midnight)
+                        : [],
+                ]),
+            ),
+        [daily, nodes, version, midnight],
+    )
+    const { amount: traffic, included } = summariseFleetDay(
+        nodes,
+        snapshots,
+        trafficPoints,
+        midnight,
+    )
     const sparks = useMemo(() => {
         const now = Date.now()
         const aggregate = (series: ReturnType<typeof recentBuckets>[], average = false) =>
@@ -352,27 +370,12 @@ export function HomePage() {
             ),
             traffic: aggregate(
                 nodes.flatMap((n) => {
-                    const baselinePoints = daily?.[n.id]?.filter(
-                        (p) =>
-                            p.at >= midnight &&
-                            p.totalUp !== undefined &&
-                            p.totalDown !== undefined,
-                    )
-                    if (!baselinePoints?.length) return []
-                    const current = getLive(n.id)
-                    const points = [
-                        ...baselinePoints.filter((p) => p.at < (current[0]?.at ?? Infinity)),
-                        ...current,
-                    ]
-                    const baseline = baselinePoints[0].totalUp! + baselinePoints[0].totalDown!
+                    const points = trafficPoints?.[n.id]
+                    if (!points?.length) return []
                     return [
                         recentBuckets(
-                            points,
-                            (p) =>
-                                Math.max(
-                                    0,
-                                    (p.totalUp ?? baseline) + (p.totalDown ?? 0) - baseline,
-                                ),
+                            dailyTraffic(points, midnight),
+                            (p) => (p.totalUp ?? NaN) + (p.totalDown ?? NaN),
                             30,
                             15,
                             now,
@@ -381,7 +384,7 @@ export function HomePage() {
                 }),
             ),
         }
-    }, [nodes, version, daily, midnight])
+    }, [nodes, version, trafficPoints, midnight])
     const needle = query.toLowerCase()
     const visible = sortNodes(
         listed.filter(

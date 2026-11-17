@@ -104,6 +104,20 @@ describe("nezha adapter", () => {
         expect(second.nodes[0]).toMatchObject({ price: 36, billingCycle: 30 })
     })
 
+    it("clears explicit empty notes instead of keeping cached billing", () => {
+        const notes = new Map<string, string>()
+        const server = { id: 999, name: "a" }
+        const note = JSON.stringify({
+            billingDataMod: { amount: "USD 12", cycle: "Month" },
+            planDataMod: { trafficVol: "1TB" },
+        })
+        mapFrame({ now: 1, servers: [{ ...server, public_note: note }] }, new Map(), notes)
+        expect(
+            mapFrame({ now: 2, servers: [{ ...server, public_note: "" }] }, new Map(), notes)
+                .nodes[0],
+        ).toMatchObject({ price: 0, trafficLimit: -1 })
+    })
+
     it("parses billing from public_note", () => {
         const b = parsePublicNote(
             JSON.stringify({
@@ -233,6 +247,24 @@ describe("nezha mapServices", () => {
 })
 
 describe("nezha mergeMetrics", () => {
+    it("preserves missing metrics while retaining measured zero", () => {
+        const points = mergeMetrics(
+            {
+                cpu: {
+                    data_points: [
+                        { ts: 1000, value: 30 },
+                        { ts: 2000, value: 40 },
+                    ],
+                },
+                memory: { data_points: [{ ts: 1000, value: 0 }] },
+            },
+            0,
+        )
+        expect(points[0].memUsed).toBe(0)
+        expect(points[1].memUsed).toBeNaN()
+        expect(points[1].netUp).toBeNaN()
+    })
+
     it("joins TSDB series by timestamp, maps in/out to down/up and drops points before `since`", () => {
         const pts = mergeMetrics(
             {
@@ -256,7 +288,8 @@ describe("nezha mergeMetrics", () => {
         )
         expect(pts.map((p) => p.at)).toEqual([2000, 3000])
         expect(pts[0]).toMatchObject({ cpu: 3, netUp: 40, netDown: 7 })
-        expect(pts[1]).toMatchObject({ cpu: 4, netUp: 50, netDown: 0 })
+        expect(pts[1]).toMatchObject({ cpu: 4, netUp: 50 })
+        expect(pts[1].netDown).toBeNaN()
         expect(pts[0].totalDown).toBeUndefined()
     })
 })

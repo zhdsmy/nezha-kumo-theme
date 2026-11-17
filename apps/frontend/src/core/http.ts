@@ -154,7 +154,7 @@ export const wsUrl = (path: string) => {
 export function resilientSocket(opts: {
     url: () => string
     onOpen?: (ws: WebSocket) => void
-    onMessage: (data: string) => void
+    onMessage: (data: string) => boolean | void
     onStatus?: (status: "connecting" | "open" | "closed") => void
     onGiveUp?: () => void
     maxFailures?: number
@@ -162,6 +162,7 @@ export function resilientSocket(opts: {
     let ws: WebSocket | null = null
     let stopped = false
     let failures = 0
+    let idleTimer: ReturnType<typeof setTimeout> | undefined
     let timer: ReturnType<typeof setTimeout> | undefined
 
     const connect = () => {
@@ -179,16 +180,21 @@ export function resilientSocket(opts: {
         ws = socket
         let opened = false
         socket.onopen = () => {
+            if (ws !== socket || stopped) return
             opened = true
-            failures = 0
-            opts.onStatus?.("open")
             opts.onOpen?.(socket)
+            armIdleTimeout()
         }
         socket.onmessage = (e) => {
-            if (typeof e.data === "string") opts.onMessage(e.data)
+            if (ws !== socket || stopped || typeof e.data !== "string") return
+            if (opts.onMessage(e.data) === false) return
+            failures = 0
+            opts.onStatus?.("open")
+            armIdleTimeout()
         }
-        socket.onclose = () => {
+        const onClose = () => {
             if (ws !== socket) return
+            clearTimeout(idleTimer)
             ws = null
             opts.onStatus?.("closed")
             if (stopped) return
@@ -201,6 +207,15 @@ export function resilientSocket(opts: {
             const delay = Math.min(15_000, 1000 * 2 ** Math.min(failures, 4))
             timer = setTimeout(connect, delay)
         }
+        const armIdleTimeout = () => {
+            clearTimeout(idleTimer)
+            // Nezha pushes every 2 s; 30 s tolerates 15 missed frames before reconnecting.
+            idleTimer = setTimeout(() => {
+                socket.close()
+                onClose()
+            }, 30_000)
+        }
+        socket.onclose = onClose
     }
 
     connect()
@@ -211,6 +226,7 @@ export function resilientSocket(opts: {
         close() {
             stopped = true
             clearTimeout(timer)
+            clearTimeout(idleTimer)
             ws?.close()
             ws = null
         },

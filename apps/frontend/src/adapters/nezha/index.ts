@@ -354,7 +354,7 @@ export function mapFrame(
     const nodes: NodeInfo[] = []
     for (const s of servers) {
         const id = String(s.id)
-        if (s.public_note) notes.set(id, s.public_note)
+        if (s.public_note !== undefined) notes.set(id, s.public_note)
         snapshots[id] = mapState(s, now)
         nodes.push(mapServer(s, groups, notes.get(id)))
     }
@@ -376,16 +376,24 @@ const hub = (() => {
         if (socket) return
         socket = resilientSocket({
             url: () => wsUrl("/api/v1/ws/server"),
+            onOpen: () => {
+                last = null
+                publicNotes.clear()
+            },
             onStatus: (s) => {
                 status = s
                 statusListeners.forEach((l) => l(s))
             },
             onMessage: (text) => {
                 try {
-                    last = JSON.parse(text) as NezhaFrame
-                    listeners.forEach((l) => l(last!))
+                    const frame = JSON.parse(text) as NezhaFrame
+                    if (!frame || !Number.isFinite(frame.now) || !Array.isArray(frame.servers))
+                        return false
+                    last = frame
+                    listeners.forEach((l) => l(frame))
+                    return true
                 } catch {
-                    /* ignore */
+                    return false
                 }
             },
         })
@@ -414,6 +422,7 @@ const hub = (() => {
             socket?.close()
             socket = null
             last = null
+            publicNotes.clear()
             status = "connecting"
         },
         listen(l: Listener, s?: (st: "connecting" | "open" | "closed") => void) {
@@ -498,18 +507,19 @@ export function mergeMetrics(
             if (ts < since || !Number.isFinite(value)) continue
             let point = byTs.get(ts)
             if (!point) {
+                // NaN preserves per-metric gaps without changing the numeric history contract.
                 point = {
                     at: ts,
-                    cpu: 0,
-                    memUsed: 0,
-                    swapUsed: 0,
-                    diskUsed: 0,
-                    netUp: 0,
-                    netDown: 0,
-                    load1: 0,
-                    tcp: 0,
-                    udp: 0,
-                    process: 0,
+                    cpu: NaN,
+                    memUsed: NaN,
+                    swapUsed: NaN,
+                    diskUsed: NaN,
+                    netUp: NaN,
+                    netDown: NaN,
+                    load1: NaN,
+                    tcp: NaN,
+                    udp: NaN,
+                    process: NaN,
                 }
                 byTs.set(ts, point)
             }
@@ -555,7 +565,11 @@ function cached<T>(
 ): Promise<T> {
     if (signal?.aborted) return Promise.reject(abortError(signal))
     let entry = historyCache.get(key)
-    if (!entry || Date.now() - entry.at >= ttl) {
+    if (
+        !entry ||
+        Date.now() - entry.at >= ttl ||
+        new Date(entry.at).toDateString() !== new Date().toDateString()
+    ) {
         const ctrl = new AbortController()
         const next: CacheEntry = {
             at: Date.now(),
@@ -606,7 +620,8 @@ export const nezha = {
     historyRanges: [0, 1, 4, 24, 168, 720],
 
     async loadSite(loggedIn = false): Promise<SiteInfo> {
-        const res = await request<Common<NezhaSetting>>("/api/v1/setting").catch(() => null)
+        const res = await request<Common<NezhaSetting>>("/api/v1/setting")
+        if (!res.success || !res.data) throw new Error("Nezha settings unavailable")
         const cfg = res?.data?.config ?? {}
         const hasGroupIcons = Object.keys(parseGroupIcons(cfg.custom_code)).length > 0
         if (hasGroupIcons) await loadGroups()
