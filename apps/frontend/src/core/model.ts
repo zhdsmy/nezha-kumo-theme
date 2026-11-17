@@ -47,6 +47,7 @@ export interface NodeInfo {
     /** Bytes; 0 = unlimited, -1 = unknown. */
     trafficLimit: number
     trafficLimitType: TrafficLimitType
+    trafficLimitTypeExplicit?: boolean
     /** Period in days, when the quota does not share the cumulative counters' window. */
     trafficLimitPeriod?: number
     bandwidth?: string

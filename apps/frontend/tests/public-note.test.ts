@@ -67,13 +67,16 @@ it("preserves all 21 anonymous public notes against a17fb3d except the planned o
     expect(liveNotes).toHaveLength(21)
     for (const { public_note, expected } of liveNotes) {
         let outbound = false
+        let trafficLimitTypeExplicit = false
         try {
             outbound = JSON.parse(public_note).planDataMod?.trafficType === "1"
+            trafficLimitTypeExplicit = !!JSON.parse(public_note).planDataMod?.trafficType?.trim()
         } catch {
             /* The free-form note is also a regression fixture. */
         }
         expect(parsePublicNote(public_note)).toEqual({
             ...expected,
+            trafficLimitTypeExplicit,
             trafficLimitType: outbound ? "out" : expected.trafficLimitType,
         })
     }
@@ -89,5 +92,12 @@ it.each([
     expect(parsePublicNote(JSON.stringify({ billingDataMod: { amount } }))).toMatchObject({
         price,
         currency,
+    })
+})
+
+it.each([undefined, "", "  "])("keeps implicit traffic mode hidden for %s", (trafficType) => {
+    expect(parsePublicNote(JSON.stringify({ planDataMod: { trafficType } }))).toMatchObject({
+        trafficLimitType: "max",
+        trafficLimitTypeExplicit: false,
     })
 })

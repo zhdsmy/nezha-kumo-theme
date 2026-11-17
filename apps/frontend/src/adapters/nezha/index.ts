@@ -165,6 +165,7 @@ export function parsePublicNote(note: string | undefined) {
         expiredAt: null as number | null,
         trafficLimit: -1,
         trafficLimitType: "max" as NodeInfo["trafficLimitType"],
+        trafficLimitTypeExplicit: false,
         trafficLimitPeriod: 0,
         bandwidth: "",
         ipv4: undefined as boolean | undefined,
@@ -207,6 +208,7 @@ export function parsePublicNote(note: string | undefined) {
             out.trafficLimitPeriod = traffic === "unlimited" ? 0 : cycleDays(traffic.cycle)
         }
         out.trafficLimitType = parseTrafficType(p.trafficType)
+        out.trafficLimitTypeExplicit = !!text(p.trafficType)
         out.bandwidth = text(p.bandwidth)
         out.ipv4 = text(p.IPv4) === "1" ? true : text(p.IPv4) === "0" ? false : undefined
         out.ipv6 = text(p.IPv6) === "1" ? true : text(p.IPv6) === "0" ? false : undefined
