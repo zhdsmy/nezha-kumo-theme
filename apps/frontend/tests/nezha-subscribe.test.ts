@@ -180,3 +180,17 @@ it("replaces note cache on reconnect even when the new first frame omits the not
     nezha.reset()
     FakeSocket.frame = frame
 })
+
+it("accepts the official empty-fleet frame with omitted servers", async () => {
+    nezha.reset()
+    FakeSocket.frame = { now: Date.now(), online: 0 }
+    try {
+        const loading = nezha.loadNodes()
+        await vi.advanceTimersByTimeAsync(0)
+        const result = await Promise.race([loading, Promise.resolve("pending")])
+        expect(result).toEqual([])
+    } finally {
+        nezha.reset()
+        FakeSocket.frame = frame
+    }
+})
