@@ -5,7 +5,14 @@ import { LOCALES, type Locale, setLocale } from "@/i18n"
 import { Button, DropdownMenu, LinkButton, Loader, Tooltip } from "@cloudflare/kumo"
 import { useSidebar } from "@cloudflare/kumo/components/sidebar"
 import { LinkProvider } from "@cloudflare/kumo/utils"
-import { GlobeIcon, MagnifyingGlassIcon, MoonIcon, SunIcon, UserIcon } from "@phosphor-icons/react"
+import {
+    GlobeIcon,
+    MagnifyingGlassIcon,
+    MonitorIcon,
+    MoonIcon,
+    SunIcon,
+    UserIcon,
+} from "@phosphor-icons/react"
 import { type ComponentType, useCallback, useEffect, useState, useSyncExternalStore } from "react"
 import { createPortal } from "react-dom"
 import { useTranslation } from "react-i18next"
@@ -165,7 +172,13 @@ export function Actions() {
                         aria-label={t("prefs.appearance")}
                         title={t("prefs.appearance")}
                     >
-                        {appearance === "dark" ? <MoonIcon size={16} /> : <SunIcon size={16} />}
+                        {appearance === "system" ? (
+                            <MonitorIcon size={16} />
+                        ) : appearance === "dark" ? (
+                            <MoonIcon size={16} />
+                        ) : (
+                            <SunIcon size={16} />
+                        )}
                         <span className="action-label">{t(`prefs.${appearance}`)}</span>
                     </Button>
                 </DropdownMenu.Trigger>
