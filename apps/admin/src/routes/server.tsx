@@ -63,14 +63,14 @@ export default function ServerPage() {
                         (table.getIsSomePageRowsSelected() && "indeterminate")
                     }
                     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                    aria-label="Select all"
+                    aria-label={t("SelectAll")}
                 />
             ),
             cell: ({ row }) => (
                 <Checkbox
                     checked={row.getIsSelected()}
                     onCheckedChange={(value) => row.toggleSelected(!!value)}
-                    aria-label="Select row"
+                    aria-label={t("SelectRow")}
                 />
             ),
             enableHiding: false,
@@ -224,7 +224,7 @@ export default function ServerPage() {
                                     <IconButton
                                         icon="more"
                                         variant="outline"
-                                        aria-label="More actions"
+                                        aria-label={t("MoreActions")}
                                     />
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">

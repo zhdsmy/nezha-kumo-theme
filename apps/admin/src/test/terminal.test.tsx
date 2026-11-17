@@ -1,3 +1,4 @@
+import "@/lib/i18n"
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
 

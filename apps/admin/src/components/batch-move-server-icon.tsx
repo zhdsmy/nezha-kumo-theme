@@ -115,7 +115,7 @@ export const BatchMoveServerIcon: React.FC<BatchMoveServerIconProps> = ({
                                 id="batch-move-to-user"
                                 aria-labelledby="batch-move-to-user-label"
                                 type="number"
-                                placeholder="User ID"
+                                placeholder={t("UserId")}
                                 value={toUserId ?? ""}
                                 onChange={(e) => {
                                     const parsed = parseInt(e.target.value, 10)

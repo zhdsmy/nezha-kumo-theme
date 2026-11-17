@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { useNavigate, useRouteError } from "react-router-dom"
 
 interface RouterError {
@@ -10,6 +11,7 @@ interface RouterError {
 }
 
 export default function ErrorPage() {
+    const { t } = useTranslation()
     const error = useRouteError() as RouterError
     const navigate = useNavigate()
     console.error(error)
@@ -21,10 +23,8 @@ export default function ErrorPage() {
                     <div className="flex justify-center">
                         <AlertCircle className="h-12 w-12 text-destructive" />
                     </div>
-                    <h1 className="text-4xl font-bold tracking-tight">Oops!</h1>
-                    <p className="text-lg text-muted-foreground/80">
-                        Sorry, an unexpected error has occurred.
-                    </p>
+                    <h1 className="text-4xl font-bold tracking-tight">{t("ErrorPage.Title")}</h1>
+                    <p className="text-lg text-muted-foreground/80">{t("ErrorPage.Description")}</p>
                     <div className="p-4 bg-muted/70 rounded-lg">
                         <p className="text-sm text-destructive font-semibold italic">
                             {error.statusText || error.message}
@@ -33,7 +33,7 @@ export default function ErrorPage() {
                 </CardContent>
                 <CardFooter className="flex justify-center pb-6">
                     <Button variant="default" size="lg" onClick={() => navigate("/dashboard")}>
-                        Back to Dashboard
+                        {t("ErrorPage.BackToDashboard")}
                     </Button>
                 </CardFooter>
             </Card>

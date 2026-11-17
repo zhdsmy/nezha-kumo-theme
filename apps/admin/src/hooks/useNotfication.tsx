@@ -2,6 +2,7 @@ import { getNotification } from "@/api/notification"
 import { getNotificationGroups } from "@/api/notification-group"
 import { NotificationContextProps } from "@/types"
 import { createContext, useContext, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 import { toast } from "sonner"
 
@@ -20,6 +21,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     withNotifier,
     withNotifierGroup,
 }) => {
+    const { t } = useTranslation()
     const notifierGroup = useNotificationStore((store) => store.notifierGroup)
     const setNotifierGroup = useNotificationStore((store) => store.setNotifierGroup)
 
@@ -35,7 +37,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
                     const ng = await getNotificationGroups()
                     setNotifierGroup(ng)
                 } catch (error: any) {
-                    toast("NotificationProvider Error", {
+                    toast(t("Error"), {
                         description: error.message,
                     })
                     setNotifierGroup(undefined)
@@ -48,13 +50,13 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
                     const nData = n.map(({ id, name }) => ({ id, name }))
                     setNotifier(nData)
                 } catch (error: any) {
-                    toast("NotificationProvider Error", {
+                    toast(t("Error"), {
                         description: error.message,
                     })
                     setNotifier(undefined)
                 }
             })()
-    }, [location.pathname, setNotifier, setNotifierGroup, withNotifier, withNotifierGroup])
+    }, [location.pathname, setNotifier, setNotifierGroup, t, withNotifier, withNotifierGroup])
 
     const value: NotificationContextProps = useMemo(
         () => ({

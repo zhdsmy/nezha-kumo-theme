@@ -67,7 +67,7 @@ export default function ProfilePage() {
                                 {profile.username}
                             </p>
                             <p className="break-all text-muted-foreground">
-                                IP: {profile.login_ip || "Unknown"}
+                                IP: {profile.login_ip || t("Unknown")}
                             </p>
                         </div>
                     </div>
@@ -76,7 +76,7 @@ export default function ProfilePage() {
                             <Card className="w-full">
                                 <CardHeader>
                                     <CardTitle className="flex gap-2 text-xl items-center">
-                                        <Server /> Servers
+                                        <Server /> {t("Servers")}
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="text-lg font-semibold">
@@ -86,7 +86,7 @@ export default function ProfilePage() {
                             <Card className="w-full">
                                 <CardHeader>
                                     <CardTitle className="flex gap-2 text-xl items-center">
-                                        <Boxes /> Server Groups
+                                        <Boxes /> {t("ServerGroups")}
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="text-lg font-semibold">
@@ -97,7 +97,7 @@ export default function ProfilePage() {
                             <Card className="w-full">
                                 <CardHeader>
                                     <CardTitle className="flex gap-2 text-xl items-center">
-                                        <Boxes /> Oauth2 bindings
+                                        <Boxes /> {t("OAuth2Bindings")}
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="text-lg font-semibold">
@@ -129,7 +129,7 @@ export default function ProfilePage() {
                                                     size="sm"
                                                     onClick={() => unbindO2(provider)}
                                                 >
-                                                    Unbind
+                                                    {t("Unbind")}
                                                 </Button>
                                             ) : (
                                                 <Button
@@ -138,7 +138,7 @@ export default function ProfilePage() {
                                                     size="sm"
                                                     onClick={() => bindO2(provider)}
                                                 >
-                                                    Bind
+                                                    {t("Bind")}
                                                 </Button>
                                             )}
                                         </div>

@@ -281,7 +281,7 @@ function CreateApiTokenDialog({
                                         <div className="flex flex-col">
                                             <span className="font-mono text-xs">{s.value}</span>
                                             <span className="text-xs text-muted-foreground">
-                                                {s.desc}
+                                                {t(s.descKey)}
                                             </span>
                                         </div>
                                     </label>

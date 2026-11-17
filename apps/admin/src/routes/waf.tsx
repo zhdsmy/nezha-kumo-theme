@@ -50,7 +50,7 @@ export default function WAFPage() {
     useEffect(() => {
         if (error)
             toast(t("Error"), {
-                description: t(`Error fetching resource: ${error.message}.`),
+                description: t("Results.ErrorFetchingResource", { error: error.message }),
             })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
@@ -65,14 +65,14 @@ export default function WAFPage() {
                         (table.getIsSomePageRowsSelected() && "indeterminate")
                     }
                     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                    aria-label="Select all"
+                    aria-label={t("SelectAll")}
                 />
             ),
             cell: ({ row }) => (
                 <Checkbox
                     checked={row.getIsSelected()}
                     onCheckedChange={(value) => row.toggleSelected(!!value)}
-                    aria-label="Select row"
+                    aria-label={t("SelectRow")}
                 />
             ),
             enableHiding: false,
@@ -91,13 +91,21 @@ export default function WAFPage() {
             header: t("LastBlockReason"),
             accessorKey: "lastBlockReason",
             accessorFn: (row) => row.block_reason,
-            cell: ({ row }) => <span>{wafBlockReasons[row.original.block_reason] || ""}</span>,
+            cell: ({ row }) => (
+                <span>
+                    {wafBlockReasons[row.original.block_reason]
+                        ? t(wafBlockReasons[row.original.block_reason])
+                        : ""}
+                </span>
+            ),
         },
         {
             header: t("BlockIdentifier"),
             accessorKey: "BlockIdentifier",
             accessorFn: (row) => {
-                return wafBlockIdentifiers[row.block_identifier] || row.block_identifier
+                return wafBlockIdentifiers[row.block_identifier]
+                    ? t(wafBlockIdentifiers[row.block_identifier])
+                    : row.block_identifier
             },
         },
         {
@@ -112,7 +120,7 @@ export default function WAFPage() {
         },
         {
             id: "actions",
-            header: "Actions",
+            header: t("Actions"),
             cell: ({ row }) => {
                 const s = row.original
                 return (

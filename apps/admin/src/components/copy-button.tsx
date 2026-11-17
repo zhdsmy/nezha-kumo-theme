@@ -16,7 +16,7 @@ export const CopyButton = forwardRef<HTMLButtonElement, CopyButtonProps>((props,
 
     const switchState = async (text?: string) => {
         if (!text) {
-            toast("Warning", {
+            toast(t("Warning"), {
                 description: t("EmptyText"),
             })
             return

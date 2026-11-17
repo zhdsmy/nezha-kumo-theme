@@ -39,23 +39,26 @@ interface XtermProps {
 
 type ConnectionState = "connecting" | "connected" | "disconnected"
 
-const terminalKeys: Array<{ key: TerminalKey; label: string; ariaLabel: string }> = [
-    { key: "escape", label: "Esc", ariaLabel: "Escape" },
-    { key: "tab", label: "Tab", ariaLabel: "Tab" },
-    { key: "arrowLeft", label: "←", ariaLabel: "Left arrow" },
-    { key: "arrowUp", label: "↑", ariaLabel: "Up arrow" },
-    { key: "arrowDown", label: "↓", ariaLabel: "Down arrow" },
-    { key: "arrowRight", label: "→", ariaLabel: "Right arrow" },
-    { key: "home", label: "Home", ariaLabel: "Home" },
-    { key: "end", label: "End", ariaLabel: "End" },
-    { key: "pageUp", label: "PgUp", ariaLabel: "Page up" },
-    { key: "pageDown", label: "PgDn", ariaLabel: "Page down" },
+const terminalKeys: Array<{ key: TerminalKey; label: string; ariaLabelKey: string }> = [
+    { key: "escape", label: "Esc", ariaLabelKey: "TerminalKeys.Escape" },
+    { key: "tab", label: "Tab", ariaLabelKey: "TerminalKeys.Tab" },
+    { key: "arrowLeft", label: "←", ariaLabelKey: "TerminalKeys.ArrowLeft" },
+    { key: "arrowUp", label: "↑", ariaLabelKey: "TerminalKeys.ArrowUp" },
+    { key: "arrowDown", label: "↓", ariaLabelKey: "TerminalKeys.ArrowDown" },
+    { key: "arrowRight", label: "→", ariaLabelKey: "TerminalKeys.ArrowRight" },
+    { key: "home", label: "Home", ariaLabelKey: "TerminalKeys.Home" },
+    { key: "end", label: "End", ariaLabelKey: "TerminalKeys.End" },
+    { key: "pageUp", label: "PgUp", ariaLabelKey: "TerminalKeys.PageUp" },
+    { key: "pageDown", label: "PgDn", ariaLabelKey: "TerminalKeys.PageDown" },
 ]
 
 const maxClipboardBytes = 512 * 1024
 
 export const XtermComponent = forwardRef<HTMLDivElement, XtermProps & JSX.IntrinsicElements["div"]>(
     ({ wsUrl, setClose, className = "", ...props }, ref) => {
+        const { t } = useTranslation()
+        const tRef = useRef(t)
+        tRef.current = t
         const mobile = !useMediaQuery(`(min-width: ${BREAKPOINTS.gutter}px)`)
         const shellRef = useRef<HTMLDivElement>(null)
         const screenRef = useRef<HTMLDivElement>(null)
@@ -126,7 +129,10 @@ export const XtermComponent = forwardRef<HTMLDivElement, XtermProps & JSX.Intrin
             fitAddonRef.current = fitAddon
             terminal.loadAddon(fitAddon)
             terminal.open(screen)
-            terminal.element?.setAttribute("aria-label", "Interactive terminal")
+            terminal.element?.setAttribute(
+                "aria-label",
+                tRef.current("TerminalControls.InteractiveTerminal"),
+            )
             terminalRef.current = terminal
 
             const url = new URL(wsUrl, window.location.origin)
@@ -186,7 +192,9 @@ export const XtermComponent = forwardRef<HTMLDivElement, XtermProps & JSX.Intrin
             }
             ws.onerror = (event) => {
                 console.error(event)
-                toast("Websocket error", { description: "View console for details." })
+                toast(tRef.current("WebsocketError"), {
+                    description: tRef.current("Results.UnExpectedError"),
+                })
             }
 
             const updateViewport = () => {
@@ -231,11 +239,18 @@ export const XtermComponent = forwardRef<HTMLDivElement, XtermProps & JSX.Intrin
             }
         }, [fit, setClose, updateControl, wsUrl])
 
+        useEffect(() => {
+            terminalRef.current?.element?.setAttribute(
+                "aria-label",
+                t("TerminalControls.InteractiveTerminal"),
+            )
+        }, [t])
+
         const pasteClipboard = async () => {
             if (pasteBusy || connectionState !== "connected") return
             if (!navigator.clipboard?.readText) {
-                toast("Clipboard unavailable", {
-                    description: "Use HTTPS and allow clipboard permission in your browser.",
+                toast(t("TerminalControls.ClipboardUnavailable"), {
+                    description: t("TerminalControls.ClipboardUnavailableDesc"),
                 })
                 terminalRef.current?.focus()
                 return
@@ -247,12 +262,12 @@ export const XtermComponent = forwardRef<HTMLDivElement, XtermProps & JSX.Intrin
                 const text = await navigator.clipboard.readText()
                 if (pasteRequestRef.current !== requestID) return
                 if (!text) {
-                    toast("Clipboard is empty")
+                    toast(t("TerminalControls.ClipboardEmpty"))
                     return
                 }
                 if (new TextEncoder().encode(text).length > maxClipboardBytes) {
-                    toast("Clipboard is too large", {
-                        description: "Terminal paste is limited to 512 KiB per action.",
+                    toast(t("TerminalControls.ClipboardTooLarge"), {
+                        description: t("TerminalControls.ClipboardTooLargeDesc"),
                     })
                     return
                 }
@@ -267,8 +282,8 @@ export const XtermComponent = forwardRef<HTMLDivElement, XtermProps & JSX.Intrin
                 terminal.focus()
             } catch {
                 if (pasteRequestRef.current === requestID) {
-                    toast("Could not read clipboard", {
-                        description: "Allow clipboard access in your browser and try again.",
+                    toast(t("ClipboardReadFailed"), {
+                        description: t("TerminalControls.ClipboardReadFailedDesc"),
                     })
                 }
             } finally {
@@ -294,20 +309,24 @@ export const XtermComponent = forwardRef<HTMLDivElement, XtermProps & JSX.Intrin
                 {...props}
             >
                 <div ref={screenRef} className="terminal-screen" />
-                <div className="terminal-keyboard" role="toolbar" aria-label="Terminal controls">
+                <div
+                    className="terminal-keyboard"
+                    role="toolbar"
+                    aria-label={t("TerminalControls.Toolbar")}
+                >
                     <button
                         type="button"
                         className="terminal-key terminal-key-paste"
                         disabled={connectionState !== "connected" || pasteBusy}
-                        aria-label="Paste clipboard"
+                        aria-label={t("TerminalControls.PasteClipboard")}
                         onClick={() => void pasteClipboard()}
                     >
-                        {pasteBusy ? "Pasting…" : "Paste"}
+                        {pasteBusy ? t("TerminalControls.Pasting") : t("Paste")}
                     </button>
                     <button
                         type="button"
                         className={`terminal-key ${controlActive ? "is-active" : ""}`}
-                        aria-label="Control modifier for next key"
+                        aria-label={t("TerminalControls.ControlModifier")}
                         aria-pressed={controlActive}
                         disabled={connectionState !== "connected"}
                         onClick={() => {
@@ -317,12 +336,12 @@ export const XtermComponent = forwardRef<HTMLDivElement, XtermProps & JSX.Intrin
                     >
                         Ctrl
                     </button>
-                    {terminalKeys.map(({ key, label, ariaLabel }) => (
+                    {terminalKeys.map(({ key, label, ariaLabelKey }) => (
                         <button
                             key={key}
                             type="button"
                             className={`terminal-key ${key.startsWith("arrow") ? "terminal-key-arrow" : ""}`}
-                            aria-label={ariaLabel}
+                            aria-label={t(ariaLabelKey)}
                             disabled={connectionState !== "connected"}
                             onClick={() => sendKey(key)}
                         >
@@ -336,13 +355,14 @@ export const XtermComponent = forwardRef<HTMLDivElement, XtermProps & JSX.Intrin
 )
 
 export const TerminalPage = () => {
+    const { t } = useTranslation()
     const { id } = useParams<{ id: string }>()
     const [open, setOpen] = useState(false)
     const terminal = useTerminal(id ? parseInt(id) : undefined)
     const terminalIdRef = useRef<HTMLDivElement>(null)
     return (
         <Page
-            title={`Terminal (${id})`}
+            title={`${t("Terminal")} (${id})`}
             maxWidth={10000}
             actions={
                 <div className="flex gap-2">
@@ -364,19 +384,19 @@ export const TerminalPage = () => {
                     setClose={setOpen}
                 />
             ) : (
-                <p>The server does not exist, or have not been connected yet.</p>
+                <p>{t("Results.TheServerDoesNotOnline")}</p>
             )}
             <AlertDialog open={open} onOpenChange={setOpen}>
                 <AlertDialogContent className="sm:max-w-lg">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Session completed</AlertDialogTitle>
+                        <AlertDialogTitle>{t("TerminalControls.SessionCompleted")}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            You may close this window now.
+                            {t("TerminalControls.CloseWindowHint")}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogAction asChild>
-                            <Button onClick={window.close}>Close</Button>
+                            <Button onClick={window.close}>{t("Close")}</Button>
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

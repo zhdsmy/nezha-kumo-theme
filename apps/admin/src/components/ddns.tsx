@@ -155,7 +155,7 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
                                         <FormItem>
                                             <FormLabel>{t("Name")}</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="My DDNS Profile" {...field} />
+                                                <Input placeholder={t("Placeholders.DDNSName")} {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -173,7 +173,7 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
                                             >
                                                 <FormControl>
                                                     <SelectTrigger>
-                                                        <SelectValue placeholder="Select service type" />
+                                                        <SelectValue placeholder={t("Placeholders.SelectServiceType")} />
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
@@ -210,7 +210,7 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
                                         <FormItem>
                                             <FormLabel>{t("Credential")} 1</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Token ID" {...field} />
+                                                <Input placeholder={t("Placeholders.TokenID")} {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -225,7 +225,7 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
                                             <FormControl>
                                                 <PasswordInput
                                                     autoComplete="off"
-                                                    placeholder="Token Secret"
+                                                    placeholder={t("Placeholders.TokenSecret")}
                                                     {...field}
                                                 />
                                             </FormControl>
@@ -282,7 +282,7 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
                                             >
                                                 <FormControl>
                                                     <SelectTrigger>
-                                                        <SelectValue placeholder="Webhook Request Method" />
+                                                        <SelectValue placeholder={`Webhook ${t("RequestMethod")}`} />
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
@@ -309,7 +309,7 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
                                             >
                                                 <FormControl>
                                                     <SelectTrigger>
-                                                        <SelectValue placeholder="Webhook Request Type" />
+                                                        <SelectValue placeholder={`Webhook ${t("RequestType")}`} />
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>

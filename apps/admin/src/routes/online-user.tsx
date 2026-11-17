@@ -44,7 +44,7 @@ export default function OnlineUserPage() {
     useEffect(() => {
         if (error)
             toast(t("Error"), {
-                description: t(`Error fetching resource: ${error.message}.`),
+                description: t("Results.ErrorFetchingResource", { error: error.message }),
             })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
@@ -59,14 +59,14 @@ export default function OnlineUserPage() {
                         (table.getIsSomePageRowsSelected() && "indeterminate")
                     }
                     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                    aria-label="Select all"
+                    aria-label={t("SelectAll")}
                 />
             ),
             cell: ({ row }) => (
                 <Checkbox
                     checked={row.getIsSelected()}
                     onCheckedChange={(value) => row.toggleSelected(!!value)}
-                    aria-label="Select row"
+                    aria-label={t("SelectRow")}
                 />
             ),
             enableHiding: false,
@@ -93,7 +93,7 @@ export default function OnlineUserPage() {
         },
         {
             id: "actions",
-            header: "Actions",
+            header: t("Actions"),
             cell: ({ row }) => {
                 const s = row.original
                 return (

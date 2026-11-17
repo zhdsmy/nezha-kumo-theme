@@ -86,7 +86,7 @@ export const ServerConfigCardBatch: React.FC<ServerConfigCardBatchProps> = ({ si
                                 id="batch-config-option"
                                 aria-labelledby="batch-config-option-label"
                                 type="text"
-                                placeholder="option"
+                                placeholder={t("Option")}
                                 value={currentKey}
                                 onChange={(e) => {
                                     setCurrentKey(e.target.value)

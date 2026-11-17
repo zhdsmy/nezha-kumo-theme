@@ -511,7 +511,7 @@ export default function SettingsPage() {
                                                                 settingCoverageTypes,
                                                             ).map(([k, v]) => (
                                                                 <SelectItem key={k} value={k}>
-                                                                    {v}
+                                                                    {t(v)}
                                                                 </SelectItem>
                                                             ))}
                                                         </SelectContent>

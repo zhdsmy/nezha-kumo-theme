@@ -231,7 +231,7 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
         }
         ws.onerror = (e) => {
             console.error(e)
-            toast("Websocket" + " " + tRef.current("Error"), {
+            toast(tRef.current("WebsocketError"), {
                 description: tRef.current("Results.UnExpectedError"),
             })
         }
@@ -272,7 +272,7 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
                 }
             } catch (error) {
                 console.error("Error processing received data:", error)
-                toast("FM" + " " + tRef.current("Error"), {
+                toast(tRef.current("FileManagerError"), {
                     description: tRef.current("Results.UnExpectedError"),
                 })
                 setdOpen(false)
@@ -345,7 +345,7 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
                                             error instanceof Error
                                                 ? error.message
                                                 : t("Results.UnExpectedError")
-                                        toast("FM" + " " + t("Error"), {
+                                        toast(t("FileManagerError"), {
                                             description,
                                         })
                                         console.error("copy error: ", error)
@@ -367,7 +367,7 @@ export const FMComponent: React.FC<FMProps & JSX.IntrinsicElements["div"]> = ({
                         <Input
                             aria-label={t("Goto")}
                             className="mb-1"
-                            placeholder="Path"
+                            placeholder={t("Path")}
                             value={gotoPath}
                             onChange={(e) => {
                                 setGotoPath(e.target.value)

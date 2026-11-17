@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { IconButton } from "@/components/xui/icon-button"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
+import i18n from "@/lib/i18n"
 import { asOptionalField, errorMessage } from "@/lib/utils"
 import { ModelServerTaskResponse } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -53,7 +54,7 @@ const agentConfigSchema = z.object({
                 }
             },
             {
-                message: "Invalid JSON string",
+                error: () => i18n.t("Validation.InvalidJSON"),
             },
         ),
     ),
@@ -70,7 +71,7 @@ const agentConfigSchema = z.object({
                 }
             },
             {
-                message: "Invalid JSON string",
+                error: () => i18n.t("Validation.InvalidJSON"),
             },
         ),
     ),
@@ -206,7 +207,7 @@ export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConf
                 {loading ? (
                     <div className="items-center mx-1">
                         <DialogHeader>
-                            <DialogTitle>Loading...</DialogTitle>
+                            <DialogTitle>{t("Loading")}...</DialogTitle>
                             <DialogDescription />
                         </DialogHeader>
                     </div>

@@ -9,8 +9,6 @@
     "Password": "Contrasinal",
     "InvalidUsernameOrPassword": "Nome de usuario ou contrasinal non válidos",
     "NetworkError": "Error de rede",
-    "LoginFirst": "Por favor, inicie sesión primeiro",
-    "CurrentTime": "Hora actual",
     "Results": {
         "UsernameMin": "O nome de usuario debe ter polo menos {{number}} caracteres.",
         "PasswordRequired": "O contrasinal non pode estar baleiro.",

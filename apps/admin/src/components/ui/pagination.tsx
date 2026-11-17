@@ -9,14 +9,17 @@ import { useTranslation } from "react-i18next"
 // (880 px viewport minus 260 px expanded sidebar minus 64 px page gutter).
 const PAGINATION_FULL_WIDTH = 556
 
-const Pagination = ({ className, ...props }: ComponentProps<"nav">) => (
-    <nav
-        role="navigation"
-        aria-label="pagination"
-        className={cn("mx-auto flex w-full justify-center", className)}
-        {...props}
-    />
-)
+const Pagination = ({ className, ...props }: ComponentProps<"nav">) => {
+    const { t } = useTranslation()
+    return (
+        <nav
+            role="navigation"
+            aria-label={t("pagination")}
+            className={cn("mx-auto flex w-full justify-center", className)}
+            {...props}
+        />
+    )
+}
 Pagination.displayName = "Pagination"
 
 const PaginationContent = forwardRef<HTMLUListElement, ComponentProps<"ul">>(
@@ -93,19 +96,22 @@ const PaginationNext = ({ className, ...props }: ComponentProps<typeof Paginatio
 }
 PaginationNext.displayName = "PaginationNext"
 
-const PaginationEllipsis = ({ className, ...props }: ComponentProps<"span">) => (
-    <span
-        aria-hidden
-        className={cn(
-            "flex h-9 w-7 items-center justify-center sm:w-9 group-data-[compact]/pagination:w-7",
-            className,
-        )}
-        {...props}
-    >
-        <MoreHorizontal className="h-4 w-4" />
-        <span className="sr-only">More pages</span>
-    </span>
-)
+const PaginationEllipsis = ({ className, ...props }: ComponentProps<"span">) => {
+    const { t } = useTranslation()
+    return (
+        <span
+            aria-hidden
+            className={cn(
+                "flex h-9 w-7 items-center justify-center sm:w-9 group-data-[compact]/pagination:w-7",
+                className,
+            )}
+            {...props}
+        >
+            <MoreHorizontal className="h-4 w-4" />
+            <span className="sr-only">{t("MorePages")}</span>
+        </span>
+    )
+}
 PaginationEllipsis.displayName = "PaginationEllipsis"
 
 function getPageNumbers(page: number, totalPages: number, compact: boolean) {

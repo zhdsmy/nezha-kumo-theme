@@ -1,5 +1,3 @@
-import i18n from "@/lib/i18n"
-
 export const serviceTypes: Record<number, string> = {
     1: "HTTP GET",
     2: "ICMP Ping",
@@ -7,6 +5,6 @@ export const serviceTypes: Record<number, string> = {
 }
 
 export const serviceCoverageTypes: Record<number, string> = {
-    0: i18n.t("Coverages.Excludes"),
-    1: i18n.t("Coverages.Only"),
+    0: "Coverages.Excludes",
+    1: "Coverages.Only",
 }

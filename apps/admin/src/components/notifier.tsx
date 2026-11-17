@@ -142,7 +142,7 @@ export const NotifierCard: React.FC<NotifierCardProps> = ({ data, mutate }) => {
                                         <FormItem>
                                             <FormLabel>{t("Name")}</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="My Notifier" {...field} />
+                                                <Input placeholder={t("Placeholders.NotifierName")} {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -173,7 +173,7 @@ export const NotifierCard: React.FC<NotifierCardProps> = ({ data, mutate }) => {
                                             >
                                                 <FormControl>
                                                     <SelectTrigger>
-                                                        <SelectValue placeholder="Request Method" />
+                                                        <SelectValue placeholder={t("RequestMethod")} />
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
@@ -202,7 +202,7 @@ export const NotifierCard: React.FC<NotifierCardProps> = ({ data, mutate }) => {
                                             >
                                                 <FormControl>
                                                     <SelectTrigger>
-                                                        <SelectValue placeholder="Request Type" />
+                                                        <SelectValue placeholder={t("RequestType")} />
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
