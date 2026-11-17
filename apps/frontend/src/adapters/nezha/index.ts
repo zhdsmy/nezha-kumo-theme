@@ -13,6 +13,7 @@ import type {
     Snapshot,
 } from "@/core/model"
 import { flagToRegion } from "@/core/region"
+import { readThemeConfig } from "@/core/settings"
 
 import { parseGroupIcons } from "../../../../../packages/shared/group-icons"
 import {
@@ -92,7 +93,7 @@ interface NezhaSetting {
     tsdb_enabled?: boolean
 }
 
-/** Older dashboards send `service_*`; current ones (monitor.example.com, 2026-11) send `monitor_*`. */
+/** Older dashboards send `service_*`; current dashboards send `monitor_*`. */
 interface NezhaServiceInfo {
     monitor_id?: number
     monitor_name?: string
@@ -373,7 +374,11 @@ const hub = (() => {
             onMessage: (text) => {
                 try {
                     const frame = JSON.parse(text) as NezhaFrame
-                    if (!frame || !Number.isFinite(frame.now) || !Array.isArray(frame.servers))
+                    if (
+                        !frame ||
+                        !Number.isFinite(frame.now) ||
+                        (frame.servers !== undefined && !Array.isArray(frame.servers))
+                    )
                         return false
                     last = frame
                     listeners.forEach((l) => l(frame))
@@ -622,7 +627,7 @@ export const nezha = {
         return {
             name: (cfg.site_name ?? "").trim() || "Nezha",
             language: cfg.language?.replace("_", "-"),
-            settings: window.NezhaKumoConfig ?? {},
+            settings: readThemeConfig(cfg.custom_code, window.NezhaKumoConfig),
             groupIcons,
             // Guests may only read one day of TSDB history; signed-in users get the full 30 days.
             recordHours: res?.data?.tsdb_enabled ? (loggedIn ? 720 : 24) : 0,

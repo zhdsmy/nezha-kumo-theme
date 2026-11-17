@@ -1,0 +1,33 @@
+name: Release admin frontend
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download and verify the matching public release
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]
+          source="https://github.com/zhdsmy/nezha-kumo-theme/releases/download/$RELEASE_TAG"
+          curl --fail --location --retry 3 --proto '=https' "$source/nezha-kumo-admin-dist.zip" -o nezha-kumo-admin-dist.zip
+          curl --fail --location --retry 3 --proto '=https' "$source/nezha-kumo-admin-dist.zip.sha256" -o upstream.sha256
+          sha256sum --check upstream.sha256
+          mv nezha-kumo-admin-dist.zip dist.zip
+          sha256sum dist.zip > dist.zip.sha256
+          curl --fail --location --retry 3 --proto '=https' "https://api.github.com/repos/zhdsmy/nezha-kumo-theme/releases/tags/$RELEASE_TAG" -o release.json
+          jq -er '.body | select(length > 0)' release.json > notes.md
+      - name: Publish Nezha-compatible admin attachment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: >-
+          gh release create "$RELEASE_TAG" --verify-tag --title "$RELEASE_TAG"
+          --notes-file notes.md dist.zip dist.zip.sha256

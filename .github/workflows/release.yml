@@ -1,0 +1,39 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  check:
+    uses: ./.github/workflows/checks.yml
+  release:
+    needs: check
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 26.13.1
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm package
+      - name: Extract changelog section
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python3 scripts/release_notes.py "$RELEASE_TAG" > release/notes.md
+      - name: Publish distributions
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: >-
+          gh release create "$RELEASE_TAG" --verify-tag --title "$RELEASE_TAG"
+          --notes-file release/notes.md
+          release/dist.zip release/dist.zip.sha256
+          release/nezha-kumo-admin-dist.zip release/nezha-kumo-admin-dist.zip.sha256

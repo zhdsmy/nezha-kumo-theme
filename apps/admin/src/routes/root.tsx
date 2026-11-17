@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/sonner"
 import useSetting from "@/hooks/useSetting"
 import i18n from "@/lib/i18n"
 import { InjectContext } from "@/lib/inject"
+import { resolveInterfaceLanguage } from "@/lib/languages"
 import { useEffect } from "react"
 import { useLocation } from "react-router-dom"
 import { Outlet } from "react-router-dom"
@@ -24,7 +25,7 @@ export default function Root() {
 
     useEffect(() => {
         if (settingData?.config?.language && !localStorage.getItem("language")) {
-            i18n.changeLanguage(settingData?.config?.language)
+            i18n.changeLanguage(resolveInterfaceLanguage(settingData.config.language))
         }
     }, [settingData?.config?.language])
 

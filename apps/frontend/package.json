@@ -13,7 +13,7 @@
         "test:unit": "vitest run",
         "test:e2e": "playwright test",
         "check:size": "node scripts/check-size.mjs",
-        "package": "pnpm build && pnpm check:size && node scripts/package.mjs"
+        "package": "pnpm build && pnpm check:size && python3 ../../scripts/package.py frontend"
     },
     "dependencies": {
         "@cloudflare/kumo": "2.18.1",
@@ -40,5 +40,11 @@
         "typescript": "~7.0.2",
         "vite": "^8.3.4",
         "vitest": "^4.1.0"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/zhdsmy/nezha-kumo-theme.git",
+        "directory": "apps/frontend"
     }
 }

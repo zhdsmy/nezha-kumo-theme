@@ -220,7 +220,7 @@ export function App() {
             ).catch(() => {})
     }, [site, settings.defaultLanguage])
     useEffect(() => {
-        if (phase !== "ready" || (!settings.showCost && !settings.showBilling)) return
+        if (phase !== "ready" || !settings.showCost) return
         let active = true
         const load = () =>
             loadExchangeRates()
@@ -235,7 +235,7 @@ export function App() {
             active = false
             stop()
         }
-    }, [phase, settings.showCost, settings.showBilling])
+    }, [phase, settings.showCost])
     const siteTitle = useSiteTitle()
     useEffect(() => {
         if (!nodeId && siteTitle) document.title = siteTitle

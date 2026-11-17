@@ -285,7 +285,11 @@ test.describe("AppShell scroll container invariants and behaviors", () => {
         adminServer = await createServer({
             root: adminDir,
             configFile: path.join(adminDir, "vite.config.ts"),
-            server: { host: "127.0.0.1", port: 0, strictPort: false },
+            server: {
+                host: "127.0.0.1",
+                port: Number(process.env.NKT_ADMIN_PORT) || 0,
+                strictPort: !!process.env.NKT_ADMIN_PORT,
+            },
             logLevel: "silent",
         })
         await adminServer.listen()
@@ -365,7 +369,7 @@ test.describe("AppShell scroll container invariants and behaviors", () => {
             const adminTargets = [
                 {
                     name: "admin-server",
-                    path: "/dashboard",
+                    path: "/dashboard/",
                     waitSel: "table tbody tr:nth-child(5)",
                 },
                 {
@@ -419,7 +423,7 @@ test.describe("AppShell scroll container invariants and behaviors", () => {
                     await expect(p.locator("[data-server]").first()).toBeVisible()
                 } else {
                     await mockAdmin(p)
-                    await p.goto(adminBase + "/dashboard")
+                    await p.goto(adminBase + "/dashboard/")
                     await expect(p.locator("table tbody tr").first()).toBeVisible()
                 }
 
@@ -462,7 +466,7 @@ test.describe("AppShell scroll container invariants and behaviors", () => {
                     await expect(p.locator("[data-server]").first()).toBeVisible()
                 } else {
                     await mockAdmin(p)
-                    await p.goto(adminBase + "/dashboard")
+                    await p.goto(adminBase + "/dashboard/")
                     await expect(p.locator("table tbody tr").first()).toBeVisible()
                 }
 
@@ -635,7 +639,7 @@ test.describe("AppShell scroll container invariants and behaviors", () => {
         await page.unrouteAll({ behavior: "ignoreErrors" })
         await mockAdmin(page)
         await page.setViewportSize({ width: 1024, height: 360 })
-        await page.goto(adminBase + "/dashboard")
+        await page.goto(adminBase + "/dashboard/")
         await expect(page.locator("table tbody tr").nth(5)).toBeVisible()
         await page.evaluate(() => {
             document.querySelector<HTMLElement>(".nk-main")!.scrollTop = 240
