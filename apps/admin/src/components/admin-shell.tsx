@@ -3,13 +3,14 @@ import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuItem,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import UserMenu from "@/components/user-menu"
 import { useAuth } from "@/hooks/useAuth"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
-import { nezhaLang } from "@/types/settings"
+import { interfaceLanguages, resolveInterfaceLanguage } from "@/lib/languages"
 import { AppShell, BREAKPOINTS, NavSection, ShellLinkProps, getShellScroller } from "@nezha-kumo/ui"
 import {
     Activity,
@@ -258,6 +259,7 @@ export default function AdminShell({
 
 export function AdminActions() {
     const { t, i18n } = useTranslation()
+    const language = resolveInterfaceLanguage(i18n.resolvedLanguage || i18n.language)
     return (
         <>
             <Button
@@ -277,21 +279,23 @@ export function AdminActions() {
                     <Button
                         variant="ghost"
                         size="icon"
-                        title={t("Language")}
+                        title={`${t("Language")}: ${interfaceLanguages[language]}`}
                         aria-label={t("Language")}
                     >
                         <Languages />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="max-h-[70dvh] overflow-y-auto">
-                    {Object.entries(nezhaLang).map(([value, label]) => (
-                        <DropdownMenuItem
-                            key={value}
-                            onSelect={() => void i18n.changeLanguage(value)}
-                        >
-                            {label}
-                        </DropdownMenuItem>
-                    ))}
+                    <DropdownMenuRadioGroup
+                        value={language}
+                        onValueChange={(value) => void i18n.changeLanguage(value)}
+                    >
+                        {Object.entries(interfaceLanguages).map(([value, label]) => (
+                            <DropdownMenuRadioItem key={value} value={value}>
+                                {label}
+                            </DropdownMenuRadioItem>
+                        ))}
+                    </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
             </DropdownMenu>
             <UserMenu />

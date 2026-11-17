@@ -5,6 +5,7 @@ import enTranslation from "../locales/en/translation.json"
 import jaTranslation from "../locales/ja/translation.json"
 import zhCNTranslation from "../locales/zh-CN/translation.json"
 import zhTWTranslation from "../locales/zh-TW/translation.json"
+import { resolveInterfaceLanguage } from "./languages"
 
 const resources = {
     en: { translation: enTranslation },
@@ -15,7 +16,7 @@ const resources = {
 
 i18n.use(initReactI18next).init({
     resources,
-    lng: localStorage.getItem("language") || navigator.language || "en",
+    lng: resolveInterfaceLanguage(localStorage.getItem("language") || navigator.language),
     supportedLngs: Object.keys(resources),
     fallbackLng: "en",
     interpolation: {

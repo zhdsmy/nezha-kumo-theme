@@ -28,7 +28,7 @@ import { useNotification } from "@/hooks/useNotfication"
 import useSetting from "@/hooks/useSetting"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
 import { asOptionalField, errorMessage, safeExternalHref } from "@/lib/utils"
-import { nezhaLang, settingCoverageTypes } from "@/types"
+import { nezhaLang, normalizeNotificationLanguage, settingCoverageTypes } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Page } from "@nezha-kumo/ui"
 import { useEffect } from "react"
@@ -63,7 +63,7 @@ const settingFormSchema = z.object({
 })
 
 export default function SettingsPage() {
-    const { t, i18n } = useTranslation()
+    const { t } = useTranslation()
     const { data: config, mutate } = useSetting()
     const { profile, loading: authLoading } = useAuth()
 
@@ -81,6 +81,7 @@ export default function SettingsPage() {
         defaultValues: config
             ? {
                   ...config.config,
+                  language: normalizeNotificationLanguage(config.config?.language),
                   // 兼容尚未包含 online_stats_days 的旧后端：字段缺省时回退
                   // 默认值，避免必填校验拦截其他设置的提交
                   online_stats_days: config.config?.online_stats_days ?? 7,
@@ -109,6 +110,7 @@ export default function SettingsPage() {
             // 与 defaultValues 同一兼容口径：旧后端缺字段时回退默认值
             form.reset({
                 ...config.config,
+                language: normalizeNotificationLanguage(config.config?.language),
                 online_stats_days: config.config?.online_stats_days ?? 7,
                 nat_member_domains: (config.config?.nat_member_domains ?? []).join("\n"),
             })
@@ -128,6 +130,7 @@ export default function SettingsPage() {
         try {
             await updateSettings({
                 ...values,
+                language: normalizeNotificationLanguage(values.language),
                 // Send [] when cleared: omitting the field preserves the server's previous policy.
                 nat_member_domains: values.nat_member_domains
                     .split("\n")
@@ -143,9 +146,6 @@ export default function SettingsPage() {
                 }),
             })
             return
-        }
-        if (values.language != i18n.language) {
-            i18n.changeLanguage(values.language)
         }
         toast.success(t("Success"))
     })
