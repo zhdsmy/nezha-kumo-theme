@@ -5,8 +5,8 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { copyToClipboard } from "@/lib/utils"
-import { forwardRef, useState } from "react"
+import { useClipboard } from "@/hooks/useClipboard"
+import { forwardRef } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 
@@ -18,7 +18,7 @@ interface NoteMenuProps extends ButtonProps {
 
 export const NoteMenu = forwardRef<HTMLButtonElement, NoteMenuProps>((props, ref) => {
     const { t } = useTranslation()
-    const [copy, setCopy] = useState(false)
+    const { copied: copy, copy: copyText } = useClipboard()
 
     const switchState = async (text?: string) => {
         if (!text) {
@@ -28,13 +28,7 @@ export const NoteMenu = forwardRef<HTMLButtonElement, NoteMenuProps>((props, ref
             return
         }
 
-        if (!copy) {
-            setCopy(true)
-            await copyToClipboard(text)
-            setTimeout(() => {
-                setCopy(false)
-            }, 2 * 1000)
-        }
+        await copyText(text)
     }
 
     return (

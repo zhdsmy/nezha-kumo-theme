@@ -6,12 +6,12 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/hooks/useAuth"
+import { useClipboard } from "@/hooks/useClipboard"
 import useSettings from "@/hooks/useSetting"
-import { copyToClipboard } from "@/lib/utils"
 import { ModelProfile, ModelSetting } from "@/types"
 import i18next from "i18next"
 import { Check, Copy, Download } from "lucide-react"
-import { forwardRef, useState } from "react"
+import { forwardRef } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 
@@ -29,7 +29,7 @@ type InstallCommandsMenuProps = ButtonProps & {
 
 export const InstallCommandsMenu = forwardRef<HTMLButtonElement, InstallCommandsMenuProps>(
     ({ uuid, iconOnly = false, menuItem = false, ...props }, ref) => {
-        const [copy, setCopy] = useState(false)
+        const { copied: copy, copy: copyText } = useClipboard()
         const { data: settings } = useSettings()
         const { profile } = useAuth()
 
@@ -38,21 +38,14 @@ export const InstallCommandsMenu = forwardRef<HTMLButtonElement, InstallCommands
         const switchState = async (type: number) => {
             if (!copy) {
                 try {
-                    setCopy(true)
                     if (!profile) throw new Error(t("Results.ProfileNotFound"))
                     if (!settings?.config) throw new Error(t("Results.SettingsNotFound"))
-                    await copyToClipboard(
-                        generateCommand(type, settings!.config, profile, uuid) || "",
-                    )
+                    await copyText(generateCommand(type, settings!.config, profile, uuid) || "")
                 } catch (e: Error | any) {
                     console.error(e)
                     toast.error(t("Error"), {
                         description: e.message,
                     })
-                } finally {
-                    setTimeout(() => {
-                        setCopy(false)
-                    }, 2 * 1000)
                 }
             }
         }
@@ -74,12 +67,7 @@ export const InstallCommandsMenu = forwardRef<HTMLButtonElement, InstallCommands
                             <span>{t("InstallCommands")}</span>
                         </button>
                     ) : iconOnly ? (
-                        <Button
-                            ref={ref}
-                            title={t("InstallCommands")}
-                            size="icon"
-                            {...props}
-                        >
+                        <Button ref={ref} title={t("InstallCommands")} size="icon" {...props}>
                             {copy ? (
                                 <Check className="h-4 w-4" />
                             ) : (
