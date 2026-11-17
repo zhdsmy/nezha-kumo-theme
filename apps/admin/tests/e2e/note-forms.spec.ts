@@ -116,6 +116,36 @@ for (const [engine, driver] of Object.entries({ webkit, chromium }))
                         els.map((el) => el.getBoundingClientRect().height),
                     )
                     const total = sizes.reduce((a, b) => a + b, 0)
+                    const privateHeight = await page
+                        .locator("[data-private-note-editor]")
+                        .evaluate((el) => el.getBoundingClientRect().height)
+                    if (!baseline) {
+                        if (width === 375) expect(privateHeight).toBeLessThanOrEqual(1633 * 0.6)
+                        for (const header of await page.locator(".nkt-note-heading").all()) {
+                            const boxes = await header
+                                .locator("h3, [data-kumo-part=item-label]")
+                                .evaluateAll((els) =>
+                                    els.map((el) => ({
+                                        height: el.getBoundingClientRect().height,
+                                        width: el.clientWidth,
+                                        scroll: el.scrollWidth,
+                                    })),
+                                )
+                            expect(boxes[0].height).toBeLessThan(30)
+                            for (const item of boxes.slice(1)) {
+                                expect(item.height).toBe(36)
+                                expect(item.scroll).toBeLessThanOrEqual(item.width + 1)
+                            }
+                        }
+                        for (const group of await page.locator(".nkt-note-choices").all()) {
+                            const widths = await group
+                                .locator("[data-kumo-part=item-label]")
+                                .evaluateAll((els) =>
+                                    els.map((el) => el.getBoundingClientRect().width),
+                                )
+                            expect(Math.max(...widths) - Math.min(...widths)).toBeLessThanOrEqual(1)
+                        }
+                    }
                     if (!baseline)
                         expect(total).toBeLessThanOrEqual(
                             originalHeights[engine as keyof typeof originalHeights][width] * 0.7,
@@ -125,7 +155,11 @@ for (const [engine, driver] of Object.entries({ webkit, chromium }))
                         mkdirSync(artifact, { recursive: true })
                         writeFileSync(
                             `${artifact}/${name}.json`,
-                            JSON.stringify({ engine, width, theme, sizes, total }, null, 2),
+                            JSON.stringify(
+                                { engine, width, theme, sizes, total, privateHeight },
+                                null,
+                                2,
+                            ),
                         )
                     }
                     const capture = async (suffix: string, selector?: string) => {
@@ -149,6 +183,12 @@ for (const [engine, driver] of Object.entries({ webkit, chromium }))
                             `[data-public-note-editor] > fieldset:nth-of-type(${i + 1})`,
                         )
                     if (!baseline) await capture("private-form", "[data-private-note-editor]")
+                    if (!baseline)
+                        for (const kind of ["public", "private"])
+                            await capture(
+                                `${kind}-heading`,
+                                `[data-${kind}-note-editor] > .nkt-note-heading`,
+                            )
                     await page.setViewportSize({ width, height })
                     await page.locator('[data-note-field="networkRoute"]').scrollIntoViewIfNeeded()
                     await capture("routes", '[data-note-field="networkRoute"]')
@@ -191,6 +231,12 @@ for (const [engine, driver] of Object.entries({ webkit, chromium }))
                         const time = popup.locator('input[type="time"]')
                         await expect(time).toHaveValue("10:20")
                         await time.focus()
+                        if (engine === "chromium") {
+                            await time.press("Home")
+                            await time.press("Delete")
+                            await expect(time).toHaveValue("")
+                            await time.fill("10:20")
+                        }
                         expect(await page.evaluate(() => window.visualViewport!.scale)).toBe(1)
                     }
                     await capture("date")
@@ -200,6 +246,7 @@ for (const [engine, driver] of Object.entries({ webkit, chromium }))
                         const privateEditor = page.locator("[data-private-note-editor]")
                         await privateEditor
                             .getByRole("radio", { name: "原始文本", exact: true })
+                            .locator("..")
                             .click()
                         await privateEditor
                             .getByRole("textbox", { name: "私有备注原始文本" })
@@ -207,6 +254,7 @@ for (const [engine, driver] of Object.entries({ webkit, chromium }))
                         await capture("private-raw")
                         await privateEditor
                             .getByRole("radio", { name: "表单", exact: true })
+                            .locator("..")
                             .click()
                         if (width === 375)
                             for (const size of [

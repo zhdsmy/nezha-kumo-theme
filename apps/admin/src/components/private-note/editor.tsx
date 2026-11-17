@@ -118,7 +118,7 @@ export function PrivateNoteEditor({
                 {entries.map((entry, index) => {
                     const nextPath = [...path, index]
                     const id = JSON.stringify(nextPath)
-                    const nextNames = [...names, entry.key]
+                    const nextNames = [...names, array ? index + 1 : entry.key]
                     const current = parseJsonNote(entry.raw)
                     const type = emptyNumbers.includes(id) ? "number" : jsonType(current)
                     const nested = type === "object" || type === "array"
@@ -140,7 +140,7 @@ export function PrivateNoteEditor({
                                     <span className="self-center text-sm">{index + 1}</span>
                                 ) : (
                                     <Input
-                                        label={t("PrivateNote.Key")}
+                                        placeholder={t("PrivateNote.Key")}
                                         aria-labelledby=""
                                         aria-label={`${t("PrivateNote.Key")} · ${label}`}
                                         value={String(entry.key)}
@@ -156,7 +156,6 @@ export function PrivateNoteEditor({
                                     />
                                 )}
                                 <Select
-                                    label={t("PrivateNote.Type")}
                                     aria-label={`${t("PrivateNote.Type")} · ${label} · ${t(`PrivateNote.Types.${type}`)}`}
                                     value={type}
                                     renderValue={(type) => t(`PrivateNote.Types.${type}`)}
@@ -283,7 +282,7 @@ export function PrivateNoteEditor({
                                 />
                             ) : type === "string" ? (
                                 <Input
-                                    label={t("PrivateNote.Value")}
+                                    placeholder={t("PrivateNote.Value")}
                                     aria-labelledby=""
                                     aria-label={`${t("PrivateNote.Value")} · ${label}`}
                                     value={current as string}
@@ -291,9 +290,6 @@ export function PrivateNoteEditor({
                                 />
                             ) : type === "number" ? (
                                 <div>
-                                    <label className="block text-sm">
-                                        {t("PrivateNote.Value")}
-                                    </label>
                                     <NumberInput
                                         invalid={emptyNumbers.includes(id)}
                                         label={`${t("PrivateNote.Value")} · ${label}`}
@@ -314,7 +310,7 @@ export function PrivateNoteEditor({
                                 </div>
                             ) : type === "boolean" ? (
                                 <Switch
-                                    label={t("PrivateNote.Value")}
+                                    label={t(`PrivateNote.Types.boolean`)}
                                     aria-labelledby=""
                                     aria-label={`${t("PrivateNote.Value")} · ${label}`}
                                     checked={current as boolean}

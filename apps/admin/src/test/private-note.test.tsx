@@ -75,29 +75,29 @@ test("private keys can be added, nested, renamed and deleted; empty and duplicat
 })
 test("array insertion deletion and ordering preserve untouched value spellings", () => {
     render(<Harness raw={'{"a":[1e+2, "\\u4e2d", false],"x":"keep"}'} />)
-    fireEvent.click(screen.getByRole("button", { name: label("MoveDown", "a.0") }))
+    fireEvent.click(screen.getByRole("button", { name: label("MoveDown", "a.1") }))
     expect(JSON.parse(saved()).a).toEqual(["中", 100, false])
     expect(saved()).toContain("1e+2")
     expect(saved()).toContain('"\\u4e2d"')
     fireEvent.click(screen.getByRole("button", { name: i18n.t("PrivateNote.AddItem") }))
-    fireEvent.change(screen.getByRole("textbox", { name: label("Value", "a.3") }), {
+    fireEvent.change(screen.getByRole("textbox", { name: label("Value", "a.4") }), {
         target: { value: "last" },
     })
-    fireEvent.click(screen.getByRole("button", { name: label("Delete", "a.2") }))
+    fireEvent.click(screen.getByRole("button", { name: label("Delete", "a.3") }))
     expect(JSON.parse(saved()).a).toEqual(["中", 100, "last"])
 })
 
 test("array moves carry numeric drafts and focus with stable row identities", () => {
     render(<Harness raw='{"a":[1,2]}' />)
-    const first = screen.getByRole("textbox", { name: label("Value", "a.0") }) as HTMLInputElement
+    const first = screen.getByRole("textbox", { name: label("Value", "a.1") }) as HTMLInputElement
     fireEvent.change(first, { target: { value: "1e" } })
     first.focus()
-    fireEvent.click(screen.getByRole("button", { name: label("MoveDown", "a.0") }))
-    expect(screen.getByRole("textbox", { name: label("Value", "a.1") })).toBe(first)
+    fireEvent.click(screen.getByRole("button", { name: label("MoveDown", "a.1") }))
+    expect(screen.getByRole("textbox", { name: label("Value", "a.2") })).toBe(first)
     expect(first.value).toBe("1e")
     expect(document.activeElement).toBe(first)
     expect(
-        (screen.getByRole("textbox", { name: label("Value", "a.0") }) as HTMLInputElement).value,
+        (screen.getByRole("textbox", { name: label("Value", "a.1") }) as HTMLInputElement).value,
     ).toBe("2")
 })
 test("type conversion keeps numeric text, confirms containers and rejects incomplete numbers", () => {
