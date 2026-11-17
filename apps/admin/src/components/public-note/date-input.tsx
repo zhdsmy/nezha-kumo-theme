@@ -1,6 +1,6 @@
 import { Button, DatePicker, Input, Popover, Switch } from "@cloudflare/kumo"
 import { enUS, ja, zhCN, zhTW } from "date-fns/locale"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
@@ -43,6 +43,18 @@ export function DateInput({
             : new Date(time)
         : undefined
     const clock = /[T ](\d{2}:\d{2})/.exec(value || "")?.[1] || "00:00"
+    const [clockDraft, setClockDraft] = useState(clock)
+    useEffect(() => setClockDraft(clock), [clock])
+    const commitTime = () => {
+        if (!/^\d{2}:\d{2}$/.test(clockDraft)) return setClockDraft(clock)
+        if (clockDraft !== clock)
+            onChange(
+                writeNoteDate(selected || new Date(), value).replace(
+                    /T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?/,
+                    `T${clockDraft}:00`,
+                ),
+            )
+    }
     const period = parseCycle(cycle)
     const estimated = start && period ? addCycle(start, period) : undefined
     const locale = i18n.language.startsWith("zh-CN")
@@ -100,19 +112,17 @@ export function DateInput({
                                     type="time"
                                     label={t("PublicNote.Time")}
                                     aria-label={`${label} · ${t("PublicNote.Time")}`}
-                                    value={clock}
-                                    onChange={(event) => {
-                                        const next = event.target.value
-                                        if (!/^\d{2}:\d{2}$/.test(next) || next === clock) return
-                                        onChange(
-                                            writeNoteDate(selected || new Date(), value).replace(
-                                                /T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?/,
-                                                `T${next}:00`,
-                                            ),
-                                        )
-                                    }}
+                                    value={clockDraft}
+                                    onChange={(event) => setClockDraft(event.target.value)}
+                                    onBlur={commitTime}
                                 />
-                                <Button type="button" onClick={() => setOpen(false)}>
+                                <Button
+                                    type="button"
+                                    onClick={() => {
+                                        commitTime()
+                                        setOpen(false)
+                                    }}
+                                >
                                     {t("PublicNote.Apply")}
                                 </Button>
                             </div>
