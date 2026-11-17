@@ -10,7 +10,8 @@ export function AmountInput({
     onChange,
     label,
     paidOnly = false,
-}: NoteControlProps & { paidOnly?: boolean }) {
+    invalid,
+}: NoteControlProps & { paidOnly?: boolean; invalid?: boolean }) {
     const { t, i18n } = useTranslation()
     const parsed = parseAmount(value)
     const amount =
@@ -26,6 +27,8 @@ export function AmountInput({
                 : "paid"
     const [currency, setCurrency] = useState("USD")
     const code = amount?.currency || currency
+    const write = (number: number, currency: string) =>
+        paidOnly ? `${currency} ${number.toFixed(2)}` : writeAmount(number, currency)
     const options = useMemo(() => {
         const names = new Intl.DisplayNames([i18n.language], { type: "currency" })
         return currencies().map((value) => ({
@@ -62,7 +65,7 @@ export function AmountInput({
                             setCurrency(next.value)
                             if (amount)
                                 onChange(
-                                    writeAmount(amount.amount, next.value) +
+                                    write(amount.amount, next.value) +
                                         (amount.cycle || (paidOnly && value?.includes("/"))
                                             ? `/${value!.split("/")[1]}`
                                             : ""),
@@ -90,6 +93,7 @@ export function AmountInput({
                         </Combobox.Content>
                     </Combobox>
                     <NumberInput
+                        invalid={invalid}
                         label={label}
                         value={amount?.amount}
                         placeholder="45.00"
@@ -99,7 +103,7 @@ export function AmountInput({
                             onChange(
                                 number === undefined
                                     ? undefined
-                                    : writeAmount(number, code) +
+                                    : write(number, code) +
                                           (amount?.cycle || (paidOnly && value?.includes("/"))
                                               ? `/${value!.split("/")[1]}`
                                               : ""),

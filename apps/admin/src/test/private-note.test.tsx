@@ -284,3 +284,43 @@ test.each(["string", "number", "boolean", "null"])(
         expect(saved()).toBe('{"tree":{"keep":[1,2]}}')
     },
 )
+
+test("actual expense zero and incomplete amounts keep a separate period draft", () => {
+    render(<Harness raw='{"billingDataMod":{"actualAmount":"CNY 300.00/Year"}}' />)
+    const amount = screen.getByRole("textbox", {
+        name: i18n.t("PrivateNote.ActualAmount"),
+    }) as HTMLInputElement
+    fireEvent.change(amount, { target: { value: "0" } })
+    fireEvent.blur(amount)
+    expect(JSON.parse(saved()).billingDataMod.actualAmount).toBe("CNY 0.00/Year")
+    expect(amount.value).toBe("0")
+    fireEvent.change(amount, { target: { value: "" } })
+    fireEvent.blur(amount)
+    expect(amount.value).toBe("")
+    expect(amount.getAttribute("aria-invalid")).toBe("true")
+    expect(
+        screen.getByRole("button", { name: new RegExp("^" + i18n.t("PrivateNote.ActualCycle")) })
+            .textContent,
+    ).toContain(i18n.t("PublicNote.EveryYear"))
+    fireEvent.change(amount, { target: { value: "12" } })
+    fireEvent.blur(amount)
+    expect(JSON.parse(saved()).billingDataMod.actualAmount).toBe("CNY 12.00/Year")
+})
+test.each(["", "免费节点", "odd cost"])(
+    "choosing a period never serializes an unreadable amount %s",
+    (raw) => {
+        render(<Harness raw={JSON.stringify({ billingDataMod: { actualAmount: raw } })} />)
+        fireEvent.click(
+            screen.getByRole("button", {
+                name: new RegExp("^" + i18n.t("PrivateNote.ActualCycle")),
+            }),
+        )
+        fireEvent.click(screen.getByRole("button", { name: i18n.t("PublicNote.EveryYear") }))
+        expect(JSON.parse(saved()).billingDataMod.actualAmount).toBe(raw)
+        expect(
+            screen
+                .getByRole("textbox", { name: i18n.t("PrivateNote.ActualAmount") })
+                .getAttribute("aria-invalid"),
+        ).toBe("true")
+    },
+)

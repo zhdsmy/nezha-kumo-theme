@@ -57,6 +57,7 @@ export function NumberInput({
     min = 0,
     placeholder,
     required,
+    invalid,
 }: {
     value?: number
     onChange: (value: number | undefined) => void
@@ -64,6 +65,7 @@ export function NumberInput({
     min?: number
     placeholder?: string
     required?: boolean
+    invalid?: boolean
 }) {
     const [draft, setDraft] = useState(value === undefined ? "" : String(value))
     useEffect(() => {
@@ -73,6 +75,7 @@ export function NumberInput({
         <Input
             type="text"
             required={required}
+            aria-invalid={invalid || undefined}
             inputMode="decimal"
             aria-label={label}
             placeholder={placeholder}

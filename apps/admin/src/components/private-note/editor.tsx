@@ -1,6 +1,4 @@
-import { AmountInput } from "@/components/public-note/amount-input"
 import { Choices, NumberInput, UnknownValue } from "@/components/public-note/controls"
-import { CyclePicker } from "@/components/public-note/cycle-picker"
 import {
     type JsonPath,
     appendJsonEntry,
@@ -24,6 +22,8 @@ import { Button, Input, KumoPortalProvider, Select, Switch, Textarea } from "@cl
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react"
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+import { ActualAmountInput } from "./actual-amount"
 
 interface RowIdentity {
     id: number
@@ -276,32 +276,10 @@ export function PrivateNoteEditor({
                                     identities[index].children,
                                 )
                             ) : actual && type === "string" ? (
-                                <div className="space-y-2">
-                                    <label className="block text-sm">
-                                        {t("PrivateNote.ActualAmount")}
-                                    </label>
-                                    <AmountInput
-                                        paidOnly
-                                        label={t("PrivateNote.ActualAmount")}
-                                        value={current as string}
-                                        onChange={(next) => patch(nextPath, next ?? "")}
-                                    />
-                                    <label className="block text-sm">
-                                        {t("PrivateNote.ActualCycle")}
-                                    </label>
-                                    <CyclePicker
-                                        label={t("PrivateNote.ActualCycle")}
-                                        value={(current as string).split("/")[1]}
-                                        unsetLabel={t("PrivateNote.FollowPublicCycle")}
-                                        onChange={(cycle) =>
-                                            patch(
-                                                nextPath,
-                                                (current as string).split("/")[0] +
-                                                    (cycle ? `/${cycle}` : ""),
-                                            )
-                                        }
-                                    />
-                                </div>
+                                <ActualAmountInput
+                                    value={current as string}
+                                    onChange={(next) => patch(nextPath, next)}
+                                />
                             ) : type === "string" ? (
                                 <Input
                                     label={t("PrivateNote.Value")}
