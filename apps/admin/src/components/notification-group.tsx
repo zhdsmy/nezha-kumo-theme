@@ -73,7 +73,7 @@ export const NotificationGroupCard: React.FC<NotificationGroupCardProps> = ({ da
             }
         } catch (e) {
             console.error(e)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
@@ -112,7 +112,7 @@ export const NotificationGroupCard: React.FC<NotificationGroupCardProps> = ({ da
                                         <FormItem>
                                             <FormLabel>{t("Name")}</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Group Name" {...field} />
+                                                <Input placeholder={t("Placeholders.GroupName")} {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

@@ -39,6 +39,7 @@ import { cn } from "@/lib/utils"
 import { type VariantProps, cva } from "class-variance-authority"
 import { CheckIcon, ChevronDown, WandSparkles, XIcon } from "lucide-react"
 import { KeyboardEvent, forwardRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 /**
  * Variants for the multi-select component to handle different styles.
@@ -137,7 +138,7 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
             onValueChange,
             variant,
             defaultValue = [],
-            placeholder = "Select options",
+            placeholder,
             animation = 0,
             maxCount = 3,
             modalPopover = false,
@@ -146,6 +147,8 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
         },
         ref,
     ) => {
+        const { t } = useTranslation()
+        const resolvedPlaceholder = placeholder ?? t("SelectOptions")
         const [selectedValues, setSelectedValues] = useState<string[]>(defaultValue)
         const [isPopoverOpen, setIsPopoverOpen] = useState(false)
         const [isAnimating, setIsAnimating] = useState(false)
@@ -253,7 +256,7 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                                             )}
                                             style={{ animationDuration: `${animation}s` }}
                                         >
-                                            {`+ ${selectedValues.length - maxCount} more`}
+                                            {t("MoreSelected", { count: selectedValues.length - maxCount })}
                                             <XIcon
                                                 className="ml-2 h-2 w-2 cursor-pointer"
                                                 onClick={(event) => {
@@ -282,7 +285,7 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                         ) : (
                             <div className="flex items-center justify-between w-full mx-auto">
                                 <span className="text-sm text-muted-foreground mx-3">
-                                    {placeholder}
+                                    {resolvedPlaceholder}
                                 </span>
                                 <ChevronDown className="h-4 cursor-pointer text-muted-foreground mx-2" />
                             </div>
@@ -297,9 +300,9 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                     onTouchMove={stopTouchMoveEventPropagation}
                 >
                     <Command>
-                        <CommandInput placeholder="Search..." onKeyDown={handleInputKeyDown} />
+                        <CommandInput placeholder={t("Search")} onKeyDown={handleInputKeyDown} />
                         <CommandList>
-                            <CommandEmpty>No results found.</CommandEmpty>
+                            <CommandEmpty>{t("NoResults")}</CommandEmpty>
                             <CommandGroup>
                                 <CommandItem
                                     key="all"
@@ -316,7 +319,7 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                                     >
                                         <CheckIcon className="h-4 w-4" />
                                     </div>
-                                    <span>(Select All)</span>
+                                    <span>({t("SelectAll")})</span>
                                 </CommandItem>
                                 {options.map((option) => {
                                     const isSelected = selectedValues.includes(option.value)
@@ -353,7 +356,7 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                                                 onSelect={handleClear}
                                                 className="flex-1 justify-center cursor-pointer"
                                             >
-                                                Clear
+                                                {t("PublicNote.Clear")}
                                             </CommandItem>
                                             <Separator
                                                 orientation="vertical"
@@ -365,7 +368,7 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                                         onSelect={() => setIsPopoverOpen(false)}
                                         className="flex-1 justify-center cursor-pointer max-w-full"
                                     >
-                                        Close
+                                        {t("Close")}
                                     </CommandItem>
                                 </div>
                             </CommandGroup>

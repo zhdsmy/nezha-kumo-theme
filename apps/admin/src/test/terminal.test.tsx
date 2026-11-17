@@ -1,3 +1,4 @@
+import "@/lib/i18n"
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
 
@@ -11,7 +12,14 @@ const terminalMocks = vi.hoisted(() => ({
     }>,
 }))
 
-const toastMock = vi.hoisted(() => vi.fn())
+const toastMock = vi.hoisted(() =>
+    Object.assign(vi.fn(), {
+        error: vi.fn(),
+        success: vi.fn(),
+        warning: vi.fn(),
+        info: vi.fn(),
+    }),
+)
 vi.mock("sonner", () => ({ toast: toastMock }))
 
 vi.mock("@xterm/addon-fit", () => ({

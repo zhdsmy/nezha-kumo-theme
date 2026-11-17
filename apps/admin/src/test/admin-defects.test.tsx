@@ -14,6 +14,8 @@ const mocks = vi.hoisted(() => ({
     lang: "en" as "en" | "zh-CN",
     toast: vi.fn(),
     toastError: vi.fn(),
+    toastSuccess: vi.fn(),
+    toastWarning: vi.fn(),
     copyFallback: vi.fn<(text: string) => Promise<boolean>>(),
     listApiTokens: vi.fn(),
     createApiToken: vi.fn(),
@@ -84,7 +86,11 @@ vi.mock("react-i18next", () => ({
 }))
 
 vi.mock("sonner", () => ({
-    toast: Object.assign(mocks.toast, { error: mocks.toastError }),
+    toast: Object.assign(mocks.toast, {
+        error: mocks.toastError,
+        success: mocks.toastSuccess,
+        warning: mocks.toastWarning,
+    }),
 }))
 
 vi.mock("copy-to-clipboard", () => ({
@@ -201,14 +207,14 @@ describe("RevealedTokenDialog & CopyButton", () => {
 
         mocks.copyFallback.mockResolvedValueOnce(true)
         fireEvent.click(screen.getByRole("button", { name: "Copy" }))
-        await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith("Copied to clipboard"))
+        await waitFor(() => expect(mocks.toastSuccess).toHaveBeenCalledWith("Copied to clipboard"))
         expect(mocks.copyFallback).toHaveBeenCalledWith(sampleToken.token)
 
         mocks.toast.mockClear()
         mocks.copyFallback.mockResolvedValueOnce(false)
         fireEvent.click(screen.getByRole("button", { name: "Copy" }))
         await waitFor(() =>
-            expect(mocks.toast).toHaveBeenCalledWith("Error", {
+            expect(mocks.toastError).toHaveBeenCalledWith("Error", {
                 description: "Clipboard write failed",
             }),
         )
@@ -253,7 +259,7 @@ describe("RevealedTokenDialog & CopyButton", () => {
         fireEvent.click(container.querySelector("button")!)
 
         await waitFor(() =>
-            expect(mocks.toast).toHaveBeenCalledWith("Error", {
+            expect(mocks.toastError).toHaveBeenCalledWith("Error", {
                 description: "Clipboard write failed",
             }),
         )

@@ -3,11 +3,19 @@ import { act, render, screen, waitFor } from "@testing-library/react"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
 
 const toastCalls: Array<{ title: string; description: string }> = []
-vi.mock("sonner", () => ({
-    toast: (title: string, opts?: { description?: string }) => {
+vi.mock("sonner", () => {
+    const record = (title: string, opts?: { description?: string }) => {
         toastCalls.push({ title, description: opts?.description ?? "" })
-    },
-}))
+    }
+    return {
+        toast: Object.assign(record, {
+            error: record,
+            success: record,
+            warning: record,
+            info: record,
+        }),
+    }
+})
 
 vi.mock("react-i18next", () => ({
     useTranslation: () => ({

@@ -41,12 +41,13 @@ export const ServerConfigCardBatch: React.FC<ServerConfigCardBatchProps> = ({ si
             resp = await setServerConfig({ config: JSON.stringify(data), servers: sid })
         } catch (e) {
             console.error(e)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
         }
-        toast(t("Done"), {
+        const notify = resp.failure?.length || resp.offline?.length ? toast.warning : toast.success
+        notify(t("Done"), {
             description:
                 t("Results.ForceUpdate") +
                 (resp.success?.length ? t(`Success`) + ` [${resp.success.join(",")}]` : "") +
@@ -60,11 +61,8 @@ export const ServerConfigCardBatch: React.FC<ServerConfigCardBatchProps> = ({ si
         <IconButton
             {...props}
             icon="cog"
-            onClick={() => {
-                toast(t("Error"), {
-                    description: t("Results.NoRowsAreSelected"),
-                })
-            }}
+            disabled
+            title={t("Results.NoRowsAreSelected")}
         />
     ) : (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -86,7 +84,7 @@ export const ServerConfigCardBatch: React.FC<ServerConfigCardBatchProps> = ({ si
                                 id="batch-config-option"
                                 aria-labelledby="batch-config-option-label"
                                 type="text"
-                                placeholder="option"
+                                placeholder={t("Option")}
                                 value={currentKey}
                                 onChange={(e) => {
                                     setCurrentKey(e.target.value)

@@ -2,6 +2,7 @@ import { getServers } from "@/api/server"
 import { getServerGroups } from "@/api/server-group"
 import { ServerContextProps } from "@/types"
 import { createContext, useContext, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 import { toast } from "sonner"
 
@@ -20,6 +21,7 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({
     withServer,
     withServerGroup,
 }) => {
+    const { t } = useTranslation()
     const serverGroup = useServerStore((store) => store.serverGroup)
     const setServerGroup = useServerStore((store) => store.setServerGroup)
 
@@ -35,7 +37,7 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({
                     const sg = await getServerGroups()
                     setServerGroup(sg)
                 } catch (error: any) {
-                    toast("ServerProvider Error", {
+                    toast.error(t("Error"), {
                         description: error.message,
                     })
                     setServerGroup(undefined)
@@ -48,13 +50,13 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({
                     const serverData = s.map(({ id, name }) => ({ id, name }))
                     setServer(serverData)
                 } catch (error: any) {
-                    toast("ServerProvider Error", {
+                    toast.error(t("Error"), {
                         description: error.message,
                     })
                     setServer(undefined)
                 }
             })()
-    }, [location.pathname, setServer, setServerGroup, withServer, withServerGroup])
+    }, [location.pathname, setServer, setServerGroup, t, withServer, withServerGroup])
 
     const value: ServerContextProps = useMemo(
         () => ({

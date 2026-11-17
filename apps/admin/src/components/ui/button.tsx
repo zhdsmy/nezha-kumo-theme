@@ -135,14 +135,16 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
         const kumoVariant = resolveKumoVariant(resolvedVariant)
         const { size: kumoSize, shape: kumoShape } = resolveKumoSizeAndShape(resolvedSize)
+        const isUnavailable = Boolean(disabled || loading)
         const mergedClassName = cn(
             SVG_CLASSES,
             resolvedVariant === "link" && LINK_CLASSES,
+            isUnavailable && resolvedTitle && "pointer-events-none",
             className,
         )
 
-        if (kumoShape === "square") {
-            return (
+        const buttonElement =
+            kumoShape === "square" ? (
                 <KumoButton
                     {...props}
                     ref={ref}
@@ -151,30 +153,47 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     shape="square"
                     loading={loading}
                     disabled={disabled}
-                    title={resolvedTitle}
+                    title={isUnavailable ? undefined : resolvedTitle}
                     aria-label={props["aria-label"] ?? resolvedTitle ?? ""}
                     className={mergedClassName}
                 >
                     {children}
                 </KumoButton>
+            ) : (
+                <KumoButton
+                    ref={ref}
+                    variant={kumoVariant}
+                    size={kumoSize}
+                    shape="base"
+                    loading={loading}
+                    disabled={disabled}
+                    title={isUnavailable ? undefined : resolvedTitle}
+                    className={mergedClassName}
+                    {...props}
+                >
+                    {children}
+                </KumoButton>
+            )
+
+        if (isUnavailable && resolvedTitle) {
+            return (
+                <Tooltip
+                    content={resolvedTitle}
+                    delay={150}
+                    render={
+                        <span
+                            className="inline-flex cursor-not-allowed"
+                            title={resolvedTitle}
+                            tabIndex={0}
+                        />
+                    }
+                >
+                    {buttonElement}
+                </Tooltip>
             )
         }
 
-        return (
-            <KumoButton
-                ref={ref}
-                variant={kumoVariant}
-                size={kumoSize}
-                shape="base"
-                loading={loading}
-                disabled={disabled}
-                title={resolvedTitle}
-                className={mergedClassName}
-                {...props}
-            >
-                {children}
-            </KumoButton>
-        )
+        return buttonElement
     },
 )
 Button.displayName = "Button"

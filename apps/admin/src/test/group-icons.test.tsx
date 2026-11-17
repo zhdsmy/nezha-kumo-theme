@@ -13,7 +13,7 @@ import {
     updateGroupIconsInCustomCode,
 } from "../../../../packages/shared/group-icons"
 
-vi.mock("sonner", () => ({ toast: vi.fn() }))
+vi.mock("sonner", () => ({ toast: Object.assign(vi.fn(), { error: vi.fn(), success: vi.fn(), warning: vi.fn(), info: vi.fn() }) }))
 vi.mock("@/hooks/useServer", () => ({
     useServer: () => ({
         servers: [

@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import { MemoryRouter } from "react-router-dom"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
 
-vi.mock("sonner", () => ({ toast: vi.fn() }))
+vi.mock("sonner", () => ({ toast: Object.assign(vi.fn(), { error: vi.fn(), success: vi.fn(), warning: vi.fn(), info: vi.fn() }) }))
 vi.mock("react-i18next", () => ({
     useTranslation: () => ({
         t: (key: string) => key,

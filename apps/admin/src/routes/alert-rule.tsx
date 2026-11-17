@@ -34,7 +34,7 @@ export default function AlertRulePage() {
 
     useEffect(() => {
         if (error)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: t("Results.ErrorFetchingResource", { error: error.message }),
             })
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -50,14 +50,14 @@ export default function AlertRulePage() {
                         (table.getIsSomePageRowsSelected() && "indeterminate")
                     }
                     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                    aria-label="Select all"
+                    aria-label={t("SelectAll")}
                 />
             ),
             cell: ({ row }) => (
                 <Checkbox
                     checked={row.getIsSelected()}
                     onCheckedChange={(value) => row.toggleSelected(!!value)}
-                    aria-label="Select row"
+                    aria-label={t("SelectRow")}
                 />
             ),
             enableHiding: false,
@@ -84,7 +84,7 @@ export default function AlertRulePage() {
         {
             header: t("TriggerMode"),
             accessorKey: "trigger Mode",
-            accessorFn: (row) => triggerModes[row.trigger_mode] || "",
+            accessorFn: (row) => (triggerModes[row.trigger_mode] ? t(triggerModes[row.trigger_mode]) : ""),
         },
         {
             id: "rules",

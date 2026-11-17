@@ -2,12 +2,20 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { MemoryRouter } from "react-router-dom"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
 
-const toastCalls: string[] = []
-vi.mock("sonner", () => ({
-    toast: (msg: string) => {
-        toastCalls.push(msg)
-    },
-}))
+const toastCalls: Array<{ variant: string; msg: string; description?: string }> = []
+vi.mock("sonner", () => {
+    const record = (variant: string) => (msg: string, opts?: { description?: string }) => {
+        toastCalls.push({ variant, msg, description: opts?.description })
+    }
+    return {
+        toast: Object.assign(record("default"), {
+            error: record("error"),
+            success: record("success"),
+            warning: record("warning"),
+            info: record("info"),
+        }),
+    }
+})
 
 const changeLanguageCalls: string[] = []
 vi.mock("react-i18next", () => ({
@@ -81,8 +89,13 @@ test("SettingsPage does not toast Success when updateSettings rejects", async ()
 
     await waitFor(() => expect(updateSettings).toHaveBeenCalled())
 
-    expect(toastCalls).toContain("Error")
-    expect(toastCalls).not.toContain("Success")
+    expect(toastCalls).toEqual([
+        {
+            variant: "error",
+            msg: "Error",
+            description: "Results.ErrorFetchingResource",
+        },
+    ])
     expect(changeLanguageCalls).toEqual([])
 })
 
@@ -105,6 +118,5 @@ test("SettingsPage toasts Success when updateSettings resolves", async () => {
 
     await waitFor(() => expect(updateSettings).toHaveBeenCalled())
 
-    expect(toastCalls).toContain("Success")
-    expect(toastCalls).not.toContain("Error")
+    expect(toastCalls).toEqual([{ variant: "success", msg: "Success", description: undefined }])
 })

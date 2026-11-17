@@ -29,6 +29,7 @@ import {
 import { IconButton } from "@/components/xui/icon-button"
 import { useServer } from "@/hooks/useServer"
 import { selectableTableFeatures } from "@/lib/table"
+import { errorMessage } from "@/lib/utils"
 import { ModelServerTaskResponse, ModelServer as Server } from "@/types"
 import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender, useTable } from "@tanstack/react-table"
@@ -47,7 +48,7 @@ export default function ServerPage() {
 
     useEffect(() => {
         if (error)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: t("Results.ErrorFetchingResource", { error: error.message }),
             })
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -63,14 +64,14 @@ export default function ServerPage() {
                         (table.getIsSomePageRowsSelected() && "indeterminate")
                     }
                     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                    aria-label="Select all"
+                    aria-label={t("SelectAll")}
                 />
             ),
             cell: ({ row }) => (
                 <Checkbox
                     checked={row.getIsSelected()}
                     onCheckedChange={(value) => row.toggleSelected(!!value)}
-                    aria-label="Select row"
+                    aria-label={t("SelectRow")}
                 />
             ),
             enableHiding: false,
@@ -224,7 +225,7 @@ export default function ServerPage() {
                                     <IconButton
                                         icon="more"
                                         variant="outline"
-                                        aria-label="More actions"
+                                        aria-label={t("MoreActions")}
                                     />
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
@@ -257,6 +258,7 @@ export default function ServerPage() {
     })
 
     const selectedRows = table.getSelectedRowModel().rows
+    const selectedServerIds = selectedRows.map((r) => r.original.id)
 
     return (
         <Page
@@ -266,32 +268,34 @@ export default function ServerPage() {
                     className="flex gap-2 flex-wrap shrink-0"
                     delete={{
                         fn: deleteServer,
-                        id: selectedRows.map((r) => r.original.id),
+                        id: selectedServerIds,
                         mutate: mutate,
                     }}
                 >
                     <IconButton
                         icon="update"
+                        disabled={selectedServerIds.length === 0}
+                        title={
+                            selectedServerIds.length === 0
+                                ? t("Results.NoRowsAreSelected")
+                                : undefined
+                        }
                         onClick={async () => {
-                            const id = selectedRows.map((r) => r.original.id)
-                            if (id.length < 1) {
-                                toast(t("Error"), {
-                                    description: t("Results.SelectAtLeastOneServer"),
-                                })
-                                return
-                            }
-
                             let resp: ModelServerTaskResponse = {}
                             try {
-                                resp = await forceUpdateServer(id)
+                                resp = await forceUpdateServer(selectedServerIds)
                             } catch (e) {
                                 console.error(e)
-                                toast(t("Error"), {
-                                    description: t("Results.UnExpectedError"),
+                                toast.error(t("Error"), {
+                                    description: errorMessage(e, t("Results.UnExpectedError")),
                                 })
                                 return
                             }
-                            toast(t("Done"), {
+                            const notify =
+                                resp.failure?.length || resp.offline?.length
+                                    ? toast.warning
+                                    : toast.success
+                            notify(t("Done"), {
                                 description:
                                     t("Results.ForceUpdate") +
                                     (resp.success?.length
@@ -306,8 +310,8 @@ export default function ServerPage() {
                             })
                         }}
                     />
-                    <BatchMoveServerIcon serverIds={selectedRows.map((r) => r.original.id)} />
-                    <ServerConfigCardBatch sid={selectedRows.map((r) => r.original.id)} />
+                    <BatchMoveServerIcon serverIds={selectedServerIds} />
+                    <ServerConfigCardBatch sid={selectedServerIds} />
                     <InstallCommandsMenu className="rounded-lg" />
                 </HeaderButtonGroup>
             }

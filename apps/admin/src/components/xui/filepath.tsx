@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { formatPath } from "@/lib/utils"
 import { Dispatch, FC, Fragment, SetStateAction, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 const ITEMS_TO_DISPLAY = 3
 
@@ -39,6 +40,7 @@ function pathToItems(path: string) {
 }
 
 export const Filepath: FC<FilepathProps> = ({ path, setPath }) => {
+    const { t } = useTranslation()
     const [open, setOpen] = useState(false)
     const items = pathToItems(formatPath(path))
 
@@ -63,7 +65,7 @@ export const Filepath: FC<FilepathProps> = ({ path, setPath }) => {
                                 <DropdownMenu open={open} onOpenChange={setOpen}>
                                     <DropdownMenuTrigger
                                         className="flex items-center gap-1"
-                                        aria-label="Toggle menu"
+                                        aria-label={t("ToggleMenu")}
                                     >
                                         <BreadcrumbEllipsis className="h-4 w-4" />
                                     </DropdownMenuTrigger>

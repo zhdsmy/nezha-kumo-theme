@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { IconButton } from "@/components/xui/icon-button"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
+import i18n from "@/lib/i18n"
 import { asOptionalField, errorMessage } from "@/lib/utils"
 import { ModelServerTaskResponse } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -53,7 +54,7 @@ const agentConfigSchema = z.object({
                 }
             },
             {
-                message: "Invalid JSON string",
+                error: () => i18n.t("Validation.InvalidJSON"),
             },
         ),
     ),
@@ -70,7 +71,7 @@ const agentConfigSchema = z.object({
                 }
             },
             {
-                message: "Invalid JSON string",
+                error: () => i18n.t("Validation.InvalidJSON"),
             },
         ),
     ),
@@ -118,8 +119,8 @@ export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConf
                 setData(JSON.parse(result))
             } catch (error) {
                 console.error(error)
-                toast(t("Error"), {
-                    description: (error as Error).message,
+                toast.error(t("Error"), {
+                    description: errorMessage(error, t("Results.UnExpectedError")),
                 })
                 setOpen(false)
                 return
@@ -170,12 +171,13 @@ export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConf
             resp = await setServerConfig({ config: JSON.stringify(values), servers: [sid] })
         } catch (e) {
             console.error(e)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
         }
-        toast(t("Done"), {
+        const notify = resp.failure?.length || resp.offline?.length ? toast.warning : toast.success
+        notify(t("Done"), {
             description:
                 t("Results.ForceUpdate") +
                 (resp.success?.length ? t(`Success`) + ` [${resp.success.join(",")}]` : "") +
@@ -206,7 +208,7 @@ export const ServerConfigCard = ({ sid, menuItem = false, ...props }: ServerConf
                 {loading ? (
                     <div className="items-center mx-1">
                         <DialogHeader>
-                            <DialogTitle>Loading...</DialogTitle>
+                            <DialogTitle>{t("Loading")}...</DialogTitle>
                             <DialogDescription />
                         </DialogHeader>
                     </div>

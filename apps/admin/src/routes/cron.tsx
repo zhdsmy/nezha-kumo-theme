@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table"
 import { IconButton } from "@/components/xui/icon-button"
 import { selectableTableFeatures } from "@/lib/table"
+import { errorMessage } from "@/lib/utils"
 import { ModelCron } from "@/types"
 import { cronTypes } from "@/types"
 import { Page } from "@nezha-kumo/ui"
@@ -31,7 +32,7 @@ export default function CronPage() {
 
     useEffect(() => {
         if (error)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: t("Results.ErrorFetchingResource", {
                     error: error.message,
                 }),
@@ -49,14 +50,14 @@ export default function CronPage() {
                         (table.getIsSomePageRowsSelected() && "indeterminate")
                     }
                     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                    aria-label="Select all"
+                    aria-label={t("SelectAll")}
                 />
             ),
             cell: ({ row }) => (
                 <Checkbox
                     checked={row.getIsSelected()}
                     onCheckedChange={(value) => row.toggleSelected(!!value)}
-                    aria-label="Select row"
+                    aria-label={t("SelectRow")}
                 />
             ),
             enableHiding: false,
@@ -77,7 +78,7 @@ export default function CronPage() {
         {
             header: t("Type"),
             accessorKey: "taskType",
-            accessorFn: (row) => cronTypes[row.task_type] || "",
+            accessorFn: (row) => (cronTypes[row.task_type] ? t(cronTypes[row.task_type]) : ""),
         },
         {
             header: t("CronExpression"),
@@ -179,13 +180,16 @@ export default function CronPage() {
                                         await runCron(s.id)
                                     } catch (e) {
                                         console.error(e)
-                                        toast(t("Error"), {
-                                            description: t("Results.UnExpectedError"),
+                                        toast.error(t("Error"), {
+                                            description: errorMessage(
+                                                e,
+                                                t("Results.UnExpectedError"),
+                                            ),
                                         })
                                         await mutate()
                                         return
                                     }
-                                    toast(t("Success"), {
+                                    toast.success(t("Success"), {
                                         description: t("Results.TaskTriggeredSuccessfully"),
                                     })
                                     await mutate()

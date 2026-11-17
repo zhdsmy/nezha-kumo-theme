@@ -66,9 +66,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             } catch (error: any) {
                 const msg = error?.message
                 if (msg === "ApiErrorUnauthorized" || msg === "Unauthorized") {
-                    toast(t("InvalidUsernameOrPassword"))
+                    toast.error(t("InvalidUsernameOrPassword"))
                 } else {
-                    toast(msg || t("NetworkError"))
+                    toast.error(msg || t("NetworkError"))
                 }
             } finally {
                 // An explicit login resolves auth regardless of the still-pending
@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             window.history.replaceState({}, document.title, window.location.pathname)
             navigate(consumeMCPOAuthReturn())
         } catch (error: any) {
-            toast(error.message)
+            toast.error(error.message)
         } finally {
             setLoading(false)
         }

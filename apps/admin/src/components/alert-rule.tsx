@@ -31,6 +31,7 @@ import {
 import { IconButton } from "@/components/xui/icon-button"
 import { useNotification } from "@/hooks/useNotfication"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
+import i18n from "@/lib/i18n"
 import { conv, errorMessage } from "@/lib/utils"
 import { ModelAlertRule } from "@/types"
 import { triggerModes } from "@/types"
@@ -78,7 +79,7 @@ const alertRuleFormSchema = z.object({
             }
         },
         {
-            message: "Invalid JSON string",
+            error: () => i18n.t("Validation.InvalidJSON"),
         },
     ),
     rules: z.array(ruleSchema),
@@ -168,7 +169,7 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
             }
         } catch (e) {
             console.error(e)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
@@ -706,7 +707,7 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                                                 <SelectContent>
                                                     {Object.entries(triggerModes).map(([k, v]) => (
                                                         <SelectItem key={k} value={k}>
-                                                            {v}
+                                                            {t(v)}
                                                         </SelectItem>
                                                     ))}
                                                 </SelectContent>

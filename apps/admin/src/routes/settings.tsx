@@ -27,7 +27,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { useNotification } from "@/hooks/useNotfication"
 import useSetting from "@/hooks/useSetting"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
-import { asOptionalField, safeExternalHref } from "@/lib/utils"
+import { asOptionalField, errorMessage, safeExternalHref } from "@/lib/utils"
 import { nezhaLang, settingCoverageTypes } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Page } from "@nezha-kumo/ui"
@@ -137,9 +137,9 @@ export default function SettingsPage() {
             form.reset()
             await mutate()
         } catch (e) {
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: t("Results.ErrorFetchingResource", {
-                    error: e?.toString(),
+                    error: errorMessage(e, t("Results.UnExpectedError")),
                 }),
             })
             return
@@ -147,7 +147,7 @@ export default function SettingsPage() {
         if (values.language != i18n.language) {
             i18n.changeLanguage(values.language)
         }
-        toast(t("Success"))
+        toast.success(t("Success"))
     })
 
     return (
@@ -511,7 +511,7 @@ export default function SettingsPage() {
                                                                 settingCoverageTypes,
                                                             ).map(([k, v]) => (
                                                                 <SelectItem key={k} value={k}>
-                                                                    {v}
+                                                                    {t(v)}
                                                                 </SelectItem>
                                                             ))}
                                                         </SelectContent>

@@ -45,6 +45,7 @@ import {
     validatePublicNote,
 } from "@/lib/public-note"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
+import i18n from "@/lib/i18n"
 import { asOptionalField, conv, errorMessage } from "@/lib/utils"
 import { ModelServer } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -78,7 +79,7 @@ const serverFormSchema = z.object({
                     return true
                 }
             },
-            { message: "Invalid Public Note JSON" },
+            { error: () => i18n.t("Validation.InvalidPublicNoteJSON") },
         ),
     ),
     display_index: z.coerce.number().int(),
@@ -98,7 +99,7 @@ const serverFormSchema = z.object({
                 }
             },
             {
-                message: "Invalid JSON string",
+                error: () => i18n.t("Validation.InvalidJSON"),
             },
         ),
     ),
@@ -185,7 +186,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                 const { errors, valid } = validatePublicNote(publicNoteObj)
                 if (!valid) {
                     setPublicNoteErrors(errors)
-                    toast(t("Error"), { description: t("Validation.InvalidForm") })
+                    toast.error(t("Error"), { description: t("Validation.InvalidForm") })
                     return
                 }
                 setPublicNoteErrors({})
@@ -207,7 +208,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
             await updateServer(data!.id!, values)
         } catch (e) {
             console.error(e)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
@@ -264,7 +265,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                     {t("Name")}
                                                 </FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="My Server" {...field} />
+                                                    <Input placeholder={t("Placeholders.ServerName")} {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -476,7 +477,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                                 )
                                                             }
                                                         >
-                                                            {t("PublicNote.ClearDate") ?? "Clear"}
+                                                            {t("PublicNote.ClearDate")}
                                                         </Button>
                                                         <Popover>
                                                             <PopoverTrigger asChild>
@@ -571,8 +572,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                                     )
                                                                 }
                                                             >
-                                                                {t("PublicNote.ClearDate") ??
-                                                                    "Clear"}
+                                                                {t("PublicNote.ClearDate")}
                                                             </Button>
                                                         </div>
                                                         <Popover>
@@ -713,7 +713,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                                     )
                                                                 }
                                                             >
-                                                                {t("PublicNote.Clear") ?? "Clear"}
+                                                                {t("PublicNote.Clear")}
                                                             </Button>
                                                         </div>
                                                         <Select
@@ -728,7 +728,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                             }
                                                         >
                                                             <SelectTrigger>
-                                                                <SelectValue placeholder="Select cycle" />
+                                                                <SelectValue placeholder={t("Placeholders.SelectCycle")} />
                                                             </SelectTrigger>
                                                             <SelectContent>
                                                                 <SelectItem value="Day">
@@ -846,7 +846,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                         <Input
                                                             id="public-note-traffic-vol"
                                                             aria-labelledby="public-note-traffic-vol-label"
-                                                            placeholder="1TB/Month"
+                                                            placeholder={t("Placeholders.TrafficVolume")}
                                                             value={
                                                                 publicNoteObj.planDataMod
                                                                     ?.trafficVol ?? ""
@@ -875,7 +875,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                                     )
                                                                 }
                                                             >
-                                                                {t("PublicNote.Clear") ?? "Clear"}
+                                                                {t("PublicNote.Clear")}
                                                             </Button>
                                                         </div>
                                                         <Select
@@ -891,7 +891,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate }) => {
                                                             }
                                                         >
                                                             <SelectTrigger>
-                                                                <SelectValue placeholder="Select type" />
+                                                                <SelectValue placeholder={t("Placeholders.SelectType")} />
                                                             </SelectTrigger>
                                                             <SelectContent>
                                                                 <SelectItem value="1">

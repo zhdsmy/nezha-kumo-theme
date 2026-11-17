@@ -16,6 +16,7 @@ import {
 import { selectableTableFeatures } from "@/lib/table"
 import useSetting from "@/hooks/useSetting"
 import { removeServerGroupIcons } from "@/lib/group-icons"
+import { errorMessage } from "@/lib/utils"
 import { ModelServerGroupResponseItem } from "@/types"
 import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender, useTable } from "@tanstack/react-table"
@@ -41,8 +42,8 @@ export default function ServerGroupPage() {
                 }
             } catch (e) {
                 console.error(e)
-                toast(t("Error"), {
-                    description: t("Results.UnExpectedError"),
+                toast.error(t("Error"), {
+                    description: errorMessage(e, t("Results.UnExpectedError")),
                 })
             }
         },
@@ -51,7 +52,7 @@ export default function ServerGroupPage() {
 
     useEffect(() => {
         if (error)
-            toast(t("Error"), {
+            toast.error(t("Error"), {
                 description: t("Results.ErrorFetchingResource", {
                     error: error.message,
                 }),
@@ -69,14 +70,14 @@ export default function ServerGroupPage() {
                         (table.getIsSomePageRowsSelected() && "indeterminate")
                     }
                     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                    aria-label="Select all"
+                    aria-label={t("SelectAll")}
                 />
             ),
             cell: ({ row }) => (
                 <Checkbox
                     checked={row.getIsSelected()}
                     onCheckedChange={(value) => row.toggleSelected(!!value)}
-                    aria-label="Select row"
+                    aria-label={t("SelectRow")}
                 />
             ),
             enableHiding: false,

@@ -39,14 +39,14 @@ export const InstallCommandsMenu = forwardRef<HTMLButtonElement, InstallCommands
             if (!copy) {
                 try {
                     setCopy(true)
-                    if (!profile) throw new Error("Profile is not found.")
-                    if (!settings?.config) throw new Error("Settings is not found.")
+                    if (!profile) throw new Error(t("Results.ProfileNotFound"))
+                    if (!settings?.config) throw new Error(t("Results.SettingsNotFound"))
                     await copyToClipboard(
                         generateCommand(type, settings!.config, profile, uuid) || "",
                     )
                 } catch (e: Error | any) {
                     console.error(e)
-                    toast(t("Error"), {
+                    toast.error(t("Error"), {
                         description: e.message,
                     })
                 } finally {
@@ -64,19 +64,19 @@ export const InstallCommandsMenu = forwardRef<HTMLButtonElement, InstallCommands
                         <button
                             type="button"
                             className="flex w-full items-center text-sm px-2 py-2 hover:bg-accent hover:text-accent-foreground"
-                            title={i18next.t("InstallCommands")}
+                            title={t("InstallCommands")}
                         >
                             {copy ? (
                                 <Check className="h-4 w-4 mr-2" />
                             ) : (
                                 <Copy className="h-4 w-4 mr-2" />
                             )}
-                            <span>{i18next.t("InstallCommands")}</span>
+                            <span>{t("InstallCommands")}</span>
                         </button>
                     ) : iconOnly ? (
                         <Button
                             ref={ref}
-                            title={i18next.t("InstallCommands")}
+                            title={t("InstallCommands")}
                             size="icon"
                             {...props}
                         >
@@ -87,9 +87,9 @@ export const InstallCommandsMenu = forwardRef<HTMLButtonElement, InstallCommands
                             )}
                         </Button>
                     ) : (
-                        <Button ref={ref} title={i18next.t("InstallCommands")} {...props}>
+                        <Button ref={ref} title={t("InstallCommands")} {...props}>
                             {copy ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                            <span className="ml-2">{i18next.t("InstallCommands")}</span>
+                            <span className="ml-2">{t("InstallCommands")}</span>
                         </Button>
                     )}
                 </DropdownMenuTrigger>

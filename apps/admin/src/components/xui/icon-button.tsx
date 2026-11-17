@@ -71,12 +71,14 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     ({ variant, className, title, "aria-label": ariaLabel, icon, ...props }, ref) => {
         const { t } = useTranslation()
         const filled = icon === "plus" && (!variant || variant === "default")
-        const label = title ?? ariaLabel ?? t(iconLabels[icon])
+        const defaultLabel = t(iconLabels[icon])
+        const resolvedAriaLabel = ariaLabel ?? defaultLabel
+        const tooltipLabel = title ?? resolvedAriaLabel
         return (
             <Button
                 {...props}
-                title={label}
-                aria-label={ariaLabel || label}
+                title={tooltipLabel}
+                aria-label={resolvedAriaLabel}
                 variant={filled ? "default" : variant === "ghost" ? "ghost" : "outline"}
                 className={cn(
                     variant === "destructive" &&

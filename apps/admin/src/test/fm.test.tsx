@@ -92,9 +92,21 @@ vi.mock("react-i18next", () => ({
     initReactI18next: { type: "3rdParty", init: () => {} },
 }))
 
-vi.mock("sonner", () => ({ toast: vi.fn() }))
+vi.mock("sonner", () => {
+    const fn = vi.fn()
+    return {
+        toast: Object.assign(fn, {
+            error: vi.fn(),
+            success: vi.fn(),
+            warning: vi.fn(),
+            info: vi.fn(),
+        }),
+    }
+})
 vi.mock("@/lib/utils", () => ({
     copyToClipboard: vi.fn(),
+    errorMessage: (err: unknown, fallback: string) =>
+        err instanceof Error && err.message.trim() ? err.message : fallback,
     fm: {
         parseFMList: async (buf: ArrayBufferLike) => {
             const view = new DataView(buf)
