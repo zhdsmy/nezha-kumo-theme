@@ -52,6 +52,11 @@ export default defineConfig(({ mode }) => {
                 },
             },
         },
-        test: { include: ["tests/**/*.test.ts"], environment: "node" },
+        // Fixtures use +08:00 dates and day counts follow the local calendar, so pin the zone.
+        test: {
+            include: ["tests/**/*.test.ts"],
+            environment: "node",
+            env: { TZ: "Asia/Shanghai" },
+        },
     }
 })
