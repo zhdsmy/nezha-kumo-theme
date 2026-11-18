@@ -35,12 +35,59 @@ import { errorMessage } from "@/lib/utils"
 import { ModelServerTaskResponse, ModelServer as Server } from "@/types"
 import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender } from "@tanstack/react-table"
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import useSWR from "swr"
 
 import { splitTags } from "../../../../packages/shared/public-note"
+
+function ServerRowMoreMenu({ server }: { server: Server }) {
+    const { t } = useTranslation()
+    const [menuOpen, setMenuOpen] = useState(false)
+    const [configOpen, setConfigOpen] = useState(false)
+    return (
+        <>
+            <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+                <DropdownMenuTrigger asChild>
+                    <IconButton icon="more" variant="outline" aria-label={t("MoreActions")} />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                        <TerminalButton id={server.id} menuItem />
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        asChild
+                        onSelect={() => {
+                            setMenuOpen(false)
+                            setConfigOpen(true)
+                        }}
+                    >
+                        <ServerConfigCard
+                            sid={server.id}
+                            variant="ghost"
+                            menuItem
+                            open={false}
+                            onOpenChange={(next) => {
+                                if (next) {
+                                    setMenuOpen(false)
+                                    setConfigOpen(true)
+                                }
+                            }}
+                        />
+                    </DropdownMenuItem>
+                    <InstallCommandsMenu uuid={server.uuid} menuItem />
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <ServerConfigCard
+                sid={server.id}
+                open={configOpen}
+                onOpenChange={setConfigOpen}
+                hideTrigger
+            />
+        </>
+    )
+}
 
 export default function ServerPage() {
     const { t } = useTranslation()
@@ -251,27 +298,7 @@ export default function ServerPage() {
                     >
                         <>
                             <ServerCard mutate={mutate} data={s} routes={routes} />
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <IconButton
-                                        icon="more"
-                                        variant="outline"
-                                        aria-label={t("MoreActions")}
-                                    />
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem asChild>
-                                        <TerminalButton id={s.id} menuItem />
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        asChild
-                                        onSelect={(event) => event.preventDefault()}
-                                    >
-                                        <ServerConfigCard sid={s.id} variant="ghost" menuItem />
-                                    </DropdownMenuItem>
-                                    <InstallCommandsMenu uuid={s.uuid} menuItem />
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            <ServerRowMoreMenu server={s} />
                         </>
                     </ActionButtonGroup>
                 )

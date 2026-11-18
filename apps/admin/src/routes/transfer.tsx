@@ -12,6 +12,7 @@ import {
     TableStateRow,
 } from "@/components/ui/table"
 import { useAuth } from "@/hooks/useAuth"
+import { formatDateTime } from "@/lib/utils"
 import {
     ModelServerTransfer,
     ModelServerTransferStatus,
@@ -43,7 +44,7 @@ const statusMeta: Record<
 }
 
 export default function TransferPage() {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const { profile } = useAuth()
     const isAdmin = profile?.role === 0
     const callerID = profile?.id
@@ -243,8 +244,8 @@ export default function TransferPage() {
                                     >
                                         {row.last_error || "—"}
                                     </TableCell>
-                                    <TableCell data-col="created">
-                                        {new Date(row.created_at).toLocaleString()}
+                                    <TableCell data-col="created" className="tabular-nums text-xs">
+                                        {formatDateTime(row.created_at, i18n?.language)}
                                     </TableCell>
                                     <TableCell data-col="actions" className="space-x-2">
                                         {isPending &&

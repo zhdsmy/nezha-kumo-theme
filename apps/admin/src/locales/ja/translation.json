@@ -101,6 +101,23 @@
     "ConfirmBlockTarget": "「{{target}}」をブロックしますか？この操作は元に戻せません。",
     "ConfirmBatchDelete": "選択した {{count}} 件を削除しますか？この操作は元に戻せません。",
     "ConfirmBatchBlock": "選択した {{count}} 件をブロックしますか？この操作は元に戻せません。",
+    "Expired": "期限切れ",
+    "AgentConfig": {
+        "ip_report_period": "IP 報告間隔（秒）",
+        "report_delay": "状態報告間隔（秒）",
+        "hard_drive_partition_allowlist": "ディスクパーティション許可リスト（JSON）",
+        "nic_allowlist": "NIC 許可リスト（JSON）",
+        "disable_auto_update": "自動更新を無効化",
+        "disable_command_execute": "コマンド実行を無効化",
+        "disable_force_update": "強制更新を無効化",
+        "disable_nat": "NAT 越えを無効化",
+        "disable_send_query": "監視プローブ送信を無効化",
+        "gpu": "GPU 監視を有効化",
+        "temperature": "温度監視を有効化",
+        "skip_connection_count": "接続数の集計をスキップ",
+        "skip_procs_count": "プロセス数の集計をスキップ",
+        "debug": "デバッグモード"
+    },
     "Coverages": {
         "Excludes": "特定のサーバーを除外",
         "Only": "特定のサーバーのみ",
@@ -290,7 +307,13 @@
         "CoverAllServers": "すべてのサーバーを監視",
         "IgnoreAllSelectSpecific": "すべて無視し、特定のサーバーを選択",
         "IgnoreHint": "{{server}} ID: true/false",
-        "IgnoreExample": "例: {\"1\": true, \"2\": false}"
+        "IgnoreExample": "例: {\"1\": true, \"2\": false}",
+        "Duration": "継続時間（秒）",
+        "Min": "最小しきい値",
+        "Max": "最大しきい値",
+        "CycleStart": "サイクル開始日時（RFC3339）",
+        "CycleInterval": "サイクル間隔",
+        "CycleUnit": "サイクル単位"
     },
     "Search": "検索...",
     "Copy": "コピー",

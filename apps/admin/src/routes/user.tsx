@@ -17,6 +17,7 @@ import { UserCard } from "@/components/user"
 import { IconButton } from "@/components/xui/icon-button"
 import { useAuth } from "@/hooks/useAuth"
 import { selectableTableFeatures, useSelectableTable } from "@/lib/table"
+import { formatDateTime } from "@/lib/utils"
 import { ModelUser } from "@/types"
 import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender } from "@tanstack/react-table"
@@ -26,7 +27,7 @@ import { toast } from "sonner"
 import useSWR from "swr"
 
 export default function UserPage() {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const { profile } = useAuth()
     const { data, mutate, error, isLoading } = useSWR<ModelUser[]>("/api/v1/user", swrFetcher)
 
@@ -94,8 +95,7 @@ export default function UserPage() {
         {
             header: t("LastLogin"),
             accessorKey: "updated_at",
-            accessorFn: (row) =>
-                row.updated_at ? new Date(row.updated_at).toLocaleString() : t("Never"),
+            accessorFn: (row) => formatDateTime(row.updated_at, i18n?.language, t("Never")),
         },
         {
             id: "actions",

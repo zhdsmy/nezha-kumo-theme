@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/table"
 import { IconButton } from "@/components/xui/icon-button"
 import { selectableTableFeatures, useSelectableTable } from "@/lib/table"
-import { errorMessage } from "@/lib/utils"
+import { errorMessage, formatDateTime } from "@/lib/utils"
 import { ModelCron } from "@/types"
 import { cronTypes } from "@/types"
 import { Page } from "@nezha-kumo/ui"
@@ -28,7 +28,7 @@ import { toast } from "sonner"
 import useSWR from "swr"
 
 export default function CronPage() {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const { data, mutate, error, isLoading } = useSWR<ModelCron[]>("/api/v1/cron", swrFetcher)
 
     useEffect(() => {
@@ -146,12 +146,12 @@ export default function CronPage() {
         {
             header: t("LastExecution"),
             accessorKey: "lastExecution",
-            accessorFn: (row) => row.last_executed_at,
+            accessorFn: (row) => formatDateTime(row.last_executed_at, i18n?.language, t("Never")),
             cell: ({ row }) => {
                 const s = row.original
                 return (
-                    <div className="max-w-24 whitespace-normal break-words">
-                        {s.last_executed_at}
+                    <div className="whitespace-nowrap tabular-nums text-xs">
+                        {formatDateTime(s.last_executed_at, i18n?.language, t("Never"))}
                     </div>
                 )
             },
@@ -234,7 +234,7 @@ export default function CronPage() {
                     ["taskType", 100],
                     ["scheduler", 130],
                     ["lastResult", 100],
-                    ["lastExecution", 150],
+                    ["lastExecution", 168],
                     ["servers", 110],
                     ["command", 150],
                     ["ngroup", 110],

@@ -19,13 +19,14 @@ import {
 } from "@/components/ui/table"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/hooks/useAuth"
+import { formatDateTime } from "@/lib/utils"
 import { Page } from "@nezha-kumo/ui"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import useSWR, { useSWRConfig } from "swr"
 
-function displayTime(value?: string) {
-    return value ? new Date(value).toLocaleString() : "—"
+function displayTime(value?: string, locale?: string) {
+    return formatDateTime(value, locale, "—")
 }
 
 function errorMessage(error: unknown) {
@@ -33,7 +34,7 @@ function errorMessage(error: unknown) {
 }
 
 function OAuthGrants({ all, userID }: { all: boolean; userID: number }) {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const [page, setPage] = useState(1)
     const [busy, setBusy] = useState(false)
     const [actionError, setActionError] = useState("")
@@ -137,11 +138,11 @@ function OAuthGrants({ all, userID }: { all: boolean; userID: number }) {
                                     >
                                         <p>
                                             {t("MCPOAuthManager.AuthorizedAt")}:{" "}
-                                            {displayTime(grant.created_at)}
+                                            {displayTime(grant.created_at, i18n?.language)}
                                         </p>
                                         <p>
                                             {t("ApiTokenExpiresAt")}:{" "}
-                                            {displayTime(grant.expires_at)}
+                                            {displayTime(grant.expires_at, i18n?.language)}
                                         </p>
                                     </TableCell>
                                     <TableCell
@@ -149,7 +150,7 @@ function OAuthGrants({ all, userID }: { all: boolean; userID: number }) {
                                         data-multiline
                                         className="whitespace-normal text-xs leading-relaxed"
                                     >
-                                        <p>{displayTime(grant.last_used_at)}</p>
+                                        <p>{displayTime(grant.last_used_at, i18n?.language)}</p>
                                         <p>{grant.last_used_ip}</p>
                                     </TableCell>
                                     <TableCell data-col="actions">
@@ -184,7 +185,7 @@ function OAuthGrants({ all, userID }: { all: boolean; userID: number }) {
 }
 
 function OAuthClients({ userID }: { userID: number }) {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const [page, setPage] = useState(1)
     const [busy, setBusy] = useState(false)
     const [actionError, setActionError] = useState("")
@@ -283,7 +284,7 @@ function OAuthClients({ userID }: { userID: number }) {
                                     </TableCell>
                                     <TableCell data-col="grants">{client.grant_count}</TableCell>
                                     <TableCell data-col="lastUsed" data-multiline>
-                                        {displayTime(client.last_used_at)}
+                                        {displayTime(client.last_used_at, i18n?.language)}
                                     </TableCell>
                                     <TableCell data-col="actions">
                                         <ConfirmActionDialog

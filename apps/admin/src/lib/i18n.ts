@@ -32,6 +32,8 @@ const FIELD_LABEL_KEYS: Record<string, string> = {
     domain: "Domains",
     domains: "Domains",
     cover: "Coverage",
+    ip_report_period: "AgentConfig.ip_report_period",
+    report_delay: "AgentConfig.report_delay",
 }
 
 function fieldLabelForPath(path: PropertyKey[] | undefined): string {

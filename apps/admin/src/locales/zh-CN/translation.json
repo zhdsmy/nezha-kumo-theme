@@ -101,6 +101,23 @@
     "ConfirmBlockTarget": "确认封禁“{{target}}”？此操作不可恢复。",
     "ConfirmBatchDelete": "确认删除已选的 {{count}} 项？此操作不可恢复。",
     "ConfirmBatchBlock": "确认封禁已选的 {{count}} 项？此操作不可恢复。",
+    "Expired": "已过期",
+    "AgentConfig": {
+        "ip_report_period": "IP 上报周期（秒）",
+        "report_delay": "状态上报间隔（秒）",
+        "hard_drive_partition_allowlist": "磁盘分区白名单（JSON）",
+        "nic_allowlist": "网卡白名单（JSON）",
+        "disable_auto_update": "禁用自动更新",
+        "disable_command_execute": "禁止执行命令",
+        "disable_force_update": "禁用强制更新",
+        "disable_nat": "禁用内网穿透",
+        "disable_send_query": "禁用主动探测上报",
+        "gpu": "启用 GPU 监控",
+        "temperature": "启用温度监控",
+        "skip_connection_count": "跳过连接数统计",
+        "skip_procs_count": "跳过进程数统计",
+        "debug": "调试模式"
+    },
     "Coverages": {
         "Excludes": "排除特定服务器",
         "Only": "仅特定服务器",
@@ -290,7 +307,13 @@
         "CoverAllServers": "监控所有服务器",
         "IgnoreAllSelectSpecific": "忽略所有，选择特定服务器",
         "IgnoreHint": "{{server}}ID: true/false",
-        "IgnoreExample": "例如：{\"1\": true, \"2\": false}"
+        "IgnoreExample": "例如：{\"1\": true, \"2\": false}",
+        "Duration": "持续时间（秒）",
+        "Min": "最小阈值",
+        "Max": "最大阈值",
+        "CycleStart": "周期起点（RFC3339）",
+        "CycleInterval": "周期长度",
+        "CycleUnit": "周期单位"
     },
     "Search": "搜索...",
     "Copy": "复制",
