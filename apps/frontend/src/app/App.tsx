@@ -118,7 +118,6 @@ function NodeLoadingShell({
     const { t } = useTranslation()
     return (
         <Page
-            maxWidth={1100}
             title={title}
             actions={actions}
             tabs={
@@ -246,27 +245,6 @@ export function App() {
     useEffect(() => {
         if (!nodeId && siteTitle) document.title = siteTitle
     }, [nodeId, siteTitle])
-    useEffect(() => {
-        if (!nodeId) return
-        const frame = requestAnimationFrame(() => {
-            const active = document.querySelector<HTMLElement>(
-                '.nk-sidebar [data-sidebar="sliding-view"]:not([inert]) nav a[aria-current="page"]',
-            )
-            const viewport = active?.closest<HTMLElement>('[data-sidebar="viewport"]')
-            if (!active || !viewport) return
-            const stickyBottom =
-                viewport.querySelector<HTMLElement>(".nk-context")?.getBoundingClientRect()
-                    .bottom ?? viewport.getBoundingClientRect().top
-            const vpRect = viewport.getBoundingClientRect()
-            const itemRect = active.getBoundingClientRect()
-            if (itemRect.top < stickyBottom) {
-                viewport.scrollTop -= stickyBottom - itemRect.top + 8
-            } else if (itemRect.bottom > vpRect.bottom) {
-                viewport.scrollTop += itemRect.bottom - vpRect.bottom + 8
-            }
-        })
-        return () => cancelAnimationFrame(frame)
-    }, [nodeId, peers.length])
     const reconnecting = phase === "ready" && connectionState === "reconnecting"
     const kumoTranslations = useMemo(
         () => ({
@@ -451,6 +429,9 @@ export function App() {
                         </Page>
                     }
                 >
+                    {nodeId && phase !== "error" && (
+                        <style>{".nk-shell-body { --nk-page-max: 1100px; }"}</style>
+                    )}
                     {phase === "loading" ? (
                         nodeId ? (
                             <NodeLoadingShell

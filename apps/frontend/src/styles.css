@@ -68,6 +68,19 @@
         display: none;
     }
 }
+@media (width > 1440px) {
+    .nk-main,
+    .nk-topbar {
+        scrollbar-gutter: stable;
+    }
+    .nk-topbar {
+        overflow: hidden;
+        padding-inline: var(--nk-gutter);
+    }
+    .nk-topbar-actions {
+        margin-inline-end: max(0px, calc((100% - var(--nk-page-max)) / 2));
+    }
+}
 .nk-topbar-actions > a {
     height: 32px;
     min-width: 32px;
@@ -949,12 +962,12 @@
 }
 .disconnect-banner-wrap {
     width: 100%;
-    max-width: calc(var(--nk-page-max, 1280px) + 2 * var(--nk-gutter));
+    max-width: calc(var(--nk-page-max) + 2 * var(--nk-gutter));
     padding: 16px var(--nk-gutter) 0;
     margin: 0 auto;
 }
-.disconnect-banner-wrap[data-node] {
-    --nk-page-max: 1100px;
+.disconnect-banner-wrap:not([data-node]) {
+    --nk-page-max: 1280px;
 }
 .quota-track {
     height: 8px;

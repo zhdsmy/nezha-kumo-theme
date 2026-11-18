@@ -249,6 +249,19 @@ body,
     min-width: 49px;
 }
 
+@media (width > 1440px) {
+    .nk-page-inner:has(.nkt-table) {
+        --nk-page-max: 1680px;
+    }
+    .nkt-table {
+        --nkt-owner-grow: 0.55fr;
+    }
+    .nkt-table td:is([data-col="name"], [data-col="username"], [data-col="owner"]) .nkt-cell-value {
+        display: block;
+        -webkit-line-clamp: unset;
+    }
+}
+
 /* Each visible column owns its space; only hidden fields enter the detail area. */
 .nkt-table :is(table, thead, tbody) {
     display: block;

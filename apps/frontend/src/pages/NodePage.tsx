@@ -187,7 +187,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
     }, [id, recordHours, reportHours, section, reportKey])
     if (!node)
         return (
-            <Page maxWidth={1100} title={t("node.notFound")}>
+            <Page title={t("node.notFound")}>
                 <Link className="text-kumo-link" href={lastListHref}>
                     {t("node.back")}
                 </Link>
@@ -242,7 +242,6 @@ export default function NodePage({ id, section }: { id: string; section: Section
     const tabLabels = uiLabels("tabs")
     return (
         <Page
-            maxWidth={1100}
             title={
                 showRegions && node.region ? (
                     <>
