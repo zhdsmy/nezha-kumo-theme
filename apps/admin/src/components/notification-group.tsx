@@ -22,13 +22,12 @@ import { Input } from "@/components/ui/input"
 import { IconButton } from "@/components/xui/icon-button"
 import { MultiSelect } from "@/components/xui/multi-select"
 import { useNotification } from "@/hooks/useNotfication"
+import { useFormDialog } from "@/hooks/useFormDialog"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
 import { withCollectionDefaults } from "@/lib/form"
 import { errorMessage } from "@/lib/utils"
 import { ModelNotificationGroupResponseItem } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
-import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { KeyedMutator } from "swr"
 import { z } from "zod"
@@ -46,7 +45,7 @@ const notificationGroupFormSchema = z.object({
 export const NotificationGroupCard: React.FC<NotificationGroupCardProps> = ({ data, mutate }) => {
     data = data && withCollectionDefaults(data, ["notifications"])
     const { t } = useTranslation()
-    const form = useForm<z.infer<typeof notificationGroupFormSchema>>({
+    const { form, open, onOpenChange } = useFormDialog<z.infer<typeof notificationGroupFormSchema>>(!!data, {
         resolver: zodResolver(notificationGroupFormSchema),
         defaultValues: data
             ? {
@@ -57,12 +56,8 @@ export const NotificationGroupCard: React.FC<NotificationGroupCardProps> = ({ da
                   name: "",
                   notifications: [],
               },
-        resetOptions: {
-            keepDefaultValues: false,
-        },
     })
 
-    const [open, setOpen] = useState(false)
     const { submitting, runSubmit, showError, dismissError } = useSubmitLock()
 
     const onSubmit = runSubmit(async (values: z.infer<typeof notificationGroupFormSchema>) => {
@@ -79,9 +74,9 @@ export const NotificationGroupCard: React.FC<NotificationGroupCardProps> = ({ da
             })
             return
         }
-        setOpen(false)
         await mutate()
-        form.reset()
+        if (!data) form.reset()
+        onOpenChange(false)
     })
 
     const { notifiers } = useNotification()
@@ -91,7 +86,7 @@ export const NotificationGroupCard: React.FC<NotificationGroupCardProps> = ({ da
     })) || [{ value: "", label: "" }]
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>
                 {data ? <IconButton variant="outline" icon="edit" /> : <IconButton icon="plus" />}
             </DialogTrigger>

@@ -30,13 +30,13 @@ import {
 import { IconButton } from "@/components/xui/icon-button"
 import { useNotification } from "@/hooks/useNotfication"
 import { useServer } from "@/hooks/useServer"
+import { useFormDialog } from "@/hooks/useFormDialog"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { serverOptions } from "@/lib/server-options"
 import { asOptionalField, errorMessage } from "@/lib/utils"
 import { ModelCron } from "@/types"
 import { cronCoverageTypes, cronTypes } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
-import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { KeyedMutator } from "swr"
 import { z } from "zod"
@@ -66,7 +66,7 @@ type CronFormData = z.output<typeof cronFormSchema>
 
 export const CronCard: React.FC<CronCardProps> = ({ data, mutate }) => {
     const { t } = useTranslation()
-    const form = useForm<CronFormInput, unknown, CronFormData>({
+    const { form, open, onOpenChange } = useFormDialog<CronFormInput, CronFormData>(!!data, {
         resolver: zodResolver(cronFormSchema),
         defaultValues: data
             ? {
@@ -89,12 +89,8 @@ export const CronCard: React.FC<CronCardProps> = ({ data, mutate }) => {
                   push_successful: false,
                   notification_group_id: 0,
               },
-        resetOptions: {
-            keepDefaultValues: false,
-        },
     })
 
-    const [open, setOpen] = useState(false)
     const { submitting, runSubmit, showError, dismissError } = useSubmitLock()
 
     const onSubmit = runSubmit(async (values: CronFormData) => {
@@ -111,16 +107,13 @@ export const CronCard: React.FC<CronCardProps> = ({ data, mutate }) => {
             })
             return
         }
-        setOpen(false)
         await mutate()
-        form.reset()
+        if (!data) form.reset()
+        onOpenChange(false)
     })
 
     const { servers } = useServer()
-    const serverList = servers?.map((s) => ({
-        value: `${s.id}`,
-        label: s.name,
-    })) || [{ value: "", label: "" }]
+    const serverList = serverOptions(servers)
 
     const { notifierGroup } = useNotification()
     const ngroupList = notifierGroup?.map((ng) => ({
@@ -129,7 +122,7 @@ export const CronCard: React.FC<CronCardProps> = ({ data, mutate }) => {
     })) || [{ value: "", label: "" }]
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>
                 {data ? <IconButton variant="outline" icon="edit" /> : <IconButton icon="plus" />}
             </DialogTrigger>

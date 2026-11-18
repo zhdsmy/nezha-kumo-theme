@@ -30,14 +30,14 @@ import {
 import { IconButton } from "@/components/xui/icon-button"
 import { useNotification } from "@/hooks/useNotfication"
 import { useServer } from "@/hooks/useServer"
+import { useFormDialog } from "@/hooks/useFormDialog"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
 import { withCollectionDefaults } from "@/lib/form"
+import { serverOptions } from "@/lib/server-options"
 import { asOptionalField, conv, errorMessage } from "@/lib/utils"
 import { ModelService } from "@/types"
 import { serviceCoverageTypes, serviceTypes } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
-import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { KeyedMutator } from "swr"
 import { z } from "zod"
@@ -81,7 +81,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ data, mutate }) => {
             ["skip_servers"],
         )
     const { t } = useTranslation()
-    const form = useForm({
+    const { form, open, onOpenChange } = useFormDialog(!!data, {
         resolver: zodResolver(serviceFormSchema) as any,
         defaultValues: data
             ? {
@@ -107,12 +107,8 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ data, mutate }) => {
                   skip_servers: {},
                   skip_servers_raw: [],
               },
-        resetOptions: {
-            keepDefaultValues: false,
-        },
     })
 
-    const [open, setOpen] = useState(false)
     const { submitting, runSubmit, showError, dismissError } = useSubmitLock()
 
     const onSubmit = runSubmit(async (values: any) => {
@@ -136,16 +132,13 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ data, mutate }) => {
             })
             return
         }
-        setOpen(false)
         await mutate()
-        form.reset()
+        if (!data) form.reset()
+        onOpenChange(false)
     })
 
     const { servers } = useServer()
-    const serverList = servers?.map((s) => ({
-        value: `${s.id}`,
-        label: s.name,
-    })) || [{ value: "", label: "" }]
+    const serverList = serverOptions(servers)
 
     const { notifierGroup } = useNotification()
     const ngroupList = notifierGroup?.map((ng) => ({
@@ -154,7 +147,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ data, mutate }) => {
     })) || [{ value: "", label: "" }]
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>
                 {data ? <IconButton variant="outline" icon="edit" /> : <IconButton icon="plus" />}
             </DialogTrigger>

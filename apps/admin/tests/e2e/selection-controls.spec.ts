@@ -82,6 +82,23 @@ for (const [engine, driver] of Object.entries({ chromium, webkit })) {
             expect((await saved).postDataJSON().server_id).toBe(8)
         })
 
+        test("duplicate server names include the ID in options and selected badges", async ({ page }) => {
+            await mockAdmin(page, {
+                server: [{ id: 7, name: "edge" }, { id: 8, name: "edge" }, { id: 9, name: "unique" }],
+            })
+            await page.goto("/dashboard/settings/api-tokens")
+            await page.getByRole("button", { name: "Create API token" }).click()
+            const selector = page.locator("#server-ids")
+            await selector.press("Enter")
+            for (const label of ["edge #7", "edge #8", "unique"]) {
+                await page.getByRole("option", { name: label, exact: true }).click({ timeout: 3000 })
+            }
+            await page.keyboard.press("Escape")
+            for (const label of ["edge #7", "edge #8", "unique"]) {
+                await expect(selector.getByText(label, { exact: true })).toBeVisible()
+            }
+        })
+
         test("token scope sends selected numeric IDs and omits an empty restriction", async ({
             page,
         }) => {
