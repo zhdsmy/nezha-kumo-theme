@@ -124,11 +124,19 @@ i18n.use(initReactI18next).init({
     },
 })
 
-applyZodLocale(i18n.resolvedLanguage || initialLanguage)
+function syncDocumentLanguage(lng: string) {
+    const resolved = resolveInterfaceLanguage(lng)
+    if (typeof document !== "undefined") {
+        document.documentElement.lang = resolved
+    }
+    applyZodLocale(resolved)
+}
+
+syncDocumentLanguage(i18n.resolvedLanguage || initialLanguage)
 
 i18n.on("languageChanged", (lng) => {
     localStorage.setItem("language", lng)
-    applyZodLocale(lng)
+    syncDocumentLanguage(lng)
 })
 
 export default i18n

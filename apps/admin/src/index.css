@@ -508,13 +508,21 @@ body,
     .nkt-table td[data-col="actions"] {
         display: contents;
     }
-    /* Cards: the details chevron and the actions toggle read as one pair of 32 px buttons. */
+    .nkt-icon-btn {
+        width: 2.75rem;
+        height: 2.75rem;
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+    }
+    /* Cards: the details chevron and the actions toggle meet 44 px touch targets with spacing. */
     .nkt-table td[data-primary] {
-        padding-right: 0;
+        padding-right: 0.25rem;
     }
     .nkt-table :is(.nkt-details-toggle, .nkt-actions-toggle) {
-        width: 2rem;
-        height: 2rem;
+        width: 2.75rem;
+        height: 2.75rem;
+        min-width: 2.75rem;
+        min-height: 2.75rem;
     }
     .nkt-table .nkt-actions-toggle {
         display: inline-flex;
