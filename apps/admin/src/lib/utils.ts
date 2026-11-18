@@ -187,3 +187,47 @@ export async function copyToClipboard(text: string) {
     }
     throw new Error("Failed to copy text to clipboard")
 }
+
+function parseValidDate(value: string | number | null | undefined): Date | null {
+    if (value === null || value === undefined || value === "") return null
+    if (typeof value === "number" && (!Number.isFinite(value) || value <= 0)) return null
+    const date = new Date(value)
+    const time = date.getTime()
+    if (Number.isNaN(time) || date.getUTCFullYear() <= 1 || time <= 0) return null
+    return date
+}
+
+export function formatDateTime(
+    value: string | number | null | undefined,
+    locale = "en",
+    emptyFallback = "—",
+): string {
+    const date = parseValidDate(value)
+    if (!date) return emptyFallback
+    const normalizedLocale = locale === "zh-CN" || locale === "zh-TW" || locale === "ja" || locale === "en"
+        ? locale
+        : locale.toLowerCase().startsWith("zh-tw") || locale.toLowerCase().startsWith("zh-hk")
+          ? "zh-TW"
+          : locale.toLowerCase().startsWith("zh")
+            ? "zh-CN"
+            : locale.toLowerCase().startsWith("ja")
+              ? "ja"
+              : "en"
+    return new Intl.DateTimeFormat(normalizedLocale, {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+    }).format(date)
+}
+
+export function isTimestampExpired(
+    value: string | number | null | undefined,
+    nowMs = Date.now(),
+): boolean {
+    const date = parseValidDate(value)
+    return date !== null && date.getTime() < nowMs
+}

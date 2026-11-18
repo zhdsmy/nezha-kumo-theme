@@ -76,10 +76,24 @@ export async function fetcher<T>(method: FetcherMethod, path: string, data?: any
             body: data ? JSON.stringify(data) : null,
         })
     }
+    const text = typeof response.text === "function" ? await response.text() : ""
     if (!response.ok) {
-        throw new Error(response.statusText)
+        if (text) {
+            try {
+                const errBody = JSON.parse(text) as Partial<CommonResponse<unknown>>
+                if (typeof errBody.error === "string" && errBody.error.trim() !== "") {
+                    throw new Error(errBody.error)
+                }
+            } catch (parseErr) {
+                if (parseErr instanceof Error && !(parseErr instanceof SyntaxError)) {
+                    throw parseErr
+                }
+            }
+        }
+        throw new Error(
+            response.statusText || (response.status === 401 ? "Unauthorized" : `HTTP ${response.status}`),
+        )
     }
-    const text = await response.text()
     if (text !== "") {
         let responseData: CommonResponse<T>
         try {

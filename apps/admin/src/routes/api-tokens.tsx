@@ -10,6 +10,7 @@ import {
 } from "@/api/api-tokens"
 import { ConfirmActionDialog } from "@/components/action-button-group"
 import { SettingsTab } from "@/components/settings-tab"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -30,10 +31,11 @@ import {
     TableHead,
     TableHeader,
     TableRow,
+    TableStateRow,
 } from "@/components/ui/table"
 import { useAuth } from "@/hooks/useAuth"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
-import { copyToClipboard, errorMessage } from "@/lib/utils"
+import { copyToClipboard, errorMessage, formatDateTime, isTimestampExpired } from "@/lib/utils"
 import { Page } from "@nezha-kumo/ui"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -41,7 +43,7 @@ import { toast } from "sonner"
 import useSWR from "swr"
 
 export default function ApiTokensPage() {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const { profile } = useAuth()
     const isAdmin = profile?.role === 0
 
@@ -97,26 +99,18 @@ export default function ApiTokensPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {isLoading ? (
-                        <TableRow>
-                            <TableCell colSpan={6} className="h-24 text-center">
-                                {t("Loading")}...
-                            </TableCell>
-                        </TableRow>
-                    ) : !data || data.length === 0 ? (
-                        <TableRow>
-                            <TableCell
-                                colSpan={6}
-                                className="h-24 text-center text-muted-foreground"
-                            >
-                                {t("NoResults")}
-                            </TableCell>
-                        </TableRow>
+                    {!data || data.length === 0 ? (
+                        <TableStateRow
+                            colSpan={6}
+                            isLoading={isLoading}
+                            error={error}
+                            onRetry={mutate}
+                        />
                     ) : (
                         data.map((tok) => (
                             <TableRow key={tok.id}>
                                 <TableCell data-col="name">{tok.name}</TableCell>
-                                <TableCell data-col="scopes">
+                                <TableCell data-col="scopes" data-multiline>
                                     <div className="flex flex-wrap gap-1">
                                         {(tok.scopes ?? []).map((s) => (
                                             <span
@@ -133,15 +127,46 @@ export default function ApiTokensPage() {
                                         ? tok.server_ids.join(", ")
                                         : t("ApiTokenAllServers")}
                                 </TableCell>
-                                <TableCell data-col="expires" className="text-xs">
-                                    {tok.expires_at
-                                        ? new Date(tok.expires_at).toLocaleString()
-                                        : t("ApiTokenNever")}
+                                <TableCell
+                                    data-col="expires"
+                                    data-multiline
+                                    className="whitespace-normal text-xs"
+                                >
+                                    <div className="flex flex-wrap items-center gap-1.5 tabular-nums">
+                                        <span className="whitespace-nowrap">
+                                            {formatDateTime(
+                                                tok.expires_at,
+                                                i18n?.language,
+                                                t("ApiTokenNever"),
+                                            )}
+                                        </span>
+                                        {isTimestampExpired(tok.expires_at) ? (
+                                            <Badge variant="destructive">{t("Expired")}</Badge>
+                                        ) : null}
+                                    </div>
                                 </TableCell>
-                                <TableCell data-col="lastUsed" className="text-xs">
-                                    {tok.last_used_at
-                                        ? `${new Date(tok.last_used_at).toLocaleString()} (${tok.last_used_ip ?? "?"})`
-                                        : t("ApiTokenNever")}
+                                <TableCell
+                                    data-col="lastUsed"
+                                    data-multiline
+                                    className="whitespace-normal text-xs tabular-nums"
+                                >
+                                    {(() => {
+                                        const formatted = formatDateTime(
+                                            tok.last_used_at,
+                                            i18n?.language,
+                                            "",
+                                        )
+                                        return formatted ? (
+                                            <div>
+                                                <div className="whitespace-nowrap">{formatted}</div>
+                                                <div className="text-muted-foreground">
+                                                    {tok.last_used_ip ?? "?"}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            t("Never")
+                                        )
+                                    })()}
                                 </TableCell>
                                 <TableCell data-col="actions">
                                     <ConfirmActionDialog

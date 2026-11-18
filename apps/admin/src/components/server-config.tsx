@@ -105,22 +105,36 @@ for (let i = 0; i < boolFields.length; i += 2) {
 interface ServerConfigCardProps extends ButtonProps {
     sid: number
     menuItem?: boolean
+    hideTrigger?: boolean
+    open?: boolean
+    onOpenChange?: (open: boolean) => void
     ref?: Ref<HTMLButtonElement>
 }
 
 export const ServerConfigCard = ({
     sid,
     menuItem = false,
+    hideTrigger = false,
+    open: controlledOpen,
+    onOpenChange,
     ref,
     ...props
 }: ServerConfigCardProps) => {
     const { t } = useTranslation()
     const [data, setData] = useState<AgentConfig | undefined>(undefined)
     const [loading, setLoading] = useState(true)
-    const [open, setOpen] = useState(false)
+    const [internalOpen, setInternalOpen] = useState(false)
+    const open = controlledOpen ?? internalOpen
+    const setOpen = (next: boolean) => {
+        if (controlledOpen === undefined) {
+            setInternalOpen(next)
+        }
+        onOpenChange?.(next)
+    }
 
     useEffect(() => {
         const fetchData = async () => {
+            setLoading(true)
             try {
                 const result = await getServerConfig(sid)
                 setData(
@@ -138,16 +152,19 @@ export const ServerConfigCard = ({
             }
         }
         if (open) fetchData()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, sid, t])
 
     const form = useForm({
         resolver: zodResolver(agentConfigSchema) as any,
         defaultValues: {
             ...data,
-            hard_drive_partition_allowlist_raw: JSON.stringify(
-                data?.hard_drive_partition_allowlist,
-            ),
-            nic_allowlist_raw: JSON.stringify(data?.nic_allowlist),
+            ip_report_period: data?.ip_report_period ?? "",
+            report_delay: data?.report_delay ?? "",
+            hard_drive_partition_allowlist_raw: data?.hard_drive_partition_allowlist
+                ? JSON.stringify(data.hard_drive_partition_allowlist)
+                : "",
+            nic_allowlist_raw: data?.nic_allowlist ? JSON.stringify(data.nic_allowlist) : "",
         },
         resetOptions: {
             keepDefaultValues: false,
@@ -158,10 +175,12 @@ export const ServerConfigCard = ({
         if (data) {
             form.reset({
                 ...data,
-                hard_drive_partition_allowlist_raw: JSON.stringify(
-                    data.hard_drive_partition_allowlist,
-                ),
-                nic_allowlist_raw: JSON.stringify(data.nic_allowlist),
+                ip_report_period: data.ip_report_period ?? "",
+                report_delay: data.report_delay ?? "",
+                hard_drive_partition_allowlist_raw: data.hard_drive_partition_allowlist
+                    ? JSON.stringify(data.hard_drive_partition_allowlist)
+                    : "",
+                nic_allowlist_raw: data.nic_allowlist ? JSON.stringify(data.nic_allowlist) : "",
             })
         }
     }, [data, form])
@@ -199,25 +218,27 @@ export const ServerConfigCard = ({
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                {menuItem ? (
-                    <Button
-                        variant="ghost"
-                        {...props}
-                        ref={ref}
-                        type="button"
-                        className={cn(
-                            "flex w-full items-center text-sm px-2 py-2 hover:bg-accent hover:text-accent-foreground",
-                            props.className,
-                        )}
-                    >
-                        <CogIcon className="h-4 w-4 mr-2" />
-                        <span>{t("Config")}</span>
-                    </Button>
-                ) : (
-                    <IconButton {...props} ref={ref} icon="cog" />
-                )}
-            </DialogTrigger>
+            {!hideTrigger ? (
+                <DialogTrigger asChild>
+                    {menuItem ? (
+                        <Button
+                            variant="ghost"
+                            {...props}
+                            ref={ref}
+                            type="button"
+                            className={cn(
+                                "flex w-full items-center text-sm px-2 py-2 hover:bg-accent hover:text-accent-foreground",
+                                props.className,
+                            )}
+                        >
+                            <CogIcon className="h-4 w-4 mr-2" />
+                            <span>{t("Config")}</span>
+                        </Button>
+                    ) : (
+                        <IconButton {...props} ref={ref} icon="cog" />
+                    )}
+                </DialogTrigger>
+            ) : null}
             <DialogContent className="sm:max-w-xl">
                 {loading ? (
                     <div className="items-center mx-1">
@@ -243,12 +264,15 @@ export const ServerConfigCard = ({
                                         name="ip_report_period"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>ip_report_period</FormLabel>
+                                                <FormLabel>
+                                                    {t("AgentConfig.ip_report_period")}
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         type="number"
                                                         placeholder="0"
                                                         {...field}
+                                                        value={field.value ?? ""}
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
@@ -260,12 +284,15 @@ export const ServerConfigCard = ({
                                         name="report_delay"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>report_delay</FormLabel>
+                                                <FormLabel>
+                                                    {t("AgentConfig.report_delay")}
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         type="number"
                                                         placeholder="0"
                                                         {...field}
+                                                        value={field.value ?? ""}
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
@@ -278,10 +305,16 @@ export const ServerConfigCard = ({
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>
-                                                    hard_drive_partition_allowlist
+                                                    {t(
+                                                        "AgentConfig.hard_drive_partition_allowlist",
+                                                    )}
                                                 </FormLabel>
                                                 <FormControl>
-                                                    <Textarea className="resize-y" {...field} />
+                                                    <Textarea
+                                                        className="resize-y"
+                                                        {...field}
+                                                        value={field.value ?? ""}
+                                                    />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -292,9 +325,15 @@ export const ServerConfigCard = ({
                                         name="nic_allowlist_raw"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>nic_allowlist</FormLabel>
+                                                <FormLabel>
+                                                    {t("AgentConfig.nic_allowlist")}
+                                                </FormLabel>
                                                 <FormControl>
-                                                    <Textarea className="resize-y" {...field} />
+                                                    <Textarea
+                                                        className="resize-y"
+                                                        {...field}
+                                                        value={field.value ?? ""}
+                                                    />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -321,7 +360,7 @@ export const ServerConfigCard = ({
                                                                     />
                                                                 </FormControl>
                                                                 <FormLabel className="text-sm cursor-pointer">
-                                                                    {t(field)}
+                                                                    {t(`AgentConfig.${field}`)}
                                                                 </FormLabel>
                                                             </div>
                                                             <FormMessage />

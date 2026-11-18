@@ -287,6 +287,30 @@ body,
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
 }
+.nkt-table td[data-multiline] .nkt-cell-value,
+.nkt-table tr[data-open] .nkt-cell-value {
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+.nkt-table .nkt-cell-value:has(button) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+}
+.nkt-expanded-preview {
+    display: none;
+}
+.nkt-table tr[data-open] .nkt-expanded-preview {
+    display: inline;
+}
+.nkt-table tr[data-open] .nkt-cell-value > * {
+    max-width: none;
+}
 .nkt-cell-value > :not(.whitespace-nowrap) {
     min-width: 0;
     max-width: 100%;
@@ -488,13 +512,21 @@ body,
     .nkt-table td[data-col="actions"] {
         display: contents;
     }
-    /* Cards: the details chevron and the actions toggle read as one pair of 32 px buttons. */
+    .nkt-icon-btn {
+        width: 2.75rem;
+        height: 2.75rem;
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+    }
+    /* Cards: the details chevron and the actions toggle meet 44 px touch targets with spacing. */
     .nkt-table td[data-primary] {
-        padding-right: 0;
+        padding-right: 0.25rem;
     }
     .nkt-table :is(.nkt-details-toggle, .nkt-actions-toggle) {
-        width: 2rem;
-        height: 2rem;
+        width: 2.75rem;
+        height: 2.75rem;
+        min-width: 2.75rem;
+        min-height: 2.75rem;
     }
     .nkt-table .nkt-actions-toggle {
         display: inline-flex;

@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react"
+import { toast } from "sonner"
 
 export function useSubmitLock() {
     const [submitting, setSubmitting] = useState(false)
@@ -10,6 +11,7 @@ export function useSubmitLock() {
                 if (lockRef.current) return
                 lockRef.current = true
                 setSubmitting(true)
+                toast.dismiss?.()
                 try {
                     await fn(...args)
                 } finally {

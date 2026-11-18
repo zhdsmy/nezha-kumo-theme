@@ -14,6 +14,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
+    TableStateRow,
 } from "@/components/ui/table"
 import { useNotification } from "@/hooks/useNotfication"
 import { selectableTableFeatures, useSelectableTable } from "@/lib/table"
@@ -82,12 +83,21 @@ export default function NotificationPage() {
         {
             header: t("Group"),
             accessorKey: "groups",
-            accessorFn: (row) => {
-                return (
+            accessorFn: (row) =>
+                notifierGroup
+                    ?.filter((ng) => ng.notifications?.includes(row.id))
+                    .map((ng) => ng.group.name)
+                    .join(", ") || "",
+            cell: ({ row }) => {
+                const names =
                     notifierGroup
-                        ?.filter((ng) => ng.notifications?.includes(row.id))
-                        .map((ng) => ng.group.id) || []
-                )
+                        ?.filter((ng) => ng.notifications?.includes(row.original.id))
+                        .map((ng) => ng.group.name)
+                        .filter(Boolean) ?? []
+                if (names.length === 0) {
+                    return <span className="text-muted-foreground">—</span>
+                }
+                return <div className="max-w-40 whitespace-normal break-words">{names.join(", ")}</div>
             },
         },
         {
@@ -116,6 +126,7 @@ export default function NotificationPage() {
                         delete={{
                             fn: deleteNotification,
                             id: s.id,
+                            name: s.name,
                             mutate: mutate,
                         }}
                     >
@@ -182,13 +193,14 @@ export default function NotificationPage() {
                     ))}
                 </TableHeader>
                 <TableBody>
-                    {isLoading ? (
-                        <TableRow>
-                            <TableCell colSpan={columns.length} className="h-24 text-center">
-                                {t("Loading")}...
-                            </TableCell>
-                        </TableRow>
-                    ) : table.getRowModel().rows?.length ? (
+                    {isLoading || !table.getRowModel().rows?.length ? (
+                        <TableStateRow
+                            colSpan={columns.length}
+                            isLoading={isLoading}
+                            error={error}
+                            onRetry={mutate}
+                        />
+                    ) : (
                         table.getRowModel().rows.map((row) => (
                             <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                                 {row.getVisibleCells().map((cell) => (
@@ -202,12 +214,6 @@ export default function NotificationPage() {
                                 ))}
                             </TableRow>
                         ))
-                    ) : (
-                        <TableRow>
-                            <TableCell colSpan={columns.length} className="h-24 text-center">
-                                {t("NoResults")}
-                            </TableCell>
-                        </TableRow>
                     )}
                 </TableBody>
             </Table>

@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
-import { cn } from "@/lib/utils"
+import { cn, errorMessage } from "@/lib/utils"
 import { BREAKPOINTS } from "@nezha-kumo/ui"
-import { ChevronDown, MoreHorizontal } from "lucide-react"
+import { AlertCircle, ChevronDown, MoreHorizontal, RotateCw } from "lucide-react"
 import {
     HTMLAttributes,
     TdHTMLAttributes,
@@ -228,7 +228,6 @@ const TableRow = forwardRef<HTMLTableRowElement, HTMLAttributes<HTMLTableRowElem
                         if (
                             e.defaultPrevented ||
                             !table ||
-                            table.layout === "wide" ||
                             !e.currentTarget.contains(target)
                         )
                             return
@@ -249,7 +248,7 @@ const TableRow = forwardRef<HTMLTableRowElement, HTMLAttributes<HTMLTableRowElem
 )
 TableRow.displayName = "TableRow"
 
-type ColumnAttribute = { "data-col"?: string }
+type ColumnAttribute = { "data-col"?: string; "data-multiline"?: boolean }
 const TableHead = forwardRef<
     HTMLTableCellElement,
     ThHTMLAttributes<HTMLTableCellElement> & ColumnAttribute
@@ -417,4 +416,70 @@ const TableCaption = forwardRef<HTMLTableCaptionElement, HTMLAttributes<HTMLTabl
 )
 TableCaption.displayName = "TableCaption"
 
-export { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption }
+interface TableStateRowProps {
+    colSpan: number
+    isLoading?: boolean
+    error?: unknown
+    onRetry?: () => unknown
+}
+
+function TableStateRow({ colSpan, isLoading, error, onRetry }: TableStateRowProps) {
+    const { t } = useTranslation()
+    if (isLoading) {
+        return (
+            <TableRow>
+                <TableCell colSpan={colSpan} className="h-24 text-center text-muted-foreground">
+                    {t("Loading")}...
+                </TableCell>
+            </TableRow>
+        )
+    }
+    if (error) {
+        const reason = errorMessage(error, t("Results.UnExpectedError"))
+        return (
+            <TableRow>
+                <TableCell colSpan={colSpan} className="py-8 text-center">
+                    <div className="mx-auto flex max-w-md flex-col items-center gap-2.5">
+                        <p
+                            role="alert"
+                            className="flex items-center justify-center gap-1.5 text-sm font-medium text-destructive break-words"
+                        >
+                            <AlertCircle className="size-4 shrink-0" aria-hidden="true" />
+                            <span>{reason}</span>
+                        </p>
+                        {onRetry && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => void onRetry()}
+                            >
+                                <RotateCw className="mr-1.5 size-3.5" aria-hidden="true" />
+                                {t("Retry")}
+                            </Button>
+                        )}
+                    </div>
+                </TableCell>
+            </TableRow>
+        )
+    }
+    return (
+        <TableRow>
+            <TableCell colSpan={colSpan} className="h-24 text-center text-muted-foreground">
+                {t("NoResults")}
+            </TableCell>
+        </TableRow>
+    )
+}
+
+export {
+    Table,
+    TableHeader,
+    TableBody,
+    TableFooter,
+    TableHead,
+    TableRow,
+    TableCell,
+    TableCaption,
+    TableStateRow,
+}

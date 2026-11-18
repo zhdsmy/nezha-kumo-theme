@@ -78,11 +78,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 navigate(consumeMCPOAuthReturn())
             } catch (error: any) {
                 const msg = error?.message
-                if (msg === "ApiErrorUnauthorized" || msg === "Unauthorized") {
-                    toast.error(t("InvalidUsernameOrPassword"))
-                } else {
-                    toast.error(msg || t("NetworkError"))
-                }
+                toast.dismiss?.()
+                const displayError =
+                    msg === "ApiErrorUnauthorized" ||
+                    msg === "Unauthorized" ||
+                    (typeof msg === "string" && /incorrect|unauthorized|invalid.*password/i.test(msg))
+                        ? t("InvalidUsernameOrPassword")
+                        : msg || t("NetworkError")
+                toast.error(displayError)
+                return displayError
             } finally {
                 // An explicit login resolves auth regardless of the still-pending
                 // mount probe; clear loading so ProtectedRoute stops blanking.

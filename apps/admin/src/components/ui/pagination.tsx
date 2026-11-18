@@ -181,6 +181,10 @@ const TablePagination = ({
         return () => observer.disconnect()
     }, [])
 
+    if (total <= 0) {
+        return null
+    }
+
     const compact = !sm || narrowContainer
 
     const handlePageChange = (newPage: number) => {

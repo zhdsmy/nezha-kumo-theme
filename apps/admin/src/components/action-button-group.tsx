@@ -40,7 +40,7 @@ export function ConfirmActionDialog({
                     <AlertDialogDescription>{description}</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel>{t("Close")}</AlertDialogCancel>
+                    <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
                     <AlertDialogAction
                         className={buttonVariants({
                             variant: confirmVariant,
@@ -58,19 +58,24 @@ export function ConfirmActionDialog({
 interface ButtonGroupProps<E, U> {
     className?: string
     children: React.ReactNode
-    delete: { fn: (id: E[]) => Promise<void>; id: E; mutate: KeyedMutator<U> }
+    delete: { fn: (id: E[]) => Promise<void>; id: E; name?: string; mutate: KeyedMutator<U> }
 }
 
 interface BlockButtonGroupProps<E, U> {
     className?: string
     children?: React.ReactNode
-    block: { fn: (id: E[]) => Promise<void>; id: E; mutate: KeyedMutator<U> }
+    block: { fn: (id: E[]) => Promise<void>; id: E; name?: string; mutate: KeyedMutator<U> }
+}
+
+function formatActionTarget(id: unknown, name?: string): string {
+    const idLabel = typeof id === "number" ? `#${id}` : String(id)
+    return name ? `${name} (${idLabel})` : idLabel
 }
 
 export function ActionButtonGroup<E, U>({
     className,
     children,
-    delete: { fn, id, mutate },
+    delete: { fn, id, name, mutate },
 }: ButtonGroupProps<E, U>) {
     const { t } = useTranslation()
     const handleDelete = async () => {
@@ -90,7 +95,7 @@ export function ActionButtonGroup<E, U>({
             <ConfirmActionDialog
                 trigger={<IconButton variant="destructive" icon="trash" />}
                 title={t("ConfirmDeletion")}
-                description={t("Results.ThisOperationIsUnrecoverable")}
+                description={t("ConfirmDeleteTarget", { target: formatActionTarget(id, name) })}
                 onConfirm={handleDelete}
             />
         </div>
@@ -100,7 +105,7 @@ export function ActionButtonGroup<E, U>({
 export function BlockButtonGroup<E, U>({
     className,
     children,
-    block: { fn, id, mutate },
+    block: { fn, id, name, mutate },
 }: BlockButtonGroupProps<E, U>) {
     const { t } = useTranslation()
 
@@ -120,7 +125,7 @@ export function BlockButtonGroup<E, U>({
             <ConfirmActionDialog
                 trigger={<IconButton variant="destructive" icon="ban" />}
                 title={t("ConfirmBlock")}
-                description={t("Results.ThisOperationIsUnrecoverable")}
+                description={t("ConfirmBlockTarget", { target: formatActionTarget(id, name) })}
                 onConfirm={handleBlock}
             />
         </div>

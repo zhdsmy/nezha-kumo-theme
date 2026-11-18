@@ -30,13 +30,23 @@ export const KUMO_SONNER_STYLE = {
         "color-mix(in oklch, var(--text-color-kumo-info) 85%, var(--text-color-kumo-strong))",
 } as React.CSSProperties
 
-const Toaster = ({ style, toastOptions, ...props }: ToasterProps) => {
+const Toaster = ({
+    style,
+    toastOptions,
+    offset = { bottom: "5.5rem", right: "1rem" },
+    mobileOffset = { bottom: "5.5rem", left: "1rem", right: "1rem" },
+    closeButton = true,
+    ...props
+}: ToasterProps) => {
     const { t } = useTranslation()
     const { theme = DEFAULT_THEME } = useTheme()
 
     return (
         <Sonner
             richColors
+            closeButton={closeButton}
+            offset={offset}
+            mobileOffset={mobileOffset}
             containerAriaLabel={t("Notification")}
             theme={theme as ToasterProps["theme"]}
             className="toaster group !font-sans"

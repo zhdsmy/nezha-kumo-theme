@@ -136,8 +136,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         const kumoVariant = resolveKumoVariant(resolvedVariant)
         const { size: kumoSize, shape: kumoShape } = resolveKumoSizeAndShape(resolvedSize)
         const isUnavailable = Boolean(disabled || loading)
+        const isIconTarget = resolvedSize === "icon" && !("data-day" in props) && !isInert
         const mergedClassName = cn(
             SVG_CLASSES,
+            isIconTarget && "nkt-icon-btn",
             resolvedVariant === "link" && LINK_CLASSES,
             isUnavailable && resolvedTitle && "pointer-events-none",
             className,

@@ -140,6 +140,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate, routes }) 
             })
             return
         }
+        toast.success?.(t("Success"))
         setOpen(false)
         await mutate()
         form.reset()

@@ -195,7 +195,21 @@ export default function FrontendsPage() {
                     )}
                     <section aria-label={t("FrontendManager.Available")} className="space-y-3">
                         <h2 className="font-medium">{t("FrontendManager.Available")}</h2>
-                        {error && <p role="alert">{String(error)}</p>}
+                        {error && (
+                            <div className="flex flex-wrap items-center gap-3">
+                                <p role="alert" className="text-sm text-destructive">
+                                    {String(error)}
+                                </p>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => void mutate()}
+                                >
+                                    {t("Retry")}
+                                </Button>
+                            </div>
+                        )}
                         {!data && !error && <p>{t("FrontendManager.Loading")}</p>}
                         {templates.map((template) => (
                             <div

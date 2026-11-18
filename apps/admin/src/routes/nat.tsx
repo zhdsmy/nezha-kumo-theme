@@ -12,6 +12,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
+    TableStateRow,
 } from "@/components/ui/table"
 import { selectableTableFeatures, useSelectableTable } from "@/lib/table"
 import { ModelNAT } from "@/types"
@@ -109,7 +110,7 @@ export default function NATPage() {
                 return (
                     <ActionButtonGroup
                         className="flex gap-2"
-                        delete={{ fn: deleteNAT, id: s.id, mutate: mutate }}
+                        delete={{ fn: deleteNAT, id: s.id, name: s.name, mutate: mutate }}
                     >
                         <NATCard mutate={mutate} data={s} />
                     </ActionButtonGroup>
@@ -174,13 +175,14 @@ export default function NATPage() {
                     ))}
                 </TableHeader>
                 <TableBody>
-                    {isLoading ? (
-                        <TableRow>
-                            <TableCell colSpan={columns.length} className="h-24 text-center">
-                                {t("Loading")}...
-                            </TableCell>
-                        </TableRow>
-                    ) : table.getRowModel().rows?.length ? (
+                    {isLoading || !table.getRowModel().rows?.length ? (
+                        <TableStateRow
+                            colSpan={columns.length}
+                            isLoading={isLoading}
+                            error={error}
+                            onRetry={mutate}
+                        />
+                    ) : (
                         table.getRowModel().rows.map((row) => (
                             <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                                 {row.getVisibleCells().map((cell) => (
@@ -194,12 +196,6 @@ export default function NATPage() {
                                 ))}
                             </TableRow>
                         ))
-                    ) : (
-                        <TableRow>
-                            <TableCell colSpan={columns.length} className="h-24 text-center">
-                                {t("NoResults")}
-                            </TableCell>
-                        </TableRow>
                     )}
                 </TableBody>
             </Table>

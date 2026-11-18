@@ -25,6 +25,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
+    TableStateRow,
 } from "@/components/ui/table"
 import { IconButton } from "@/components/xui/icon-button"
 import { useServer } from "@/hooks/useServer"
@@ -34,12 +35,59 @@ import { errorMessage } from "@/lib/utils"
 import { ModelServerTaskResponse, ModelServer as Server } from "@/types"
 import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender } from "@tanstack/react-table"
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import useSWR from "swr"
 
 import { splitTags } from "../../../../packages/shared/public-note"
+
+function ServerRowMoreMenu({ server }: { server: Server }) {
+    const { t } = useTranslation()
+    const [menuOpen, setMenuOpen] = useState(false)
+    const [configOpen, setConfigOpen] = useState(false)
+    return (
+        <>
+            <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+                <DropdownMenuTrigger asChild>
+                    <IconButton icon="more" variant="outline" aria-label={t("MoreActions")} />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                        <TerminalButton id={server.id} menuItem />
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        asChild
+                        onSelect={() => {
+                            setMenuOpen(false)
+                            setConfigOpen(true)
+                        }}
+                    >
+                        <ServerConfigCard
+                            sid={server.id}
+                            variant="ghost"
+                            menuItem
+                            open={false}
+                            onOpenChange={(next) => {
+                                if (next) {
+                                    setMenuOpen(false)
+                                    setConfigOpen(true)
+                                }
+                            }}
+                        />
+                    </DropdownMenuItem>
+                    <InstallCommandsMenu uuid={server.uuid} menuItem />
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <ServerConfigCard
+                sid={server.id}
+                open={configOpen}
+                onOpenChange={setConfigOpen}
+                hideTrigger
+            />
+        </>
+    )
+}
 
 export default function ServerPage() {
     const { t } = useTranslation()
@@ -116,7 +164,10 @@ export default function ServerPage() {
                 const s = row.original
                 const cc = s.geoip?.country_code?.toLowerCase()
                 return (
-                    <div className="nkt-server-name min-w-32 max-w-40 sm:max-w-56 whitespace-normal break-words font-medium">
+                    <div
+                        className="nkt-server-name min-w-32 whitespace-normal break-words font-medium"
+                        title={s.name}
+                    >
                         {/^[a-z]{2}$/.test(cc ?? "") && (
                             // Flag SVGs ship with the frontend theme on the same origin.
                             <img
@@ -137,12 +188,21 @@ export default function ServerPage() {
         {
             header: t("Group"),
             accessorKey: "groups",
-            accessorFn: (row) => {
-                return (
+            accessorFn: (row) =>
+                serverGroups
+                    ?.filter((sg) => sg.servers?.includes(row.id))
+                    .map((sg) => sg.group.name)
+                    .join(", ") || "",
+            cell: ({ row }) => {
+                const names =
                     serverGroups
-                        ?.filter((sg) => sg.servers?.includes(row.id))
-                        .map((sg) => sg.group.id) || []
-                )
+                        ?.filter((sg) => sg.servers?.includes(row.original.id))
+                        .map((sg) => sg.group.name)
+                        .filter(Boolean) ?? []
+                if (names.length === 0) {
+                    return <span className="text-muted-foreground">—</span>
+                }
+                return <div className="max-w-40 whitespace-normal break-words">{names.join(", ")}</div>
             },
         },
         {
@@ -215,7 +275,7 @@ export default function ServerPage() {
             header: t("Note"),
             cell: ({ row }) => {
                 const s = row.original
-                return <NoteMenu note={{ private: s.note, public: s.public_note }} />
+                return <NoteMenu note={{ private: s.note, public: s.public_note }} showPreview />
             },
         },
         {
@@ -223,7 +283,7 @@ export default function ServerPage() {
             header: "UUID",
             cell: ({ row }) => {
                 const s = row.original
-                return <CopyButton text={s.uuid} />
+                return <CopyButton text={s.uuid} showPreview />
             },
         },
         {
@@ -234,31 +294,11 @@ export default function ServerPage() {
                 return (
                     <ActionButtonGroup
                         className="flex gap-2"
-                        delete={{ fn: deleteServer, id: s.id, mutate: mutate }}
+                        delete={{ fn: deleteServer, id: s.id, name: s.name, mutate: mutate }}
                     >
                         <>
                             <ServerCard mutate={mutate} data={s} routes={routes} />
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <IconButton
-                                        icon="more"
-                                        variant="outline"
-                                        aria-label={t("MoreActions")}
-                                    />
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem asChild>
-                                        <TerminalButton id={s.id} menuItem />
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        asChild
-                                        onSelect={(event) => event.preventDefault()}
-                                    >
-                                        <ServerConfigCard sid={s.id} variant="ghost" menuItem />
-                                    </DropdownMenuItem>
-                                    <InstallCommandsMenu uuid={s.uuid} menuItem />
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            <ServerRowMoreMenu server={s} />
                         </>
                     </ActionButtonGroup>
                 )
@@ -368,13 +408,14 @@ export default function ServerPage() {
                         ))}
                     </TableHeader>
                     <TableBody>
-                        {isLoading ? (
-                            <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    {t("Loading")}...
-                                </TableCell>
-                            </TableRow>
-                        ) : table.getRowModel().rows?.length ? (
+                        {isLoading || !table.getRowModel().rows?.length ? (
+                            <TableStateRow
+                                colSpan={columns.length}
+                                isLoading={isLoading}
+                                error={error}
+                                onRetry={mutate}
+                            />
+                        ) : (
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
                                     key={row.id}
@@ -394,12 +435,6 @@ export default function ServerPage() {
                                     ))}
                                 </TableRow>
                             ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    {t("NoResults")}
-                                </TableCell>
-                            </TableRow>
                         )}
                     </TableBody>
                 </Table>

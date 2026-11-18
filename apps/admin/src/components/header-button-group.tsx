@@ -48,6 +48,11 @@ export function HeaderButtonGroup<E, U>({
 
     return (
         <div className={className}>
+            {id.length > 0 && (
+                <span className="self-center px-1 text-sm font-medium text-muted-foreground tabular-nums">
+                    {t("SelectedCount", { count: id.length })}
+                </span>
+            )}
             {id.length < 1 ? (
                 <IconButton
                     variant="destructive"
@@ -64,11 +69,11 @@ export function HeaderButtonGroup<E, U>({
                         <AlertDialogHeader>
                             <AlertDialogTitle>{t("ConfirmDeletion")}</AlertDialogTitle>
                             <AlertDialogDescription>
-                                {t("Results.ThisOperationIsUnrecoverable")}
+                                {t("ConfirmBatchDelete", { count: id.length })}
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>{t("Close")}</AlertDialogCancel>
+                            <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
                             <AlertDialogAction
                                 className={buttonVariants({
                                     variant: "destructive",
@@ -106,6 +111,11 @@ export function HeaderBlockButtonGroup<E, U>({
 
     return (
         <div className={className}>
+            {id.length > 0 && (
+                <span className="self-center px-1 text-sm font-medium text-muted-foreground tabular-nums">
+                    {t("SelectedCount", { count: id.length })}
+                </span>
+            )}
             {id.length < 1 ? (
                 <IconButton
                     variant="destructive"
@@ -122,11 +132,11 @@ export function HeaderBlockButtonGroup<E, U>({
                         <AlertDialogHeader>
                             <AlertDialogTitle>{t("ConfirmBlock")}</AlertDialogTitle>
                             <AlertDialogDescription>
-                                {t("Results.ThisOperationIsUnrecoverable")}
+                                {t("ConfirmBatchBlock", { count: id.length })}
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>{t("Close")}</AlertDialogCancel>
+                            <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
                             <AlertDialogAction
                                 className={buttonVariants({
                                     variant: "destructive",

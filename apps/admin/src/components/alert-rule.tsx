@@ -355,7 +355,7 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                                                                 htmlFor={`alert-rule-${idx}-duration`}
                                                                 className="text-sm"
                                                             >
-                                                                duration
+                                                                {t("AlertRules.Duration")}
                                                             </Label>
                                                             <Input
                                                                 id={`alert-rule-${idx}-duration`}
@@ -386,7 +386,7 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                                                                     htmlFor={`alert-rule-${idx}-min`}
                                                                     className="text-sm"
                                                                 >
-                                                                    min
+                                                                    {t("AlertRules.Min")}
                                                                 </Label>
                                                                 <Input
                                                                     id={`alert-rule-${idx}-min`}
@@ -415,7 +415,7 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                                                                     htmlFor={`alert-rule-${idx}-max`}
                                                                     className="text-sm"
                                                                 >
-                                                                    max
+                                                                    {t("AlertRules.Max")}
                                                                 </Label>
                                                                 <Input
                                                                     id={`alert-rule-${idx}-max`}
@@ -444,7 +444,9 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                                                     {/* 覆盖/忽略 */}
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                         <div>
-                                                            <Label className="text-sm">cover</Label>
+                                                            <Label className="text-sm">
+                                                                {t("Coverage")}
+                                                            </Label>
                                                             <Select
                                                                 onValueChange={(val) => {
                                                                     const next = [...rulesUI]
@@ -463,18 +465,18 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                                                                 </SelectTrigger>
                                                                 <SelectContent>
                                                                     <SelectItem value="0">
-                                                                        0（
+                                                                        0 (
                                                                         {t(
                                                                             "AlertRules.CoverAllServers",
                                                                         )}
-                                                                        ）
+                                                                        )
                                                                     </SelectItem>
                                                                     <SelectItem value="1">
-                                                                        1（
+                                                                        1 (
                                                                         {t(
                                                                             "AlertRules.IgnoreAllSelectSpecific",
                                                                         )}
-                                                                        ）
+                                                                        )
                                                                     </SelectItem>
                                                                 </SelectContent>
                                                             </Select>
@@ -538,7 +540,7 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                                                                     htmlFor={`alert-rule-${idx}-cycle-start`}
                                                                     className="text-sm"
                                                                 >
-                                                                    cycle_start (RFC3339)
+                                                                    {t("AlertRules.CycleStart")}
                                                                 </Label>
                                                                 <Input
                                                                     id={`alert-rule-${idx}-cycle-start`}
@@ -563,7 +565,7 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                                                                     htmlFor={`alert-rule-${idx}-cycle-interval`}
                                                                     className="text-sm"
                                                                 >
-                                                                    cycle_interval
+                                                                    {t("AlertRules.CycleInterval")}
                                                                 </Label>
                                                                 <Input
                                                                     id={`alert-rule-${idx}-cycle-interval`}
@@ -589,7 +591,7 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                                                             </div>
                                                             <div>
                                                                 <Label className="text-sm">
-                                                                    cycle_unit
+                                                                    {t("AlertRules.CycleUnit")}
                                                                 </Label>
                                                                 <Select
                                                                     onValueChange={(val) => {

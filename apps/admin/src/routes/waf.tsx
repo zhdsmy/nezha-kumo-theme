@@ -12,9 +12,11 @@ import {
     TableHead,
     TableHeader,
     TableRow,
+    TableStateRow,
 } from "@/components/ui/table"
 import { useAuth } from "@/hooks/useAuth"
 import { selectableTableFeatures, useSelectableTable } from "@/lib/table"
+import { formatDateTime } from "@/lib/utils"
 import {
     GithubComNezhahqNezhaModelValueArrayModelWAFApiMock,
     ModelWAFApiMock,
@@ -30,7 +32,7 @@ import { toast } from "sonner"
 import useSWR from "swr"
 
 export default function WAFPage() {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const { profile } = useAuth()
     const [searchParams, setSearchParams] = useSearchParams()
     const page = Number(searchParams.get("page")) || 1
@@ -114,8 +116,15 @@ export default function WAFPage() {
             accessorFn: (row) => row.block_timestamp,
             cell: ({ row }) => {
                 const s = row.original
-                const date = new Date((s.block_timestamp || 0) * 1000)
-                return <span>{date.toISOString()}</span>
+                return (
+                    <span className="tabular-nums">
+                        {formatDateTime(
+                            s.block_timestamp ? s.block_timestamp * 1000 : null,
+                            i18n?.language,
+                            t("Never"),
+                        )}
+                    </span>
+                )
             },
         },
         {
@@ -203,13 +212,14 @@ export default function WAFPage() {
                     ))}
                 </TableHeader>
                 <TableBody>
-                    {isLoading ? (
-                        <TableRow>
-                            <TableCell colSpan={columns.length} className="h-24 text-center">
-                                {t("Loading")}...
-                            </TableCell>
-                        </TableRow>
-                    ) : table.getRowModel().rows?.length ? (
+                    {isLoading || !table.getRowModel().rows?.length ? (
+                        <TableStateRow
+                            colSpan={columns.length}
+                            isLoading={isLoading}
+                            error={error}
+                            onRetry={mutate}
+                        />
+                    ) : (
                         table.getRowModel().rows.map((row) => (
                             <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                                 {row.getVisibleCells().map((cell) => (
@@ -223,12 +233,6 @@ export default function WAFPage() {
                                 ))}
                             </TableRow>
                         ))
-                    ) : (
-                        <TableRow>
-                            <TableCell colSpan={columns.length} className="h-24 text-center">
-                                {t("NoResults")}
-                            </TableCell>
-                        </TableRow>
                     )}
                 </TableBody>
             </Table>

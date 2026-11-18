@@ -9,8 +9,10 @@ import {
     TableHead,
     TableHeader,
     TableRow,
+    TableStateRow,
 } from "@/components/ui/table"
 import { useAuth } from "@/hooks/useAuth"
+import { formatDateTime } from "@/lib/utils"
 import {
     ModelServerTransfer,
     ModelServerTransferStatus,
@@ -42,11 +44,14 @@ const statusMeta: Record<
 }
 
 export default function TransferPage() {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const { profile } = useAuth()
     const isAdmin = profile?.role === 0
     const callerID = profile?.id
-    const { data, mutate, error } = useSWR<ModelServerTransfer[]>("/api/v1/transfer", swrFetcher)
+    const { data, mutate, error, isLoading } = useSWR<ModelServerTransfer[]>(
+        "/api/v1/transfer",
+        swrFetcher,
+    )
 
     useEffect(() => {
         if (error) {
@@ -182,14 +187,14 @@ export default function TransferPage() {
             <Table
                 primaryColumn="id"
                 columnPriority={[
-                    ["id", 160],
+                    ["id", 88],
                     ["server", 90],
                     ["status", 112],
-                    ["from", 90],
-                    ["to", 90],
-                    ["created", 150],
-                    ["initiator", 90],
-                    ["error", 160],
+                    ["from", 80],
+                    ["to", 80],
+                    ["created", 156],
+                    ["initiator", 88],
+                    ["error", 320],
                 ]}
             >
                 <TableHeader>
@@ -206,12 +211,13 @@ export default function TransferPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {rows.length === 0 ? (
-                        <TableRow>
-                            <TableCell colSpan={9} className="h-24 text-center">
-                                {t("NoResults")}
-                            </TableCell>
-                        </TableRow>
+                    {isLoading || rows.length === 0 ? (
+                        <TableStateRow
+                            colSpan={9}
+                            isLoading={isLoading}
+                            error={error}
+                            onRetry={mutate}
+                        />
                     ) : (
                         rows.map((row) => {
                             const meta = statusMeta[row.status]
@@ -232,13 +238,14 @@ export default function TransferPage() {
                                     </TableCell>
                                     <TableCell
                                         data-col="error"
-                                        className="max-w-xs truncate"
+                                        data-multiline
+                                        className="whitespace-normal break-words text-xs"
                                         title={row.last_error}
                                     >
-                                        {row.last_error || "-"}
+                                        {row.last_error || "—"}
                                     </TableCell>
-                                    <TableCell data-col="created">
-                                        {new Date(row.created_at).toLocaleString()}
+                                    <TableCell data-col="created" className="tabular-nums text-xs">
+                                        {formatDateTime(row.created_at, i18n?.language)}
                                     </TableCell>
                                     <TableCell data-col="actions" className="space-x-2">
                                         {isPending &&
