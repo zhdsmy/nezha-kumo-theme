@@ -26,6 +26,7 @@ import { useServer } from "@/hooks/useServer"
 import useSetting from "@/hooks/useSetting"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
 import { saveServerGroupIcon } from "@/lib/group-icons"
+import { serverOptions } from "@/lib/server-options"
 import { errorMessage } from "@/lib/utils"
 import { ModelServerGroupResponseItem } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -146,10 +147,7 @@ export const ServerGroupCard: React.FC<ServerGroupCardProps> = ({ data, mutate }
     })
 
     const { servers } = useServer()
-    const serverList = servers?.map((s) => ({
-        value: `${s.id}`,
-        label: s.name,
-    })) || [{ value: "", label: "" }]
+    const serverList = serverOptions(servers)
 
     const rawIcon = form.watch("icon") ?? ""
     const trimmedIcon = rawIcon.trim()

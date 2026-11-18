@@ -33,6 +33,7 @@ import { useServer } from "@/hooks/useServer"
 import { useFormDialog } from "@/hooks/useFormDialog"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
 import { withCollectionDefaults } from "@/lib/form"
+import { serverOptions } from "@/lib/server-options"
 import { asOptionalField, conv, errorMessage } from "@/lib/utils"
 import { ModelService } from "@/types"
 import { serviceCoverageTypes, serviceTypes } from "@/types"
@@ -137,10 +138,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ data, mutate }) => {
     })
 
     const { servers } = useServer()
-    const serverList = servers?.map((s) => ({
-        value: `${s.id}`,
-        label: s.name,
-    })) || [{ value: "", label: "" }]
+    const serverList = serverOptions(servers)
 
     const { notifierGroup } = useNotification()
     const ngroupList = notifierGroup?.map((ng) => ({

@@ -1,5 +1,6 @@
 import { swrFetcher } from "@/api/api"
 import { MultiSelect } from "@/components/xui/multi-select"
+import { serverOptions } from "@/lib/server-options"
 import type { ServerIdentifierType } from "@/types"
 import { type ComponentPropsWithoutRef, forwardRef } from "react"
 import { useTranslation } from "react-i18next"
@@ -16,7 +17,7 @@ export const ServerSelect = forwardRef<
             <MultiSelect
                 {...props}
                 ref={ref}
-                options={(data ?? []).map(({ id, name }) => ({ value: String(id), label: name }))}
+                options={serverOptions(data)}
             />
             {error && (
                 <span role="alert" className="text-sm text-destructive">

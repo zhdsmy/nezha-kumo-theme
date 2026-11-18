@@ -32,6 +32,7 @@ import { useNotification } from "@/hooks/useNotfication"
 import { useServer } from "@/hooks/useServer"
 import { useFormDialog } from "@/hooks/useFormDialog"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
+import { serverOptions } from "@/lib/server-options"
 import { asOptionalField, errorMessage } from "@/lib/utils"
 import { ModelCron } from "@/types"
 import { cronCoverageTypes, cronTypes } from "@/types"
@@ -112,10 +113,7 @@ export const CronCard: React.FC<CronCardProps> = ({ data, mutate }) => {
     })
 
     const { servers } = useServer()
-    const serverList = servers?.map((s) => ({
-        value: `${s.id}`,
-        label: s.name,
-    })) || [{ value: "", label: "" }]
+    const serverList = serverOptions(servers)
 
     const { notifierGroup } = useNotification()
     const ngroupList = notifierGroup?.map((ng) => ({
