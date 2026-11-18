@@ -18,12 +18,12 @@
         "live": "即時",
         "connecting": "連線中",
         "reconnecting": "重新連線中",
-        "online": "在線",
+        "online": "線上",
         "offline": "離線",
         "disconnectedBanner": "即時連線已中斷，正在自動重新連線…"
     },
     "overview": {
-        "nodes": "在線節點",
+        "nodes": "線上節點",
         "bandwidth": "即時頻寬",
         "cost": "月度費用",
         "costYear": "年度費用",
@@ -56,7 +56,7 @@
         "memory": "記憶體",
         "network": "頻寬",
         "traffic": "流量",
-        "uptime": "在線時長",
+        "uptime": "線上時長",
         "expiry": "到期時間"
     },
     "metric": {
@@ -70,7 +70,7 @@
         "upload": "上傳",
         "download": "下載",
         "traffic": "流量",
-        "uptime": "在線",
+        "uptime": "線上",
         "process": "行程",
         "connections": "連線",
         "tcp": "TCP",

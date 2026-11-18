@@ -56,25 +56,33 @@ function BrandLink({ title }: { title: string }) {
 }
 
 function GroupNavIcon({ icon }: { icon?: string }) {
-    const [failedSrc, setFailedSrc] = useState<string | null>(null)
+    const [status, setStatus] = useState<"pending" | "loaded" | "failed">("pending")
     const parsed = icon ? classifyGroupIcon(icon) : null
-    if (!parsed || (parsed.kind === "image" && failedSrc === parsed.value)) {
+    if (!parsed || status === "failed") {
         return <FolderSimpleIcon size={16} />
     }
     if (parsed.kind === "text") {
         return <span className="group-icon-text">{parsed.value}</span>
     }
     return (
-        <img
-            className="group-icon-img"
-            src={parsed.value}
-            alt=""
-            width={16}
-            height={16}
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            onError={() => setFailedSrc(parsed.value)}
-        />
+        <>
+            {status === "pending" && <FolderSimpleIcon size={16} />}
+            <img
+                className={
+                    status === "loaded"
+                        ? "group-icon-img"
+                        : "group-icon-img pointer-events-none absolute opacity-0"
+                }
+                src={parsed.value}
+                alt=""
+                width={16}
+                height={16}
+                loading="lazy"
+                referrerPolicy="no-referrer"
+                onLoad={() => setStatus("loaded")}
+                onError={() => setStatus("failed")}
+            />
+        </>
     )
 }
 
@@ -372,6 +380,7 @@ export function App() {
                                                 href: `/?${new URLSearchParams({ group: g })}`,
                                                 icon: (
                                                     <GroupNavIcon
+                                                        key={groupIcons[g]}
                                                         icon={g ? groupIcons[g] : undefined}
                                                     />
                                                 ),

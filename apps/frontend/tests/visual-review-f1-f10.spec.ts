@@ -590,4 +590,45 @@ test.describe("Visual review F1–F10 fixes", () => {
         expect(cmdkFocus.inputShadow).toBe("none")
         expect(cmdkFocus.headerShadow).not.toBe("none")
     })
+
+    test("F10: hanging or broken external group icon never leaves an empty hole, and zh-TW consistently uses 線上", async ({
+        page,
+    }) => {
+        let releaseIcon!: () => void
+        const iconHold = new Promise<void>((resolve) => {
+            releaseIcon = resolve
+        })
+        await page.route("https://icons.example.test/slow.png", async (route) => {
+            await iconHold
+            await route.fulfill({ status: 404, body: "Not Found" })
+        })
+        await mockNezha(page, {
+            customCode:
+                '<script type="application/json" id="nezha-kumo-group-icons">{"1":"https://icons.example.test/slow.png"}</script>',
+        })
+        await page.setViewportSize({ width: 1440, height: 900 })
+        await page.addInitScript(() => {
+            localStorage.setItem("nkt:language", "zh-TW")
+            localStorage.setItem("nkt:sidebar-collapsed", "false")
+        })
+        await page.goto("/")
+        await expect(page.locator("[data-server]").first()).toBeVisible()
+
+        // 1. Slow external favicon shows visible FolderSimpleIcon SVG immediately while probing img, then unmounts img on 404
+        const groupItem = page
+            .locator("nav a")
+            .filter({ has: page.locator('.nk-nav-label[title="🛜 宽带"]') })
+        await expect(groupItem.locator("img.group-icon-img")).toHaveCount(1)
+        await expect(groupItem.locator(".nk-nav-icon svg")).toBeVisible()
+        releaseIcon()
+        await expect(groupItem.locator("img.group-icon-img")).toHaveCount(0)
+        await expect(groupItem.locator(".nk-nav-icon svg")).toBeVisible()
+
+        // 2. zh-TW uses 線上 consistently across overview tiles, server status badges, and sort options (zero 在線)
+        await expect(page.getByText("線上節點", { exact: true })).toBeVisible()
+        await expect(page.getByText("線上伺服器", { exact: true })).toBeVisible()
+        await expect(page.locator(".status").first()).toContainText("線上")
+        const bodyText = await page.locator("body").innerText()
+        expect(bodyText).not.toContain("在線")
+    })
 })
