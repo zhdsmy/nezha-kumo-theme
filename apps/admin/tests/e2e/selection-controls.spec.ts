@@ -135,6 +135,76 @@ for (const [engine, driver] of Object.entries({ chromium, webkit })) {
             })
         })
 
+        test("DDNS keeps the Webhook draft when switching providers", async ({ page }) => {
+            await mockAdmin(page, {
+                "ddns/providers": ["cloudflare", "webhook"],
+                ddns: [
+                    {
+                        id: 3,
+                        name: "Test DNS",
+                        provider: "cloudflare",
+                        domains: ["example.test"],
+                        max_retries: 3,
+                    },
+                ],
+            })
+            await page.goto("/dashboard/ddns")
+            await page.getByRole("button", { name: "Actions", exact: true }).first().click()
+            await page.getByRole("button", { name: "Edit", exact: true }).first().click()
+            const provider = page.getByRole("combobox", { name: "Provider" })
+            const url = page.getByLabel("Webhook URL")
+            await expect(url).toHaveCount(0)
+            await provider.click()
+            await page.getByRole("option", { name: "webhook", exact: true }).click()
+            await url.fill("https://dns.example.test/update")
+            for (const value of ["cloudflare", "webhook"]) {
+                await provider.click()
+                await page.getByRole("option", { name: value, exact: true }).click()
+                if (value === "cloudflare") await expect(url).toHaveCount(0)
+                else await expect(url).toBeVisible()
+            }
+            await expect(url).toHaveValue("https://dns.example.test/update")
+            const saved = page.waitForRequest((r) => r.method() === "PATCH")
+            await page.getByRole("button", { name: "Confirm", exact: true }).click()
+            expect((await saved).postDataJSON()).toMatchObject({
+                provider: "webhook",
+                webhook_url: "https://dns.example.test/update",
+            })
+        })
+
+        test("non-Webhook edits preserve stored fields without validating a hidden draft", async ({
+            page,
+        }) => {
+            await mockAdmin(page, {
+                "ddns/providers": ["cloudflare", "webhook"],
+                ddns: [
+                    {
+                        id: 3,
+                        name: "Test DNS",
+                        provider: "webhook",
+                        domains: [],
+                        max_retries: 3,
+                        webhook_url: "https://dns.example.test/stored",
+                        webhook_method: 2,
+                    },
+                ],
+            })
+            await page.goto("/dashboard/ddns")
+            await page.getByRole("button", { name: "Actions", exact: true }).first().click()
+            await page.getByRole("button", { name: "Edit", exact: true }).first().click()
+            await page.getByLabel("Webhook URL").fill("unfinished")
+            await page.getByRole("combobox", { name: "Provider" }).click()
+            await page.getByRole("option", { name: "cloudflare", exact: true }).click()
+            await expect(page.getByLabel("Webhook URL")).toHaveCount(0)
+            const saved = page.waitForRequest((r) => r.method() === "PATCH")
+            await page.getByRole("button", { name: "Confirm", exact: true }).click()
+            expect((await saved).postDataJSON()).toMatchObject({
+                provider: "cloudflare",
+                webhook_url: "https://dns.example.test/stored",
+                webhook_method: 2,
+            })
+        })
+
         test("server group members use loaded names and keep unresolved IDs", async ({ page }) => {
             await mockAdmin(page, {
                 "server-group": [{ group: { id: 1, name: "Edges" }, servers: [7, 99] }],

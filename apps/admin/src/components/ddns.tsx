@@ -48,7 +48,7 @@ interface DDNSCardProps {
     mutate: KeyedMutator<ModelDDNSProfile[]>
 }
 
-const ddnsFormSchema = z.object({
+const providerSchema = z.object({
     max_retries: z.coerce.number().int().min(1),
     enable_ipv4: asOptionalField(z.boolean()),
     enable_ipv6: asOptionalField(z.boolean()),
@@ -58,6 +58,9 @@ const ddnsFormSchema = z.object({
     domains_raw: z.string(),
     access_id: asOptionalField(z.string()),
     access_secret: asOptionalField(z.string()),
+})
+
+const ddnsFormSchema = providerSchema.extend({
     webhook_url: asOptionalField(z.string().url()),
     webhook_method: asOptionalField(z.coerce.number().int().min(1).max(255)),
     webhook_request_type: asOptionalField(z.coerce.number().int().min(1).max(255)),
@@ -70,41 +73,31 @@ type DDNSFormData = z.output<typeof ddnsFormSchema>
 
 export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) => {
     const { t } = useTranslation()
+    const storedWebhook = {
+        webhook_url: data?.webhook_url,
+        webhook_method: data?.webhook_method,
+        webhook_request_type: data?.webhook_request_type,
+        webhook_headers: data?.webhook_headers,
+        webhook_request_body: data?.webhook_request_body,
+    }
     const form = useForm<DDNSFormInput, unknown, DDNSFormData>({
-        resolver: zodResolver(ddnsFormSchema),
-        defaultValues: data
-            ? {
-                  max_retries: data.max_retries ?? 3,
-                  enable_ipv4: data.enable_ipv4 ?? false,
-                  enable_ipv6: data.enable_ipv6 ?? false,
-                  name: data.name ?? "",
-                  provider: data.provider ?? "dummy",
-                  domains: data.domains ?? [],
-                  domains_raw: conv.arrToStr(data.domains ?? []),
-                  access_id: data.access_id ?? "",
-                  access_secret: data.access_secret ?? "",
-                  webhook_url: data.webhook_url ?? "",
-                  webhook_method: data.webhook_method,
-                  webhook_request_type: data.webhook_request_type,
-                  webhook_request_body: data.webhook_request_body ?? "",
-                  webhook_headers: data.webhook_headers ?? "",
-              }
-            : {
-                  max_retries: 3,
-                  enable_ipv4: false,
-                  enable_ipv6: false,
-                  name: "",
-                  provider: "dummy",
-                  domains: [],
-                  domains_raw: "",
-                  access_id: "",
-                  access_secret: "",
-                  webhook_url: "",
-                  webhook_method: undefined,
-                  webhook_request_type: undefined,
-                  webhook_request_body: "",
-                  webhook_headers: "",
-              },
+        resolver: (values, context, options) =>
+            zodResolver(values.provider === "webhook" ? ddnsFormSchema : providerSchema)(values, context, options),
+        defaultValues: {
+            ...storedWebhook,
+            max_retries: data?.max_retries ?? 3,
+            enable_ipv4: data?.enable_ipv4 ?? false,
+            enable_ipv6: data?.enable_ipv6 ?? false,
+            name: data?.name ?? "",
+            provider: data?.provider ?? "dummy",
+            domains: data?.domains ?? [],
+            domains_raw: conv.arrToStr(data?.domains),
+            access_id: data?.access_id ?? "",
+            access_secret: data?.access_secret ?? "",
+            webhook_url: storedWebhook.webhook_url ?? "",
+            webhook_headers: storedWebhook.webhook_headers ?? "",
+            webhook_request_body: storedWebhook.webhook_request_body ?? "",
+        },
         resetOptions: {
             keepDefaultValues: false,
         },
@@ -117,7 +110,8 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
         try {
             values.domains = conv.strToArr(values.domains_raw)
             if (data?.id) {
-                await updateDDNSProfile(data.id, values)
+                // The backend replaces every field on PATCH, including dormant Webhook settings.
+                await updateDDNSProfile(data.id, { ...storedWebhook, ...values })
             } else {
                 await createDDNSProfile(values)
             }
@@ -168,7 +162,7 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
                                             <FormLabel>{t("Provider")}</FormLabel>
                                             <Select
                                                 onValueChange={field.onChange}
-                                                defaultValue={`${field.value}`}
+                                                value={field.value == null ? "" : String(field.value)}
                                             >
                                                 <FormControl>
                                                     <SelectTrigger>
@@ -253,112 +247,116 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
                                         )
                                     }}
                                 />
-                                <FormField
-                                    control={form.control}
-                                    name="webhook_url"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Webhook URL</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="https://ddns.example.com/?record=#record#"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="webhook_method"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Webhook {t("RequestMethod")}</FormLabel>
-                                            <Select
-                                                onValueChange={field.onChange}
-                                                defaultValue={`${field.value}`}
-                                            >
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder={`Webhook ${t("RequestMethod")}`} />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {Object.entries(ddnsTypes).map(([k, v]) => (
-                                                        <SelectItem key={k} value={k}>
-                                                            {v}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="webhook_request_type"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Webhook {t("RequestType")}</FormLabel>
-                                            <Select
-                                                onValueChange={field.onChange}
-                                                defaultValue={`${field.value}`}
-                                            >
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder={`Webhook ${t("RequestType")}`} />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {Object.entries(ddnsRequestTypes).map(
-                                                        ([k, v]) => (
-                                                            <SelectItem key={k} value={k}>
-                                                                {v}
-                                                            </SelectItem>
-                                                        ),
-                                                    )}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="webhook_headers"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Webhook {t("RequestHeader")}</FormLabel>
-                                            <FormControl>
-                                                <Textarea
-                                                    className="resize-y"
-                                                    placeholder='{"User-Agent":"Nezha-Agent"}'
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="webhook_request_body"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Webhook {t("RequestBody")}</FormLabel>
-                                            <FormControl>
-                                                <Textarea
-                                                    className="resize-y"
-                                                    placeholder='{&#13;&#10; "ip": #ip#,&#13;&#10; "domain": "#domain#"&#13;&#10;}'
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                {form.watch("provider") === "webhook" && (
+                                    <>
+                                        <FormField
+                                            control={form.control}
+                                            name="webhook_url"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Webhook URL</FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            placeholder="https://ddns.example.com/?record=#record#"
+                                                            {...field}
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="webhook_method"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Webhook {t("RequestMethod")}</FormLabel>
+                                                    <Select
+                                                        onValueChange={field.onChange}
+                                                        value={field.value == null ? "" : String(field.value)}
+                                                    >
+                                                        <FormControl>
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder={`Webhook ${t("RequestMethod")}`} />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            {Object.entries(ddnsTypes).map(([k, v]) => (
+                                                                <SelectItem key={k} value={k}>
+                                                                    {v}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="webhook_request_type"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Webhook {t("RequestType")}</FormLabel>
+                                                    <Select
+                                                        onValueChange={field.onChange}
+                                                        value={field.value == null ? "" : String(field.value)}
+                                                    >
+                                                        <FormControl>
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder={`Webhook ${t("RequestType")}`} />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            {Object.entries(ddnsRequestTypes).map(
+                                                                ([k, v]) => (
+                                                                    <SelectItem key={k} value={k}>
+                                                                        {v}
+                                                                    </SelectItem>
+                                                                ),
+                                                            )}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="webhook_headers"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Webhook {t("RequestHeader")}</FormLabel>
+                                                    <FormControl>
+                                                        <Textarea
+                                                            className="resize-y"
+                                                            placeholder='{"User-Agent":"Nezha-Agent"}'
+                                                            {...field}
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="webhook_request_body"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Webhook {t("RequestBody")}</FormLabel>
+                                                    <FormControl>
+                                                        <Textarea
+                                                            className="resize-y"
+                                                            placeholder='{&#13;&#10; "ip": #ip#,&#13;&#10; "domain": "#domain#"&#13;&#10;}'
+                                                            {...field}
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </>
+                                )}
                                 <FormField
                                     control={form.control}
                                     name="enable_ipv4"
