@@ -104,10 +104,10 @@ export default function WAFPage() {
         {
             header: t("BlockIdentifier"),
             accessorKey: "BlockIdentifier",
-            accessorFn: (row) => {
-                return wafBlockIdentifiers[row.block_identifier]
-                    ? t(wafBlockIdentifiers[row.block_identifier])
-                    : row.block_identifier
+            cell: ({ row: { original } }) => {
+                return wafBlockIdentifiers[original.block_identifier]
+                    ? t(wafBlockIdentifiers[original.block_identifier])
+                    : original.block_identifier
             },
         },
         {
@@ -212,41 +212,37 @@ export default function WAFPage() {
                     ))}
                 </TableHeader>
                 <TableBody>
-                    {isLoading || !table.getRowModel().rows?.length ? (
-                        <TableStateRow
-                            colSpan={columns.length}
-                            isLoading={isLoading}
-                            error={error}
-                            onRetry={mutate}
-                        />
-                    ) : (
-                        table.getRowModel().rows.map((row) => (
-                            <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                                {row.getVisibleCells().map((cell) => (
-                                    <TableCell
-                                        key={cell.id}
-                                        data-col={cell.column.id}
-                                        className="text-xsm"
-                                    >
-                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                    </TableCell>
-                                ))}
-                            </TableRow>
-                        ))
-                    )}
+                    <TableStateRow
+                        rowCount={table.getRowModel().rows.length}
+                        colSpan={columns.length}
+                        isLoading={isLoading}
+                        error={error}
+                        onRetry={mutate}
+                    />
+                    {table.getRowModel().rows.map((row) => (
+                        <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                            {row.getVisibleCells().map((cell) => (
+                                <TableCell
+                                    key={cell.id}
+                                    data-col={cell.column.id}
+                                    className="text-xsm"
+                                >
+                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                </TableCell>
+                            ))}
+                        </TableRow>
+                    ))}
                 </TableBody>
             </Table>
-            {data?.pagination && (
-                <TablePagination
-                    page={page}
-                    pageSize={pageSize}
-                    total={data.pagination.total}
-                    disabled={isLoading}
-                    onPageChange={(newPage) =>
-                        setSearchParams({ page: newPage.toString(), pageSize: pageSize.toString() })
-                    }
-                />
-            )}
+            <TablePagination
+                page={page}
+                pageSize={pageSize}
+                total={data?.pagination?.total}
+                disabled={isLoading}
+                onPageChange={(newPage) =>
+                    setSearchParams({ page: newPage.toString(), pageSize: pageSize.toString() })
+                }
+            />
         </Page>
     )
 }

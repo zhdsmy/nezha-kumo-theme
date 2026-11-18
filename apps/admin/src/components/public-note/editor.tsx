@@ -213,7 +213,7 @@ export function PublicNoteEditor({
                                     const isCount = value !== undefined && /^[1-9]\d*$/.test(value)
                                     const count = isCount ? Number(value) : undefined
                                     return (
-                                        <div className="space-y-1.5">
+                                        <>
                                             <Choices
                                                 label={key}
                                                 value={isCount ? "1" : value}
@@ -232,24 +232,21 @@ export function PublicNoteEditor({
                                                     )
                                                 }
                                             />
-                                            {count !== undefined && count > 1 && (
-                                                <NumberInput
-                                                    min={1}
-                                                    label={`${key} · ${t("PublicNote.Count")}`}
-                                                    value={count}
-                                                    onChange={(next) =>
-                                                        onChange(
-                                                            next !== undefined
-                                                                ? String(Math.max(1, Math.trunc(next)))
-                                                                : "1",
-                                                        )
-                                                    }
-                                                />
+                                            {count !== undefined && (
+                                                <div className="nkt-note-ip-count">
+                                                    <NumberInput
+                                                        min={1}
+                                                        label={`${key} · ${t("PublicNote.Count")}`}
+                                                        value={count}
+                                                        normalize={(next) => Math.trunc(next ?? 1)}
+                                                        onChange={(next) => onChange(String(next))}
+                                                    />
+                                                </div>
                                             )}
                                             {value !== undefined && value !== "0" && !isCount && (
                                                 <UnknownValue value={value} />
                                             )}
-                                        </div>
+                                        </>
                                     )
                                 })}
                             </div>

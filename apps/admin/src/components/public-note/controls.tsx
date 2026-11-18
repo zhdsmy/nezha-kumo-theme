@@ -57,6 +57,7 @@ export function NumberInput({
     onChange,
     label,
     min = 0,
+    normalize,
     placeholder,
     required,
     invalid,
@@ -65,6 +66,7 @@ export function NumberInput({
     onChange: (value: number | undefined) => void
     label: string
     min?: number
+    normalize?: (value: number | undefined) => number
     placeholder?: string
     required?: boolean
     invalid?: boolean
@@ -84,12 +86,14 @@ export function NumberInput({
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             onBlur={() => {
-                if (draft === "" && value === undefined) return
                 const number = parseDecimal(draft)
-                if (number !== undefined && number === value) return
-                if (draft === "") onChange(undefined)
-                else if (number !== undefined && number >= min) onChange(number)
-                else setDraft(value === undefined ? "" : String(value))
+                if (draft !== "" && (number === undefined || number < min)) {
+                    setDraft(String(value ?? ""))
+                    return
+                }
+                const next = normalize ? normalize(number) : number
+                if (normalize) setDraft(String(next))
+                if (next !== value) onChange(next)
             }}
             onKeyDown={(event) => {
                 if (event.key === "Enter") {

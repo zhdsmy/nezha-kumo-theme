@@ -33,7 +33,7 @@ export const ServerConfigCardBatch: React.FC<ServerConfigCardBatchProps> = ({ si
     const [open, setOpen] = useState(false)
     const [currentKey, setCurrentKey] = useState<string>("")
     const [currentVal, setCurrentVal] = useState<string>("")
-    const { submitting, runSubmit } = useSubmitLock()
+    const { submitting, runSubmit, showError } = useSubmitLock()
 
     const onSubmit = runSubmit(async () => {
         let resp: ModelServerTaskResponse = {}
@@ -41,7 +41,7 @@ export const ServerConfigCardBatch: React.FC<ServerConfigCardBatchProps> = ({ si
             resp = await setServerConfig({ config: JSON.stringify(data), servers: sid })
         } catch (e) {
             console.error(e)
-            toast.error(t("Error"), {
+            showError(t("Error"), {
                 description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return

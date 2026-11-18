@@ -85,8 +85,8 @@ export default function AlertRulePage() {
         {
             header: t("TriggerMode"),
             accessorKey: "trigger Mode",
-            accessorFn: (row) =>
-                triggerModes[row.trigger_mode] ? t(triggerModes[row.trigger_mode]) : "",
+            cell: ({ row: { original } }) =>
+                triggerModes[original.trigger_mode] ? t(triggerModes[original.trigger_mode]) : "",
         },
         {
             id: "rules",
@@ -193,28 +193,26 @@ export default function AlertRulePage() {
                     ))}
                 </TableHeader>
                 <TableBody>
-                    {isLoading || !table.getRowModel().rows?.length ? (
-                        <TableStateRow
-                            colSpan={columns.length}
-                            isLoading={isLoading}
-                            error={error}
-                            onRetry={mutate}
-                        />
-                    ) : (
-                        table.getRowModel().rows.map((row) => (
-                            <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                                {row.getVisibleCells().map((cell) => (
-                                    <TableCell
-                                        key={cell.id}
-                                        data-col={cell.column.id}
-                                        className="text-xsm"
-                                    >
-                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                    </TableCell>
-                                ))}
-                            </TableRow>
-                        ))
-                    )}
+                    <TableStateRow
+                        rowCount={table.getRowModel().rows.length}
+                        colSpan={columns.length}
+                        isLoading={isLoading}
+                        error={error}
+                        onRetry={mutate}
+                    />
+                    {table.getRowModel().rows.map((row) => (
+                        <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                            {row.getVisibleCells().map((cell) => (
+                                <TableCell
+                                    key={cell.id}
+                                    data-col={cell.column.id}
+                                    className="text-xsm"
+                                >
+                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                </TableCell>
+                            ))}
+                        </TableRow>
+                    ))}
                 </TableBody>
             </Table>
         </Page>

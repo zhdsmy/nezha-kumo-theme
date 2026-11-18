@@ -203,3 +203,37 @@ test("pagination loads another page and list errors are visible", async () => {
     expect(mocks.grants).toHaveBeenLastCalledWith(false, 2)
     expect(screen.queryByText("ChatGPT")).toBeNull()
 })
+
+test("R13: loading the authorization table announces its status", () => {
+    mocks.grants.mockReturnValue(new Promise(() => {}))
+    openManagement()
+    expect(screen.getByRole("status").textContent).toContain("Loading")
+})
+
+test("R01: refresh failure keeps the current authorization rows until retry succeeds", async () => {
+    openManagement()
+    await screen.findByText("ChatGPT")
+    mocks.grants.mockRejectedValueOnce(new Error("Service unavailable"))
+    fireEvent.click(screen.getByRole("button", { name: "Revoke" }))
+    fireEvent.click(await screen.findByRole("button", { name: "Confirm" }))
+    const alert = await screen.findByRole("alert")
+    expect(alert.textContent).toContain("RefreshFailed")
+    expect(screen.getByText("ChatGPT")).toBeTruthy()
+    mocks.grants.mockResolvedValue({ items: [], total: 0 })
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }))
+    await screen.findByText("NoResults")
+    expect(screen.queryByRole("alert")).toBeNull()
+})
+
+test("R06: a failed page keeps the total and can return to the previous page", async () => {
+    mocks.grants.mockResolvedValue({ items: [grant], total: 201 })
+    openManagement()
+    await screen.findByText("ChatGPT")
+    mocks.grants.mockRejectedValueOnce(new Error("Page unavailable"))
+    fireEvent.click(screen.getByRole("button", { name: "MCPOAuthManager.Next" }))
+    await screen.findByRole("alert")
+    expect(screen.queryByText("ChatGPT")).toBeNull()
+    expect(screen.getByText(/Total: 201/)).toBeTruthy()
+    fireEvent.click(screen.getByRole("button", { name: "MCPOAuthManager.Previous" }))
+    await screen.findByText("ChatGPT")
+})

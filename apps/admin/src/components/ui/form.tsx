@@ -22,8 +22,6 @@ import {
     useFormContext,
 } from "react-hook-form"
 
-import { toast } from "sonner"
-
 const Form = FormProvider
 
 export function scrollFieldIntoContainer(container: HTMLElement, control: HTMLElement) {
@@ -60,7 +58,6 @@ function FormErrors() {
     const hasErrors = !!errors && Object.keys(errors).length > 0
     useEffect(() => {
         if (!submitCount || !hasErrors || !summary.current) return
-        toast.dismiss?.()
         const dialog = summary.current.closest<HTMLElement>('[role="dialog"]')
         const scope = dialog ?? summary.current.closest("form") ?? document
         const invalidControl = scope.querySelector<HTMLElement>('[aria-invalid="true"]')

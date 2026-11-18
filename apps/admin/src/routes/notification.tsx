@@ -17,7 +17,7 @@ import {
     TableStateRow,
 } from "@/components/ui/table"
 import { useNotification } from "@/hooks/useNotfication"
-import { selectableTableFeatures, useSelectableTable } from "@/lib/table"
+import { groupNamesByMember, selectableTableFeatures, useSelectableTable } from "@/lib/table"
 import { ModelNotification } from "@/types"
 import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender } from "@tanstack/react-table"
@@ -43,6 +43,11 @@ export default function NotificationPage() {
             })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
+
+    const groupNames = useMemo(
+        () => groupNamesByMember(notifierGroup, (group) => group.notifications),
+        [notifierGroup],
+    )
 
     const columns: ColumnDef<typeof selectableTableFeatures, ModelNotification>[] = [
         {
@@ -82,22 +87,13 @@ export default function NotificationPage() {
         },
         {
             header: t("Group"),
-            accessorKey: "groups",
-            accessorFn: (row) =>
-                notifierGroup
-                    ?.filter((ng) => ng.notifications?.includes(row.id))
-                    .map((ng) => ng.group.name)
-                    .join(", ") || "",
+            id: "groups",
             cell: ({ row }) => {
-                const names =
-                    notifierGroup
-                        ?.filter((ng) => ng.notifications?.includes(row.original.id))
-                        .map((ng) => ng.group.name)
-                        .filter(Boolean) ?? []
-                if (names.length === 0) {
+                const names = groupNames.get(row.original.id)
+                if (!names) {
                     return <span className="text-muted-foreground">—</span>
                 }
-                return <div className="max-w-40 whitespace-normal break-words">{names.join(", ")}</div>
+                return <div className="max-w-40 whitespace-normal break-words">{names}</div>
             },
         },
         {
@@ -193,28 +189,26 @@ export default function NotificationPage() {
                     ))}
                 </TableHeader>
                 <TableBody>
-                    {isLoading || !table.getRowModel().rows?.length ? (
-                        <TableStateRow
-                            colSpan={columns.length}
-                            isLoading={isLoading}
-                            error={error}
-                            onRetry={mutate}
-                        />
-                    ) : (
-                        table.getRowModel().rows.map((row) => (
-                            <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                                {row.getVisibleCells().map((cell) => (
-                                    <TableCell
-                                        key={cell.id}
-                                        data-col={cell.column.id}
-                                        className="text-xsm"
-                                    >
-                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                    </TableCell>
-                                ))}
-                            </TableRow>
-                        ))
-                    )}
+                    <TableStateRow
+                        rowCount={table.getRowModel().rows.length}
+                        colSpan={columns.length}
+                        isLoading={isLoading}
+                        error={error}
+                        onRetry={mutate}
+                    />
+                    {table.getRowModel().rows.map((row) => (
+                        <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                            {row.getVisibleCells().map((cell) => (
+                                <TableCell
+                                    key={cell.id}
+                                    data-col={cell.column.id}
+                                    className="text-xsm"
+                                >
+                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                </TableCell>
+                            ))}
+                        </TableRow>
+                    ))}
                 </TableBody>
             </Table>
         </Page>

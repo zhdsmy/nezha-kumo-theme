@@ -417,19 +417,21 @@ const TableCaption = forwardRef<HTMLTableCaptionElement, HTMLAttributes<HTMLTabl
 TableCaption.displayName = "TableCaption"
 
 interface TableStateRowProps {
+    rowCount: number
     colSpan: number
     isLoading?: boolean
     error?: unknown
     onRetry?: () => unknown
 }
 
-function TableStateRow({ colSpan, isLoading, error, onRetry }: TableStateRowProps) {
+function TableStateRow({ colSpan, rowCount, isLoading, error, onRetry }: TableStateRowProps) {
     const { t } = useTranslation()
-    if (isLoading) {
+    if (rowCount > 0 && !error) return null
+    if (isLoading && !error) {
         return (
             <TableRow>
                 <TableCell colSpan={colSpan} className="h-24 text-center text-muted-foreground">
-                    {t("Loading")}...
+                    <span role="status">{t("Loading")}...</span>
                 </TableCell>
             </TableRow>
         )
@@ -445,7 +447,7 @@ function TableStateRow({ colSpan, isLoading, error, onRetry }: TableStateRowProp
                             className="flex items-center justify-center gap-1.5 text-sm font-medium text-destructive break-words"
                         >
                             <AlertCircle className="size-4 shrink-0" aria-hidden="true" />
-                            <span>{reason}</span>
+                            <span>{rowCount > 0 ? t("RefreshFailed", { reason }) : reason}</span>
                         </p>
                         {onRetry && (
                             <Button

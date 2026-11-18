@@ -1,9 +1,10 @@
+import { useSelectableTable } from "@/lib/table"
 import i18n from "@/lib/i18n"
 import NotificationPage from "@/routes/notification"
 import ServerPage from "@/routes/server"
 import ServicePage from "@/routes/service"
 import { serviceTypes } from "@/types/service"
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react"
+import { act, cleanup, render, renderHook, screen, waitFor } from "@testing-library/react"
 import { MemoryRouter } from "react-router-dom"
 import { SWRConfig } from "swr"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
@@ -137,4 +138,16 @@ test("U1: serviceTypes maps type 4 to TLS and renders TLS in ServicePage", async
     )
     await screen.findByText("TLS Cert Expiry")
     expect(screen.getByText("TLS")).toBeTruthy()
+})
+
+test("R04: unrelated renders reuse row accessor values", () => {
+    const data = [{ id: 1 }, { id: 2 }]
+    const accessorFn = vi.fn((row: { id: number }) => row.id)
+    const columns = [{ id: "value", accessorFn }]
+    const { result, rerender } = renderHook(() => useSelectableTable(data, columns))
+    const values = () => result.current.getCoreRowModel().rows.map((row) => row.getValue("value"))
+    expect(values()).toEqual([1, 2])
+    rerender()
+    expect(values()).toEqual([1, 2])
+    expect(accessorFn).toHaveBeenCalledTimes(2)
 })

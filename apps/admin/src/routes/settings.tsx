@@ -117,7 +117,7 @@ export default function SettingsPage() {
         }
     }, [config?.config, form])
 
-    const { submitting, runSubmit } = useSubmitLock()
+    const { submitting, runSubmit, showError, dismissError } = useSubmitLock()
 
     if (authLoading) {
         return null
@@ -140,7 +140,7 @@ export default function SettingsPage() {
             form.reset()
             await mutate()
         } catch (e) {
-            toast.error(t("Error"), {
+            showError(t("Error"), {
                 description: t("Results.ErrorFetchingResource", {
                     error: errorMessage(e, t("Results.UnExpectedError")),
                 }),
@@ -155,7 +155,7 @@ export default function SettingsPage() {
             <div>
                 <Form {...form}>
                     <form
-                        onSubmit={form.handleSubmit(onSubmit)}
+                        onSubmit={form.handleSubmit(onSubmit, dismissError)}
                         className="space-y-2 my-2 max-w-3xl"
                     >
                         <FormField

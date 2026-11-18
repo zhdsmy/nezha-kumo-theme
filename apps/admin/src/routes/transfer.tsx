@@ -211,67 +211,65 @@ export default function TransferPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {isLoading || rows.length === 0 ? (
-                        <TableStateRow
-                            colSpan={9}
-                            isLoading={isLoading}
-                            error={error}
-                            onRetry={mutate}
-                        />
-                    ) : (
-                        rows.map((row) => {
-                            const meta = statusMeta[row.status]
-                            const isPending = row.status === ModelServerTransferStatusPending
-                            const isTerminalRevert =
-                                row.status === ModelServerTransferStatusFailed ||
-                                row.status === ModelServerTransferStatusTimeout ||
-                                row.status === ModelServerTransferStatusCancelled
-                            return (
-                                <TableRow key={row.id}>
-                                    <TableCell data-col="id">{row.id}</TableCell>
-                                    <TableCell data-col="server">{row.server_id}</TableCell>
-                                    <TableCell data-col="from">{row.from_user_id}</TableCell>
-                                    <TableCell data-col="to">{row.to_user_id}</TableCell>
-                                    <TableCell data-col="initiator">{row.initiator_id}</TableCell>
-                                    <TableCell data-col="status">
-                                        <Badge variant={meta.variant}>{t(meta.key)}</Badge>
-                                    </TableCell>
-                                    <TableCell
-                                        data-col="error"
-                                        data-multiline
-                                        className="whitespace-normal break-words text-xs"
-                                        title={row.last_error}
-                                    >
-                                        {row.last_error || "—"}
-                                    </TableCell>
-                                    <TableCell data-col="created" className="tabular-nums text-xs">
-                                        {formatDateTime(row.created_at, i18n?.language)}
-                                    </TableCell>
-                                    <TableCell data-col="actions" className="space-x-2">
-                                        {isPending &&
-                                            (isAdmin || row.from_user_id === callerID) && (
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => onCancel(row.id)}
-                                                >
-                                                    {t("Cancel")}
-                                                </Button>
-                                            )}
-                                        {isTerminalRevert && isAdmin && (
+                    <TableStateRow
+                        rowCount={rows.length}
+                        colSpan={9}
+                        isLoading={isLoading}
+                        error={error}
+                        onRetry={mutate}
+                    />
+                    {rows.map((row) => {
+                        const meta = statusMeta[row.status]
+                        const isPending = row.status === ModelServerTransferStatusPending
+                        const isTerminalRevert =
+                            row.status === ModelServerTransferStatusFailed ||
+                            row.status === ModelServerTransferStatusTimeout ||
+                            row.status === ModelServerTransferStatusCancelled
+                        return (
+                            <TableRow key={row.id}>
+                                <TableCell data-col="id">{row.id}</TableCell>
+                                <TableCell data-col="server">{row.server_id}</TableCell>
+                                <TableCell data-col="from">{row.from_user_id}</TableCell>
+                                <TableCell data-col="to">{row.to_user_id}</TableCell>
+                                <TableCell data-col="initiator">{row.initiator_id}</TableCell>
+                                <TableCell data-col="status">
+                                    <Badge variant={meta.variant}>{t(meta.key)}</Badge>
+                                </TableCell>
+                                <TableCell
+                                    data-col="error"
+                                    data-multiline
+                                    className="whitespace-normal break-words text-xs"
+                                    title={row.last_error}
+                                >
+                                    {row.last_error || "—"}
+                                </TableCell>
+                                <TableCell data-col="created" className="tabular-nums text-xs">
+                                    {formatDateTime(row.created_at, i18n?.language)}
+                                </TableCell>
+                                <TableCell data-col="actions" className="space-x-2">
+                                    {isPending &&
+                                        (isAdmin || row.from_user_id === callerID) && (
                                             <Button
                                                 size="sm"
                                                 variant="outline"
-                                                onClick={() => onRetry(row.id)}
+                                                onClick={() => onCancel(row.id)}
                                             >
-                                                {t("Transfer.Retry")}
+                                                {t("Cancel")}
                                             </Button>
                                         )}
-                                    </TableCell>
-                                </TableRow>
-                            )
-                        })
-                    )}
+                                    {isTerminalRevert && isAdmin && (
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => onRetry(row.id)}
+                                        >
+                                            {t("Transfer.Retry")}
+                                        </Button>
+                                    )}
+                                </TableCell>
+                            </TableRow>
+                        )
+                    })}
                 </TableBody>
             </Table>
         </Page>

@@ -43,7 +43,7 @@ export function ActualAmountInput({
         <div data-actual-amount="" className="space-y-2">
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <div className="min-w-0 space-y-1.5">
-                    <p className="text-sm">{t("PrivateNote.ActualAmount")}</p>
+                    <p className="text-sm">{t("PublicNote.Amount")}</p>
                     <AmountInput
                         paidOnly
                         invalid={invalid}

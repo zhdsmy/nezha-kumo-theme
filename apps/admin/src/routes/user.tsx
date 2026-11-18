@@ -88,14 +88,12 @@ export default function UserPage() {
         {
             header: t("Role"),
             accessorKey: "role",
-            accessorFn: (row) => {
-                return row.role === 1 ? t("User") : t("Admin")
-            },
+            cell: ({ row }) => row.original.role === 1 ? t("User") : t("Admin"),
         },
         {
             header: t("LastLogin"),
             accessorKey: "updated_at",
-            accessorFn: (row) => formatDateTime(row.updated_at, i18n?.language, t("Never")),
+            cell: ({ row }) => formatDateTime(row.original.updated_at, i18n?.language, t("Never")),
         },
         {
             id: "actions",
@@ -195,28 +193,26 @@ export default function UserPage() {
                     ))}
                 </TableHeader>
                 <TableBody>
-                    {isLoading || !table.getRowModel().rows?.length ? (
-                        <TableStateRow
-                            colSpan={columns.length}
-                            isLoading={isLoading}
-                            error={error}
-                            onRetry={mutate}
-                        />
-                    ) : (
-                        table.getRowModel().rows.map((row) => (
-                            <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                                {row.getVisibleCells().map((cell) => (
-                                    <TableCell
-                                        key={cell.id}
-                                        data-col={cell.column.id}
-                                        className="text-xsm"
-                                    >
-                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                    </TableCell>
-                                ))}
-                            </TableRow>
-                        ))
-                    )}
+                    <TableStateRow
+                        rowCount={table.getRowModel().rows.length}
+                        colSpan={columns.length}
+                        isLoading={isLoading}
+                        error={error}
+                        onRetry={mutate}
+                    />
+                    {table.getRowModel().rows.map((row) => (
+                        <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                            {row.getVisibleCells().map((cell) => (
+                                <TableCell
+                                    key={cell.id}
+                                    data-col={cell.column.id}
+                                    className="text-xsm"
+                                >
+                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                </TableCell>
+                            ))}
+                        </TableRow>
+                    ))}
                 </TableBody>
             </Table>
         </Page>

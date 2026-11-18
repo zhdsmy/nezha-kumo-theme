@@ -185,7 +185,7 @@ export const ServerConfigCard = ({
         }
     }, [data, form])
 
-    const { submitting, runSubmit } = useSubmitLock()
+    const { submitting, runSubmit, showError, dismissError } = useSubmitLock()
 
     const onSubmit = runSubmit(async (values: any) => {
         let resp: ModelServerTaskResponse = {}
@@ -199,7 +199,7 @@ export const ServerConfigCard = ({
             resp = await setServerConfig({ config: JSON.stringify(values), servers: [sid] })
         } catch (e) {
             console.error(e)
-            toast.error(t("Error"), {
+            showError(t("Error"), {
                 description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
@@ -256,7 +256,7 @@ export const ServerConfigCard = ({
                             </DialogHeader>
                             <Form {...form}>
                                 <form
-                                    onSubmit={form.handleSubmit(onSubmit)}
+                                    onSubmit={form.handleSubmit(onSubmit, dismissError)}
                                     className="space-y-2 my-2"
                                 >
                                     <FormField

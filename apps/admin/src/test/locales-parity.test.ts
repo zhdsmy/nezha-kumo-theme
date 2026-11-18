@@ -56,6 +56,13 @@ describe("admin locale parity", () => {
         }
     })
 
+    test("R14: retired confirmation text is absent and dynamic boolean labels remain", () => {
+        for (const dict of [flatEn, flatZhCN, flatZhTW, flatJa]) {
+            expect(dict["Results.ThisOperationIsUnrecoverable"]).toBeUndefined()
+            expect(dict["PrivateNote.Types.boolean"]).toBeTruthy()
+        }
+    })
+
     test("interpolation placeholders match across en, zh-CN, zh-TW, and ja", () => {
         for (const key of enKeys) {
             const expected = interpolationVars(flatEn[key])

@@ -99,92 +99,90 @@ export default function ApiTokensPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {!data || data.length === 0 ? (
-                        <TableStateRow
-                            colSpan={6}
-                            isLoading={isLoading}
-                            error={error}
-                            onRetry={mutate}
-                        />
-                    ) : (
-                        data.map((tok) => (
-                            <TableRow key={tok.id}>
-                                <TableCell data-col="name">{tok.name}</TableCell>
-                                <TableCell data-col="scopes" data-multiline>
-                                    <div className="flex flex-wrap gap-1">
-                                        {(tok.scopes ?? []).map((s) => (
-                                            <span
-                                                key={s}
-                                                className="rounded bg-secondary px-1.5 py-0.5 text-xs"
-                                            >
-                                                {s}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </TableCell>
-                                <TableCell data-col="servers" className="text-xs">
-                                    {tok.server_ids?.length
-                                        ? tok.server_ids.join(", ")
-                                        : t("ApiTokenAllServers")}
-                                </TableCell>
-                                <TableCell
-                                    data-col="expires"
-                                    data-multiline
-                                    className="whitespace-normal text-xs"
-                                >
-                                    <div className="flex flex-wrap items-center gap-1.5 tabular-nums">
-                                        <span className="whitespace-nowrap">
-                                            {formatDateTime(
-                                                tok.expires_at,
-                                                i18n?.language,
-                                                t("ApiTokenNever"),
-                                            )}
+                    <TableStateRow
+                        rowCount={data?.length ?? 0}
+                        colSpan={6}
+                        isLoading={isLoading}
+                        error={error}
+                        onRetry={mutate}
+                    />
+                    {data?.map((tok) => (
+                        <TableRow key={tok.id}>
+                            <TableCell data-col="name">{tok.name}</TableCell>
+                            <TableCell data-col="scopes" data-multiline>
+                                <div className="flex flex-wrap gap-1">
+                                    {(tok.scopes ?? []).map((s) => (
+                                        <span
+                                            key={s}
+                                            className="rounded bg-secondary px-1.5 py-0.5 text-xs"
+                                        >
+                                            {s}
                                         </span>
-                                        {isTimestampExpired(tok.expires_at) ? (
-                                            <Badge variant="destructive">{t("Expired")}</Badge>
-                                        ) : null}
-                                    </div>
-                                </TableCell>
-                                <TableCell
-                                    data-col="lastUsed"
-                                    data-multiline
-                                    className="whitespace-normal text-xs tabular-nums"
-                                >
-                                    {(() => {
-                                        const formatted = formatDateTime(
-                                            tok.last_used_at,
+                                    ))}
+                                </div>
+                            </TableCell>
+                            <TableCell data-col="servers" className="text-xs">
+                                {tok.server_ids?.length
+                                    ? tok.server_ids.join(", ")
+                                    : t("ApiTokenAllServers")}
+                            </TableCell>
+                            <TableCell
+                                data-col="expires"
+                                data-multiline
+                                className="whitespace-normal text-xs"
+                            >
+                                <div className="flex flex-wrap items-center gap-1.5 tabular-nums">
+                                    <span className="whitespace-nowrap">
+                                        {formatDateTime(
+                                            tok.expires_at,
                                             i18n?.language,
-                                            "",
-                                        )
-                                        return formatted ? (
-                                            <div>
-                                                <div className="whitespace-nowrap">{formatted}</div>
-                                                <div className="text-muted-foreground">
-                                                    {tok.last_used_ip ?? "?"}
-                                                </div>
+                                            t("ApiTokenNever"),
+                                        )}
+                                    </span>
+                                    {isTimestampExpired(tok.expires_at) ? (
+                                        <Badge variant="destructive">{t("Expired")}</Badge>
+                                    ) : null}
+                                </div>
+                            </TableCell>
+                            <TableCell
+                                data-col="lastUsed"
+                                data-multiline
+                                className="whitespace-normal text-xs tabular-nums"
+                            >
+                                {(() => {
+                                    const formatted = formatDateTime(
+                                        tok.last_used_at,
+                                        i18n?.language,
+                                        "",
+                                    )
+                                    return formatted ? (
+                                        <div>
+                                            <div className="whitespace-nowrap">{formatted}</div>
+                                            <div className="text-muted-foreground">
+                                                {tok.last_used_ip ?? "?"}
                                             </div>
-                                        ) : (
-                                            t("Never")
-                                        )
-                                    })()}
-                                </TableCell>
-                                <TableCell data-col="actions">
-                                    <ConfirmActionDialog
-                                        trigger={
-                                            <Button variant="outline" size="sm">
-                                                {t("Revoke")}
-                                            </Button>
-                                        }
-                                        title={t("Revoke")}
-                                        description={t("ConfirmDeleteApiToken", {
-                                            name: tok.name,
-                                        })}
-                                        onConfirm={() => handleDelete(tok.id)}
-                                    />
-                                </TableCell>
-                            </TableRow>
-                        ))
-                    )}
+                                        </div>
+                                    ) : (
+                                        t("Never")
+                                    )
+                                })()}
+                            </TableCell>
+                            <TableCell data-col="actions">
+                                <ConfirmActionDialog
+                                    trigger={
+                                        <Button variant="outline" size="sm">
+                                            {t("Revoke")}
+                                        </Button>
+                                    }
+                                    title={t("Revoke")}
+                                    description={t("ConfirmDeleteApiToken", {
+                                        name: tok.name,
+                                    })}
+                                    onConfirm={() => handleDelete(tok.id)}
+                                />
+                            </TableCell>
+                        </TableRow>
+                    ))}
                 </TableBody>
             </Table>
 
@@ -219,7 +217,7 @@ function CreateApiTokenDialog({
     const [scopes, setScopes] = useState<string[]>([])
     const [serverIDs, setServerIDs] = useState("")
     const [expiresInDays, setExpiresInDays] = useState<string>("90")
-    const { submitting, runSubmit } = useSubmitLock()
+    const { submitting, runSubmit, showError } = useSubmitLock()
 
     const toggleScope = (s: string) => {
         setScopes((cur) => (cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s]))
@@ -227,22 +225,22 @@ function CreateApiTokenDialog({
 
     const submit = runSubmit(async () => {
         if (!name.trim()) {
-            toast.error(t("Error"), { description: t("NameRequired") })
+            showError(t("Error"), { description: t("NameRequired") })
             return
         }
         if (scopes.length === 0) {
-            toast.error(t("Error"), { description: t("ApiTokenScopeRequired") })
+            showError(t("Error"), { description: t("ApiTokenScopeRequired") })
             return
         }
         const parsedRes = parseServerIDsInput(serverIDs)
         if (!parsedRes.ok) {
-            toast.error(t("Error"), { description: t("ApiTokenServersInvalid") })
+            showError(t("Error"), { description: t("ApiTokenServersInvalid") })
             return
         }
         const parsedServers = parsedRes.value
         const expRes = parseExpiresInDaysInput(expiresInDays)
         if (!expRes.ok) {
-            toast.error(t("Error"), { description: t("ApiTokenExpiryInvalid") })
+            showError(t("Error"), { description: t("ApiTokenExpiryInvalid") })
             return
         }
         const expDays = expRes.value
@@ -260,7 +258,7 @@ function CreateApiTokenDialog({
             setServerIDs("")
             setExpiresInDays("90")
         } catch (e: unknown) {
-            toast.error(t("Error"), { description: errorMessage(e, t("Results.UnExpectedError")) })
+            showError(t("Error"), { description: errorMessage(e, t("Results.UnExpectedError")) })
         }
     })
 

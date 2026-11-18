@@ -31,6 +31,21 @@ export const virtualizedTableFeatures = tableFeatures({
     },
 })
 
+export function groupNamesByMember<T extends { group: { name: string } }>(
+    groups: T[] | undefined,
+    members: (group: T) => number[],
+) {
+    const names = new Map<number, string>()
+    for (const group of groups ?? []) {
+        if (!group.group.name) continue
+        for (const id of new Set(members(group))) {
+            const previous = names.get(id)
+            names.set(id, previous ? previous + ", " + group.group.name : group.group.name)
+        }
+    }
+    return names
+}
+
 type EntityRow = { id?: number; group?: { id: number }; ip?: string }
 const entityRowId = (row: EntityRow) => String(row.group?.id ?? row.id ?? row.ip)
 
@@ -46,9 +61,6 @@ export function useSelectableTable<T extends EntityRow>(
         getRowId: entityRowId,
         ...(enableRowSelection ? { enableRowSelection } : {}),
     })
-    for (const row of table.getCoreRowModel().rows) {
-        ;(row as { _valuesCache?: Record<string, unknown> })._valuesCache = {}
-    }
     useEffect(() => {
         const ids = new Set(data.map(entityRowId))
         table.setRowSelection((selected) => {

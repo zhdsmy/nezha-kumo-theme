@@ -204,3 +204,22 @@ test("A7: IPv4/IPv6 counts > 1 are recognized without warning and Bandwidth inpu
     ).toBe(true)
 })
 
+
+test.each(["IPv4", "IPv6"])("R09: %s count stays editable at one", (key) => {
+    function Harness() {
+        const [value, setValue] = useState("{}")
+        return <PublicNoteEditor value={value} onChange={setValue} />
+    }
+    render(<Harness />)
+    const group = within(screen.getByRole("radiogroup", { name: key }))
+    fireEvent.click(group.getByRole("radio", { name: i18n.t("PublicNote.Has") }))
+    const count = () => screen.getByRole("textbox", { name: key + " · " + i18n.t("PublicNote.Count") })
+    expect(count()).toHaveProperty("value", "1")
+    for (const [draft, committed] of [["", "1"], ["1.9", "1"], ["3", "3"], ["1", "1"], ["4", "4"]]) {
+        fireEvent.change(count(), { target: { value: draft } })
+        fireEvent.blur(count())
+        expect(count()).toHaveProperty("value", committed)
+    }
+    fireEvent.click(group.getByRole("radio", { name: i18n.t("PublicNote.None") }))
+    expect(screen.queryByRole("textbox", { name: key + " · " + i18n.t("PublicNote.Count") })).toBeNull()
+})
