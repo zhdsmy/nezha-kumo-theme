@@ -21,12 +21,11 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { IconButton } from "@/components/xui/icon-button"
+import { useFormDialog } from "@/hooks/useFormDialog"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
 import { errorMessage } from "@/lib/utils"
 import { ModelNAT } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
-import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { KeyedMutator } from "swr"
 import { z } from "zod"
@@ -51,7 +50,7 @@ type NatFormData = z.output<typeof natFormSchema>
 
 export const NATCard: React.FC<NATCardProps> = ({ data, mutate }) => {
     const { t } = useTranslation()
-    const form = useForm<NatFormInput, unknown, NatFormData>({
+    const { form, open, onOpenChange } = useFormDialog<NatFormInput, NatFormData>(!!data, {
         resolver: zodResolver(natFormSchema),
         defaultValues: data
             ? {
@@ -68,12 +67,8 @@ export const NATCard: React.FC<NATCardProps> = ({ data, mutate }) => {
                   host: "",
                   domain: "",
               },
-        resetOptions: {
-            keepDefaultValues: false,
-        },
     })
 
-    const [open, setOpen] = useState(false)
     const { submitting, runSubmit, showError, dismissError } = useSubmitLock()
 
     const onSubmit = runSubmit(async (values: NatFormData) => {
@@ -90,13 +85,13 @@ export const NATCard: React.FC<NATCardProps> = ({ data, mutate }) => {
             })
             return
         }
-        setOpen(false)
         await mutate()
-        form.reset()
+        if (!data) form.reset()
+        onOpenChange(false)
     })
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>
                 {data ? <IconButton variant="outline" icon="edit" /> : <IconButton icon="plus" />}
             </DialogTrigger>

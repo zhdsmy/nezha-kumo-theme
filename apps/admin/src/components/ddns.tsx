@@ -29,13 +29,12 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { IconButton } from "@/components/xui/icon-button"
+import { useFormDialog } from "@/hooks/useFormDialog"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
 import { asOptionalField, conv, errorMessage } from "@/lib/utils"
 import { ModelDDNSProfile } from "@/types"
 import { ddnsRequestTypes, ddnsTypes } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
-import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { KeyedMutator } from "swr"
 import { z } from "zod"
@@ -80,7 +79,7 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
         webhook_headers: data?.webhook_headers,
         webhook_request_body: data?.webhook_request_body,
     }
-    const form = useForm<DDNSFormInput, unknown, DDNSFormData>({
+    const { form, open, onOpenChange } = useFormDialog<DDNSFormInput, DDNSFormData>(!!data, {
         resolver: (values, context, options) =>
             zodResolver(values.provider === "webhook" ? ddnsFormSchema : providerSchema)(values, context, options),
         defaultValues: {
@@ -98,12 +97,8 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
             webhook_headers: storedWebhook.webhook_headers ?? "",
             webhook_request_body: storedWebhook.webhook_request_body ?? "",
         },
-        resetOptions: {
-            keepDefaultValues: false,
-        },
     })
 
-    const [open, setOpen] = useState(false)
     const { submitting, runSubmit, showError, dismissError } = useSubmitLock()
 
     const onSubmit = runSubmit(async (values: DDNSFormData) => {
@@ -122,13 +117,13 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
             })
             return
         }
-        setOpen(false)
         await mutate()
-        form.reset()
+        if (!data) form.reset()
+        onOpenChange(false)
     })
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>
                 {data ? <IconButton variant="outline" icon="edit" /> : <IconButton icon="plus" />}
             </DialogTrigger>

@@ -28,13 +28,12 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { IconButton } from "@/components/xui/icon-button"
+import { useFormDialog } from "@/hooks/useFormDialog"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
 import { asOptionalField, errorMessage } from "@/lib/utils"
 import { ModelNotification } from "@/types"
 import { nrequestMethods, nrequestTypes } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
-import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { KeyedMutator } from "swr"
 import { z } from "zod"
@@ -66,7 +65,7 @@ export const NotifierCard: React.FC<NotifierCardProps> = ({ data, mutate }) => {
         Partial<Pick<NotificationFormData, "skip_check">>
     const notificationDefaults: NotificationDefaults | undefined = data
 
-    const form = useForm<NotificationFormInput, unknown, NotificationFormData>({
+    const { form, open, onOpenChange } = useFormDialog<NotificationFormInput, NotificationFormData>(!!data, {
         resolver: zodResolver(notificationFormSchema),
         defaultValues: data
             ? {
@@ -91,12 +90,8 @@ export const NotifierCard: React.FC<NotifierCardProps> = ({ data, mutate }) => {
                   skip_check: false,
                   format_metric_units: false,
               },
-        resetOptions: {
-            keepDefaultValues: false,
-        },
     })
 
-    const [open, setOpen] = useState(false)
     const { submitting, runSubmit, showError, dismissError } = useSubmitLock()
 
     const onSubmit = runSubmit(async (values: NotificationFormData) => {
@@ -113,13 +108,13 @@ export const NotifierCard: React.FC<NotifierCardProps> = ({ data, mutate }) => {
             })
             return
         }
-        setOpen(false)
         await mutate()
-        form.reset()
+        if (!data) form.reset()
+        onOpenChange(false)
     })
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>
                 {data ? <IconButton variant="outline" icon="edit" /> : <IconButton icon="plus" />}
             </DialogTrigger>

@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select"
 import { IconButton } from "@/components/xui/icon-button"
 import { useNotification } from "@/hooks/useNotfication"
+import { useFormDialog } from "@/hooks/useFormDialog"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
 import { withCollectionDefaults } from "@/lib/form"
 import i18n from "@/lib/i18n"
@@ -38,8 +39,7 @@ import { conv, errorMessage } from "@/lib/utils"
 import { ModelAlertRule } from "@/types"
 import { triggerModes } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useEffect, useState } from "react"
-import { useForm, useWatch } from "react-hook-form"
+import { useWatch } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { KeyedMutator } from "swr"
 import { z } from "zod"
@@ -67,6 +67,8 @@ const ruleSchema = z.object({
     next_transfer_at: z.record(z.string(), z.string()).optional(),
     last_cycle_status: z.boolean().optional(),
 })
+
+type AlertRuleEntry = z.output<typeof ruleSchema>
 
 const alertRuleFormSchema = z.object({
     name: z.string().min(1),
@@ -100,22 +102,19 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
     if (data && Array.isArray(data.rules)) {
         data = {
             ...data,
-            rules: data.rules.map((rule) =>
-                withCollectionDefaults<z.infer<typeof ruleSchema>>(
-                    rule,
-                    [],
-                    ["ignore", "next_transfer_at"],
-                ),
-            ),
+            rules: data.rules.map((rule: AlertRuleEntry) => ({
+                ...rule,
+                ignore: rule.ignore === null ? {} : rule.ignore,
+                next_transfer_at: rule.next_transfer_at === null ? {} : rule.next_transfer_at,
+            })),
         }
     }
     const { t } = useTranslation()
 
-    type AlertRuleEntry = z.output<typeof ruleSchema>
     type AlertRuleFormInput = z.input<typeof alertRuleFormSchema>
     type AlertRuleFormData = z.output<typeof alertRuleFormSchema>
 
-    const form = useForm<AlertRuleFormInput, unknown, AlertRuleFormData>({
+    const { form, open, onOpenChange } = useFormDialog<AlertRuleFormInput, AlertRuleFormData>(!!data, {
         resolver: zodResolver(alertRuleFormSchema),
         defaultValues: data
             ? {
@@ -126,7 +125,7 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
               }
             : {
                   name: "",
-                  rules_raw: "",
+                  rules_raw: "[]",
                   rules: [],
                   fail_trigger_tasks: [],
                   fail_trigger_tasks_raw: "",
@@ -135,36 +134,13 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                   notification_group_id: 0,
                   trigger_mode: 0,
               },
-        resetOptions: {
-            keepDefaultValues: false,
-        },
     })
 
-    const [open, setOpen] = useState(false)
-
-    // 结构化规则编辑状态：从已有数据或 rules_raw 初始化
-    const initialRules = (() => {
-        try {
-            if (data?.rules) return data.rules
-            const raw = form.getValues("rules_raw")
-            if (!raw) return []
-            const parsed: unknown = JSON.parse(raw)
-            return z.array(ruleSchema).parse(parsed)
-        } catch {
-            return []
-        }
-    })()
-    const [rulesUI, setRulesUI] = useState<AlertRuleEntry[]>(initialRules)
-
-    // 同步到 rules_raw（提交仍走 JSON 字符串）
-    useEffect(() => {
-        try {
-            form.setValue("rules_raw", JSON.stringify(rulesUI), { shouldDirty: true })
-        } catch {
-            // ignore
-        }
-    }, [form, rulesUI])
-
+    const rulesUI = useWatch({ control: form.control, name: "rules" })
+    const setRulesUI = (rules: AlertRuleEntry[]) => {
+        form.setValue("rules", rules, { shouldDirty: true })
+        form.setValue("rules_raw", JSON.stringify(rules), { shouldDirty: true })
+    }
     const rulesRaw = useWatch({ control: form.control, name: "rules_raw" })
 
     const { submitting, runSubmit, showError, dismissError } = useSubmitLock()
@@ -190,9 +166,9 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
             })
             return
         }
-        setOpen(false)
         await mutate()
-        form.reset()
+        if (!data) form.reset()
+        onOpenChange(false)
     })
 
     const { notifierGroup } = useNotification()
@@ -202,7 +178,7 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
     })) || [{ value: "", label: "" }]
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>
                 {data ? <IconButton variant="outline" icon="edit" /> : <IconButton icon="plus" />}
             </DialogTrigger>
@@ -657,7 +633,7 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                                                 })
                                                 try {
                                                     const arr = JSON.parse(e.target.value)
-                                                    if (Array.isArray(arr)) setRulesUI(arr)
+                                                    if (Array.isArray(arr)) form.setValue("rules", arr)
                                                 } catch {
                                                     // ignore invalid
                                                 }
