@@ -186,14 +186,14 @@ export default function TransferPage() {
             <Table
                 primaryColumn="id"
                 columnPriority={[
-                    ["id", 160],
+                    ["id", 88],
                     ["server", 90],
                     ["status", 112],
-                    ["from", 90],
-                    ["to", 90],
-                    ["created", 150],
-                    ["initiator", 90],
-                    ["error", 160],
+                    ["from", 80],
+                    ["to", 80],
+                    ["created", 156],
+                    ["initiator", 88],
+                    ["error", 320],
                 ]}
             >
                 <TableHeader>
@@ -237,10 +237,11 @@ export default function TransferPage() {
                                     </TableCell>
                                     <TableCell
                                         data-col="error"
-                                        className="max-w-xs truncate"
+                                        data-multiline
+                                        className="whitespace-normal break-words text-xs"
                                         title={row.last_error}
                                     >
-                                        {row.last_error || "-"}
+                                        {row.last_error || "—"}
                                     </TableCell>
                                     <TableCell data-col="created">
                                         {new Date(row.created_at).toLocaleString()}

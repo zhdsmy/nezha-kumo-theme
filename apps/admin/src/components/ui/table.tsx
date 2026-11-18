@@ -228,7 +228,6 @@ const TableRow = forwardRef<HTMLTableRowElement, HTMLAttributes<HTMLTableRowElem
                         if (
                             e.defaultPrevented ||
                             !table ||
-                            table.layout === "wide" ||
                             !e.currentTarget.contains(target)
                         )
                             return
@@ -249,7 +248,7 @@ const TableRow = forwardRef<HTMLTableRowElement, HTMLAttributes<HTMLTableRowElem
 )
 TableRow.displayName = "TableRow"
 
-type ColumnAttribute = { "data-col"?: string }
+type ColumnAttribute = { "data-col"?: string; "data-multiline"?: boolean }
 const TableHead = forwardRef<
     HTMLTableCellElement,
     ThHTMLAttributes<HTMLTableCellElement> & ColumnAttribute

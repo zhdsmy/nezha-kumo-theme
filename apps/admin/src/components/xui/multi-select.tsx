@@ -214,13 +214,13 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                         {...props}
                         onClick={handleTogglePopover}
                         className={cn(
-                            "flex min-w-0 w-full p-1 rounded-lg border min-h-9 h-auto items-center justify-between bg-kumo-control text-foreground hover:bg-accent [&_svg]:pointer-events-auto",
+                            "flex min-w-0 w-full p-1 rounded-lg border min-h-9 h-auto items-center justify-between bg-kumo-control text-foreground hover:bg-accent [&_svg]:pointer-events-auto [&>span]:min-w-0 [&>span]:w-full",
                             className,
                         )}
                     >
                         {selectedValues.length > 0 ? (
-                            <div className="flex justify-between items-center w-full">
-                                <div className="flex flex-wrap items-center">
+                            <div className="flex min-w-0 w-full items-center justify-between gap-1">
+                                <div className="flex min-w-0 flex-1 flex-wrap items-center overflow-hidden">
                                     {selectedValues.slice(0, maxCount).map((value) => {
                                         const option = options.find((o) => o.value === value)
                                         const IconComponent = option?.icon
@@ -228,17 +228,23 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                                             <Badge
                                                 key={value}
                                                 className={cn(
+                                                    "!flex-initial !shrink min-w-0 max-w-full",
                                                     isAnimating ? "animate-bounce" : "",
                                                     multiSelectVariants({ variant }),
                                                 )}
                                                 style={{ animationDuration: `${animation}s` }}
                                             >
                                                 {IconComponent && (
-                                                    <IconComponent className="h-4 w-4 mr-2" />
+                                                    <IconComponent className="mr-1.5 h-3.5 w-3.5 shrink-0" />
                                                 )}
-                                                {option?.label}
+                                                <span
+                                                    className="min-w-0 truncate"
+                                                    title={option?.label}
+                                                >
+                                                    {option?.label}
+                                                </span>
                                                 <XIcon
-                                                    className="ml-2 h-2 w-2 cursor-pointer"
+                                                    className="ml-1.5 h-3 w-3 shrink-0 cursor-pointer"
                                                     onClick={(event) => {
                                                         event.stopPropagation()
                                                         toggleOption(value)
@@ -250,15 +256,19 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                                     {selectedValues.length > maxCount && (
                                         <Badge
                                             className={cn(
-                                                "bg-transparent text-foreground border-foreground/1 hover:bg-transparent",
+                                                "!flex-initial !shrink min-w-0 max-w-full bg-transparent text-foreground border-foreground/1 hover:bg-transparent",
                                                 isAnimating ? "animate-bounce" : "",
                                                 multiSelectVariants({ variant }),
                                             )}
                                             style={{ animationDuration: `${animation}s` }}
                                         >
-                                            {t("MoreSelected", { count: selectedValues.length - maxCount })}
+                                            <span className="truncate">
+                                                {t("MoreSelected", {
+                                                    count: selectedValues.length - maxCount,
+                                                })}
+                                            </span>
                                             <XIcon
-                                                className="ml-2 h-2 w-2 cursor-pointer"
+                                                className="ml-1.5 h-3 w-3 shrink-0 cursor-pointer"
                                                 onClick={(event) => {
                                                     event.stopPropagation()
                                                     clearExtraOptions()
@@ -267,33 +277,37 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                                         </Badge>
                                     )}
                                 </div>
-                                <div className="flex items-center justify-between">
-                                    <XIcon
-                                        className="h-4 mx-2 cursor-pointer text-muted-foreground"
-                                        onClick={(event) => {
-                                            event.stopPropagation()
-                                            handleClear()
-                                        }}
-                                    />
-                                    <Separator
-                                        orientation="vertical"
-                                        className="flex min-h-6 h-full"
-                                    />
-                                    <ChevronDown className="h-4 mx-2 cursor-pointer text-muted-foreground" />
+                                <div className="flex shrink-0 items-center justify-between">
+                                    {selectedValues.length > 1 && (
+                                        <>
+                                            <XIcon
+                                                className="mx-2 h-4 w-4 shrink-0 cursor-pointer text-muted-foreground"
+                                                onClick={(event) => {
+                                                    event.stopPropagation()
+                                                    handleClear()
+                                                }}
+                                            />
+                                            <Separator
+                                                orientation="vertical"
+                                                className="flex min-h-6 h-full"
+                                            />
+                                        </>
+                                    )}
+                                    <ChevronDown className="mx-2 h-4 w-4 shrink-0 cursor-pointer text-muted-foreground" />
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex items-center justify-between w-full mx-auto">
-                                <span className="text-sm text-muted-foreground mx-3">
+                            <div className="flex min-w-0 items-center justify-between w-full mx-auto">
+                                <span className="truncate text-sm text-muted-foreground mx-3">
                                     {resolvedPlaceholder}
                                 </span>
-                                <ChevronDown className="h-4 cursor-pointer text-muted-foreground mx-2" />
+                                <ChevronDown className="mx-2 h-4 w-4 shrink-0 cursor-pointer text-muted-foreground" />
                             </div>
                         )}
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent
-                    className="w-auto p-0"
+                    className="w-[var(--radix-popover-trigger-width)] min-w-56 max-w-[calc(100vw-2rem)] p-0"
                     align="start"
                     onEscapeKeyDown={() => setIsPopoverOpen(false)}
                     onWheel={stopWheelEventPropagation}
@@ -311,7 +325,7 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                                 >
                                     <div
                                         className={cn(
-                                            "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                                            "mr-2 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-primary",
                                             selectedValues.length === options.length
                                                 ? "bg-primary text-primary-foreground"
                                                 : "opacity-50 [&_svg]:invisible",
@@ -327,11 +341,11 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                                         <CommandItem
                                             key={option.value}
                                             onSelect={() => toggleOption(option.value)}
-                                            className="cursor-pointer"
+                                            className="cursor-pointer items-start"
                                         >
                                             <div
                                                 className={cn(
-                                                    "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                                                    "mr-2 mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-primary",
                                                     isSelected
                                                         ? "bg-primary text-primary-foreground"
                                                         : "opacity-50 [&_svg]:invisible",
@@ -340,9 +354,9 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                                                 <CheckIcon className="h-4 w-4" />
                                             </div>
                                             {option.icon && (
-                                                <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+                                                <option.icon className="mr-2 mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                                             )}
-                                            <span>{option.label}</span>
+                                            <span className="min-w-0 break-all">{option.label}</span>
                                         </CommandItem>
                                     )
                                 })}

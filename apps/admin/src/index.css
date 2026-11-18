@@ -283,6 +283,17 @@ body,
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
 }
+.nkt-table td[data-multiline] .nkt-cell-value,
+.nkt-table tr[data-open] .nkt-cell-value {
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+.nkt-table tr[data-open] .nkt-cell-value > * {
+    max-width: none;
+}
 .nkt-cell-value > :not(.whitespace-nowrap) {
     min-width: 0;
     max-width: 100%;

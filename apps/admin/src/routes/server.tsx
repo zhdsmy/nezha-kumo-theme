@@ -117,7 +117,10 @@ export default function ServerPage() {
                 const s = row.original
                 const cc = s.geoip?.country_code?.toLowerCase()
                 return (
-                    <div className="nkt-server-name min-w-32 max-w-40 sm:max-w-56 whitespace-normal break-words font-medium">
+                    <div
+                        className="nkt-server-name min-w-32 whitespace-normal break-words font-medium"
+                        title={s.name}
+                    >
                         {/^[a-z]{2}$/.test(cc ?? "") && (
                             // Flag SVGs ship with the frontend theme on the same origin.
                             <img

@@ -105,10 +105,18 @@ export default function DDNSPage() {
         {
             header: t("Domains"),
             accessorKey: "domains",
-            accessorFn: (row) => row.domains,
+            accessorFn: (row) => (row.domains ?? []).join(", "),
             cell: ({ row }) => {
-                const s = row.original
-                return <div className="max-w-24 whitespace-normal break-words">{s.domains}</div>
+                const domains = row.original.domains ?? []
+                if (domains.length === 0) {
+                    return <span className="text-muted-foreground">—</span>
+                }
+                const joined = domains.join(", ")
+                return (
+                    <div className="max-w-64 whitespace-normal break-words" title={joined}>
+                        {joined}
+                    </div>
+                )
             },
         },
         {
@@ -165,7 +173,7 @@ export default function DDNSPage() {
                 columnPriority={[
                     ["id", 64],
                     ["provider", 110],
-                    ["domains", 160],
+                    ["domains", 240],
                     ["enableIPv4", 90],
                     ["enableIPv6", 90],
                     ["maxRetries", 100],
