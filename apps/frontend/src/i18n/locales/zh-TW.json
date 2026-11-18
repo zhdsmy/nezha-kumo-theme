@@ -65,6 +65,7 @@
         "disk": "磁碟",
         "swap": "Swap",
         "load": "負載",
+        "load1": "1 分鐘負載",
         "network": "網路",
         "upload": "上傳",
         "download": "下載",

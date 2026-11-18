@@ -323,7 +323,7 @@ export function mapState(s: NezhaServer, now: number): Snapshot {
         load15: st.load_15 ?? 0,
         tcp: st.tcp_conn_count ?? 0,
         udp: st.udp_conn_count ?? 0,
-        process: st.process_count ?? 0,
+        process: st.process_count ?? NaN,
         uptime: st.uptime ?? 0,
     }
 }

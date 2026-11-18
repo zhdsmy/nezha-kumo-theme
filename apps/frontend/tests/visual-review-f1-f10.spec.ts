@@ -108,4 +108,94 @@ test.describe("Visual review F1–F10 fixes", () => {
         const mainScrollWidth = await page.locator(".nk-main").evaluate((el) => el.scrollWidth)
         expect(mainScrollWidth).toBeLessThanOrEqual(320)
     })
+
+    test("F3: 18-line latency tooltip fits without mid-line clipping, memory shows Swap legend, and load/processes match curves", async ({
+        page,
+    }) => {
+        await page.setViewportSize({ width: 1024, height: 768 })
+        await mockNezha(page)
+        const servers = structuredClone(fixture.servers).map((s) => ({
+            ...s,
+            last_active: new Date().toISOString(),
+            host: { ...s.host, swap_total: 2 * 1024 ** 3 },
+            state: { ...s.state, swap_used: 512 * 1024 ** 2, load_1: 0.03, process_count: 183 },
+        }))
+        await page.routeWebSocket("**/api/v1/ws/server", (ws) => {
+            ws.send(JSON.stringify({ now: Date.now(), servers }))
+        })
+        await page.route("**/api/v1/server/6/metrics**", async (route) => {
+            const metric = new URL(route.request().url()).searchParams.get("metric")
+            const now = Math.floor(Date.now() / 30_000) * 30_000
+            const pts = Array.from({ length: 60 }, (_, i) => ({
+                ts: now - (59 - i) * 60_000,
+                value:
+                    metric === "load1"
+                        ? 0.03
+                        : metric === "process_count"
+                          ? 183
+                          : metric === "swap"
+                            ? 512 * 1024 ** 2
+                            : metric === "memory"
+                              ? 1024 ** 3
+                              : 20,
+            }))
+            await route.fulfill({ json: { success: true, data: { data_points: pts } } })
+        })
+        await page.route("**/api/v1/server/6/service**", async (route) => {
+            const now = Math.floor(Date.now() / 30_000) * 30_000
+            const created_at = Array.from({ length: 60 }, (_, i) => now - (59 - i) * 60_000)
+            await route.fulfill({
+                json: {
+                    success: true,
+                    data: Array.from({ length: 18 }, (_, idx) => ({
+                        monitor_id: idx + 1,
+                        monitor_name: `Probe-${String(idx + 1).padStart(2, "0")}`,
+                        created_at,
+                        avg_delay: Array.from({ length: 60 }, () => 10 + idx),
+                    })),
+                },
+            })
+        })
+
+        // 1. 18-line latency tooltip shows all 18 lines without clipping any row
+        await page.goto("/server/6#latency")
+        const latSvg = page.locator(".chart svg").first()
+        await expect(latSvg).toBeVisible()
+        const box = await latSvg.boundingBox()
+        await page.mouse.move(box!.x + box!.width * 0.5, box!.y + box!.height * 0.5)
+        const tooltip = page.locator(".chart-tooltip").first()
+        await expect(tooltip).toBeVisible()
+        await expect(tooltip).toContainText("Probe-01")
+        await expect(tooltip).toContainText("Probe-18")
+        const { rowCount, clippedRows } = await tooltip.evaluate((tip) => {
+            const tipRect = tip.getBoundingClientRect()
+            const rows = Array.from(
+                tip.querySelectorAll(".chart-series-label"),
+                (label) => label.parentElement!,
+            )
+            return {
+                rowCount: rows.length,
+                clippedRows: rows.filter(
+                    (r) => r.getBoundingClientRect().bottom > tipRect.bottom + 1,
+                ).length,
+            }
+        })
+        expect(rowCount).toBe(18)
+        expect(clippedRows).toBe(0)
+
+        // 2. Load tab: Memory has Swap legend; Load (1m) preserves 0.03; Processes has its own matching card & curve
+        await page.goto("/server/6#load")
+        await page.getByRole("tab", { name: "1 h" }).click()
+        const memCard = page.locator(".chart-card", { hasText: "Memory" })
+        await expect(memCard.locator(".chart-heading")).toContainText("Swap")
+        await expect(memCard.locator(".chart-heading span[aria-hidden]")).toHaveCount(2)
+
+        const loadCard = page.locator(".chart-card", { hasText: "Load (1m)" })
+        await expect(loadCard.locator(".chart-heading p")).toHaveText("0.03")
+        await expect(loadCard.locator("svg path[fill='none']")).toHaveCount(1)
+
+        const procCard = page.locator(".chart-card", { hasText: "Processes" })
+        await expect(procCard.locator(".chart-heading p")).toHaveText("183")
+        await expect(procCard.locator("svg path[fill='none']")).toHaveCount(1)
+    })
 })

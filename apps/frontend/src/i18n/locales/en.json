@@ -69,6 +69,7 @@
         "disk": "Disk",
         "swap": "Swap",
         "load": "Load",
+        "load1": "Load (1m)",
         "network": "Network",
         "upload": "Upload",
         "download": "Download",

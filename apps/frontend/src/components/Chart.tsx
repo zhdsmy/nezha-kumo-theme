@@ -528,34 +528,54 @@ export function Chart({
                     —
                 </div>
             )}
-            {hover && hasHover && (
-                <div
-                    ref={tipRef}
-                    className="chart-tooltip pointer-events-none absolute top-1 z-10 px-3 py-2 text-[12px]"
-                    style={{
-                        left: tipLeft,
-                        maxWidth: width,
-                    }}
-                >
-                    <p className="num mb-1 text-kumo-subtle">
-                        {tooltipTime(hover.find((h) => h.p)!.p!.t)}
-                    </p>
-                    {hover.map(({ s, p }) => (
-                        <p key={s.key} className="flex items-center gap-2">
-                            <span
-                                className="h-[2px] w-3 rounded-full"
-                                style={{ background: s.color }}
-                            />
-                            <span className="chart-series-label text-kumo-subtle" title={s.label}>
-                                {s.label}
-                            </span>
-                            <span className="num ml-auto shrink-0 pl-3">
-                                {p && p.v !== null ? format(p.v) : "—"}
-                            </span>
-                        </p>
-                    ))}
-                </div>
-            )}
+            {hover &&
+                hasHover &&
+                (() => {
+                    const twoCol = hover.length > 8 && width >= 360
+                    const maxItems = twoCol ? 20 : 10
+                    const shown = hover.length > maxItems ? hover.slice(0, maxItems - 1) : hover
+                    const rest = hover.length - shown.length
+                    return (
+                        <div
+                            ref={tipRef}
+                            className="chart-tooltip pointer-events-none absolute top-1 z-10 px-3 py-2 text-[12px]"
+                            style={{
+                                left: tipLeft,
+                                maxWidth: width,
+                            }}
+                        >
+                            <p className="num mb-1 text-kumo-subtle">
+                                {tooltipTime(hover.find((h) => h.p)!.p!.t)}
+                            </p>
+                            <div
+                                className="chart-tooltip-rows"
+                                data-cols={twoCol ? "2" : undefined}
+                            >
+                                {shown.map(({ s, p }) => (
+                                    <p
+                                        key={s.key}
+                                        className="chart-tooltip-row flex min-w-0 items-center gap-2"
+                                    >
+                                        <span
+                                            className="h-[2px] w-3 shrink-0 rounded-full"
+                                            style={{ background: s.color }}
+                                        />
+                                        <span
+                                            className="chart-series-label text-kumo-subtle"
+                                            title={s.label}
+                                        >
+                                            {s.label}
+                                        </span>
+                                        <span className="num ml-auto shrink-0 pl-2">
+                                            {p && p.v !== null ? format(p.v) : "—"}
+                                        </span>
+                                    </p>
+                                ))}
+                                {rest > 0 && <p className="chart-tooltip-row muted num">+{rest}</p>}
+                            </div>
+                        </div>
+                    )
+                })()}
         </div>
     )
 }

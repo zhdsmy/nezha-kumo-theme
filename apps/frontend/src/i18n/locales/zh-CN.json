@@ -65,6 +65,7 @@
         "disk": "磁盘",
         "swap": "Swap",
         "load": "负载",
+        "load1": "1 分钟负载",
         "network": "网络",
         "upload": "上传",
         "download": "下载",

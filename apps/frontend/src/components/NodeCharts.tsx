@@ -155,9 +155,19 @@ export const LoadCharts = memo(function LoadCharts({
             <ChartCard
                 title={t("metric.memory")}
                 value={
-                    last
-                        ? `${reading(last.memUsed, formatBytes)} / ${formatBytes(memTotal)}`
-                        : undefined
+                    last ? (
+                        node.swapTotal ? (
+                            <>
+                                <SeriesDot color={CHART_PALETTE[1]} />
+                                {reading(last.memUsed, formatBytes)} / {formatBytes(memTotal)} ·{" "}
+                                <SeriesDot color={CHART_PALETTE[2]} />
+                                {t("metric.swap")} {reading(last.swapUsed, formatBytes)} /{" "}
+                                {formatBytes(node.swapTotal)}
+                            </>
+                        ) : (
+                            `${reading(last.memUsed, formatBytes)} / ${formatBytes(memTotal)}`
+                        )
+                    ) : undefined
                 }
             >
                 <Chart
@@ -246,19 +256,30 @@ export const LoadCharts = memo(function LoadCharts({
                 />
             </ChartCard>
             <ChartCard
-                title={`${t("metric.load")} · ${t("metric.process")}`}
-                value={
-                    last
-                        ? `${reading(last.load1, formatNumber)} · ${reading(last.process, (v) => formatNumber(v, 0))}`
-                        : undefined
-                }
+                title={t("metric.load1")}
+                value={last ? reading(last.load1, (v) => v.toFixed(2)) : undefined}
             >
                 <Chart
                     {...common}
-                    label={t("metric.load")}
-                    format={(v) => formatNumber(v, 2)}
+                    label={t("metric.load1")}
+                    format={(v) => v.toFixed(2)}
                     formatTick={(v, step) => formatNumber(v, stepDigits(step))}
-                    series={[s("load", t("metric.load"), CHART_PALETTE[1], (p) => p.load1, true)]}
+                    series={[s("load", t("metric.load1"), CHART_PALETTE[1], (p) => p.load1, true)]}
+                />
+            </ChartCard>
+            <ChartCard
+                title={t("metric.process")}
+                value={last ? reading(last.process, (v) => formatNumber(v, 0)) : undefined}
+            >
+                <Chart
+                    {...common}
+                    label={t("metric.process")}
+                    minStep={1}
+                    format={(v) => formatNumber(v, 0)}
+                    formatTick={(v) => formatNumber(v, 0)}
+                    series={[
+                        s("process", t("metric.process"), CHART_PALETTE[4], (p) => p.process, true),
+                    ]}
                 />
             </ChartCard>
         </div>
