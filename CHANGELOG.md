@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.1] - 2026-11-18
+
+- Pick servers by name with one searchable selector in NAT, API tokens, settings and alert rules.
+- Show server, group and user names instead of numeric IDs in admin lists.
+- Show Webhook fields in DDNS only for the Webhook provider, keeping saved values when switching.
+- Search and filter the admin server list by name, ID, IP and group.
+- Name server groups and notification groups distinctly and remove duplicate in-page tabs.
+- Use wider admin tables and align the public header with the content on wide screens.
+- Keep the current sidebar item visible after the window gets shorter.
+- Show load charts in two columns on 1024-pixel-wide node pages.
+- Fix the empty IP change notification coverage menu and display of dates before 1971.
+- Keep user deletion disabled until the signed-in account is confirmed.
+- Show localized field labels in validation messages.
+
 ## [0.1.0] - 2026-11-18
 
 - Introduce a Kumo-inspired public status page and Nezha management interface.
