@@ -74,15 +74,6 @@ export function QuantityInput({
     }
     return (
         <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm">
-                <Switch
-                    aria-label={`${label} · ${t("PublicNote.Unlimited")}`}
-                    checked={parsed === "unlimited"}
-                    onCheckedChange={(checked) => onChange(checked ? "Unlimited" : undefined)}
-                />
-                {t("PublicNote.Unlimited")}
-            </label>
-            {value && !parsed && <UnknownValue value={value} />}
             {parsed !== "unlimited" && (
                 <>
                     <div className="grid grid-cols-2 gap-2">
@@ -117,6 +108,15 @@ export function QuantityInput({
                     )}
                 </>
             )}
+            <label className="flex items-center gap-2 text-sm">
+                <Switch
+                    aria-label={`${label} · ${t("PublicNote.Unlimited")}`}
+                    checked={parsed === "unlimited"}
+                    onCheckedChange={(checked) => onChange(checked ? "Unlimited" : undefined)}
+                />
+                {t("PublicNote.Unlimited")}
+            </label>
+            {value && !parsed && <UnknownValue value={value} />}
         </div>
     )
 }

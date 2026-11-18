@@ -265,7 +265,8 @@
         "RemoveTag": "Remove {{tag}}",
         "TagsPlaceholder": "Enter to add",
         "TagsHint": "Press Enter or comma to add a tag.",
-        "Time": "Time"
+        "Time": "Time",
+        "Count": "Count"
     },
     "Validation": {
         "InvalidForm": "Invalid form",
@@ -573,6 +574,7 @@
         "MoveUp": "Move up",
         "MoveDown": "Move down",
         "AddRow": "Add field",
+        "AddRowIn": "Add field to {{name}}",
         "AddItem": "Add item",
         "EmptyKey": "Enter a key.",
         "DuplicateKey": "Keys in the same object must be unique.",

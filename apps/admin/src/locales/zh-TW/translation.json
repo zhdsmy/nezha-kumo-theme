@@ -265,7 +265,8 @@
         "RemoveTag": "刪除 {{tag}}",
         "TagsPlaceholder": "Enter 新增",
         "TagsHint": "按 Enter 或輸入逗號新增標籤。",
-        "Time": "時間"
+        "Time": "時間",
+        "Count": "數量"
     },
     "Validation": {
         "InvalidForm": "表單無效",
@@ -573,6 +574,7 @@
         "MoveUp": "上移",
         "MoveDown": "下移",
         "AddRow": "新增欄位",
+        "AddRowIn": "向 {{name}} 新增欄位",
         "AddItem": "新增陣列項目",
         "EmptyKey": "鍵名不得為空。",
         "DuplicateKey": "同一物件內的鍵名不得重複。",

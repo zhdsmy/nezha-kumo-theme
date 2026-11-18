@@ -366,3 +366,40 @@ test("unknown actual periods preserve the old value until the period is correcte
     fireEvent.click(screen.getByRole("button", { name: i18n.t("PublicNote.EveryYear") }))
     expect(JSON.parse(saved()).billingDataMod.actualAmount).toBe("CNY 12.00/Year")
 })
+
+test("A7: structured mode replaces raw billingDataMod/actualAmount keys, drops redundant Boolean text, and disambiguates nested AddRow buttons", () => {
+    const raw =
+        '{"billingDataMod":{"actualAmount":"CNY 60.00/Year"},"custom":{"enabled":true,"nested":{"x":"v"}}}'
+    render(<Harness raw={raw} />)
+    expect(screen.queryByDisplayValue("billingDataMod")).toBeNull()
+    expect(screen.queryByDisplayValue("actualAmount")).toBeNull()
+    expect(screen.getByText(i18n.t("PublicNote.Billing"))).toBeTruthy()
+    expect(screen.getByRole("textbox", { name: i18n.t("PrivateNote.ActualAmount") })).toBeTruthy()
+
+    const boolSwitch = screen.getByRole("switch", { name: label("Value", "custom.enabled") })
+    const boolRow = boolSwitch.closest("[data-json-path]")!
+    expect(
+        Array.from(boolRow.querySelectorAll("label")).some(
+            (el) => el.textContent?.trim() === i18n.t("PrivateNote.Types.boolean"),
+        ),
+    ).toBe(false)
+
+    expect(
+        screen.getByRole("button", {
+            name: i18n.t("PrivateNote.AddRowIn", { name: "custom" }),
+        }),
+    ).toBeTruthy()
+    expect(
+        screen.getByRole("button", {
+            name: i18n.t("PrivateNote.AddRowIn", { name: "nested" }),
+        }),
+    ).toBeTruthy()
+    expect(screen.getAllByRole("button", { name: i18n.t("PrivateNote.AddRow") })).toHaveLength(1)
+
+    fireEvent.click(screen.getByRole("radio", { name: i18n.t("PublicNote.RawText") }))
+    expect(
+        (screen.getByRole("textbox", { name: i18n.t("PrivateNote.RawText") }) as HTMLTextAreaElement)
+            .value,
+    ).toBe(raw)
+})
+

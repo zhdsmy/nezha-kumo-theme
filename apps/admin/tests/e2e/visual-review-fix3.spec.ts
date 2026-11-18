@@ -458,4 +458,101 @@ for (const [engine, driver] of Object.entries({ chromium, webkit })) {
             await browser.close()
         }
     })
+
+    test(`A7: ${engine} aligns Bandwidth clear button, recognizes IP counts > 1, and cleans PrivateNote structured form`, async ({
+        baseURL,
+    }) => {
+        const browser = await driver.launch()
+        try {
+            if (!baseURL) throw new Error("A local preview baseURL is required")
+            const page = await browser.newPage({
+                viewport: { width: 1440, height: 900 },
+                locale: "zh-CN",
+            })
+            await page.addInitScript(() => localStorage.setItem("language", "zh-CN"))
+            await page.route("**/api/v1/**", async (route) => {
+                const path = new URL(route.request().url()).pathname.slice(8)
+                const data =
+                    path === "profile"
+                        ? { id: 1, role: 0, username: "mock" }
+                        : path === "setting"
+                          ? {
+                                config: {
+                                    site_name: "Mock",
+                                    language: "zh-CN",
+                                    oauth2_providers: [],
+                                    custom_code: "",
+                                    custom_code_dashboard: "",
+                                },
+                            }
+                          : path === "server"
+                            ? [
+                                  {
+                                      id: 1,
+                                      name: "Mock A7",
+                                      display_index: 1,
+                                      host: {},
+                                      geoip: { ip: { ipv4_addr: "192.0.2.1" } },
+                                      owner: { username: "mock" },
+                                      public_note: JSON.stringify({
+                                          planDataMod: {
+                                              bandwidth: "25Gbps Redundant",
+                                              IPv4: "4",
+                                              IPv6: "64",
+                                          },
+                                      }),
+                                      note: JSON.stringify({
+                                          billingDataMod: { actualAmount: "CNY 60.00/Year" },
+                                          custom: { enabled: true, nested: { tier: "gold" } },
+                                      }),
+                                  },
+                              ]
+                            : []
+                await route.fulfill({ json: { success: true, data } })
+            })
+            await page.goto(`${baseURL}/dashboard/`)
+            await page.getByRole("button", { name: "编辑", exact: true }).first().click()
+            await expect(page.locator("[data-public-note-editor]")).toBeVisible()
+
+            const bwAlign = await page
+                .locator('[data-note-field="bandwidth"]')
+                .evaluate((field) => {
+                    const clear = field.querySelector<HTMLElement>(".nkt-note-clear")!
+                    const unit = field.querySelector<HTMLElement>('[role="combobox"]')!
+                    const cRect = clear.getBoundingClientRect()
+                    const uRect = unit.getBoundingClientRect()
+                    return {
+                        clearCenterY: cRect.top + cRect.height / 2,
+                        unitCenterY: uRect.top + uRect.height / 2,
+                        diff: Math.abs(
+                            cRect.top + cRect.height / 2 - (uRect.top + uRect.height / 2),
+                        ),
+                    }
+                })
+            expect(bwAlign.diff, JSON.stringify(bwAlign)).toBeLessThanOrEqual(2)
+
+            const ipWarnings = await page
+                .locator("[data-note-ip]")
+                .evaluateAll((els) =>
+                    els.some((el) => el.textContent?.includes("无法识别")),
+                )
+            expect(ipWarnings).toBe(false)
+            await expect(page.getByRole("textbox", { name: "IPv4 · 数量" })).toHaveValue("4")
+            await expect(page.getByRole("textbox", { name: "IPv6 · 数量" })).toHaveValue("64")
+
+            const privEditor = page.locator("[data-private-note-editor]")
+            expect(await privEditor.locator('input[value="billingDataMod"]').count()).toBe(0)
+            expect(await privEditor.locator('input[value="actualAmount"]').count()).toBe(0)
+            await expect(
+                privEditor.getByRole("button", { name: "向 custom 添加字段", exact: true }),
+            ).toBeVisible()
+            await expect(
+                privEditor.getByRole("button", { name: "向 nested 添加字段", exact: true }),
+            ).toBeVisible()
+            await page.close()
+        } finally {
+            await browser.close()
+        }
+    })
 }
+
