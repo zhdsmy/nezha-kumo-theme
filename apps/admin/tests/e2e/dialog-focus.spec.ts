@@ -107,4 +107,80 @@ for (const [engine, driver] of Object.entries({ chromium, webkit })) {
             }
         })
     }
+
+    test(`A1: ${engine} Tab leaves Extra TagInput to reach Submit with a visible offset focus ring`, async ({
+        baseURL,
+    }) => {
+        const browser = await driver.launch()
+        try {
+            const page = await browser.newPage({
+                viewport: { width: 1440, height: 900 },
+                locale: "en-US",
+                reducedMotion: "reduce",
+            })
+            await page.addInitScript(() => localStorage.setItem("language", "en"))
+            await page.route("**/api/v1/**", async (route) => {
+                const path = new URL(route.request().url()).pathname.slice(8)
+                const data =
+                    path === "profile"
+                        ? { id: 1, role: 0, username: "mock" }
+                        : path === "setting"
+                          ? {
+                                config: {
+                                    site_name: "Mock",
+                                    language: "en",
+                                    oauth2_providers: [],
+                                    custom_code: "",
+                                    custom_code_dashboard: "",
+                                },
+                            }
+                          : path === "server"
+                            ? [
+                                  {
+                                      id: 1,
+                                      name: "Mock server",
+                                      display_index: 10,
+                                      public_note: '{"planDataMod":{"networkRoute":"LINX"}}',
+                                      host: {},
+                                      geoip: { ip: { ipv4_addr: "192.0.2.1" } },
+                                      owner: { username: "mock" },
+                                  },
+                              ]
+                            : []
+                await route.fulfill({ json: { success: true, data } })
+            })
+            await page.goto(`${baseURL}/dashboard/`)
+            await page.getByRole("button", { name: "Edit", exact: true }).first().click()
+            const extra = page.locator('[data-note-field="extra"] input[aria-label]')
+            await extra.scrollIntoViewIfNeeded()
+            await extra.focus()
+            let submitFocused = false
+            for (let i = 0; i < 6; i++) {
+                await page.keyboard.press("Tab")
+                const text = await page.evaluate(() => document.activeElement?.textContent?.trim())
+                if (text === "Submit") {
+                    submitFocused = true
+                    break
+                }
+            }
+            expect(submitFocused).toBe(true)
+            const ring = await page.evaluate(() => {
+                const el = document.activeElement as HTMLElement
+                const cs = getComputedStyle(el)
+                return {
+                    outlineStyle: cs.outlineStyle,
+                    outlineWidth: parseFloat(cs.outlineWidth),
+                    outlineOffset: parseFloat(cs.outlineOffset),
+                    outlineColor: cs.outlineColor,
+                }
+            })
+            expect(ring.outlineStyle).toBe("solid")
+            expect(ring.outlineWidth).toBeGreaterThanOrEqual(2)
+            expect(ring.outlineOffset).toBeGreaterThanOrEqual(2)
+            expect(ring.outlineColor).not.toBe("rgba(0, 0, 0, 0)")
+        } finally {
+            await browser.close()
+        }
+    })
 }
+

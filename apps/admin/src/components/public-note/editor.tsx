@@ -53,22 +53,22 @@ export function PublicNoteEditor({
             <div className="nkt-note-field" data-note-field={key}>
                 <div className="nkt-note-label">
                     <span className="text-sm font-medium">{label}</span>
-                    {(current !== undefined || (key === "cycle" && cycle !== undefined)) && (
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            className="nkt-note-clear"
-                            shape="square"
-                            aria-label={`${t("PublicNote.Clear")} · ${label}`}
-                            onClick={() => patch(section, key, undefined)}
-                        >
-                            <X className="size-4" aria-hidden="true" />
-                        </Button>
-                    )}
                 </div>
                 <div className="nkt-note-control">
                     {control(current, (next) => patch(section, key, next))}
                 </div>
+                {(current !== undefined || (key === "cycle" && cycle !== undefined)) && (
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        className="nkt-note-clear"
+                        shape="square"
+                        aria-label={`${t("PublicNote.Clear")} · ${label}`}
+                        onClick={() => patch(section, key, undefined)}
+                    >
+                        <X className="size-4" aria-hidden="true" />
+                    </Button>
+                )}
             </div>
         )
     }

@@ -62,6 +62,10 @@ export function TagInput({
                         commit(event.target.value)
                 }}
                 onKeyDown={(event) => {
+                    if (!event.nativeEvent.isComposing && event.key === "Tab") {
+                        event.preventDefault = () => {}
+                        return
+                    }
                     if (!event.nativeEvent.isComposing && /^[，、;]$/.test(event.key)) {
                         event.preventDefault()
                         commit(event.currentTarget.value)

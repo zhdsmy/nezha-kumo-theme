@@ -35,6 +35,12 @@
     }
 }
 
+[data-kumo-component="Button"][style*="--kumo-button-emphasis"]:focus-visible,
+[data-kumo-component="LinkButton"][style*="--kumo-button-emphasis"]:focus-visible {
+    outline: 2px solid var(--kumo-button-emphasis, var(--color-kumo-brand));
+    outline-offset: 2px;
+}
+
 /* iOS zooms the page when a focused field's text is under 16px. Unlayered so it beats utility sizes. */
 @media (pointer: coarse) {
     input:not([type="checkbox"], [type="radio"], [type="range"]),

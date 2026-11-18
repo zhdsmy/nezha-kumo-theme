@@ -143,11 +143,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             className,
         )
 
+        const resolvedTabIndex = props.tabIndex ?? (isUnavailable ? undefined : 0)
         const buttonElement =
             kumoShape === "square" ? (
                 <KumoButton
                     {...props}
                     ref={ref}
+                    tabIndex={resolvedTabIndex}
                     variant={kumoVariant}
                     size={kumoSize}
                     shape="square"
@@ -170,6 +172,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     title={isUnavailable ? undefined : resolvedTitle}
                     className={mergedClassName}
                     {...props}
+                    tabIndex={resolvedTabIndex}
                 >
                     {children}
                 </KumoButton>
