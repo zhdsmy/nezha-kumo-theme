@@ -2,7 +2,9 @@
 import { formatBytes, formatClock, formatNumber, formatPercent, formatSpeed } from "@/core/format"
 import type { HistoryPoint, NodeInfo, PingData } from "@/core/model"
 import { spikeLimit } from "@/core/summary"
+import { Popover } from "@cloudflare/kumo/components/popover"
 import { Switch } from "@cloudflare/kumo/components/switch"
+import { InfoIcon } from "@phosphor-icons/react"
 import { type ReactNode, memo, useId, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -336,13 +338,37 @@ export const PingChart = memo(function PingChart({
         <ChartCard
             title={t("node.pingLines", { count: data.tasks.length })}
             action={
-                <Switch
-                    size="sm"
-                    checked={shave}
-                    onCheckedChange={onShaveChange}
-                    label={t("node.shave")}
-                    labelTooltip={t("node.shaveHint")}
-                />
+                <div className="shave-action">
+                    <Switch
+                        size="sm"
+                        checked={shave}
+                        onCheckedChange={onShaveChange}
+                        label={t("node.shave")}
+                    />
+                    <Popover.Root>
+                        <Popover.Trigger
+                            openOnHover
+                            delay={150}
+                            render={(props) => (
+                                <button
+                                    {...props}
+                                    type="button"
+                                    className="info-trigger"
+                                    aria-label={t("ui.moreInfo")}
+                                >
+                                    <InfoIcon size={15} />
+                                </button>
+                            )}
+                        />
+                        <Popover.Content
+                            side="top"
+                            align="end"
+                            className="max-w-64 px-3 py-2 text-xs leading-relaxed"
+                        >
+                            {t("node.shaveHint")}
+                        </Popover.Content>
+                    </Popover.Root>
+                </div>
             }
         >
             <Chart

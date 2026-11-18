@@ -30,7 +30,7 @@ ${FT} td,${FT} th { vertical-align:middle; overflow-wrap:anywhere; }
 @media (min-width:${BREAKPOINTS.gutter}px) {
  .action-label { display:inline; }
  @container (min-width:${CONTENT_WIDE}px) {
-  .metric-tile { min-height:146px; }
+  .metric-tile { min-height:150px; }
   .tile-value { font-size:24px; line-height:30px; }
   .tile-heading { padding:12px 16px 0; }
   .hour-grid-rows { gap:3px; }

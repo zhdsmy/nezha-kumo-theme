@@ -1,5 +1,13 @@
 // Adapted from zool-theme/src/components/Chart.tsx (MIT, luoleiorg).
-import { type PointerEvent, useId, useLayoutEffect, useMemo, useRef, useState } from "react"
+import {
+    type PointerEvent,
+    useEffect,
+    useId,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react"
 
 interface ChartPoint {
     t: number
@@ -371,6 +379,10 @@ export function Chart({
                   return { s, p: i >= 0 ? s.points[i] : null }
               })
     const hasHover = Boolean(hover && hover.some((h) => h.p))
+    const twoCol = (hover?.length ?? 0) > 8 && width >= 360
+    const maxItems = twoCol ? 20 : 10
+    const shown = hover && hover.length > maxItems ? hover.slice(0, maxItems - 1) : hover
+    const rest = (hover?.length ?? 0) - (shown?.length ?? 0)
     const hoverX = hoverT === null ? 0 : x(hover?.find((h) => h.p)?.p?.t ?? hoverT)
 
     useLayoutEffect(() => {
@@ -384,11 +396,53 @@ export function Chart({
     const desiredTipLeft = flipLeft ? hoverX - 12 - clampedTipW : hoverX + 12
     const tipLeft = Math.max(0, Math.min(Math.max(0, width - clampedTipW), desiredTipLeft))
 
+    const tapRef = useRef<{ startX: number; moved: boolean; sameSpot: boolean } | null>(null)
+
+    useEffect(() => {
+        if (!hasHover) return
+        const onDocDown = (e: globalThis.PointerEvent) => {
+            if (e.pointerType === "mouse") return
+            if (box.current && e.target instanceof Node && !box.current.contains(e.target)) {
+                setHoverT(null)
+            }
+        }
+        document.addEventListener("pointerdown", onDocDown, true)
+        return () => document.removeEventListener("pointerdown", onDocDown, true)
+    }, [hasHover])
+
+    const toHoverT = (clientX: number, el: SVGSVGElement) => {
+        const rect = el.getBoundingClientRect()
+        const px = clientX - rect.left
+        if (px < pad.l || px > width - pad.r || plotW <= 0 || !all.length) return null
+        return t0 + (Math.min(plotW, px - pad.l) / plotW) * span
+    }
+
+    const onDown = (e: PointerEvent<SVGSVGElement>) => {
+        if (e.pointerType === "mouse") return
+        const nextT = toHoverT(e.clientX, e.currentTarget)
+        if (nextT === null) {
+            tapRef.current = null
+            setHoverT(null)
+            return
+        }
+        const sameSpot = hoverT !== null && Math.abs(x(nextT) - x(hoverT)) < 14
+        tapRef.current = { startX: e.clientX, moved: false, sameSpot }
+        if (!sameSpot) setHoverT(nextT)
+    }
+
     const onMove = (e: PointerEvent<SVGSVGElement>) => {
-        const rect = e.currentTarget.getBoundingClientRect()
-        const px = e.clientX - rect.left
-        if (px < pad.l || plotW <= 0 || !all.length) return setHoverT(null)
-        setHoverT(t0 + (Math.min(plotW, px - pad.l) / plotW) * span)
+        if (tapRef.current && Math.abs(e.clientX - tapRef.current.startX) > 4) {
+            tapRef.current.moved = true
+        }
+        setHoverT(toHoverT(e.clientX, e.currentTarget))
+    }
+
+    const onUp = (e: PointerEvent<SVGSVGElement>) => {
+        if (e.pointerType === "mouse") return
+        if (tapRef.current && !tapRef.current.moved && tapRef.current.sameSpot) {
+            setHoverT(null)
+        }
+        tapRef.current = null
     }
 
     const empty = all.every((p) => p.v === null)
@@ -406,8 +460,16 @@ export function Chart({
                     width={width}
                     height={height}
                     className="block touch-pan-y overflow-visible"
+                    onPointerDown={onDown}
                     onPointerMove={onMove}
-                    onPointerLeave={() => setHoverT(null)}
+                    onPointerUp={onUp}
+                    onPointerCancel={() => {
+                        tapRef.current = null
+                        setHoverT(null)
+                    }}
+                    onPointerLeave={(e) => {
+                        if (e.pointerType === "mouse") setHoverT(null)
+                    }}
                 >
                     <defs>
                         {prepared.map((s) => (
@@ -528,54 +590,43 @@ export function Chart({
                     —
                 </div>
             )}
-            {hover &&
-                hasHover &&
-                (() => {
-                    const twoCol = hover.length > 8 && width >= 360
-                    const maxItems = twoCol ? 20 : 10
-                    const shown = hover.length > maxItems ? hover.slice(0, maxItems - 1) : hover
-                    const rest = hover.length - shown.length
-                    return (
-                        <div
-                            ref={tipRef}
-                            className="chart-tooltip pointer-events-none absolute top-1 z-10 px-3 py-2 text-[12px]"
-                            style={{
-                                left: tipLeft,
-                                maxWidth: width,
-                            }}
-                        >
-                            <p className="num mb-1 text-kumo-subtle">
-                                {tooltipTime(hover.find((h) => h.p)!.p!.t)}
-                            </p>
-                            <div
-                                className="chart-tooltip-rows"
-                                data-cols={twoCol ? "2" : undefined}
+            {hover && shown && hasHover && (
+                <div
+                    ref={tipRef}
+                    className="chart-tooltip pointer-events-none absolute top-1 z-10 px-3 py-2 text-[12px]"
+                    style={{
+                        left: tipLeft,
+                        maxWidth: width,
+                    }}
+                >
+                    <p className="num mb-1 text-kumo-subtle">
+                        {tooltipTime(hover.find((h) => h.p)!.p!.t)}
+                    </p>
+                    <div className="chart-tooltip-rows" data-cols={twoCol ? "2" : undefined}>
+                        {shown.map(({ s, p }) => (
+                            <p
+                                key={s.key}
+                                className="chart-tooltip-row flex min-w-0 items-center gap-2"
                             >
-                                {shown.map(({ s, p }) => (
-                                    <p
-                                        key={s.key}
-                                        className="chart-tooltip-row flex min-w-0 items-center gap-2"
-                                    >
-                                        <span
-                                            className="h-[2px] w-3 shrink-0 rounded-full"
-                                            style={{ background: s.color }}
-                                        />
-                                        <span
-                                            className="chart-series-label text-kumo-subtle"
-                                            title={s.label}
-                                        >
-                                            {s.label}
-                                        </span>
-                                        <span className="num ml-auto shrink-0 pl-2">
-                                            {p && p.v !== null ? format(p.v) : "—"}
-                                        </span>
-                                    </p>
-                                ))}
-                                {rest > 0 && <p className="chart-tooltip-row muted num">+{rest}</p>}
-                            </div>
-                        </div>
-                    )
-                })()}
+                                <span
+                                    className="h-[2px] w-3 shrink-0 rounded-full"
+                                    style={{ background: s.color }}
+                                />
+                                <span
+                                    className="chart-series-label text-kumo-subtle"
+                                    title={s.label}
+                                >
+                                    {s.label}
+                                </span>
+                                <span className="num ml-auto shrink-0 pl-2">
+                                    {p && p.v !== null ? format(p.v) : "—"}
+                                </span>
+                            </p>
+                        ))}
+                        {rest > 0 && <p className="chart-tooltip-row muted num">+{rest}</p>}
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

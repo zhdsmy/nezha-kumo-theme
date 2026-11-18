@@ -243,4 +243,73 @@ test.describe("Visual review F1–F10 fixes", () => {
         })
         await expect(cmdkList).not.toHaveAttribute("data-scroll-more", "")
     })
+
+    test("F5: touch tap retains chart reading, info trigger opens on tap without toggling switch, status trigger >= 32px, and region tabs fade overflow", async ({
+        browser,
+    }) => {
+        const ctx = await browser.newContext({
+            viewport: { width: 768, height: 1024 },
+            hasTouch: true,
+        })
+        const page = await ctx.newPage()
+        await mockNezha(page)
+        // Ensure multiple regions overflow .region-tabs at 768px and at least 1 offline node triggers .status-trigger
+        const codes = ["US", "JP", "DE", "SG", "HK", "GB", "FR", "NL", "AU", "CA", "KR", "BR"]
+        const servers = Array.from({ length: 12 }, (_, i) => ({
+            ...structuredClone(fixture.servers[i % fixture.servers.length]!),
+            id: i + 1,
+            name: `Node-${codes[i]}`,
+            country_code: codes[i]!,
+            last_active:
+                i === 0 ? new Date(Date.now() - 3600_000).toISOString() : new Date().toISOString(),
+        }))
+        await page.routeWebSocket("**/api/v1/ws/server", (ws) => {
+            ws.send(JSON.stringify({ now: Date.now(), servers }))
+        })
+
+        await page.goto("/")
+        const statusTrigger = page.locator(".status-trigger")
+        await expect(statusTrigger).toBeVisible()
+        const triggerBox = await statusTrigger.boundingBox()
+        expect(triggerBox!.height).toBeGreaterThanOrEqual(32)
+
+        const regionList = page.locator(".region-tabs .kumo-tabs-list")
+        await expect(regionList).toHaveAttribute("data-overflow-end", "")
+        const regionMask = await regionList.evaluate(
+            (el) =>
+                getComputedStyle(el).maskImage ||
+                getComputedStyle(el).getPropertyValue("-webkit-mask-image"),
+        )
+        expect(regionMask).toContain("linear-gradient")
+
+        // Navigate to node Latency tab at 375x667 touch
+        await page.setViewportSize({ width: 375, height: 667 })
+        await page.goto("/server/2#latency")
+        await page.getByRole("tab", { name: "1 h" }).tap()
+        const chartSvg = page.locator(".chart svg").first()
+        await expect(chartSvg).toBeVisible()
+        const svgBox = await chartSvg.boundingBox()
+        await page.touchscreen.tap(
+            Math.round(svgBox!.x + svgBox!.width * 0.5),
+            Math.round(svgBox!.y + svgBox!.height * 0.5),
+        )
+        await page.waitForTimeout(200)
+        await expect(page.locator(".chart-tooltip").first()).toBeVisible()
+
+        // Tap same spot dismisses chart tooltip
+        await page.touchscreen.tap(
+            Math.round(svgBox!.x + svgBox!.width * 0.5),
+            Math.round(svgBox!.y + svgBox!.height * 0.5),
+        )
+        await expect(page.locator(".chart-tooltip")).toHaveCount(0)
+
+        // Tap More information opens spike explanation without toggling Hide spikes switch
+        const shaveSwitch = page.getByRole("switch")
+        const beforeChecked = await shaveSwitch.getAttribute("aria-checked")
+        const infoBtn = page.getByRole("button", { name: "More information" })
+        await infoBtn.tap()
+        await expect(page.getByText(/99th percentile|spikes/i)).toBeVisible()
+        expect(await shaveSwitch.getAttribute("aria-checked")).toBe(beforeChecked)
+        await ctx.close()
+    })
 })
