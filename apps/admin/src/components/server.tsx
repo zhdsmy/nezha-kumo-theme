@@ -197,47 +197,54 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate, routes }) 
                                 onSubmit={form.handleSubmit(onSubmit)}
                                 className="space-y-2 my-2"
                             >
-                                <div className="grid grid-cols-[1fr_6.5rem] items-end gap-3">
-                                    <FormField
-                                        control={form.control}
-                                        name="name"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="block truncate">
-                                                    {t("Name")}
-                                                </FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        placeholder={t("Placeholders.ServerName")}
-                                                        {...field}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="display_index"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel
-                                                    className="block truncate"
-                                                    title={t("Weight")}
-                                                >
-                                                    {t("Weight")}
-                                                </FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        type="number"
-                                                        placeholder="0"
-                                                        {...field}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                                <div className="space-y-1">
+                                    <div className="grid grid-cols-[1fr_6.5rem] items-end gap-3">
+                                        <FormField
+                                            control={form.control}
+                                            name="name"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="block truncate">
+                                                        {t("Name")}
+                                                    </FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            placeholder={t(
+                                                                "Placeholders.ServerName",
+                                                            )}
+                                                            {...field}
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="display_index"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="block truncate">
+                                                        {t("Weight")}
+                                                    </FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            type="number"
+                                                            placeholder="0"
+                                                            {...field}
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                    <p
+                                        data-weight-hint=""
+                                        className="text-xs text-muted-foreground"
+                                    >
+                                        {t("WeightHint")}
+                                    </p>
                                 </div>
                                 <div className="flex flex-wrap gap-x-6 gap-y-2 py-1">
                                     <FormField
