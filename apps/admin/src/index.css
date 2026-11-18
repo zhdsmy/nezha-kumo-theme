@@ -706,6 +706,33 @@ body,
 .nkt-note-editor [data-note-ip] .nkt-note-clear {
     top: 0;
 }
+@media (max-width: 639px) {
+    .nkt-note-editor
+        .nkt-note-billing-column
+        > :is([data-note-field="autoRenewal"], [data-note-field="cycle"])
+        > .nkt-note-label {
+        display: flex;
+        align-items: center;
+        min-height: 32px;
+    }
+    .nkt-note-editor .nkt-note-billing-column > [data-note-field="cycle"] > .nkt-note-label {
+        padding-right: 36px;
+    }
+    .nkt-note-editor .nkt-note-billing-column > [data-note-field="cycle"] > .nkt-note-control {
+        padding-right: 0;
+    }
+    .nkt-note-editor
+        .nkt-note-billing-column
+        > [data-note-field="cycle"]
+        > .nkt-note-control
+        button {
+        padding-inline: 8px;
+        gap: 4px;
+    }
+    .nkt-note-editor .nkt-note-billing-column > [data-note-field="cycle"] > .nkt-note-clear {
+        top: -2px;
+    }
+}
 .nkt-note-editor [data-note-field] :is(input, [role="combobox"]) {
     min-width: 0;
     width: 100%;
@@ -746,8 +773,8 @@ body,
 .nkt-json-heading {
     display: grid;
     min-width: 0;
-    grid-template-columns: minmax(0, 1fr) 5rem auto;
-    gap: 4px;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 6px;
     align-items: end;
 }
 .nkt-json-heading > *,

@@ -113,4 +113,66 @@ for (const [engine, driver] of Object.entries({ chromium, webkit })) {
             await browser.close()
         }
     })
+
+    test(`A4: ${engine} fits Cycle value at 375px and prevents Japanese type Select from overlapping Delete`, async ({
+        baseURL,
+    }) => {
+        const browser = await driver.launch()
+        try {
+            if (!baseURL) throw new Error("A local preview baseURL is required")
+            const enPage = await browser.newPage({
+                viewport: { width: 375, height: 667 },
+                locale: "en-US",
+            })
+            await enPage.addInitScript(() => localStorage.setItem("language", "en"))
+            await attachAdminMock(enPage, "en-US")
+            await enPage.goto(`${baseURL}/dashboard/`)
+            await enPage.getByRole("button", { name: "Actions", exact: true }).first().click()
+            await enPage.getByRole("button", { name: "Edit", exact: true }).first().click()
+            await expect(enPage.locator("[data-public-note-editor]")).toBeVisible()
+            const cycleMetrics = await enPage
+                .locator('[data-note-field="cycle"] .nkt-note-control button span.truncate')
+                .evaluate((el) => ({
+                    text: el.textContent,
+                    clientWidth: el.clientWidth,
+                    scrollWidth: el.scrollWidth,
+                }))
+            expect(cycleMetrics.scrollWidth, JSON.stringify(cycleMetrics)).toBeLessThanOrEqual(
+                cycleMetrics.clientWidth,
+            )
+            await enPage.close()
+
+            const jaPage = await browser.newPage({
+                viewport: { width: 1440, height: 900 },
+                locale: "ja",
+            })
+            await jaPage.addInitScript(() => localStorage.setItem("language", "ja"))
+            await attachAdminMock(jaPage, "ja")
+            await jaPage.goto(`${baseURL}/dashboard/`)
+            await jaPage.getByRole("button", { name: "編集", exact: true }).first().click()
+            await expect(jaPage.locator("[data-private-note-editor]")).toBeVisible()
+            const headings = await jaPage.locator(".nkt-json-heading").evaluateAll((els) =>
+                els.map((el) => {
+                    const combo = el.querySelector('[role="combobox"]')!
+                    const buttons = el.querySelectorAll("button")
+                    const del = buttons[buttons.length - 1]!
+                    const cRect = combo.getBoundingClientRect()
+                    const dRect = del.getBoundingClientRect()
+                    return {
+                        typeText: combo.textContent?.trim(),
+                        comboRight: cRect.right,
+                        delLeft: dRect.left,
+                        gap: dRect.left - cRect.right,
+                    }
+                }),
+            )
+            expect(headings.length).toBeGreaterThan(0)
+            for (const h of headings) {
+                expect(h.gap, JSON.stringify(h)).toBeGreaterThanOrEqual(2)
+            }
+            await jaPage.close()
+        } finally {
+            await browser.close()
+        }
+    })
 }
