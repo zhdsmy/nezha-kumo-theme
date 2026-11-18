@@ -252,16 +252,26 @@ test("number and boolean editing, null conversion, and four-layer limits stay co
     ).toBe("true")
 })
 
-test("the actual-cost shortcut creates the nested path and leaves unrelated bytes intact", () => {
-    render(<Harness raw=' {"x": 1e+2} ' />)
-    fireEvent.click(screen.getByRole("button", { name: i18n.t("PrivateNote.AddActualAmount") }))
-    expect(saved()).toContain('"x": 1e+2')
-    expect(JSON.parse(saved()).billingDataMod.actualAmount).toBe("")
-    expect(
-        screen.getByRole("button", {
-            name: new RegExp("^" + i18n.t("PrivateNote.ActualCycle") + " · "),
-        }).textContent,
-    ).toContain(i18n.t("PrivateNote.FollowPublicCycle"))
+test("the actual-cost shortcut creates the nested path, focuses the amount input, and leaves unrelated bytes intact", () => {
+    const scrollSpy = vi.fn()
+    const origScroll = HTMLElement.prototype.scrollIntoView
+    HTMLElement.prototype.scrollIntoView = scrollSpy
+    try {
+        render(<Harness raw=' {"x": 1e+2} ' />)
+        fireEvent.click(screen.getByRole("button", { name: i18n.t("PrivateNote.AddActualAmount") }))
+        expect(saved()).toContain('"x": 1e+2')
+        expect(JSON.parse(saved()).billingDataMod.actualAmount).toBe("")
+        const amountInput = screen.getByRole("textbox", { name: i18n.t("PrivateNote.ActualAmount") })
+        expect(document.activeElement).toBe(amountInput)
+        expect(scrollSpy).toHaveBeenCalled()
+        expect(
+            screen.getByRole("button", {
+                name: new RegExp("^" + i18n.t("PrivateNote.ActualCycle") + " · "),
+            }).textContent,
+        ).toContain(i18n.t("PrivateNote.FollowPublicCycle"))
+    } finally {
+        HTMLElement.prototype.scrollIntoView = origScroll
+    }
 })
 
 test("replacing a container clears incomplete numeric drafts in its removed children", async () => {

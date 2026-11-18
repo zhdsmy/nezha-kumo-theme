@@ -44,7 +44,32 @@ export function PrivateNoteEditor({
     const rowIds = useRef<RowIdentity[]>([])
     const sequence = useRef(0)
     const movedFocus = useRef<HTMLElement | null>(null)
+    const focusActual = useRef(false)
     useLayoutEffect(() => {
+        if (focusActual.current) {
+            focusActual.current = false
+            const card = document.querySelector<HTMLElement>("[data-actual-amount]")
+            const input = card?.querySelector<HTMLInputElement>('input[inputmode="decimal"]')
+            if (card) {
+                const container = card.closest<HTMLElement>("[data-json-path]") ?? card
+                const dialog = container.closest<HTMLElement>(".nkt-dialog")
+                if (dialog) {
+                    const bounds = dialog.getBoundingClientRect()
+                    const footer = dialog.querySelector<HTMLElement>(".nkt-dialog-footer")
+                    const visibleBottom = footer
+                        ? Math.min(bounds.bottom, footer.getBoundingClientRect().top) - 12
+                        : bounds.bottom - 12
+                    const rect = container.getBoundingClientRect()
+                    if (rect.bottom > visibleBottom) dialog.scrollTop += rect.bottom - visibleBottom
+                    else if (rect.top < bounds.top + 12)
+                        dialog.scrollTop += rect.top - (bounds.top + 12)
+                    if (document.scrollingElement) document.scrollingElement.scrollTop = 0
+                } else {
+                    container.scrollIntoView?.({ block: "nearest" })
+                }
+            }
+            input?.focus({ preventScroll: true })
+        }
         const target = movedFocus.current
         const focus = target?.matches(":disabled")
             ? target
@@ -373,12 +398,13 @@ export function PrivateNoteEditor({
                 <Button
                     type="button"
                     variant="secondary"
-                    onClick={() =>
+                    onClick={() => {
+                        focusActual.current = true
                         onChange(
                             patchJsonNote(value, ["billingDataMod", "actualAmount"], ""),
                             "structured",
                         )
-                    }
+                    }}
                 >
                     {t("PrivateNote.AddActualAmount")}
                 </Button>
