@@ -205,6 +205,23 @@ for (const [engine, driver] of Object.entries({ chromium, webkit })) {
             })
         })
 
+        test("frontend type switches the installed template list", async ({ page }) => {
+            await mockAdmin(page, {
+                frontend: {
+                    templates: [
+                        { path: "user", name: "Public theme" },
+                        { path: "admin", name: "Admin theme", is_admin: true },
+                    ],
+                },
+            })
+            await page.goto("/dashboard/settings/frontends")
+            await expect(page.getByText(/Public theme ·/)).toBeVisible()
+            await page.locator("button#frontend-role").click()
+            await page.getByRole("option").last().click()
+            await expect(page.getByText(/Admin theme ·/)).toBeVisible()
+            await expect(page.getByText(/Public theme ·/)).toHaveCount(0)
+        })
+
         test("server group members use loaded names and keep unresolved IDs", async ({ page }) => {
             await mockAdmin(page, {
                 "server-group": [{ group: { id: 1, name: "Edges" }, servers: [7, 99] }],

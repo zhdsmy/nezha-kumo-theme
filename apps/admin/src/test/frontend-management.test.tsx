@@ -139,9 +139,10 @@ test.each([false, true])(
     "installs the selected role without activating it (admin=%s)",
     async (admin) => {
         renderPage()
-        fireEvent.change(screen.getByLabelText("FrontendManager.Target"), {
-            target: { value: admin ? "admin" : "user" },
-        })
+        fireEvent.keyDown(screen.getByLabelText("FrontendManager.Target"), { key: "Enter" })
+        fireEvent.click(screen.getByRole("option", {
+            name: admin ? "FrontendManager.Admin" : "FrontendManager.User",
+        }))
         await queryReleases()
         fireEvent.click(screen.getByRole("button", { name: "FrontendManager.Install" }))
         await waitFor(() => expect(mocks.success).toHaveBeenCalledWith("FrontendManager.Installed"))
@@ -196,9 +197,10 @@ test.each([false, true])(
         const state = mocks.swr.getMockImplementation()!()
         state.data.templates[1].is_admin = admin
         renderPage()
-        fireEvent.change(screen.getByLabelText("FrontendManager.Target"), {
-            target: { value: admin ? "admin" : "user" },
-        })
+        fireEvent.keyDown(screen.getByLabelText("FrontendManager.Target"), { key: "Enter" })
+        fireEvent.click(screen.getByRole("option", {
+            name: admin ? "FrontendManager.Admin" : "FrontendManager.User",
+        }))
         const buttons = screen.getAllByRole("button", { name: "FrontendManager.Remove" })
         expect(buttons).toHaveLength(1)
 

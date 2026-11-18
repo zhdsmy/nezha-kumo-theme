@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuth } from "@/hooks/useAuth"
 import { safeExternalHref } from "@/lib/utils"
 import { Page } from "@nezha-kumo/ui"
@@ -98,16 +99,19 @@ export default function FrontendsPage() {
                 <CardContent className="space-y-6 pt-6">
                     <div className="space-y-2">
                         <Label htmlFor="frontend-role">{t("FrontendManager.Target")}</Label>
-                        <select
-                            id="frontend-role"
+                        <Select
                             value={isAdminFrontend ? "admin" : "user"}
                             disabled={busy}
-                            onChange={(event) => setIsAdminFrontend(event.target.value === "admin")}
-                            className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
+                            onValueChange={(value) => setIsAdminFrontend(value === "admin")}
                         >
-                            <option value="user">{t("FrontendManager.User")}</option>
-                            <option value="admin">{t("FrontendManager.Admin")}</option>
-                        </select>
+                            <SelectTrigger id="frontend-role">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="user">{t("FrontendManager.User")}</SelectItem>
+                                <SelectItem value="admin">{t("FrontendManager.Admin")}</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                     <form
                         onSubmit={(event) => {
