@@ -422,9 +422,10 @@ interface TableStateRowProps {
     isLoading?: boolean
     error?: unknown
     onRetry?: () => unknown
+    emptyLabel?: string
 }
 
-function TableStateRow({ colSpan, rowCount, isLoading, error, onRetry }: TableStateRowProps) {
+function TableStateRow({ colSpan, rowCount, isLoading, error, onRetry, emptyLabel }: TableStateRowProps) {
     const { t } = useTranslation()
     if (rowCount > 0 && !error) return null
     if (isLoading && !error) {
@@ -468,7 +469,7 @@ function TableStateRow({ colSpan, rowCount, isLoading, error, onRetry }: TableSt
     return (
         <TableRow>
             <TableCell colSpan={colSpan} className="h-24 text-center text-muted-foreground">
-                {t("NoResults")}
+                {emptyLabel ?? t("NoResults")}
             </TableCell>
         </TableRow>
     )

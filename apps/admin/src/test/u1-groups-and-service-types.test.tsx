@@ -4,7 +4,7 @@ import NotificationPage from "@/routes/notification"
 import ServerPage from "@/routes/server"
 import ServicePage from "@/routes/service"
 import { serviceTypes } from "@/types/service"
-import { act, cleanup, render, renderHook, screen, waitFor } from "@testing-library/react"
+import { act, cleanup, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react"
 import { MemoryRouter } from "react-router-dom"
 import { SWRConfig } from "swr"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
@@ -28,7 +28,7 @@ vi.mock("@/api/api", () => ({
                     name: "edge-jp-01",
                     display_index: 10,
                     host: { version: "1.18.2" },
-                    geoip: { ip: { ipv4_addr: "198.51.100.2", ipv6_addr: "" }, country_code: "jp" },
+                    geoip: { ip: { ipv4_addr: "198.51.100.2", ipv6_addr: "2001:db8::abcd" }, country_code: "jp" },
                     note: "",
                     public_note: "",
                     hide_for_guest: false,
@@ -127,6 +127,27 @@ test("U1: server and notification tables render group names even when group prov
         expect(screen.getByText("亚太核心边缘, 全球 Anycast BGP")).toBeTruthy()
         expect(screen.getByText("NOC 值班核心组")).toBeTruthy()
     })
+})
+
+test("AW15: search matches name, ID and both IPs; hidden rows cannot be batch targets", async () => {
+    render(<MemoryRouter><SWRConfig value={{ provider: () => new Map() }}><ServerPage /></SWRConfig></MemoryRouter>)
+    await screen.findByText("edge-jp-01")
+    const search = screen.getByRole("searchbox")
+    const filter = (value: string) => fireEvent.change(search, { target: { value } })
+    for (const value of ["EDGE-jP", "1", "198.51.100", " DB8::ABCD "]) {
+        filter(value)
+        expect(screen.getByText("edge-jp-01")).toBeTruthy()
+    }
+    fireEvent.click(screen.getByRole("checkbox", { name: i18n.t("SelectRow") }))
+    expect(screen.getByText(i18n.t("SelectedCount", { count: 1 }))).toBeTruthy()
+    filter("unlisted")
+    expect(screen.queryByText("edge-jp-01")).toBeNull()
+    expect(screen.queryByText(i18n.t("SelectedCount", { count: 1 }))).toBeNull()
+    expect(screen.getByText(i18n.t("NoMatchingServers"))).toBeTruthy()
+    expect(screen.queryByText(i18n.t("NoResults"))).toBeNull()
+    filter("")
+    expect(screen.getByText("edge-jp-01")).toBeTruthy()
+    expect(screen.getByRole("checkbox", { name: i18n.t("SelectRow") }).getAttribute("aria-checked")).toBe("false")
 })
 
 test("U1: serviceTypes maps type 4 to TLS and renders TLS in ServicePage", async () => {

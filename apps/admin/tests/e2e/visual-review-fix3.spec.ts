@@ -93,6 +93,49 @@ for (const [engine, driver] of Object.entries({ chromium, webkit })) {
         }
     })
 
+    test(`AW15: ${engine} filters loaded servers by ID, name, IP and group at 375px`, async ({ baseURL }) => {
+        const browser = await driver.launch()
+        try {
+            const page = await browser.newPage({ viewport: { width: 375, height: 667 }, locale: "en" })
+            await attachAdminMock(page)
+            let reads = 0
+            await page.route("**/api/v1/server", (route) => {
+                reads++
+                return route.fulfill({ json: { success: true, data: [
+                    { id: 713, name: "Tokyo", host: {}, geoip: { ip: { ipv4_addr: "192.0.2.5", ipv6_addr: "2001:db8::a" } } },
+                    { id: 915, name: "Osaka", host: {} },
+                ] } })
+            })
+            await page.route("**/api/v1/server-group", (route) => route.fulfill({
+                json: { success: true, data: [{ group: { id: 1, name: "Edge" }, servers: [915] }] },
+            }))
+            await page.goto(`${baseURL}/dashboard/`)
+            const names = page.locator(".nkt-server-name")
+            await expect(names).toHaveCount(2)
+            const initialReads = reads
+            const search = page.getByRole("searchbox")
+            for (const term of ["713", "TOKYO", "192.0.2", "DB8::A"]) {
+                await search.fill(term)
+                await expect(names).toHaveText(["Tokyo"])
+            }
+            const groups = page.getByRole("combobox", { name: "Server groups" })
+            await groups.click()
+            await page.getByRole("option", { name: "Edge" }).click()
+            await expect(page.getByText("No matching servers")).toBeVisible()
+            await search.fill("")
+            await expect(names).toHaveText(["Osaka"])
+            await groups.click()
+            await page.getByRole("option", { name: "All groups" }).click()
+            await expect(names).toHaveCount(2)
+            const bounds = await search.boundingBox()
+            expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(375)
+            expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(375)
+            expect(reads).toBe(initialReads)
+        } finally {
+            await browser.close()
+        }
+    })
+
     test(`A2: ${engine} scrolls to and focuses Actual expense on first click in a tall 375x667 dialog`, async ({
         baseURL,
     }) => {
