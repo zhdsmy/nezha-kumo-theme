@@ -11,6 +11,8 @@
         "attention_other": "{{count}} 個需要注意",
         "noNodes": "還沒有節點。",
         "expired": "已到期",
+        "expiringInDays_other": "{{count}} 天後到期",
+        "expiringToday": "今天到期",
         "quotaExceeded": "流量超額",
         "stale": "資料停更",
         "live": "即時",
@@ -93,6 +95,8 @@
     "expiry": {
         "inDays_other": "{{count}} 天後",
         "today": "今天",
+        "renewInDays_other": "{{count}} 天後續約",
+        "renewToday": "今天續約",
         "expired": "已到期",
         "longTerm": "長期"
     },

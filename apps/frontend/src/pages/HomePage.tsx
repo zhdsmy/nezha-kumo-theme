@@ -261,7 +261,7 @@ export function HomePage() {
         const ctrl = new AbortController()
         void seedLive(all, ctrl.signal).catch(() => {})
         return () => ctrl.abort()
-    }, [all, settings.showOverview])
+    }, [all.map((n) => n.id).join(), settings.showOverview])
     useEffect(() => {
         writeStorage("nkt:sort", JSON.stringify(sort))
         writeStorage("nkt:desc", JSON.stringify(desc))
@@ -400,9 +400,11 @@ export function HomePage() {
         desc,
     )
     const formatReason = (r: IssueReason) =>
-        r.kind === "cpu" || r.kind === "memory" || r.kind === "disk"
+        "percent" in r
             ? `${t(`metric.${r.kind}`)} ${r.percent}%`
-            : t(`status.${r.kind === "quota" ? "quotaExceeded" : r.kind}`)
+            : "days" in r
+              ? t(r.days ? "status.expiringInDays" : "status.expiringToday", { count: r.days })
+              : t(`status.${r.kind === "quota" ? "quotaExceeded" : r.kind}`)
     const nodesSub = !fed ? (
         t("status.connecting")
     ) : !nodes.length ? (
@@ -654,14 +656,16 @@ export function HomePage() {
                                         value={desc ? "desc" : "asc"}
                                         onValueChange={(v: string) => setDesc(v === "desc")}
                                     >
-                                        <DropdownMenu.RadioItem value="asc">
-                                            {t("toolbar.ascending")}
-                                            <DropdownMenu.RadioItemIndicator />
-                                        </DropdownMenu.RadioItem>
-                                        <DropdownMenu.RadioItem value="desc">
-                                            {t("toolbar.descending")}
-                                            <DropdownMenu.RadioItemIndicator />
-                                        </DropdownMenu.RadioItem>
+                                        {(["asc", "desc"] as const).map((d) => (
+                                            <DropdownMenu.RadioItem key={d} value={d}>
+                                                {t(
+                                                    d === "desc"
+                                                        ? "toolbar.descending"
+                                                        : "toolbar.ascending",
+                                                )}
+                                                <DropdownMenu.RadioItemIndicator />
+                                            </DropdownMenu.RadioItem>
+                                        ))}
                                     </DropdownMenu.RadioGroup>
                                 </DropdownMenu.Group>
                             </DropdownMenu.Content>

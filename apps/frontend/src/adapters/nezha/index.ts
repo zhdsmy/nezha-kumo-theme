@@ -162,19 +162,35 @@ export function parseActualCost(note: unknown): ActualCost | undefined {
 const text = (value: unknown) => (typeof value === "string" ? value.trim() : "")
 
 export function parsePublicNote(note: string | undefined) {
-    const out = {
+    const out: Pick<
+        NodeInfo,
+        | "price"
+        | "currency"
+        | "billingCycle"
+        | "cycle"
+        | "autoRenewal"
+        | "expiredAt"
+        | "tz"
+        | "trafficLimit"
+        | "trafficLimitType"
+        | "trafficLimitTypeExplicit"
+        | "trafficLimitPeriod"
+        | "bandwidth"
+        | "ipv4"
+        | "ipv6"
+        | "networkRoute"
+        | "note"
+    > = {
         price: 0,
         currency: "$",
         billingCycle: 0,
         autoRenewal: false,
-        expiredAt: null as number | null,
+        expiredAt: null,
         trafficLimit: -1,
-        trafficLimitType: "max" as NodeInfo["trafficLimitType"],
+        trafficLimitType: "max",
         trafficLimitTypeExplicit: false,
         trafficLimitPeriod: 0,
         bandwidth: "",
-        ipv4: undefined as boolean | undefined,
-        ipv6: undefined as boolean | undefined,
         networkRoute: "",
         note: "",
     }
@@ -197,13 +213,19 @@ export function parsePublicNote(note: string | undefined) {
                       : amount.amount
             if (amount.amount > 0) out.currency = amount.symbol.slice(0, 4) || "$"
         }
-        out.billingCycle = cycleDays(
-            parseCycle(b.cycle) ?? (!text(b.cycle) ? amount?.cycle : undefined),
-        )
+        const cycle = parseCycle(b.cycle) ?? (!text(b.cycle) ? amount?.cycle : undefined)
+        if (cycle) out.cycle = cycle
+        out.billingCycle = cycleDays(cycle)
         out.autoRenewal = text(b.autoRenewal) === "1"
         const end = parseNoteDate(b.endDate)
         out.expiredAt =
             end === 0 ? 0 : end !== undefined && new Date(end).getUTCFullYear() > 2000 ? end : null
+        if (out.expiredAt) {
+            const raw = text(b.endDate),
+                z = /([+-])(\d\d):?(\d\d)$/.exec(raw)
+            if (z) out.tz = +(z[1] + 1) * (+z[2] * 60 + +z[3])
+            else if (/Z$/i.test(raw) || !/[T ]/.test(raw)) out.tz = 0
+        }
     }
     const p = parsed.planDataMod
     if (p) {

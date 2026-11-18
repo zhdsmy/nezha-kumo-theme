@@ -512,7 +512,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                             [
                                                 t("metric.expiry"),
                                                 expiry
-                                                    ? `${node.expiredAt ? new Date(node.expiredAt).toLocaleDateString(i18n.language) + " · " : ""}${expiry.text}`
+                                                    ? `${expiry.at ? new Date(expiry.at).toLocaleDateString(i18n.language) + " · " : ""}${expiry.text}`
                                                     : "—",
                                             ],
                                             [t("metric.autoRenew"), node.autoRenewal ? "✓" : ""],

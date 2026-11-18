@@ -1,4 +1,5 @@
 import { nodeCondition } from "./condition"
+import { resolveExpiry } from "./expiry"
 import { formatPercent, ratio } from "./format"
 import type { NodeInfo, Snapshot } from "./model"
 
@@ -25,6 +26,7 @@ export function sortNodes(
     snapshots: Record<string, Snapshot>,
     key: SortKey,
     desc: boolean,
+    now = Date.now(),
 ) {
     const value = (n: NodeInfo) => {
         const s = snapshots[n.id]
@@ -42,7 +44,7 @@ export function sortNodes(
             case "uptime":
                 return s?.uptime ?? -1
             case "expiry":
-                return n.expiredAt || Infinity
+                return resolveExpiry(n, now)?.at ?? (desc ? -Infinity : Infinity)
             default:
                 return n.weight
         }
@@ -53,9 +55,9 @@ export function sortNodes(
         const diff =
             typeof av === "string" && typeof bv === "string"
                 ? av.localeCompare(bv)
-                : Number(av) === Number(bv)
+                : av === bv
                   ? 0
-                  : Number(av) < Number(bv)
+                  : av < bv
                     ? -1
                     : 1
         return (desc ? -diff : diff) || a.id.localeCompare(b.id)
@@ -80,6 +82,7 @@ export type IssueReason =
     | { kind: "offline" }
     | { kind: "stale" }
     | { kind: "expired" }
+    | { kind: "expiring"; days: number }
     | { kind: "quota" }
     | { kind: "cpu" | "memory" | "disk"; percent: string }
 
@@ -90,24 +93,33 @@ export function nodeIssues(
     now = Date.now(),
 ): IssueReason[] {
     const c = nodeCondition(n, s, now, fed)
+    const expiry = resolveExpiry(n, now)
     const reasons: IssueReason[] = []
     if (fed && !s?.online) reasons.push({ kind: "offline" })
     if (s?.online) {
         if (c.kind === "stale") reasons.push({ kind: "stale" })
-        const mem = ratio(s.memUsed, s.memTotal || n.memTotal)
-        const disk = ratio(s.diskUsed, s.diskTotal || n.diskTotal)
-        if (levelFor("cpu", s.cpu) !== "good")
-            reasons.push({ kind: "cpu", percent: formatPercent(s.cpu) })
-        if (levelFor("memory", mem) !== "good")
-            reasons.push({ kind: "memory", percent: formatPercent(mem) })
-        if (levelFor("disk", disk) !== "good")
-            reasons.push({ kind: "disk", percent: formatPercent(disk) })
+        for (const [kind, v] of [
+            ["cpu", s.cpu],
+            ["memory", ratio(s.memUsed, s.memTotal || n.memTotal)],
+            ["disk", ratio(s.diskUsed, s.diskTotal || n.diskTotal)],
+        ] as const)
+            if (levelFor(kind, v) !== "good") reasons.push({ kind, percent: formatPercent(v) })
     }
-    if (c.expired) reasons.push({ kind: "expired" })
+    if (expiry?.level === "danger")
+        reasons.push(
+            expiry.kind === "expired"
+                ? { kind: "expired" }
+                : { kind: "expiring", days: expiry.days },
+        )
     if (c.quotaUsed) reasons.push({ kind: "quota" })
     return reasons
 }
 
-export function needsAttention(n: NodeInfo, s: Snapshot | undefined, fed: boolean) {
-    return nodeIssues(n, s, fed).some((r) => r.kind !== "offline")
+export function needsAttention(
+    n: NodeInfo,
+    s: Snapshot | undefined,
+    fed: boolean,
+    now = Date.now(),
+) {
+    return nodeIssues(n, s, fed, now).some((r) => r.kind !== "offline")
 }
