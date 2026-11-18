@@ -96,6 +96,7 @@
         "InvalidURL": "請輸入有效的 URL",
         "InvalidNumber": "請為{{field}}輸入有效的數字"
     },
+    "UnknownCurrentUser": "確認目前帳號後才能刪除使用者",
     "CannotDeleteCurrentUser": "無法刪除目前登入的帳號",
     "ConfirmDeleteTarget": "確認刪除「{{target}}」？此操作無法復原。",
     "ConfirmBlockTarget": "確認封鎖「{{target}}」？此操作無法復原。",

@@ -96,6 +96,7 @@
         "InvalidURL": "Please enter a valid URL",
         "InvalidNumber": "Please enter a valid number for {{field}}"
     },
+    "UnknownCurrentUser": "Deletion is disabled until your account is identified",
     "CannotDeleteCurrentUser": "Cannot delete the currently signed-in account",
     "ConfirmDeleteTarget": "Delete \"{{target}}\"? This operation cannot be undone.",
     "ConfirmBlockTarget": "Block \"{{target}}\"? This operation cannot be undone.",

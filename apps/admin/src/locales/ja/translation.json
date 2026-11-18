@@ -96,6 +96,7 @@
         "InvalidURL": "有効な URL を入力してください",
         "InvalidNumber": "{{field}}には有効な数値を入力してください"
     },
+    "UnknownCurrentUser": "ログイン中のアカウントを確認するまでユーザーは削除できません",
     "CannotDeleteCurrentUser": "現在ログイン中のアカウントは削除できません",
     "ConfirmDeleteTarget": "「{{target}}」を削除しますか？この操作は元に戻せません。",
     "ConfirmBlockTarget": "「{{target}}」をブロックしますか？この操作は元に戻せません。",

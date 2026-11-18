@@ -96,6 +96,7 @@
         "InvalidURL": "请输入有效的 URL",
         "InvalidNumber": "请为{{field}}输入有效的数字"
     },
+    "UnknownCurrentUser": "确认当前账号后才能删除用户",
     "CannotDeleteCurrentUser": "不能删除当前登录账号",
     "ConfirmDeleteTarget": "确认删除“{{target}}”？此操作不可恢复。",
     "ConfirmBlockTarget": "确认封禁“{{target}}”？此操作不可恢复。",
