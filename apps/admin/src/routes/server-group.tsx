@@ -121,6 +121,7 @@ export default function ServerGroupPage() {
                         delete={{
                             fn: handleDeleteGroups,
                             id: s.group.id,
+                            name: s.group.name,
                             mutate: mutate,
                         }}
                     >

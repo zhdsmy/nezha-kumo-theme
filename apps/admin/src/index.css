@@ -291,6 +291,19 @@ body,
     word-break: break-word;
     overflow-wrap: anywhere;
 }
+.nkt-table .nkt-cell-value:has(button) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+}
+.nkt-expanded-preview {
+    display: none;
+}
+.nkt-table tr[data-open] .nkt-expanded-preview {
+    display: inline;
+}
 .nkt-table tr[data-open] .nkt-cell-value > * {
     max-width: none;
 }

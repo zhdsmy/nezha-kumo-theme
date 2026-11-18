@@ -175,7 +175,7 @@ export default function ServicePage() {
                 return (
                     <ActionButtonGroup
                         className="flex gap-2"
-                        delete={{ fn: deleteService, id: s.id, mutate: mutate }}
+                        delete={{ fn: deleteService, id: s.id, name: s.name, mutate: mutate }}
                     >
                         <ServiceCard mutate={mutate} data={s} />
                     </ActionButtonGroup>

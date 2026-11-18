@@ -135,6 +135,7 @@ export default function DDNSPage() {
                         delete={{
                             fn: deleteDDNSProfiles,
                             id: s.id,
+                            name: s.name,
                             mutate: mutate,
                         }}
                     >

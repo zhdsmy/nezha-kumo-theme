@@ -104,7 +104,7 @@ test("members see only their authorizations and confirm revocation", async () =>
 
     fireEvent.click(screen.getByRole("button", { name: "Revoke" }))
     expect(await screen.findByText("MCPOAuthManager.ConfirmRevoke:ChatGPT")).toBeTruthy()
-    fireEvent.click(screen.getByRole("button", { name: "Close" }))
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
     expect(mocks.revoke).not.toHaveBeenCalled()
 
     mocks.grants.mockResolvedValue({ items: [], total: 0 })
@@ -128,7 +128,7 @@ test("administrators inspect all-user authorizations and disable and enable clie
 
     fireEvent.click(screen.getByRole("button", { name: "MCPOAuthManager.Disable" }))
     expect(await screen.findByText("MCPOAuthManager.ConfirmDisable:ChatGPT")).toBeTruthy()
-    fireEvent.click(screen.getByRole("button", { name: "Close" }))
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
     expect(mocks.disable).not.toHaveBeenCalled()
 
     mocks.clients.mockResolvedValue({

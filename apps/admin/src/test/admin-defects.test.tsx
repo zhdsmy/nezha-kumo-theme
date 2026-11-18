@@ -42,6 +42,7 @@ const DICT: Record<"en" | "zh-CN", Record<string, string>> = {
         ClipboardWriteFailed: "Clipboard write failed",
         Done: "Done",
         Close: "Close",
+        Cancel: "Cancel",
         Confirm: "Confirm",
         Revoke: "Revoke",
         ApiTokenCreated: "API token created",
@@ -62,6 +63,7 @@ const DICT: Record<"en" | "zh-CN", Record<string, string>> = {
         ClipboardWriteFailed: "剪贴板写入失败",
         Done: "完成",
         Close: "关闭",
+        Cancel: "取消",
         Confirm: "确认",
         Revoke: "撤销",
         ApiTokenCreated: "API 令牌已创建",
@@ -296,7 +298,7 @@ describe("ApiTokensPage AlertDialog confirmation", () => {
             await screen.findByText("Revoke API token 'ci-runner'? This cannot be undone."),
         ).toBeTruthy()
 
-        fireEvent.click(screen.getByRole("button", { name: "Close" }))
+        fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
         expect(mocks.deleteApiToken).not.toHaveBeenCalled()
 
         fireEvent.click(screen.getByRole("button", { name: "Revoke" }))

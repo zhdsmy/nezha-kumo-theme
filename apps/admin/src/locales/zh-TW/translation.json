@@ -96,6 +96,11 @@
         "InvalidURL": "請輸入有效的 URL",
         "InvalidNumber": "請為{{field}}輸入有效的數字"
     },
+    "CannotDeleteCurrentUser": "無法刪除目前登入的帳號",
+    "ConfirmDeleteTarget": "確認刪除「{{target}}」？此操作無法復原。",
+    "ConfirmBlockTarget": "確認封鎖「{{target}}」？此操作無法復原。",
+    "ConfirmBatchDelete": "確認刪除已選取的 {{count}} 項？此操作無法復原。",
+    "ConfirmBatchBlock": "確認封鎖已選取的 {{count}} 項？此操作無法復原。",
     "Coverages": {
         "Excludes": "排除特定伺服器",
         "Only": "僅特定伺服器",

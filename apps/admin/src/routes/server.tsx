@@ -228,7 +228,7 @@ export default function ServerPage() {
             header: t("Note"),
             cell: ({ row }) => {
                 const s = row.original
-                return <NoteMenu note={{ private: s.note, public: s.public_note }} />
+                return <NoteMenu note={{ private: s.note, public: s.public_note }} showPreview />
             },
         },
         {
@@ -236,7 +236,7 @@ export default function ServerPage() {
             header: "UUID",
             cell: ({ row }) => {
                 const s = row.original
-                return <CopyButton text={s.uuid} />
+                return <CopyButton text={s.uuid} showPreview />
             },
         },
         {
@@ -247,7 +247,7 @@ export default function ServerPage() {
                 return (
                     <ActionButtonGroup
                         className="flex gap-2"
-                        delete={{ fn: deleteServer, id: s.id, mutate: mutate }}
+                        delete={{ fn: deleteServer, id: s.id, name: s.name, mutate: mutate }}
                     >
                         <>
                             <ServerCard mutate={mutate} data={s} routes={routes} />

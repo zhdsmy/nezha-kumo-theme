@@ -37,12 +37,14 @@ const entityRowId = (row: EntityRow) => String(row.group?.id ?? row.id ?? row.ip
 export function useSelectableTable<T extends EntityRow>(
     data: T[],
     columns: ColumnDef<typeof selectableTableFeatures, T>[],
+    enableRowSelection?: (row: { original: T }) => boolean,
 ) {
     const table = useTable({
         features: selectableTableFeatures,
         data,
         columns,
         getRowId: entityRowId,
+        ...(enableRowSelection ? { enableRowSelection } : {}),
     })
     for (const row of table.getCoreRowModel().rows) {
         ;(row as { _valuesCache?: Record<string, unknown> })._valuesCache = {}

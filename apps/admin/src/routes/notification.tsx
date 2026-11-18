@@ -126,6 +126,7 @@ export default function NotificationPage() {
                         delete={{
                             fn: deleteNotification,
                             id: s.id,
+                            name: s.name,
                             mutate: mutate,
                         }}
                     >

@@ -110,7 +110,7 @@ export default function NATPage() {
                 return (
                     <ActionButtonGroup
                         className="flex gap-2"
-                        delete={{ fn: deleteNAT, id: s.id, mutate: mutate }}
+                        delete={{ fn: deleteNAT, id: s.id, name: s.name, mutate: mutate }}
                     >
                         <NATCard mutate={mutate} data={s} />
                     </ActionButtonGroup>

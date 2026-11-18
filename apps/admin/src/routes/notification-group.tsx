@@ -105,6 +105,7 @@ export default function NotificationGroupPage() {
                         delete={{
                             fn: deleteNotificationGroups,
                             id: s.group.id,
+                            name: s.group.name,
                             mutate: mutate,
                         }}
                     >

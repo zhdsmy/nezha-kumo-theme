@@ -14,6 +14,8 @@ import {
     TableStateRow,
 } from "@/components/ui/table"
 import { UserCard } from "@/components/user"
+import { IconButton } from "@/components/xui/icon-button"
+import { useAuth } from "@/hooks/useAuth"
 import { selectableTableFeatures, useSelectableTable } from "@/lib/table"
 import { ModelUser } from "@/types"
 import { Page } from "@nezha-kumo/ui"
@@ -25,6 +27,7 @@ import useSWR from "swr"
 
 export default function UserPage() {
     const { t } = useTranslation()
+    const { profile } = useAuth()
     const { data, mutate, error, isLoading } = useSWR<ModelUser[]>("/api/v1/user", swrFetcher)
 
     useEffect(() => {
@@ -40,23 +43,35 @@ export default function UserPage() {
     const columns: ColumnDef<typeof selectableTableFeatures, ModelUser>[] = [
         {
             id: "select",
-            header: ({ table }) => (
-                <Checkbox
-                    checked={
-                        table.getIsAllPageRowsSelected() ||
-                        (table.getIsSomePageRowsSelected() && "indeterminate")
-                    }
-                    onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                    aria-label={t("SelectAll")}
-                />
-            ),
-            cell: ({ row }) => (
-                <Checkbox
-                    checked={row.getIsSelected()}
-                    onCheckedChange={(value) => row.toggleSelected(!!value)}
-                    aria-label={t("SelectRow")}
-                />
-            ),
+            header: ({ table }) => {
+                const selectableRows = table
+                    .getRowModel()
+                    .rows.filter((row) => row.getCanSelect())
+                const allSelected =
+                    selectableRows.length > 0 && selectableRows.every((row) => row.getIsSelected())
+                const someSelected = selectableRows.some((row) => row.getIsSelected())
+                return (
+                    <Checkbox
+                        checked={allSelected || (someSelected && "indeterminate")}
+                        disabled={selectableRows.length === 0}
+                        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                        aria-label={t("SelectAll")}
+                    />
+                )
+            },
+            cell: ({ row }) => {
+                const canSelect = row.getCanSelect()
+                return (
+                    <Checkbox
+                        checked={canSelect && row.getIsSelected()}
+                        disabled={!canSelect}
+                        onCheckedChange={(value) => {
+                            if (canSelect) row.toggleSelected(!!value)
+                        }}
+                        aria-label={t("SelectRow")}
+                    />
+                )
+            },
             enableHiding: false,
         },
         {
@@ -87,12 +102,26 @@ export default function UserPage() {
             header: t("Actions"),
             cell: ({ row }) => {
                 const s = row.original
+                if (s.id === profile?.id) {
+                    return (
+                        <div className="flex gap-2">
+                            <IconButton
+                                variant="destructive"
+                                icon="trash"
+                                disabled
+                                title={t("CannotDeleteCurrentUser")}
+                                aria-label={t("CannotDeleteCurrentUser")}
+                            />
+                        </div>
+                    )
+                }
                 return (
                     <ActionButtonGroup
                         className="flex gap-2"
                         delete={{
                             fn: deleteUser,
                             id: s.id,
+                            name: s.username,
                             mutate: mutate,
                         }}
                     >
@@ -107,9 +136,16 @@ export default function UserPage() {
         return data ?? []
     }, [data])
 
-    const table = useSelectableTable(dataCache, columns)
+    const table = useSelectableTable(
+        dataCache,
+        columns,
+        (row) => row.original.id !== profile?.id,
+    )
 
     const selectedRows = table.getSelectedRowModel().rows
+    const deletableSelectedIds = selectedRows
+        .map((r) => r.original.id)
+        .filter((id) => id !== profile?.id)
 
     return (
         <Page
@@ -120,7 +156,7 @@ export default function UserPage() {
                     className="flex flex-wrap gap-2"
                     delete={{
                         fn: deleteUser,
-                        id: selectedRows.map((r) => r.original.id),
+                        id: deletableSelectedIds,
                         mutate: mutate,
                     }}
                 >

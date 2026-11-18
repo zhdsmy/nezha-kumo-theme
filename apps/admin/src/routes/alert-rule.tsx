@@ -123,6 +123,7 @@ export default function AlertRulePage() {
                         delete={{
                             fn: deleteAlertRules,
                             id: s.id,
+                            name: s.name,
                             mutate: mutate,
                         }}
                     >

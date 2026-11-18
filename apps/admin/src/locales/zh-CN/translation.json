@@ -96,6 +96,11 @@
         "InvalidURL": "请输入有效的 URL",
         "InvalidNumber": "请为{{field}}输入有效的数字"
     },
+    "CannotDeleteCurrentUser": "不能删除当前登录账号",
+    "ConfirmDeleteTarget": "确认删除“{{target}}”？此操作不可恢复。",
+    "ConfirmBlockTarget": "确认封禁“{{target}}”？此操作不可恢复。",
+    "ConfirmBatchDelete": "确认删除已选的 {{count}} 项？此操作不可恢复。",
+    "ConfirmBatchBlock": "确认封禁已选的 {{count}} 项？此操作不可恢复。",
     "Coverages": {
         "Excludes": "排除特定服务器",
         "Only": "仅特定服务器",

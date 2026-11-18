@@ -96,6 +96,11 @@
         "InvalidURL": "有効な URL を入力してください",
         "InvalidNumber": "{{field}}には有効な数値を入力してください"
     },
+    "CannotDeleteCurrentUser": "現在ログイン中のアカウントは削除できません",
+    "ConfirmDeleteTarget": "「{{target}}」を削除しますか？この操作は元に戻せません。",
+    "ConfirmBlockTarget": "「{{target}}」をブロックしますか？この操作は元に戻せません。",
+    "ConfirmBatchDelete": "選択した {{count}} 件を削除しますか？この操作は元に戻せません。",
+    "ConfirmBatchBlock": "選択した {{count}} 件をブロックしますか？この操作は元に戻せません。",
     "Coverages": {
         "Excludes": "特定のサーバーを除外",
         "Only": "特定のサーバーのみ",

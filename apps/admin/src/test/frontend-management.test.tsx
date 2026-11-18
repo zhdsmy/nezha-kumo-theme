@@ -207,7 +207,7 @@ test.each([false, true])(
         expect(
             await screen.findByText("FrontendManager.ConfirmRemove:Installed user:v2"),
         ).toBeTruthy()
-        fireEvent.click(screen.getByRole("button", { name: "Close" }))
+        fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
         expect(mocks.remove).not.toHaveBeenCalled()
 
         fireEvent.click(buttons[0])

@@ -170,7 +170,7 @@ export default function CronPage() {
                 return (
                     <ActionButtonGroup
                         className="flex gap-2"
-                        delete={{ fn: deleteCron, id: s.id, mutate: mutate }}
+                        delete={{ fn: deleteCron, id: s.id, name: s.name, mutate: mutate }}
                     >
                         <>
                             <IconButton
