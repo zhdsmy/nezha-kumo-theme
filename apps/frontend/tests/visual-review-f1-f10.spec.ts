@@ -411,4 +411,114 @@ test.describe("Visual review F1–F10 fixes", () => {
         await watchedCell.click()
         await expect(page.locator(".hour-grid-selected")).toContainText(/:\d{2}.*Reported|Missed/)
     })
+
+    test("F8: compact table aligns headers with readings, fits regular names at 1024px, unifies decimal/ms units, and aligns card meters across rows", async ({
+        page,
+    }) => {
+        const servers = structuredClone(fixture.servers).map((s, i) => ({
+            ...s,
+            display_index: 100 - i,
+            name:
+                i === 2
+                    ? "Guangzhou General (Tencent)"
+                    : i % 2 === 0
+                      ? "SG-01"
+                      : "Tokyo Edge — Dual Stack High-Bandwidth Core Node",
+            state: s.state
+                ? { ...s.state, cpu: i === 0 ? 0 : i === 1 ? 0.4 : i === 2 ? 14 : s.state.cpu }
+                : s.state,
+        }))
+
+        await mockNezha(page)
+        await page.routeWebSocket("**/api/v1/ws/server", (ws) => {
+            const now = Date.now()
+            ws.send(
+                JSON.stringify({
+                    now,
+                    servers: servers.map((s) => ({
+                        ...s,
+                        last_active: new Date(now).toISOString(),
+                    })),
+                }),
+            )
+        })
+
+        // 1. Card view at 1024x768: 2-line card next to 1-line card aligns .card-meters horizontally
+        await page.setViewportSize({ width: 1024, height: 768 })
+        await page.addInitScript(() => {
+            localStorage.setItem("nkt:language", "en")
+            localStorage.setItem("nkt:sidebar-collapsed", "false")
+        })
+        await page.goto("/")
+        await expect(page.locator(".server-card").first()).toBeVisible()
+        const cardAlign = await page.evaluate(() => {
+            const cards = Array.from(document.querySelectorAll<HTMLElement>(".server-card"))
+            const firstTop = cards[0]!.getBoundingClientRect().top
+            const rowCards = cards.filter(
+                (c) => Math.abs(c.getBoundingClientRect().top - firstTop) < 4,
+            )
+            return {
+                cols: rowCards.length,
+                meterTops: rowCards.map((c) =>
+                    Math.round(
+                        c.querySelector<HTMLElement>(".card-meters")!.getBoundingClientRect().top,
+                    ),
+                ),
+                labelOverflows: Array.from(
+                    rowCards[0]!.querySelectorAll<HTMLElement>(".card-meters .meter-label"),
+                ).map((el) => el.scrollWidth - el.clientWidth),
+            }
+        })
+        expect(cardAlign.cols).toBeGreaterThanOrEqual(2)
+        for (const top of cardAlign.meterTops) {
+            expect(Math.abs(top - cardAlign.meterTops[0]!)).toBeLessThanOrEqual(1)
+        }
+        for (const overflow of cardAlign.labelOverflows) {
+            expect(overflow).toBeLessThanOrEqual(0)
+        }
+
+        // 2. Compact table at 1024x768: header left == meter value left, regular name fits, uniform 1-decimal %
+        await page.locator(".view-switch button").nth(1).click()
+        await expect(page.locator(".fleet-table")).toBeVisible()
+        const tableCheck = await page.evaluate(() => {
+            const ths = Array.from(document.querySelectorAll<HTMLElement>(".fleet-table thead th"))
+            const nameRow = document.querySelector<HTMLElement>(
+                `.fleet-table .server-row[data-server="${19}"]`,
+            )!
+            const nameSpan = nameRow.querySelector<HTMLElement>(".server-name a > span")!
+            const cpuNum = nameRow.querySelector<HTMLElement>(".server-cpu .meter > .num")!
+            const memNum = nameRow.querySelector<HTMLElement>(".server-memory .meter > .num")!
+            const thTextLeft = (th: HTMLElement) => {
+                const pad = Number.parseFloat(getComputedStyle(th).paddingLeft) || 0
+                return th.getBoundingClientRect().left + pad
+            }
+            const cpuTexts = [6, 25, 19].map(
+                (id) =>
+                    document
+                        .querySelector<HTMLElement>(
+                            `.fleet-table .server-row[data-server="${id}"] .server-cpu .meter > .num`,
+                        )
+                        ?.textContent?.trim() ?? "",
+            )
+            return {
+                cpuOffset: Math.abs(cpuNum.getBoundingClientRect().left - thTextLeft(ths[2]!)),
+                memOffset: Math.abs(memNum.getBoundingClientRect().left - thTextLeft(ths[3]!)),
+                nameOverflow: nameSpan.scrollWidth - nameSpan.clientWidth,
+                cpuTexts,
+            }
+        })
+        expect(tableCheck.cpuOffset).toBeLessThanOrEqual(2)
+        expect(tableCheck.memOffset).toBeLessThanOrEqual(2)
+        expect(tableCheck.nameOverflow).toBeLessThanOrEqual(1)
+        expect(tableCheck.cpuTexts).toEqual(["0.0%", "0.4%", "14.0%"])
+
+        // 3. Latency legend chips show uniform 1-decimal ms units
+        await page.goto("/server/6#latency")
+        await expect(page.locator(".node-ping-row").first()).toBeVisible()
+        const pingNums = await page.locator(".node-ping-row .num").allTextContents()
+        expect(pingNums.length).toBeGreaterThan(0)
+        for (const txt of pingNums) {
+            expect(txt.trim()).toMatch(/^\d+\.\d ms$/)
+        }
+    })
 })

@@ -2,8 +2,8 @@ import { BREAKPOINTS, SHELL } from "@nezha-kumo/ui"
 
 // Compact view columns: room for the status badge and both network rates.
 const FLEET_COLUMNS = {
-    medium: { name: "30%", status: "15%", network: "22%" },
-    wide: { name: "26%", status: "11%", network: "18%" },
+    medium: { name: "40%", status: "14%", network: "20%" },
+    wide: { name: "31%", status: "10%", network: "17%" },
 } as const
 
 // Content width at 880 px viewport with the 260 px sidebar expanded (620 px).
@@ -37,6 +37,7 @@ ${FT} td,${FT} th { vertical-align:middle; overflow-wrap:anywhere; }
   .hour-grid-cell { height:10px; }
   .section-heading[data-search-open="true"] .sort-button { display:inline-flex; }
   ${FT} thead { display:table-header-group; }
+  ${FT} thead th { padding-inline:12px; text-align:left; }
   ${FT} tbody { display:table-row-group; }
   ${FT} { display:table; border-collapse:separate; border-spacing:0; overflow:hidden; }
   ${FT} .server-row { display:table-row; }
@@ -45,6 +46,7 @@ ${FT} td,${FT} th { vertical-align:middle; overflow-wrap:anywhere; }
   ${FT} .server-status { width:${FLEET_COLUMNS.medium.status}; }
   ${FT} .server-network { width:${FLEET_COLUMNS.medium.network}; }
   ${FT} .meter-label,${FT} .cell-label { display:none; }
+  ${FT} .meter > .num { grid-column:1; justify-self:start; }
   ${FT} .server-network .net-rates { font-size:12px; line-height:16px; }
   .node-live-strip { grid-template-columns:repeat(4,minmax(0,1fr)); gap:20px; margin-bottom:20px; padding:16px 20px; }
   .node-subtabs { display:none; }

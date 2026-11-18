@@ -376,7 +376,7 @@ export const PingChart = memo(function PingChart({
                 height={height}
                 robust
                 focus={focus !== null && visible(focus) ? String(focus) : null}
-                format={(v) => `${formatNumber(v, v > 0 && v < 10 ? 1 : 0)} ms`}
+                format={(v) => `${v.toFixed(1)} ms`}
                 formatTick={(v, step) => `${formatNumber(v, stepDigits(step))} ms`}
                 formatTime={fmt.axis}
                 formatTooltipTime={fmt.tooltip}
@@ -406,9 +406,7 @@ export const PingChart = memo(function PingChart({
                             }
                         />
                         <span className="truncate">{task.name}</span>
-                        <span className="num text-kumo-subtle">
-                            {formatNumber(task.avg, task.avg < 10 ? 1 : 0)}
-                        </span>
+                        <span className="num text-kumo-subtle">{`${task.avg.toFixed(1)} ms`}</span>
                     </button>
                 ))}
                 {shown !== null && (
@@ -424,7 +422,7 @@ export const PingChart = memo(function PingChart({
             {solo && (
                 <p className="node-ping-detail num mt-1 text-[12px] text-kumo-subtle">
                     {t("node.avg")}{" "}
-                    <span className="text-kumo-default">{formatNumber(solo.avg, 1)} ms</span> ·{" "}
+                    <span className="text-kumo-default">{`${solo.avg.toFixed(1)} ms`}</span> ·{" "}
                     {t("node.min")} {formatNumber(solo.min, 0)} · {t("node.max")}{" "}
                     {formatNumber(solo.max, 0)}
                 </p>

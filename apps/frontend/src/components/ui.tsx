@@ -1,6 +1,5 @@
 import { useConnectionState, useStore } from "@/app/store"
 import { levelFor } from "@/core/fleet"
-import { formatPercent } from "@/core/format"
 import type { Bucket } from "@/core/live"
 import type { Snapshot } from "@/core/model"
 import { readStorage } from "@/core/storage"
@@ -62,8 +61,8 @@ export function Meter({
     /** Small line under the track, for example "1.1 GB / 2 GB". */
     detail?: string
 }) {
-    const clamped = Math.max(0, Math.min(100, value))
-    const pct = `${formatPercent(value)}%`
+    const clamped = Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0))
+    const pct = `${clamped.toFixed(1)}%`
     return (
         <span
             className="meter"

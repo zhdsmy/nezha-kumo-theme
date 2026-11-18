@@ -584,9 +584,11 @@
     gap: 12px;
 }
 .server-card {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-row: span 3;
+    grid-template-rows: subgrid;
+    row-gap: 14px;
     min-width: 0;
     padding: 14px 16px 16px;
     background: var(--color-kumo-base);
@@ -598,6 +600,7 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 8px;
+    min-width: 0;
 }
 .server-row .server-name > a {
     width: fit-content;
@@ -633,8 +636,26 @@
 }
 .card-meters {
     display: grid;
-    grid-template-columns: minmax(60px, 0.62fr) minmax(0, 1.19fr) minmax(0, 1.19fr);
-    gap: 8px;
+    align-items: start;
+    grid-template-columns: minmax(76px, 0.7fr) repeat(2, minmax(0, 1.15fr));
+    gap: 6px;
+}
+.card-meters .meter-detail {
+    white-space: normal;
+    text-wrap: balance;
+}
+@media (max-width: 359px) {
+    .section-heading .section-controls {
+        flex-basis: 100%;
+    }
+    .card-meters {
+        grid-template-columns: minmax(68px, 0.82fr) minmax(0, 1.09fr) minmax(0, 1.09fr);
+        gap: 6px;
+    }
+    .card-meters .meter,
+    .card-meters .meter-label {
+        font-size: 11px;
+    }
 }
 .card-facts {
     display: grid;
