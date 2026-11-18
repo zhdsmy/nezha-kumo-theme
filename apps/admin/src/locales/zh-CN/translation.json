@@ -312,8 +312,6 @@
     "AlertRules": {
         "CoverAllServers": "监控所有服务器",
         "IgnoreAllSelectSpecific": "忽略所有，选择特定服务器",
-        "IgnoreHint": "{{server}}ID: true/false",
-        "IgnoreExample": "例如：{\"1\": true, \"2\": false}",
         "Duration": "持续时间（秒）",
         "Min": "最小阈值",
         "Max": "最大阈值",

@@ -312,8 +312,6 @@
     "AlertRules": {
         "CoverAllServers": "Monitor all servers",
         "IgnoreAllSelectSpecific": "Ignore all, select specific servers",
-        "IgnoreHint": "{{server}} ID: true/false",
-        "IgnoreExample": "e.g., {\"1\": true, \"2\": false}",
         "Duration": "Duration (s)",
         "Min": "Minimum Threshold",
         "Max": "Maximum Threshold",

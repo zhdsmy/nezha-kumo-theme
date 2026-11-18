@@ -312,8 +312,6 @@
     "AlertRules": {
         "CoverAllServers": "すべてのサーバーを監視",
         "IgnoreAllSelectSpecific": "すべて無視し、特定のサーバーを選択",
-        "IgnoreHint": "{{server}} ID: true/false",
-        "IgnoreExample": "例: {\"1\": true, \"2\": false}",
         "Duration": "継続時間（秒）",
         "Min": "最小しきい値",
         "Max": "最大しきい値",

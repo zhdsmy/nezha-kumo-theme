@@ -135,6 +135,48 @@ for (const [engine, driver] of Object.entries({ chromium, webkit })) {
             })
         })
 
+        test("alert rule selections round-trip the boolean map through Advanced JSON", async ({
+            page,
+        }) => {
+            const rules = [
+                {
+                    type: "cpu",
+                    cover: 1,
+                    min: 12,
+                    duration: 10,
+                    ignore: { "99": true, "7": false },
+                    next_transfer_at: { "7": "2026-11-18T12:00:00Z" },
+                },
+                { type: "offline", cover: 0, duration: 30 },
+            ]
+            await mockAdmin(page, {
+                "alert-rule": [
+                    { id: 3, name: "Test alert", notification_group_id: 0, trigger_mode: 0, rules },
+                ],
+            })
+            await page.goto("/dashboard/alert-rule")
+            await page.getByRole("button", { name: "Actions", exact: true }).first().click()
+            await page.getByRole("button", { name: "Edit", exact: true }).first().click()
+            const selector = page.locator("button#alert-rule-0-ignore")
+            await expect(selector).toContainText("#99")
+            await selector.press("Enter")
+            await page.getByRole("option", { name: "Taipei" }).click()
+            await page.keyboard.press("Escape")
+            const json = page.getByRole("dialog").getByLabel("Advanced JSON")
+            const edited = JSON.parse(await json.inputValue())
+            expect(edited[0]).toEqual({
+                ...rules[0],
+                ignore: { "99": true, "7": false, "8": true },
+            })
+            expect(edited[1]).toMatchObject(rules[1])
+            edited[0].ignore["7"] = true
+            await json.fill(JSON.stringify(edited))
+            await expect(selector).toContainText("Tokyo")
+            const saved = page.waitForRequest((r) => r.method() === "PATCH")
+            await page.getByRole("button", { name: "Confirm", exact: true }).click()
+            expect((await saved).postDataJSON().rules).toEqual(edited)
+        })
+
         test("DDNS keeps the Webhook draft when switching providers", async ({ page }) => {
             await mockAdmin(page, {
                 "ddns/providers": ["cloudflare", "webhook"],
