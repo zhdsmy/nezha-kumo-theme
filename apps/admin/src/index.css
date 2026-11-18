@@ -101,6 +101,10 @@
 .nkt-emphasis-danger {
     --nkt-emphasis: var(--destructive);
 }
+.nkt-emphasis:focus-visible {
+    outline: 2px solid var(--nkt-emphasis);
+    outline-offset: 2px;
+}
 
 @layer base {
     * {
@@ -563,11 +567,23 @@ body,
     flex-shrink: 0;
 }
 .nkt-dialog-footer {
+    position: sticky;
+    bottom: -1.5rem;
+    z-index: 20;
+    margin-inline: -1.5rem;
+    padding-inline: 1.5rem;
     margin-bottom: -1.5rem;
-    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+}
+.nkt-dialog-form .nkt-dialog-footer {
+    margin-inline: -1.75rem;
+    padding-inline: 1.75rem;
 }
 .nkt-dialog-footer > button {
     margin-block: 0;
+}
+.nkt-note-editor [data-side]:has(> [data-kumo-component]) {
+    z-index: 30;
 }
 
 .nkt-dialog-form > div {
@@ -666,6 +682,15 @@ body,
 [data-note-calendar] :is(button, select) {
     min-height: 36px;
 }
+@media (max-height: 480px) {
+    [data-note-calendar] > * {
+        --cell-size: 30px;
+        --cell-width: 32px;
+    }
+    [data-note-calendar] :is(button, select) {
+        min-height: 30px;
+    }
+}
 .nkt-note-editor :is(input, textarea, select) {
     font-size: 16px;
 }
@@ -692,6 +717,33 @@ body,
 }
 .nkt-note-editor [data-note-ip] .nkt-note-clear {
     top: 0;
+}
+@media (max-width: 639px) {
+    .nkt-note-editor
+        .nkt-note-billing-column
+        > :is([data-note-field="autoRenewal"], [data-note-field="cycle"])
+        > .nkt-note-label {
+        display: flex;
+        align-items: center;
+        min-height: 32px;
+    }
+    .nkt-note-editor .nkt-note-billing-column > [data-note-field="cycle"] > .nkt-note-label {
+        padding-right: 36px;
+    }
+    .nkt-note-editor .nkt-note-billing-column > [data-note-field="cycle"] > .nkt-note-control {
+        padding-right: 0;
+    }
+    .nkt-note-editor
+        .nkt-note-billing-column
+        > [data-note-field="cycle"]
+        > .nkt-note-control
+        button {
+        padding-inline: 8px;
+        gap: 4px;
+    }
+    .nkt-note-editor .nkt-note-billing-column > [data-note-field="cycle"] > .nkt-note-clear {
+        top: -2px;
+    }
 }
 .nkt-note-editor [data-note-field] :is(input, [role="combobox"]) {
     min-width: 0;
@@ -733,8 +785,8 @@ body,
 .nkt-json-heading {
     display: grid;
     min-width: 0;
-    grid-template-columns: minmax(0, 1fr) 5rem auto;
-    gap: 4px;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 6px;
     align-items: end;
 }
 .nkt-json-heading > *,

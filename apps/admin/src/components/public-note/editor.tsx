@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next"
 
 import { TRAFFIC_TYPES, parseAmount, writeCycle } from "../../../../../packages/shared/public-note"
 import { AmountInput } from "./amount-input"
-import { Choices, UnknownValue } from "./controls"
+import { Choices, NumberInput, UnknownValue } from "./controls"
 import { CyclePicker } from "./cycle-picker"
 import { DateInput } from "./date-input"
 import { QuantityInput } from "./quantity-input"
@@ -53,22 +53,22 @@ export function PublicNoteEditor({
             <div className="nkt-note-field" data-note-field={key}>
                 <div className="nkt-note-label">
                     <span className="text-sm font-medium">{label}</span>
-                    {(current !== undefined || (key === "cycle" && cycle !== undefined)) && (
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            className="nkt-note-clear"
-                            shape="square"
-                            aria-label={`${t("PublicNote.Clear")} · ${label}`}
-                            onClick={() => patch(section, key, undefined)}
-                        >
-                            <X className="size-4" aria-hidden="true" />
-                        </Button>
-                    )}
                 </div>
                 <div className="nkt-note-control">
                     {control(current, (next) => patch(section, key, next))}
                 </div>
+                {(current !== undefined || (key === "cycle" && cycle !== undefined)) && (
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        className="nkt-note-clear"
+                        shape="square"
+                        aria-label={`${t("PublicNote.Clear")} · ${label}`}
+                        onClick={() => patch(section, key, undefined)}
+                    >
+                        <X className="size-4" aria-hidden="true" />
+                    </Button>
+                )}
             </div>
         )
     }
@@ -209,23 +209,49 @@ export function PublicNoteEditor({
                         )}
                         {(["IPv4", "IPv6"] as const).map((key) => (
                             <div key={key} data-note-ip>
-                                {field(plan, key, key, (value, onChange) => (
-                                    <>
-                                        <Choices
-                                            label={key}
-                                            value={value}
-                                            options={[
-                                                ["", t("PublicNote.Unset")],
-                                                ["1", t("PublicNote.Has")],
-                                                ["0", t("PublicNote.None")],
-                                            ]}
-                                            onChange={(next) => onChange(next || undefined)}
-                                        />
-                                        {value !== undefined && !/^[01]$/.test(value) && (
-                                            <UnknownValue value={value} />
-                                        )}
-                                    </>
-                                ))}
+                                {field(plan, key, key, (value, onChange) => {
+                                    const isCount = value !== undefined && /^[1-9]\d*$/.test(value)
+                                    const count = isCount ? Number(value) : undefined
+                                    return (
+                                        <div className="space-y-1.5">
+                                            <Choices
+                                                label={key}
+                                                value={isCount ? "1" : value}
+                                                options={[
+                                                    ["", t("PublicNote.Unset")],
+                                                    ["1", t("PublicNote.Has")],
+                                                    ["0", t("PublicNote.None")],
+                                                ]}
+                                                onChange={(next) =>
+                                                    onChange(
+                                                        next === "1"
+                                                            ? isCount
+                                                                ? value
+                                                                : "1"
+                                                            : next || undefined,
+                                                    )
+                                                }
+                                            />
+                                            {count !== undefined && count > 1 && (
+                                                <NumberInput
+                                                    min={1}
+                                                    label={`${key} · ${t("PublicNote.Count")}`}
+                                                    value={count}
+                                                    onChange={(next) =>
+                                                        onChange(
+                                                            next !== undefined
+                                                                ? String(Math.max(1, Math.trunc(next)))
+                                                                : "1",
+                                                        )
+                                                    }
+                                                />
+                                            )}
+                                            {value !== undefined && value !== "0" && !isCount && (
+                                                <UnknownValue value={value} />
+                                            )}
+                                        </div>
+                                    )
+                                })}
                             </div>
                         ))}
                     </div>

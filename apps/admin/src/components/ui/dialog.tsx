@@ -49,12 +49,20 @@ const DialogContent = forwardRef<ComponentRef<typeof DialogPrimitive.Content>, D
                         const dialog = event.currentTarget
                         const control = event.target as HTMLElement
                         requestAnimationFrame(() => {
-                            if (!dialog.contains(control)) return
+                            if (control === dialog || !dialog.contains(control)) return
                             const field = control.getBoundingClientRect()
                             const bounds = dialog.getBoundingClientRect()
+                            const footer = dialog.querySelector<HTMLElement>(".nkt-dialog-footer")
+                            const bottomLimit =
+                                footer && !footer.contains(control)
+                                    ? Math.min(
+                                          bounds.bottom - 8,
+                                          footer.getBoundingClientRect().top - 8,
+                                      )
+                                    : bounds.bottom - 8
                             // Native focus scrolling can reveal only the caret of a textarea.
-                            if (field.bottom > bounds.bottom - 8)
-                                dialog.scrollTop += field.bottom - bounds.bottom + 8
+                            if (field.bottom > bottomLimit)
+                                dialog.scrollTop += field.bottom - bottomLimit
                             else if (field.top < bounds.top + 8)
                                 dialog.scrollTop += field.top - bounds.top - 8
                         })
@@ -68,7 +76,10 @@ const DialogContent = forwardRef<ComponentRef<typeof DialogPrimitive.Content>, D
                 >
                     {children}
                     {!hideCloseButton && (
-                        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+                        <DialogPrimitive.Close
+                            tabIndex={0}
+                            className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+                        >
                             <X className="h-4 w-4" />
                             <span className="sr-only">{t("Close")}</span>
                         </DialogPrimitive.Close>

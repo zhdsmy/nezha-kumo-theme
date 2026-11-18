@@ -40,22 +40,28 @@ export function ActualAmountInput({
         if (recognized) onChange(next)
     }
     return (
-        <div className="space-y-2">
-            <p className="text-sm">{t("PrivateNote.ActualAmount")}</p>
-            <AmountInput
-                paidOnly
-                invalid={invalid}
-                label={t("PrivateNote.ActualAmount")}
-                value={draft.amount}
-                onChange={(amount) => update(amount ?? "", draft.cycle)}
-            />
-            <p className="text-sm">{t("PrivateNote.ActualCycle")}</p>
-            <CyclePicker
-                label={t("PrivateNote.ActualCycle")}
-                value={draft.cycle}
-                unsetLabel={t("PrivateNote.FollowPublicCycle")}
-                onChange={(cycle) => update(draft.amount, cycle)}
-            />
+        <div data-actual-amount="" className="space-y-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <div className="min-w-0 space-y-1.5">
+                    <p className="text-sm">{t("PrivateNote.ActualAmount")}</p>
+                    <AmountInput
+                        paidOnly
+                        invalid={invalid}
+                        label={t("PrivateNote.ActualAmount")}
+                        value={draft.amount}
+                        onChange={(amount) => update(amount ?? "", draft.cycle)}
+                    />
+                </div>
+                <div className="min-w-0 space-y-1.5">
+                    <p className="text-sm">{t("PrivateNote.ActualCycle")}</p>
+                    <CyclePicker
+                        label={t("PrivateNote.ActualCycle")}
+                        value={draft.cycle}
+                        unsetLabel={t("PrivateNote.FollowPublicCycle")}
+                        onChange={(cycle) => update(draft.amount, cycle)}
+                    />
+                </div>
+            </div>
             {invalid && (
                 <p role="alert" className="text-sm text-kumo-danger">
                     {t("PrivateNote.NumberRequired")}

@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils"
 import { Tabs as KumoTabs, type TabsItem, type TabsProps as KumoTabsProps } from "@cloudflare/kumo"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import {
     ButtonHTMLAttributes,
     Children,
@@ -11,6 +12,7 @@ import {
     cloneElement,
     forwardRef,
     isValidElement,
+    useEffect,
     useLayoutEffect,
     useRef,
     useState,
@@ -93,6 +95,7 @@ const Tabs = forwardRef<HTMLDivElement, TabsProps>(
         const { t } = useTranslation()
         const rootRef = useRef<HTMLDivElement | null>(null)
         const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue)
+        const [overflowState, setOverflowState] = useState({ start: false, end: false })
 
         const topElements = flattenElements(children)
         const listElement = topElements.find((el) => el.type === TabsList) as
@@ -166,6 +169,8 @@ const Tabs = forwardRef<HTMLDivElement, TabsProps>(
             }
         })
 
+        const itemsKey = items.map((item) => item.value).join("|")
+
         useLayoutEffect(() => {
             const list = rootRef.current?.querySelector<HTMLElement>('[role="tablist"]')
             const active = list?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')
@@ -178,9 +183,72 @@ const Tabs = forwardRef<HTMLDivElement, TabsProps>(
             } else if (end + pad > list.scrollLeft + list.clientWidth) {
                 list.scrollLeft = end + pad - list.clientWidth
             }
-        }, [activeValue, items.length])
+        }, [activeValue, itemsKey])
+
+        useEffect(() => {
+            if (variant !== "underline") return
+            const list = rootRef.current?.querySelector<HTMLElement>('[role="tablist"]')
+            if (!list) return
+            const update = () => {
+                const start = list.scrollLeft > 1
+                const end = list.scrollLeft + list.clientWidth < list.scrollWidth - 1
+                setOverflowState((prev) =>
+                    prev.start === start && prev.end === end ? prev : { start, end },
+                )
+            }
+            update()
+            list.addEventListener("scroll", update, { passive: true })
+            const ro =
+                typeof ResizeObserver !== "undefined" ? new ResizeObserver(update) : undefined
+            ro?.observe(list)
+            for (const tab of list.querySelectorAll('[role="tab"]')) ro?.observe(tab)
+            return () => {
+                list.removeEventListener("scroll", update)
+                ro?.disconnect()
+            }
+        }, [variant, itemsKey])
 
         const isSegmented = variant === "segmented"
+        const isUnderline = variant === "underline"
+        const scrollStartLabel = labels?.scrollStart ?? t("ScrollTabsLeft")
+        const scrollEndLabel = labels?.scrollEnd ?? t("ScrollTabsRight")
+
+        const scrollTabs = (direction: "start" | "end") => {
+            const list = rootRef.current?.querySelector<HTMLElement>('[role="tablist"]')
+            if (!list) return
+            const distance = Math.max(120, Math.round(list.clientWidth * 0.65))
+            const next =
+                direction === "start"
+                    ? Math.max(0, list.scrollLeft - distance)
+                    : Math.min(list.scrollWidth - list.clientWidth, list.scrollLeft + distance)
+            const reduced =
+                typeof window !== "undefined" &&
+                window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+            if (!reduced && typeof list.scrollTo === "function") {
+                list.scrollTo({ left: next, behavior: "smooth" })
+            } else {
+                list.scrollLeft = next
+            }
+        }
+
+        const tabsNode = (
+            <KumoTabs
+                tabs={items}
+                value={activeValue}
+                onValueChange={(next) => {
+                    if (value === undefined) setUncontrolledValue(next)
+                    onValueChange?.(next)
+                }}
+                variant={variant}
+                size={size}
+                activateOnFocus={activateOnFocus}
+                listClassName={listElement?.props.className}
+                labels={{
+                    scrollStart: scrollStartLabel,
+                    scrollEnd: scrollEndLabel,
+                }}
+            />
+        )
 
         return (
             <div
@@ -192,22 +260,57 @@ const Tabs = forwardRef<HTMLDivElement, TabsProps>(
                 className={cn(isSegmented ? "w-fit max-w-full" : "w-full min-w-0", className)}
                 {...props}
             >
-                <KumoTabs
-                    tabs={items}
-                    value={activeValue}
-                    onValueChange={(next) => {
-                        if (value === undefined) setUncontrolledValue(next)
-                        onValueChange?.(next)
-                    }}
-                    variant={variant}
-                    size={size}
-                    activateOnFocus={activateOnFocus}
-                    listClassName={listElement?.props.className}
-                    labels={{
-                        scrollStart: labels?.scrollStart ?? t("ScrollTabsLeft"),
-                        scrollEnd: labels?.scrollEnd ?? t("ScrollTabsRight"),
-                    }}
-                />
+                {isUnderline ? (
+                    <div className="relative min-w-0">
+                        {tabsNode}
+                        {(overflowState.start || overflowState.end) && (
+                            <>
+                                <button
+                                    type="button"
+                                    data-kumo-component="Tabs"
+                                    data-kumo-part="overflow-control"
+                                    data-side="start"
+                                    aria-label={scrollStartLabel}
+                                    aria-hidden={!overflowState.start}
+                                    tabIndex={overflowState.start ? 0 : -1}
+                                    onClick={() => scrollTabs("start")}
+                                    className={cn(
+                                        "absolute inset-y-0 left-0 z-10 flex w-8 items-center justify-start border-0 bg-linear-to-r from-kumo-canvas via-kumo-canvas/95 to-transparent p-0 transition-opacity duration-150 focus:outline-hidden focus-visible:[&>span]:ring-2 focus-visible:[&>span]:ring-kumo-brand",
+                                        overflowState.start
+                                            ? "pointer-events-auto opacity-100"
+                                            : "pointer-events-none opacity-0",
+                                    )}
+                                >
+                                    <span className="ml-0.5 flex size-6 items-center justify-center rounded text-kumo-subtle transition-colors hover:text-kumo-default">
+                                        <ChevronLeft className="size-4" aria-hidden="true" />
+                                    </span>
+                                </button>
+                                <button
+                                    type="button"
+                                    data-kumo-component="Tabs"
+                                    data-kumo-part="overflow-control"
+                                    data-side="end"
+                                    aria-label={scrollEndLabel}
+                                    aria-hidden={!overflowState.end}
+                                    tabIndex={overflowState.end ? 0 : -1}
+                                    onClick={() => scrollTabs("end")}
+                                    className={cn(
+                                        "absolute inset-y-0 right-0 z-10 flex w-8 items-center justify-end border-0 bg-linear-to-l from-kumo-canvas via-kumo-canvas/95 to-transparent p-0 transition-opacity duration-150 focus:outline-hidden focus-visible:[&>span]:ring-2 focus-visible:[&>span]:ring-kumo-brand",
+                                        overflowState.end
+                                            ? "pointer-events-auto opacity-100"
+                                            : "pointer-events-none opacity-0",
+                                    )}
+                                >
+                                    <span className="mr-0.5 flex size-6 items-center justify-center rounded text-kumo-subtle transition-colors hover:text-kumo-default">
+                                        <ChevronRight className="size-4" aria-hidden="true" />
+                                    </span>
+                                </button>
+                            </>
+                        )}
+                    </div>
+                ) : (
+                    tabsNode
+                )}
                 {contentElements.map((contentEl) => {
                     if (!contentEl.props.forceMount && contentEl.props.value !== activeValue) {
                         return null

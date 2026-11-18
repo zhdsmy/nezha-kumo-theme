@@ -44,7 +44,32 @@ export function PrivateNoteEditor({
     const rowIds = useRef<RowIdentity[]>([])
     const sequence = useRef(0)
     const movedFocus = useRef<HTMLElement | null>(null)
+    const focusActual = useRef(false)
     useLayoutEffect(() => {
+        if (focusActual.current) {
+            focusActual.current = false
+            const card = document.querySelector<HTMLElement>("[data-actual-amount]")
+            const input = card?.querySelector<HTMLInputElement>('input[inputmode="decimal"]')
+            if (card) {
+                const container = card.closest<HTMLElement>("[data-json-path]") ?? card
+                const dialog = container.closest<HTMLElement>(".nkt-dialog")
+                if (dialog) {
+                    const bounds = dialog.getBoundingClientRect()
+                    const footer = dialog.querySelector<HTMLElement>(".nkt-dialog-footer")
+                    const visibleBottom = footer
+                        ? Math.min(bounds.bottom, footer.getBoundingClientRect().top) - 12
+                        : bounds.bottom - 12
+                    const rect = container.getBoundingClientRect()
+                    if (rect.bottom > visibleBottom) dialog.scrollTop += rect.bottom - visibleBottom
+                    else if (rect.top < bounds.top + 12)
+                        dialog.scrollTop += rect.top - (bounds.top + 12)
+                    if (document.scrollingElement) document.scrollingElement.scrollTop = 0
+                } else {
+                    container.scrollIntoView?.({ block: "nearest" })
+                }
+            }
+            input?.focus({ preventScroll: true })
+        }
         const target = movedFocus.current
         const focus = target?.matches(":disabled")
             ? target
@@ -122,6 +147,7 @@ export function PrivateNoteEditor({
             identities.push({ id: sequence.current++, children: [] })
         identities.length = entries.length
         const array = Array.isArray(parseJsonNote(raw))
+        const parentName = !array && names.length > 0 ? String(names.at(-1)) : ""
         return (
             <div className="nkt-json-rows">
                 {entries.map((entry, index) => {
@@ -138,6 +164,113 @@ export function PrivateNoteEditor({
                         nextNames[1] === "actualAmount"
                     const error = errors.find((error) => JSON.stringify(error.path) === id)?.error
                     const label = nextNames.join(".")
+                    const deleteRow = () => {
+                        reindex(path, index)
+                        onChange(patchJsonNote(value, nextPath, undefined), "structured")
+                    }
+                    if (
+                        depth === 1 &&
+                        !array &&
+                        entry.key === "billingDataMod" &&
+                        type === "object" &&
+                        !error
+                    ) {
+                        const subEntries = jsonEntries(entry.raw)
+                        const subId = JSON.stringify([...nextPath, 0])
+                        const onlyActual =
+                            subEntries.length === 1 &&
+                            subEntries[0].key === "actualAmount" &&
+                            !emptyNumbers.includes(subId) &&
+                            jsonType(parseJsonNote(subEntries[0].raw)) === "string"
+                        if (onlyActual) {
+                            while (identities[index].children.length < 1)
+                                identities[index].children.push({
+                                    id: sequence.current++,
+                                    children: [],
+                                })
+                            identities[index].children.length = 1
+                            return (
+                                <div
+                                    key={identities[index].id}
+                                    className="nkt-json-row rounded-lg border border-kumo-line p-2.5"
+                                    data-json-path={id}
+                                >
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="text-sm font-medium">
+                                            {t("PublicNote.Billing")}
+                                        </span>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            shape="square"
+                                            aria-label={`${t("PrivateNote.Delete")} · ${label}`}
+                                            onClick={deleteRow}
+                                        >
+                                            <Trash2 aria-hidden="true" />
+                                        </Button>
+                                    </div>
+                                    <ActualAmountInput
+                                        value={parseJsonNote(subEntries[0].raw) as string}
+                                        onChange={(next) => patch([...nextPath, 0], next)}
+                                    />
+                                </div>
+                            )
+                        }
+                        return (
+                            <div
+                                key={identities[index].id}
+                                className="nkt-json-row"
+                                data-json-path={id}
+                            >
+                                <div className="flex items-center justify-between gap-2">
+                                    <span className="text-sm font-medium">
+                                        {t("PublicNote.Billing")}
+                                    </span>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        shape="square"
+                                        aria-label={`${t("PrivateNote.Delete")} · ${label}`}
+                                        onClick={deleteRow}
+                                    >
+                                        <Trash2 aria-hidden="true" />
+                                    </Button>
+                                </div>
+                                {rows(
+                                    entry.raw,
+                                    nextPath,
+                                    nextNames,
+                                    depth + 1,
+                                    identities[index].children,
+                                )}
+                            </div>
+                        )
+                    }
+                    if (actual && type === "string" && !error) {
+                        return (
+                            <div
+                                key={identities[index].id}
+                                className="nkt-json-row"
+                                data-json-path={id}
+                            >
+                                <div className="flex justify-end">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        shape="square"
+                                        aria-label={`${t("PrivateNote.Delete")} · ${label}`}
+                                        onClick={deleteRow}
+                                    >
+                                        <Trash2 aria-hidden="true" />
+                                    </Button>
+                                </div>
+                                <ActualAmountInput
+                                    value={current as string}
+                                    onChange={(next) => patch(nextPath, next)}
+                                />
+                            </div>
+                        )
+                    }
                     return (
                         <div
                             key={identities[index].id}
@@ -248,13 +381,7 @@ export function PrivateNoteEditor({
                                         variant="ghost"
                                         shape="square"
                                         aria-label={`${t("PrivateNote.Delete")} · ${label}`}
-                                        onClick={() => {
-                                            reindex(path, index)
-                                            onChange(
-                                                patchJsonNote(value, nextPath, undefined),
-                                                "structured",
-                                            )
-                                        }}
+                                        onClick={deleteRow}
                                     >
                                         <Trash2 aria-hidden="true" />
                                     </Button>
@@ -329,7 +456,6 @@ export function PrivateNoteEditor({
                                 </div>
                             ) : type === "boolean" ? (
                                 <Switch
-                                    label={t(`PrivateNote.Types.boolean`)}
                                     aria-labelledby=""
                                     aria-label={`${t("PrivateNote.Value")} · ${label}`}
                                     checked={current as boolean}
@@ -347,7 +473,16 @@ export function PrivateNoteEditor({
                     onClick={() => onChange(appendJsonEntry(value, path, "", ""), "structured")}
                 >
                     <Plus className="size-4" aria-hidden="true" />
-                    {t(array ? "PrivateNote.AddItem" : "PrivateNote.AddRow")}
+                    {array
+                        ? t("PrivateNote.AddItem")
+                        : parentName.trim()
+                          ? t("PrivateNote.AddRowIn", {
+                                name:
+                                    parentName === "billingDataMod"
+                                        ? t("PublicNote.Billing")
+                                        : parentName,
+                            })
+                          : t("PrivateNote.AddRow")}
                 </Button>
             </div>
         )
@@ -373,12 +508,13 @@ export function PrivateNoteEditor({
                 <Button
                     type="button"
                     variant="secondary"
-                    onClick={() =>
+                    onClick={() => {
+                        focusActual.current = true
                         onChange(
                             patchJsonNote(value, ["billingDataMod", "actualAmount"], ""),
                             "structured",
                         )
-                    }
+                    }}
                 >
                     {t("PrivateNote.AddActualAmount")}
                 </Button>

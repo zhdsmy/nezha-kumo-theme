@@ -135,3 +135,72 @@ test("raw text is trimmed when the server form saves", async () => {
     await waitFor(() => expect(update).toHaveBeenCalledTimes(1))
     expect(update.mock.calls[0][1].public_note).toBe("new note")
 })
+
+test("A1: clear buttons follow field controls, TagInput lets Tab pass, and dialog buttons are tabbable", () => {
+    render(
+        <ServerCard
+            data={{ id: 1, name: "Mock", display_index: 0, public_note: note } as never}
+            mutate={vi.fn()}
+        />,
+    )
+    fireEvent.click(screen.getByRole("button", { name: i18n.t("Edit") }))
+    const clearStart = screen.getByRole("button", {
+        name: `${i18n.t("PublicNote.Clear")} · ${i18n.t("PublicNote.StartDate")}`,
+    })
+    const openStart = screen.getByRole("button", {
+        name: new RegExp("^" + i18n.t("PublicNote.StartDate") + " · "),
+    })
+    expect(
+        Boolean(openStart.compareDocumentPosition(clearStart) & Node.DOCUMENT_POSITION_FOLLOWING),
+    ).toBe(true)
+
+    const extra = screen.getByRole("textbox", { name: i18n.t("PublicNote.Extra") })
+    fireEvent.change(extra, { target: { value: "pending-tag" } })
+    const tabEvent = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true })
+    let tabAllowed = false
+    act(() => {
+        tabAllowed = extra.dispatchEvent(tabEvent)
+    })
+    expect(tabAllowed).toBe(true)
+
+    const submit = screen.getByRole("button", { name: i18n.t("Submit") })
+    expect(submit.getAttribute("tabindex")).toBe("0")
+})
+
+test("A7: IPv4/IPv6 counts > 1 are recognized without warning and Bandwidth input precedes Unlimited toggle", () => {
+    function Harness() {
+        const [value, setValue] = useState(
+            '{"planDataMod":{"bandwidth":"25Gbps Redundant","IPv4":"4","IPv6":"64"}}',
+        )
+        return (
+            <>
+                <PublicNoteEditor value={value} onChange={setValue} />
+                <output data-testid="pub-saved">{value}</output>
+            </>
+        )
+    }
+    render(<Harness />)
+    expect(screen.getAllByText(i18n.t("PublicNote.Unrecognized"))).toHaveLength(1)
+
+    const ipv4Group = screen.getByRole("radiogroup", { name: "IPv4" })
+    expect(within(ipv4Group).getByRole("radio", { name: i18n.t("PublicNote.Has") })).toHaveProperty(
+        "ariaChecked",
+        "true",
+    )
+    const ipv4Count = screen.getByRole("textbox", {
+        name: `IPv4 · ${i18n.t("PublicNote.Count")}`,
+    }) as HTMLInputElement
+    expect(ipv4Count.value).toBe("4")
+    fireEvent.change(ipv4Count, { target: { value: "8" } })
+    fireEvent.blur(ipv4Count)
+    expect(JSON.parse(screen.getByTestId("pub-saved").textContent!).planDataMod.IPv4).toBe("8")
+
+    const bwInput = screen.getByRole("textbox", { name: i18n.t("PublicNote.Bandwidth") })
+    const bwUnlimited = screen.getByRole("switch", {
+        name: `${i18n.t("PublicNote.Bandwidth")} · ${i18n.t("PublicNote.Unlimited")}`,
+    })
+    expect(
+        Boolean(bwInput.compareDocumentPosition(bwUnlimited) & Node.DOCUMENT_POSITION_FOLLOWING),
+    ).toBe(true)
+})
+

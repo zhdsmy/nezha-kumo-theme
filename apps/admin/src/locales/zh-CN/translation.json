@@ -62,7 +62,8 @@
     "NoResults": "没有内容",
     "Actions": "操作",
     "EditServer": "编辑服务器",
-    "Weight": "权重（数字越大，显示越靠前）",
+    "Weight": "权重",
+    "WeightHint": "权重数字越大，显示越靠前",
     "DDNSProfiles": "DDNS 配置文件 ID",
     "SeparateWithComma": "（以英文逗号分隔）",
     "Public": "公开",
@@ -264,7 +265,8 @@
         "RemoveTag": "删除 {{tag}}",
         "TagsPlaceholder": "回车添加",
         "TagsHint": "按 Enter 或输入逗号添加标签。",
-        "Time": "时间"
+        "Time": "时间",
+        "Count": "数量"
     },
     "Validation": {
         "InvalidForm": "表单校验失败",
@@ -572,6 +574,7 @@
         "MoveUp": "上移",
         "MoveDown": "下移",
         "AddRow": "添加字段",
+        "AddRowIn": "向 {{name}} 添加字段",
         "AddItem": "添加数组项",
         "EmptyKey": "键名不能为空。",
         "DuplicateKey": "同一对象内的键名不能重复。",

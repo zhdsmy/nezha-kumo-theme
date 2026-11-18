@@ -62,7 +62,8 @@
     "NoResults": "結果がありません",
     "Actions": "操作",
     "EditServer": "サーバーを編集",
-    "Weight": "表示順の重み（数値が大きいほど上に表示）",
+    "Weight": "重み",
+    "WeightHint": "重みの数値が大きいほど上に表示されます",
     "DDNSProfiles": "DDNS プロファイル ID",
     "SeparateWithComma": "（カンマ区切り）",
     "Public": "公開",
@@ -264,7 +265,8 @@
         "RemoveTag": "{{tag}} を削除",
         "TagsPlaceholder": "Enterで追加",
         "TagsHint": "Enter またはカンマでタグを追加します。",
-        "Time": "時刻"
+        "Time": "時刻",
+        "Count": "数量"
     },
     "Validation": {
         "InvalidForm": "入力内容に誤りがあります",
@@ -572,6 +574,7 @@
         "MoveUp": "上へ",
         "MoveDown": "下へ",
         "AddRow": "フィールドを追加",
+        "AddRowIn": "{{name}} にフィールドを追加",
         "AddItem": "配列要素を追加",
         "EmptyKey": "キーを入力してください。",
         "DuplicateKey": "同じオブジェクト内のキーは重複できません。",
