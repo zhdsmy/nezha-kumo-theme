@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { expect, test, webkit } from "@playwright/test"
 
 import fixture from "./fixtures/nezha-frame.json" with { type: "json" }
 import { mockNezha } from "./mock"
@@ -520,5 +520,74 @@ test.describe("Visual review F1–F10 fixes", () => {
         for (const txt of pingNums) {
             expect(txt.trim()).toMatch(/^\d+\.\d ms$/)
         }
+    })
+
+    test("F9: WebKit skip-to-content enters main, dark clicked tabs leave no gray block, and Cmd+K avoids inner rectangular focus box", async ({
+        page,
+        baseURL,
+    }) => {
+        // 1. Real WebKit: Tab -> .nk-skip-link -> Enter -> #main-content -> next Tab inside #main-content, plus dark clicked tab
+        const wb = await webkit.launch()
+        try {
+            const ctx = await wb.newContext({ viewport: { width: 1440, height: 900 } })
+            const wp = await ctx.newPage()
+            await mockNezha(wp)
+            await wp.addInitScript(() => {
+                localStorage.setItem("nkt:appearance", "dark")
+            })
+            await wp.goto(`${baseURL}/`)
+            await expect(wp.locator("[data-server]").first()).toBeVisible()
+
+            await wp.keyboard.press("Tab")
+            await expect(wp.locator(".nk-skip-link")).toBeFocused()
+            await wp.keyboard.press("Enter")
+            expect(await wp.evaluate(() => document.activeElement?.id)).toBe("main-content")
+            await wp.keyboard.press("Tab")
+            expect(
+                await wp.evaluate(() => Boolean(document.activeElement?.closest("#main-content"))),
+            ).toBe(true)
+
+            await wp.goto(`${baseURL}/server/6`)
+            await expect(wp.locator(".node-live-strip")).toBeVisible()
+            const wbHistTab = wp.getByRole("tab", { name: "Reporting history", exact: true })
+            await wbHistTab.click()
+            await expect(wbHistTab).toHaveAttribute("aria-selected", "true")
+            const wbTabBg = await wbHistTab.evaluate((el) => getComputedStyle(el).backgroundColor)
+            expect(wbTabBg).toBe("rgba(0, 0, 0, 0)")
+            await ctx.close()
+        } finally {
+            await wb.close()
+        }
+
+        // 2. Dark mode clicked page tab leaves no gray background block
+        await mockNezha(page)
+        await page.setViewportSize({ width: 1440, height: 900 })
+        await page.addInitScript(() => {
+            localStorage.setItem("nkt:appearance", "dark")
+        })
+        await page.goto("/server/6")
+        await expect(page.locator(".node-live-strip")).toBeVisible()
+        const histTab = page.getByRole("tab", { name: "Reporting history", exact: true })
+        await histTab.click()
+        const clickedTabStyle = await histTab.evaluate((el) => {
+            const cs = getComputedStyle(el)
+            return { bg: cs.backgroundColor, shadow: cs.boxShadow }
+        })
+        expect(clickedTabStyle.bg).toBe("rgba(0, 0, 0, 0)")
+        expect(clickedTabStyle.shadow).toBe("none")
+
+        // 3. Cmd+K search input avoids unrounded rectangular box-shadow on combobox
+        await page.keyboard.press("ControlOrMeta+k")
+        const combobox = page.locator('.nk-search-palette [role="combobox"]')
+        await expect(combobox).toBeFocused()
+        const cmdkFocus = await combobox.evaluate((el) => {
+            const header = el.parentElement!
+            return {
+                inputShadow: getComputedStyle(el).boxShadow,
+                headerShadow: getComputedStyle(header).boxShadow,
+            }
+        })
+        expect(cmdkFocus.inputShadow).toBe("none")
+        expect(cmdkFocus.headerShadow).not.toBe("none")
     })
 })
