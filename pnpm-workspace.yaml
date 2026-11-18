@@ -1,3 +1,5 @@
 packages:
   - apps/*
   - packages/*
+patchedDependencies:
+  '@cloudflare/kumo@2.18.1': patches/@cloudflare__kumo@2.18.1.patch

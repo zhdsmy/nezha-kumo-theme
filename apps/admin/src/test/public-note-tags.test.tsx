@@ -41,6 +41,17 @@ test("tags support Enter, commas, paste, dedupe and whole-tag deletion", () => {
     expect(change).toHaveBeenLastCalledWith("4837[联通],CMI")
 })
 
+test("R10: an ancestor can cancel Tab with a pending tag", () => {
+    render(
+        <div onKeyDown={(event) => event.preventDefault()}>
+            <TagInput label="Extra" onChange={vi.fn()} />
+        </div>,
+    )
+    const input = screen.getByRole("textbox", { name: "Extra" })
+    fireEvent.change(input, { target: { value: "pending" } })
+    expect(fireEvent.keyDown(input, { key: "Tab" })).toBe(false)
+})
+
 test("paste replaces the selection and splits newlines", () => {
     const change = vi.fn()
     render(<TagInput label="路由" onChange={change} />)

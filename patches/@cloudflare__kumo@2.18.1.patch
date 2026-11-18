@@ -1,0 +1,22 @@
+diff --git a/dist/chunks/tag-input-fm0pwt6kea4q137b.js b/dist/chunks/tag-input-fm0pwt6kea4q137b.js
+index 24d34e6016629855b3d27e26890d8012e8d5e289..829b06d4ef2793b361b7af1d09c71143b333296c 100644
+--- a/dist/chunks/tag-input-fm0pwt6kea4q137b.js
++++ b/dist/chunks/tag-input-fm0pwt6kea4q137b.js
+@@ -60,13 +60,10 @@ const TagInput = forwardRef(({ value, defaultValue = [], onValueChange, validate
+ 			setValues(values.slice(0, -1));
+ 			return;
+ 		}
+-		if (!inputValue || ![
+-			"Enter",
+-			",",
+-			"Tab"
+-		].includes(event.key)) return;
+-		const didCommit = commit(inputValue);
+-		if (event.key !== "Tab" || didCommit) event.preventDefault();
++		// Tab uses the browser's focus order. Blur commits only if focus actually leaves.
++		if (!inputValue || !["Enter", ","].includes(event.key)) return;
++		commit(inputValue);
++		event.preventDefault();
+ 	};
+ 	const handlePaste = (event) => {
+ 		onPasteProp?.(event);
