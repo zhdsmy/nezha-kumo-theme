@@ -198,4 +198,49 @@ test.describe("Visual review F1–F10 fixes", () => {
         await expect(procCard.locator(".chart-heading p")).toHaveText("183")
         await expect(procCard.locator("svg path[fill='none']")).toHaveCount(1)
     })
+
+    test("F4: short viewports keep Login submit unclipped and show bottom scroll cues on Login and SearchPalette", async ({
+        page,
+    }) => {
+        await page.setViewportSize({ width: 640, height: 400 })
+        await mockNezha(page)
+        await page.goto("/")
+        await expect(page.locator("[data-server]").first()).toBeVisible()
+
+        // 1. At 640x400 (200% zoom), Login primary submit button is completely unclipped
+        await page.locator(".nk-topbar-actions button").last().click()
+        const loginDialog = page.getByRole("dialog")
+        await expect(loginDialog).toBeVisible()
+        const submitBtn = loginDialog.locator('button[type="submit"]')
+        const dialogRect = await loginDialog.boundingBox()
+        const submitRect = await submitBtn.boundingBox()
+        expect(dialogRect).not.toBeNull()
+        expect(submitRect).not.toBeNull()
+        expect(dialogRect!.y + dialogRect!.height).toBeLessThanOrEqual(400)
+        expect(submitRect!.y + submitRect!.height).toBeLessThanOrEqual(
+            dialogRect!.y + dialogRect!.height,
+        )
+        const loginScroll = loginDialog.locator(".login-scroll")
+        await expect(loginScroll).toHaveAttribute("data-scroll-more", "")
+        await loginScroll.evaluate((el) => {
+            el.scrollTop = el.scrollHeight
+        })
+        await expect(loginScroll).not.toHaveAttribute("data-scroll-more", "")
+        await page.keyboard.press("Escape")
+        await expect(loginDialog).toBeHidden()
+
+        // 2. At 952x670, SearchPalette list indicates overflow via data-scroll-more until scrolled to bottom
+        await page.setViewportSize({ width: 952, height: 670 })
+        await page.keyboard.press("Meta+k")
+        const cmdkList = page.locator(".search-results")
+        await expect(cmdkList).toBeVisible()
+        await expect(cmdkList).toHaveAttribute("data-scroll-more", "")
+        const maskImage = await cmdkList.evaluate((el) => getComputedStyle(el).maskImage)
+        expect(maskImage).toContain("linear-gradient")
+
+        await cmdkList.evaluate((el) => {
+            el.scrollTop = el.scrollHeight
+        })
+        await expect(cmdkList).not.toHaveAttribute("data-scroll-more", "")
+    })
 })

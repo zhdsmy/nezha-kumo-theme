@@ -5,8 +5,30 @@ import type { Bucket } from "@/core/live"
 import type { Snapshot } from "@/core/model"
 import { readStorage } from "@/core/storage"
 import { Badge, Banner, Button, Empty, SkeletonLine } from "@cloudflare/kumo"
-import { type ReactNode, useId } from "react"
+import { type ReactNode, useEffect, useId, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+export function useScrollMore<T extends HTMLElement>(active: boolean, itemCount?: number) {
+    const [node, setNode] = useState<T | null>(null)
+    useEffect(() => {
+        if (!active || !node) return
+        const sync = () => {
+            const more = node.scrollHeight - node.scrollTop - node.clientHeight > 2
+            if (more) node.setAttribute("data-scroll-more", "")
+            else node.removeAttribute("data-scroll-more")
+        }
+        sync()
+        node.addEventListener("scroll", sync, { passive: true })
+        const ro = new ResizeObserver(sync)
+        ro.observe(node)
+        if (node.firstElementChild) ro.observe(node.firstElementChild)
+        return () => {
+            node.removeEventListener("scroll", sync)
+            ro.disconnect()
+        }
+    }, [active, itemCount, node])
+    return setNode
+}
 
 // Palette from measurements/traffic-chart-options-{light,dark}.json; same in both modes.
 export const CHART_PALETTE = ["#4290F0", "#F5B647", "#E8649D", "#8D58EE", "#50C3B6", "#D37536"]

@@ -4,6 +4,8 @@ import { XIcon } from "@phosphor-icons/react"
 import { type FormEvent, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useScrollMore } from "./ui"
+
 export interface LoginDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
@@ -46,7 +48,7 @@ function LoginForm({ close }: { close: () => void }) {
     return (
         <>
             <Dialog.Title className="dialog-title">{t("auth.title")}</Dialog.Title>
-            <Dialog.Description className="muted mb-6">
+            <Dialog.Description className="dialog-description muted mb-6">
                 {t("auth.subtitle", { site: site?.name })}
             </Dialog.Description>
             <form onSubmit={submit} className="login-form">
@@ -90,16 +92,17 @@ function LoginForm({ close }: { close: () => void }) {
                     {message}
                 </Banner>
             )}
-            <p className="muted mt-5 text-xs">{t("auth.wafHint")}</p>
+            <p className="login-waf-hint muted mt-5 text-xs">{t("auth.wafHint")}</p>
         </>
     )
 }
 
 export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
     const { t } = useTranslation()
+    const scrollRef = useScrollMore<HTMLDivElement>(open)
     return (
         <Dialog.Root open={open} onOpenChange={onOpenChange}>
-            <Dialog className="p-6">
+            <Dialog className="login-dialog p-0">
                 <Dialog.Close
                     render={(props) => (
                         <Button
@@ -114,7 +117,11 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
                         </Button>
                     )}
                 />
-                {open && <LoginForm close={() => onOpenChange(false)} />}
+                {open && (
+                    <div ref={scrollRef} className="login-scroll">
+                        <LoginForm close={() => onOpenChange(false)} />
+                    </div>
+                )}
             </Dialog>
         </Dialog.Root>
     )

@@ -859,6 +859,19 @@
         rgb(255 255 255 / 0) 100%
     );
 }
+.login-dialog {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.login-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 24px;
+}
 .dialog-title {
     font-size: 20px;
     line-height: 28px;
@@ -870,6 +883,7 @@
     position: absolute;
     top: 14px;
     right: 14px;
+    z-index: 1;
 }
 .dialog-close,
 .dialog-close-btn,
@@ -903,6 +917,41 @@
 }
 .nk-search-palette .dialog-close-btn {
     flex-shrink: 0;
+}
+.login-scroll[data-scroll-more],
+.search-results[data-scroll-more] {
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
+}
+@media (max-height: 560px) {
+    .login-dialog {
+        top: 12px;
+        max-height: calc(100dvh - 24px);
+    }
+    .login-scroll {
+        padding: 16px 20px;
+    }
+    .login-dialog .dialog-title {
+        margin-bottom: 4px;
+    }
+    .login-dialog .dialog-description {
+        margin-bottom: 12px;
+    }
+    .login-dialog .login-form {
+        gap: 12px;
+    }
+    .login-dialog .oauth-actions {
+        margin-top: 12px;
+        padding-top: 12px;
+    }
+    .login-dialog .login-waf-hint {
+        margin-top: 12px;
+    }
+    [role="dialog"]:has(.nk-search-palette) {
+        top: 12px;
+    }
+    .nk-search-palette {
+        max-height: calc(100dvh - 24px);
+    }
 }
 .note-banner,
 .note-banner *,
