@@ -371,7 +371,7 @@ export default function ServerPage() {
                 <Table
                     columnPriority={[
                         ["id", 108],
-                        ["groups", 80],
+                        ["groups", 120],
                         ["geoip", 156],
                         ["host_version", 92],
                         ["owner", 120],

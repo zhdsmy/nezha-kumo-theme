@@ -161,7 +161,7 @@ export default function NotificationPage() {
             <Table
                 columnPriority={[
                     ["id", 64],
-                    ["groups", 90],
+                    ["groups", 120],
                     ["url", 100],
                     ["verify_tls", 100],
                 ]}
