@@ -43,7 +43,8 @@ export function resolveExpiry(node: NodeInfo, now = Date.now()): ExpiryState | n
     if (!node.autoRenewal && base < now) return { kind: "expired", at: base, level: "danger" }
     let at = base
     if (node.autoRenewal && at <= now) {
-        let k = Math.floor((now - base) / (cycleDays(node.cycle!) * 90_720_000))
+        // Start just below the true step count (1.05 d per nominal day), then walk forward.
+        let k = Math.floor((now - base) / (cycleDays(node.cycle!) * 1.05 * DAY_MS))
         do at = addCycles(base, node.cycle!, ++k, node.tz)
         while (at <= now)
     }
