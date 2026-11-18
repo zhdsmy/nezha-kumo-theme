@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.2] - 2026-11-18
+
+- Complete missing Simplified Chinese, Traditional Chinese and Japanese translations.
+- Read the toast close button label in the interface language.
+- Show Simplified Chinese screenshots in the Chinese README and refresh the English ones.
+
 ## [0.1.1] - 2026-11-18
 
 - Pick servers by name with one searchable selector in NAT, API tokens, settings and alert rules.
