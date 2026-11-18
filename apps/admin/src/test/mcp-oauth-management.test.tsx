@@ -224,3 +224,16 @@ test("R01: refresh failure keeps the current authorization rows until retry succ
     await screen.findByText("NoResults")
     expect(screen.queryByRole("alert")).toBeNull()
 })
+
+test("R06: a failed page keeps the total and can return to the previous page", async () => {
+    mocks.grants.mockResolvedValue({ items: [grant], total: 201 })
+    openManagement()
+    await screen.findByText("ChatGPT")
+    mocks.grants.mockRejectedValueOnce(new Error("Page unavailable"))
+    fireEvent.click(screen.getByRole("button", { name: "MCPOAuthManager.Next" }))
+    await screen.findByRole("alert")
+    expect(screen.queryByText("ChatGPT")).toBeNull()
+    expect(screen.getByText(/Total: 201/)).toBeTruthy()
+    fireEvent.click(screen.getByRole("button", { name: "MCPOAuthManager.Previous" }))
+    await screen.findByText("ChatGPT")
+})

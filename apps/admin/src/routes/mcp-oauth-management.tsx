@@ -174,7 +174,7 @@ function OAuthGrants({ all, userID }: { all: boolean; userID: number }) {
             <TablePagination
                 page={page}
                 pageSize={20}
-                total={data?.total ?? 0}
+                total={data?.total}
                 disabled={busy || isLoading}
                 onPageChange={setPage}
             />
@@ -306,7 +306,7 @@ function OAuthClients({ userID }: { userID: number }) {
             <TablePagination
                 page={page}
                 pageSize={20}
-                total={data?.total ?? 0}
+                total={data?.total}
                 disabled={busy || isLoading}
                 onPageChange={setPage}
             />

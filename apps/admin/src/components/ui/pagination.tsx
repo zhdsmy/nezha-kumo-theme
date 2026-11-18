@@ -2,7 +2,7 @@ import { ButtonProps, buttonVariants } from "@/components/ui/button"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { cn } from "@/lib/utils"
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
-import { ComponentProps, forwardRef, useLayoutEffect, useRef, useState } from "react"
+import { ComponentProps, forwardRef, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 // Full 5-page + Previous/Next text bar fits from 556 px content width
@@ -150,7 +150,7 @@ function getPageNumbers(page: number, totalPages: number, compact: boolean) {
 type TablePaginationProps = {
     page: number
     pageSize: number
-    total: number
+    total: number | undefined
     disabled?: boolean
     onPageChange: (page: number) => void
 }
@@ -158,20 +158,23 @@ type TablePaginationProps = {
 const TablePagination = ({
     page,
     pageSize,
-    total,
+    total: pageTotal,
     disabled = false,
     onPageChange,
 }: TablePaginationProps) => {
     const { t } = useTranslation()
-    const box = useRef<HTMLDivElement>(null)
+    const [lastTotal, setLastTotal] = useState(0)
+    useEffect(() => {
+        if (pageTotal !== undefined) setLastTotal(pageTotal)
+    }, [pageTotal])
+    const total = pageTotal ?? lastTotal
     const sm = useMediaQuery("(min-width: 640px)")
     const [narrowContainer, setNarrowContainer] = useState(false)
     const totalPages = Math.ceil(total / pageSize)
     const prevDisabled = disabled || page <= 1
     const nextDisabled = disabled || page >= totalPages
 
-    useLayoutEffect(() => {
-        const el = box.current
+    const observeWidth = useCallback((el: HTMLDivElement | null) => {
         if (!el) return
         const update = (w: number) => setNarrowContainer(w > 0 && w < PAGINATION_FULL_WIDTH)
         update(el.clientWidth)
@@ -194,7 +197,7 @@ const TablePagination = ({
 
     return (
         <div
-            ref={box}
+            ref={observeWidth}
             className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-2 py-4"
         >
             <div className="shrink-0 whitespace-nowrap text-sm text-muted-foreground tabular-nums">

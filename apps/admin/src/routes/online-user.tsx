@@ -201,17 +201,15 @@ export default function OnlineUserPage() {
                     ))}
                 </TableBody>
             </Table>
-            {data?.pagination && (
-                <TablePagination
-                    page={page}
-                    pageSize={pageSize}
-                    total={data.pagination.total}
-                    disabled={isLoading}
-                    onPageChange={(newPage) =>
-                        setSearchParams({ page: newPage.toString(), pageSize: pageSize.toString() })
-                    }
-                />
-            )}
+            <TablePagination
+                page={page}
+                pageSize={pageSize}
+                total={data?.pagination?.total}
+                disabled={isLoading}
+                onPageChange={(newPage) =>
+                    setSearchParams({ page: newPage.toString(), pageSize: pageSize.toString() })
+                }
+            />
         </Page>
     )
 }

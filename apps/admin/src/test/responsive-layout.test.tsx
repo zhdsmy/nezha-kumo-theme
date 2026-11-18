@@ -420,3 +420,22 @@ test("R2-ADM-06: a row's portalled editor keeps its focus return target visible"
     fireEvent.pointerDown(document.body)
     expect(toggle.getAttribute("aria-expanded")).toBe("false")
 })
+
+test("R05: pagination observes its container when late data mounts it and disconnects on removal", () => {
+    width = 1024
+    const disconnect = vi.fn()
+    vi.stubGlobal("ResizeObserver", class {
+        observe() {}
+        disconnect = disconnect
+    })
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(420)
+    const bar = (total: number) => <TablePagination page={1} pageSize={20} total={total} onPageChange={vi.fn()} />
+    const { rerender } = render(bar(0))
+    rerender(bar(201))
+    expect(screen.getByRole("navigation").hasAttribute("data-compact")).toBe(true)
+    rerender(bar(0))
+    expect(disconnect).toHaveBeenCalledOnce()
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(720)
+    rerender(bar(201))
+    expect(screen.getByRole("navigation").hasAttribute("data-compact")).toBe(false)
+})
