@@ -498,7 +498,7 @@ export function Loading({ variant = "home" }: { variant?: LoadingVariant } = {})
             )}
             {variant === "charts" && (
                 <div className="chart-grid" aria-hidden="true">
-                    {Array.from({ length: 6 }, (_, i) => (
+                    {Array.from({ length: 7 }, (_, i) => (
                         <div key={i} className="chart-card">
                             <div className="chart-heading">
                                 <div className="flex flex-1 items-center" style={{ height: 21 }}>

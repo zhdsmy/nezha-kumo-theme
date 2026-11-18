@@ -468,14 +468,20 @@ export default function NodePage({ id, section }: { id: string; section: Section
                                                 ? t(`node.traffic.${node.trafficLimitType}`)
                                                 : "",
                                         ],
-                                        [t("ui.quotaUsed"), used !== null ? formatBytes(used) : ""],
+                                        [
+                                            t("ui.quotaUsed"),
+                                            used !== null ? (
+                                                formatBytes(used)
+                                            ) : node.trafficLimitPeriod ? (
+                                                <span className="muted">
+                                                    {t("node.noCycleUsage")}
+                                                </span>
+                                            ) : (
+                                                ""
+                                            ),
+                                        ],
                                     ]}
                                 />
-                                {node.trafficLimitPeriod ? (
-                                    <Banner variant="secondary" size="sm" className="mt-3">
-                                        {t("node.noCycleUsage")}
-                                    </Banner>
-                                ) : null}
                                 {used !== null && node.trafficLimit > 0 && (
                                     <div
                                         className="quota-track"

@@ -172,7 +172,7 @@ test("compact tiles and full seeded sparks fit the first phone screen; numbers s
     await expectInlineNodeStatus("Offline")
     await page.goto("/server/6#load")
     await expect(page.locator(".spark")).toHaveCount(0)
-    await expect(page.locator(".chart svg")).toHaveCount(6)
+    await expect(page.locator(".chart svg")).toHaveCount(7)
     expect(
         await page
             .locator(".chart")
@@ -240,10 +240,10 @@ test("24h, 7d and 30d charts and downsampling do not recompute for live frames",
     await mockNezha(page, { loggedIn: true })
     await instrumentRenders(page)
     await page.goto("/server/6#load")
-    await expect(page.locator(".chart svg")).toHaveCount(6)
+    await expect(page.locator(".chart svg")).toHaveCount(7)
     for (const name of ["1 d", "7 d", "30 d"]) {
         await page.getByRole("tab", { name, exact: true }).click()
-        await expect(page.locator(".chart svg")).toHaveCount(6)
+        await expect(page.locator(".chart svg")).toHaveCount(7)
         await page.mouse.move(0, 0)
         await page.waitForTimeout(250)
         const before = await counts(page)
@@ -299,7 +299,7 @@ test("cold node overview never blocks on metrics and load shows loading while li
     await page.goto("/server/6#load")
     await expect(page.locator(".loading-state")).toBeVisible()
     await expect(page.getByText("No data for this range yet.", { exact: true })).toHaveCount(0)
-    await expect(page.locator(".chart svg")).toHaveCount(6)
+    await expect(page.locator(".chart svg")).toHaveCount(7)
 })
 
 test("cold home requests one profile and exactly five series per node with at most four in flight", async ({

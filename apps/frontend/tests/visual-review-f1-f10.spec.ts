@@ -308,7 +308,7 @@ test.describe("Visual review F1–F10 fixes", () => {
         const beforeChecked = await shaveSwitch.getAttribute("aria-checked")
         const infoBtn = page.getByRole("button", { name: "More information" })
         await infoBtn.tap()
-        await expect(page.getByText(/99th percentile|spikes/i)).toBeVisible()
+        await expect(page.getByText("Hide the occasional abnormally high samples")).toBeVisible()
         expect(await shaveSwitch.getAttribute("aria-checked")).toBe(beforeChecked)
         await ctx.close()
     })
@@ -368,5 +368,47 @@ test.describe("Visual review F1–F10 fixes", () => {
             expect(hit.width).toBeGreaterThanOrEqual(44)
             expect(hit.height).toBeGreaterThanOrEqual(44)
         }
+    })
+
+    test("F7: zero-node fleet avoids false filter empty state, HourGrid shows ticks/legend/tap readout, and unconfigured cycle usage renders inline", async ({
+        page,
+    }) => {
+        // 1. Zero-node fleet without active filters shows only No nodes yet.
+        await mockNezha(page, { empty: true })
+        await page.goto("/")
+        await expect(page.getByText("No nodes yet.", { exact: true })).toBeVisible()
+        await expect(page.getByText("No nodes match these filters.")).toHaveCount(0)
+
+        // 2. Normal fleet: filter exclusion still shows No nodes match these filters.
+        await mockNezha(page)
+        await page.goto("/")
+        await page.locator(".section-controls > button").first().click()
+        await page.locator(".inline-search input").fill("nonexistent-zzz-node")
+        await expect(page.getByText("No nodes match these filters.")).toBeVisible()
+
+        // 3. Node overview: unconfigured cycle usage is a quiet dd row value, not a Banner
+        await page.setViewportSize({ width: 1440, height: 900 })
+        await page.goto("/server/6")
+        const networkPanel = page.locator("#node-panel-network")
+        await expect(
+            networkPanel.locator("dd", { hasText: "Usage for this period is unavailable." }),
+        ).toBeVisible()
+        await expect(networkPanel.locator('[data-kumo-component="Banner"]')).toHaveCount(0)
+
+        // 4. Reporting history: 00/06/12/18 ticks, 3-state legend, and tap/click cell readout
+        await page.goto("/server/6#history")
+        const scale = page.locator(".hour-grid-scale")
+        await expect(scale).toBeVisible()
+        for (const tick of ["00", "06", "12", "18"]) {
+            await expect(scale).toContainText(tick)
+        }
+        const legend = page.locator(".hour-grid-legend")
+        await expect(legend).toContainText("Reported")
+        await expect(legend).toContainText("Missed")
+        await expect(legend).toContainText("Unobserved")
+
+        const watchedCell = page.locator(".hour-grid-cell[data-at]").first()
+        await watchedCell.click()
+        await expect(page.locator(".hour-grid-selected")).toContainText(/:\d{2}.*Reported|Missed/)
     })
 })

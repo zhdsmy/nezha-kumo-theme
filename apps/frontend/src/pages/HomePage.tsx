@@ -407,6 +407,7 @@ export function HomePage() {
         }
     }, [nodes, version, trafficPoints, midnight])
     const needle = query.toLowerCase()
+    const hasFilter = Boolean(groups.length || pickedRegion || needle)
     const visible = sortNodes(
         listed.filter(
             (n) =>
@@ -429,7 +430,11 @@ export function HomePage() {
     const nodesSub = !fed ? (
         t("status.connecting")
     ) : !nodes.length ? (
-        t("status.noNodes")
+        hasFilter ? (
+            t("status.noNodes")
+        ) : (
+            "—"
+        )
     ) : issues.length ? (
         <DropdownMenu>
             <DropdownMenu.Trigger>
@@ -765,7 +770,7 @@ export function HomePage() {
                     </div>
                 )}
                 {!visible.length ? (
-                    <NoData title={t("toolbar.empty")} />
+                    <NoData title={t(hasFilter ? "toolbar.empty" : "status.noNodes")} />
                 ) : view === "cards" ? (
                     <div className="server-cards">
                         {visible.map((n) => (
