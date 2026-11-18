@@ -60,6 +60,7 @@
     "Failure": "失败",
     "Loading": "加载中",
     "NoResults": "没有内容",
+    "Retry": "重试",
     "Actions": "操作",
     "EditServer": "编辑服务器",
     "Weight": "权重（数字越大，显示越靠前）",

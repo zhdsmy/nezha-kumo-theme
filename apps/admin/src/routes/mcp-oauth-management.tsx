@@ -15,6 +15,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
+    TableStateRow,
 } from "@/components/ui/table"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/hooks/useAuth"
@@ -56,9 +57,9 @@ function OAuthGrants({ all, userID }: { all: boolean; userID: number }) {
     }
     return (
         <>
-            {(actionError || error) && (
+            {actionError && (
                 <p role="alert" className="text-destructive">
-                    {actionError || errorMessage(error)}
+                    {actionError}
                 </p>
             )}
             <Table
@@ -82,80 +83,82 @@ function OAuthGrants({ all, userID }: { all: boolean; userID: number }) {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {(data?.items ?? []).map((grant) => {
-                        const grantName = grant.client_name || grant.client_id
-                        return (
-                            <TableRow key={grant.id}>
-                                <TableCell
-                                    data-col="name"
-                                    className="max-w-64 break-all whitespace-normal"
-                                >
-                                    <p>{grantName}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {grant.client_id}
-                                    </p>
-                                    <p>{t(`MCPOAuthManager.Status.${grant.status}`)}</p>
-                                </TableCell>
-                                {all && (
-                                    <TableCell data-col="user">
-                                        {grant.username} (#{grant.user_id})
+                    {isLoading || error || !data?.items?.length ? (
+                        <TableStateRow
+                            colSpan={all ? 7 : 6}
+                            isLoading={isLoading}
+                            error={error}
+                            onRetry={mutate}
+                        />
+                    ) : (
+                        data.items.map((grant) => {
+                            const grantName = grant.client_name || grant.client_id
+                            return (
+                                <TableRow key={grant.id}>
+                                    <TableCell
+                                        data-col="name"
+                                        className="max-w-64 break-all whitespace-normal"
+                                    >
+                                        <p>{grantName}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {grant.client_id}
+                                        </p>
+                                        <p>{t(`MCPOAuthManager.Status.${grant.status}`)}</p>
                                     </TableCell>
-                                )}
-                                <TableCell data-col="permissions" className="whitespace-normal">
-                                    {grant.scopes.map((scope) => (
-                                        <div key={scope} className="text-xs">
-                                            {scope}
-                                        </div>
-                                    ))}
-                                </TableCell>
-                                <TableCell
-                                    data-col="servers"
-                                    className="max-w-48 break-words whitespace-normal"
-                                >
-                                    {grant.server_ids.length
-                                        ? grant.server_ids.join(", ")
-                                        : t("MCPOAuth.AllServers")}
-                                </TableCell>
-                                <TableCell data-col="lifetime" className="text-xs">
-                                    <p>
-                                        {t("MCPOAuthManager.AuthorizedAt")}:{" "}
-                                        {displayTime(grant.created_at)}
-                                    </p>
-                                    <p>
-                                        {t("ApiTokenExpiresAt")}: {displayTime(grant.expires_at)}
-                                    </p>
-                                </TableCell>
-                                <TableCell data-col="lastUsed" className="text-xs">
-                                    <p>{displayTime(grant.last_used_at)}</p>
-                                    <p>{grant.last_used_ip}</p>
-                                </TableCell>
-                                <TableCell data-col="actions">
-                                    <ConfirmActionDialog
-                                        trigger={
-                                            <Button variant="outline" disabled={busy}>
-                                                {t("Revoke")}
-                                            </Button>
-                                        }
-                                        title={t("Revoke")}
-                                        description={t("MCPOAuthManager.ConfirmRevoke", {
-                                            name: grantName,
-                                        })}
-                                        onConfirm={() => revoke(grant.id)}
-                                    />
-                                </TableCell>
-                            </TableRow>
-                        )
-                    })}
+                                    {all && (
+                                        <TableCell data-col="user">
+                                            {grant.username} (#{grant.user_id})
+                                        </TableCell>
+                                    )}
+                                    <TableCell data-col="permissions" className="whitespace-normal">
+                                        {grant.scopes.map((scope) => (
+                                            <div key={scope} className="text-xs">
+                                                {scope}
+                                            </div>
+                                        ))}
+                                    </TableCell>
+                                    <TableCell
+                                        data-col="servers"
+                                        className="max-w-48 break-words whitespace-normal"
+                                    >
+                                        {grant.server_ids.length
+                                            ? grant.server_ids.join(", ")
+                                            : t("MCPOAuth.AllServers")}
+                                    </TableCell>
+                                    <TableCell data-col="lifetime" className="text-xs">
+                                        <p>
+                                            {t("MCPOAuthManager.AuthorizedAt")}:{" "}
+                                            {displayTime(grant.created_at)}
+                                        </p>
+                                        <p>
+                                            {t("ApiTokenExpiresAt")}:{" "}
+                                            {displayTime(grant.expires_at)}
+                                        </p>
+                                    </TableCell>
+                                    <TableCell data-col="lastUsed" className="text-xs">
+                                        <p>{displayTime(grant.last_used_at)}</p>
+                                        <p>{grant.last_used_ip}</p>
+                                    </TableCell>
+                                    <TableCell data-col="actions">
+                                        <ConfirmActionDialog
+                                            trigger={
+                                                <Button variant="outline" disabled={busy}>
+                                                    {t("Revoke")}
+                                                </Button>
+                                            }
+                                            title={t("Revoke")}
+                                            description={t("MCPOAuthManager.ConfirmRevoke", {
+                                                name: grantName,
+                                            })}
+                                            onConfirm={() => revoke(grant.id)}
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        })
+                    )}
                 </TableBody>
             </Table>
-            {isLoading && (
-                <p role="status" className="py-4">
-                    {t("Loading")}
-                </p>
-            )}
-            {!isLoading && !error && data?.items.length === 0 && (
-                <p className="py-4">{t("NoResults")}</p>
-            )}
             <TablePagination
                 page={page}
                 pageSize={20}
@@ -198,9 +201,9 @@ function OAuthClients({ userID }: { userID: number }) {
             <p className="mb-4 text-sm text-muted-foreground">
                 {t("MCPOAuthManager.ClientPolicy")}
             </p>
-            {(actionError || error) && (
+            {actionError && (
                 <p role="alert" className="text-destructive">
-                    {actionError || errorMessage(error)}
+                    {actionError}
                 </p>
             )}
             <Table
@@ -220,69 +223,74 @@ function OAuthClients({ userID }: { userID: number }) {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {(data?.items ?? []).map((client) => {
-                        const actionLabel = t(
-                            client.disabled ? "MCPOAuthManager.Enable" : "MCPOAuthManager.Disable",
-                        )
-                        const confirmationKey = client.disabled
-                            ? "MCPOAuthManager.ConfirmEnable"
-                            : "MCPOAuthManager.ConfirmDisable"
-                        return (
-                            <TableRow key={client.id}>
-                                <TableCell
-                                    data-col="name"
-                                    className="max-w-64 break-all whitespace-normal"
-                                >
-                                    <p>{client.name}</p>
-                                    <p className="text-xs text-muted-foreground">{client.id}</p>
-                                    <p>
-                                        {t(
-                                            client.disabled
-                                                ? "MCPOAuthManager.Disabled"
-                                                : "MCPOAuthManager.Enabled",
-                                        )}
-                                    </p>
-                                </TableCell>
-                                <TableCell
-                                    data-col="callback"
-                                    className="max-w-96 break-all whitespace-normal"
-                                >
-                                    {client.redirect_uris.map((uri) => (
-                                        <div key={uri} className="text-xs">
-                                            {uri}
-                                        </div>
-                                    ))}
-                                </TableCell>
-                                <TableCell data-col="grants">{client.grant_count}</TableCell>
-                                <TableCell data-col="lastUsed">
-                                    {displayTime(client.last_used_at)}
-                                </TableCell>
-                                <TableCell data-col="actions">
-                                    <ConfirmActionDialog
-                                        trigger={
-                                            <Button variant="outline" disabled={busy}>
-                                                {actionLabel}
-                                            </Button>
-                                        }
-                                        title={actionLabel}
-                                        description={t(confirmationKey, { name: client.name })}
-                                        confirmVariant={client.disabled ? "default" : "destructive"}
-                                        onConfirm={() => changeClient(client.id, !client.disabled)}
-                                    />
-                                </TableCell>
-                            </TableRow>
-                        )
-                    })}
+                    {isLoading || error || !data?.items?.length ? (
+                        <TableStateRow
+                            colSpan={5}
+                            isLoading={isLoading}
+                            error={error}
+                            onRetry={mutate}
+                        />
+                    ) : (
+                        data.items.map((client) => {
+                            const actionLabel = t(
+                                client.disabled
+                                    ? "MCPOAuthManager.Enable"
+                                    : "MCPOAuthManager.Disable",
+                            )
+                            const confirmationKey = client.disabled
+                                ? "MCPOAuthManager.ConfirmEnable"
+                                : "MCPOAuthManager.ConfirmDisable"
+                            return (
+                                <TableRow key={client.id}>
+                                    <TableCell
+                                        data-col="name"
+                                        className="max-w-64 break-all whitespace-normal"
+                                    >
+                                        <p>{client.name}</p>
+                                        <p className="text-xs text-muted-foreground">{client.id}</p>
+                                        <p>
+                                            {t(
+                                                client.disabled
+                                                    ? "MCPOAuthManager.Disabled"
+                                                    : "MCPOAuthManager.Enabled",
+                                            )}
+                                        </p>
+                                    </TableCell>
+                                    <TableCell
+                                        data-col="callback"
+                                        className="max-w-96 break-all whitespace-normal"
+                                    >
+                                        {client.redirect_uris.map((uri) => (
+                                            <div key={uri} className="text-xs">
+                                                {uri}
+                                            </div>
+                                        ))}
+                                    </TableCell>
+                                    <TableCell data-col="grants">{client.grant_count}</TableCell>
+                                    <TableCell data-col="lastUsed">
+                                        {displayTime(client.last_used_at)}
+                                    </TableCell>
+                                    <TableCell data-col="actions">
+                                        <ConfirmActionDialog
+                                            trigger={
+                                                <Button variant="outline" disabled={busy}>
+                                                    {actionLabel}
+                                                </Button>
+                                            }
+                                            title={actionLabel}
+                                            description={t(confirmationKey, { name: client.name })}
+                                            confirmVariant={
+                                                client.disabled ? "default" : "destructive"
+                                            }
+                                            onConfirm={() => changeClient(client.id, !client.disabled)}
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        })
+                    )}
                 </TableBody>
             </Table>
-            {isLoading && (
-                <p role="status" className="py-4">
-                    {t("Loading")}
-                </p>
-            )}
-            {!isLoading && !error && data?.items.length === 0 && (
-                <p className="py-4">{t("NoResults")}</p>
-            )}
             <TablePagination
                 page={page}
                 pageSize={20}

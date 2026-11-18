@@ -9,6 +9,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
+    TableStateRow,
 } from "@/components/ui/table"
 import { useAuth } from "@/hooks/useAuth"
 import {
@@ -46,7 +47,10 @@ export default function TransferPage() {
     const { profile } = useAuth()
     const isAdmin = profile?.role === 0
     const callerID = profile?.id
-    const { data, mutate, error } = useSWR<ModelServerTransfer[]>("/api/v1/transfer", swrFetcher)
+    const { data, mutate, error, isLoading } = useSWR<ModelServerTransfer[]>(
+        "/api/v1/transfer",
+        swrFetcher,
+    )
 
     useEffect(() => {
         if (error) {
@@ -206,12 +210,13 @@ export default function TransferPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {rows.length === 0 ? (
-                        <TableRow>
-                            <TableCell colSpan={9} className="h-24 text-center">
-                                {t("NoResults")}
-                            </TableCell>
-                        </TableRow>
+                    {isLoading || rows.length === 0 ? (
+                        <TableStateRow
+                            colSpan={9}
+                            isLoading={isLoading}
+                            error={error}
+                            onRetry={mutate}
+                        />
                     ) : (
                         rows.map((row) => {
                             const meta = statusMeta[row.status]

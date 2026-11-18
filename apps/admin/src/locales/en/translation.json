@@ -60,6 +60,7 @@
     "Failure": "Fail",
     "Loading": "Loading",
     "NoResults": "No results",
+    "Retry": "Retry",
     "Actions": "Actions",
     "EditServer": "Edit Server",
     "Weight": "Weight (the larger the number, the higher it is displayed)",

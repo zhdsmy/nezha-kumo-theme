@@ -12,6 +12,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
+    TableStateRow,
 } from "@/components/ui/table"
 import { useAuth } from "@/hooks/useAuth"
 import { selectableTableFeatures, useSelectableTable } from "@/lib/table"
@@ -203,13 +204,14 @@ export default function WAFPage() {
                     ))}
                 </TableHeader>
                 <TableBody>
-                    {isLoading ? (
-                        <TableRow>
-                            <TableCell colSpan={columns.length} className="h-24 text-center">
-                                {t("Loading")}...
-                            </TableCell>
-                        </TableRow>
-                    ) : table.getRowModel().rows?.length ? (
+                    {isLoading || !table.getRowModel().rows?.length ? (
+                        <TableStateRow
+                            colSpan={columns.length}
+                            isLoading={isLoading}
+                            error={error}
+                            onRetry={mutate}
+                        />
+                    ) : (
                         table.getRowModel().rows.map((row) => (
                             <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                                 {row.getVisibleCells().map((cell) => (
@@ -223,12 +225,6 @@ export default function WAFPage() {
                                 ))}
                             </TableRow>
                         ))
-                    ) : (
-                        <TableRow>
-                            <TableCell colSpan={columns.length} className="h-24 text-center">
-                                {t("NoResults")}
-                            </TableCell>
-                        </TableRow>
                     )}
                 </TableBody>
             </Table>

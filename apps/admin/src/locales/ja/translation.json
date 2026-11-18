@@ -60,6 +60,7 @@
     "Failure": "失敗",
     "Loading": "読み込み中",
     "NoResults": "結果がありません",
+    "Retry": "再試行",
     "Actions": "操作",
     "EditServer": "サーバーを編集",
     "Weight": "表示順の重み（数値が大きいほど上に表示）",

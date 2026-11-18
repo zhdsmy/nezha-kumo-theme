@@ -25,6 +25,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
+    TableStateRow,
 } from "@/components/ui/table"
 import { IconButton } from "@/components/xui/icon-button"
 import { useServer } from "@/hooks/useServer"
@@ -377,13 +378,14 @@ export default function ServerPage() {
                         ))}
                     </TableHeader>
                     <TableBody>
-                        {isLoading ? (
-                            <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    {t("Loading")}...
-                                </TableCell>
-                            </TableRow>
-                        ) : table.getRowModel().rows?.length ? (
+                        {isLoading || !table.getRowModel().rows?.length ? (
+                            <TableStateRow
+                                colSpan={columns.length}
+                                isLoading={isLoading}
+                                error={error}
+                                onRetry={mutate}
+                            />
+                        ) : (
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
                                     key={row.id}
@@ -403,12 +405,6 @@ export default function ServerPage() {
                                     ))}
                                 </TableRow>
                             ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    {t("NoResults")}
-                                </TableCell>
-                            </TableRow>
                         )}
                     </TableBody>
                 </Table>

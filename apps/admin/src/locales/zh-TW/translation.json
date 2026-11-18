@@ -60,6 +60,7 @@
     "Failure": "失敗",
     "Loading": "載入中",
     "NoResults": "沒有內容",
+    "Retry": "重試",
     "Actions": "操作",
     "EditServer": "編輯伺服器",
     "Weight": "權重（數字越大，顯示越前）",

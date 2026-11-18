@@ -30,6 +30,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
+    TableStateRow,
 } from "@/components/ui/table"
 import { useAuth } from "@/hooks/useAuth"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
@@ -97,21 +98,13 @@ export default function ApiTokensPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {isLoading ? (
-                        <TableRow>
-                            <TableCell colSpan={6} className="h-24 text-center">
-                                {t("Loading")}...
-                            </TableCell>
-                        </TableRow>
-                    ) : !data || data.length === 0 ? (
-                        <TableRow>
-                            <TableCell
-                                colSpan={6}
-                                className="h-24 text-center text-muted-foreground"
-                            >
-                                {t("NoResults")}
-                            </TableCell>
-                        </TableRow>
+                    {!data || data.length === 0 ? (
+                        <TableStateRow
+                            colSpan={6}
+                            isLoading={isLoading}
+                            error={error}
+                            onRetry={mutate}
+                        />
                     ) : (
                         data.map((tok) => (
                             <TableRow key={tok.id}>
