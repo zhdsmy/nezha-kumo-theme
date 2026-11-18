@@ -15,7 +15,6 @@
 - **`apps/frontend/public/flags/*.svg`** (4:3 SVG region flags): from [lipis/flag-icons](https://github.com/lipis/flag-icons) v7.3.2 (commit `fe15c16`), MIT License, Copyright (c) 2013 Panayiotis Lipiridis (license kept in [`apps/frontend/public/flags/LICENSE.txt`](apps/frontend/public/flags/LICENSE.txt)).
 - **`apps/frontend/public/assets/apple-touch-icon.svg`**, **`apps/frontend/public/assets/apple-touch-icon.png`**, and **`apps/frontend/public/assets/apple-touch-icon-512.png`**: original Nezha "N" badge vector and rasterized PNG icons authored by `zhdsmy` for this project, licensed under the repository [MIT License](LICENSE).
 - **`apps/admin/public/logo.svg`**: imported from [nezhahq/admin-frontend](https://github.com/nezhahq/admin-frontend) (`public/logo.svg`, commit `017e6cf`), distributed under upstream WTFPL ([`apps/admin/LICENSE.upstream-WTFPL`](apps/admin/LICENSE.upstream-WTFPL)).
-- **`apps/admin/public/animated-man.webp`**: imported from [nezhahq/admin-frontend](https://github.com/nezhahq/admin-frontend) (`public/animated-man.webp`, commit `0314765`), which distributes repository contents under WTFPL ([`apps/admin/LICENSE.upstream-WTFPL`](apps/admin/LICENSE.upstream-WTFPL)). Upstream does not record the original illustration source prior to that import; the file is unreferenced by the reskinned admin UI.
 
 ## Trademark Disclaimer
 
