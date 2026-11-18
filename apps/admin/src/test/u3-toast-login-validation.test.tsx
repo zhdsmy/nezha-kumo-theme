@@ -25,6 +25,15 @@ afterEach(async () => {
 })
 
 describe("U3: localized validation, login inline alert, toast offset & retry dismissal, and invalid field focus", () => {
+    test.each(["en", "zh-CN", "zh-TW", "ja"])("R12: label known fields and omit unknown paths in %s", async (lang) => {
+        await i18n.changeLanguage(lang)
+        const schema = z.object({ webhook_method: z.number().min(1), internal_value: z.number().min(1) })
+        const result = schema.safeParse({ webhook_method: 0, internal_value: 0 })
+        const messages = result.error!.issues.map(issue => issue.message)
+        expect(messages[0]).toBe(i18n.t("FieldValidation.NumberMin", { field: "Webhook " + i18n.t("RequestMethod"), min: 1 }))
+        expect(messages[1]).toBe(z.number().min(1).safeParse(0).error!.issues[0]!.message)
+    })
+
     test("Zod validation errors localize across en, zh-CN, zh-TW, and ja without raw 'Too small' jargon", async () => {
         const schema = z.object({
             name: z.string().min(1),
