@@ -9,7 +9,6 @@ import {
     parseServerIDsInput,
 } from "@/api/api-tokens"
 import { ConfirmActionDialog } from "@/components/action-button-group"
-import { SettingsTab } from "@/components/settings-tab"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -77,7 +76,6 @@ export default function ApiTokensPage() {
     return (
         <Page
             title={t("ApiTokens")}
-            tabs={<SettingsTab />}
             actions={<Button onClick={() => setCreateOpen(true)}>{t("CreateApiToken")}</Button>}
         >
             <Table

@@ -9,14 +9,16 @@ import { MemoryRouter } from "react-router-dom"
 import { SWRConfig } from "swr"
 import { afterEach, describe, expect, test, vi } from "vitest"
 
+const identity = vi.hoisted(() => ({ id: 1 as unknown }))
 vi.mock("@/hooks/useAuth", () => ({
     useAuth: () => ({
-        profile: { id: 1, username: "admin", role: 0 },
+        profile: { id: identity.id, username: "admin", role: 0 },
         loading: false,
     }),
 }))
 
 afterEach(async () => {
+    identity.id = 1
     cleanup()
     vi.restoreAllMocks()
     await i18n.changeLanguage("en")
@@ -76,6 +78,34 @@ describe("U5: self-delete guard, target-aware confirmation & Cancel label, batch
         const dialog = await screen.findByRole("alertdialog")
         expect(dialog.textContent).toContain("alice (#2)")
         expect(screen.getByRole("button", { name: i18n.t("Cancel") })).toBeTruthy()
+    })
+
+    test("R02: invalid identity disables every delete until a valid profile arrives", async () => {
+        vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({
+            success: true, data: [{ id: 2, username: "alice", role: 1 }],
+        }))
+        const cache = new Map()
+        const view = () => (
+            <SWRConfig value={{ provider: () => cache }}>
+                <MemoryRouter><UserPage /></MemoryRouter>
+            </SWRConfig>
+        )
+        const { rerender } = render(view())
+        await screen.findByText("alice")
+        fireEvent.click(screen.getByRole("checkbox", { name: i18n.t("SelectAll") }))
+        for (const id of [undefined, null, 0, -1, 1.5, "1", Number.MAX_SAFE_INTEGER + 1]) {
+            identity.id = id
+            rerender(view())
+            for (const box of screen.getAllByRole("checkbox")) {
+                expect(box.getAttribute("aria-disabled")).toBe("true")
+            }
+            expect(screen.getByRole("button", { name: i18n.t("UnknownCurrentUser") })).toHaveProperty("disabled", true)
+            expect(screen.queryByText(i18n.t("SelectedCount", { count: 1 }))).toBeNull()
+            expect(screen.getByRole("button", { name: i18n.t("Delete") })).toHaveProperty("disabled", true)
+        }
+        identity.id = 1
+        rerender(view())
+        expect(screen.getByRole("checkbox", { name: i18n.t("SelectRow") }).getAttribute("aria-disabled")).not.toBe("true")
     })
 
     test("HeaderButtonGroup shows selected count and ConfirmBatchDelete description with Cancel button", async () => {

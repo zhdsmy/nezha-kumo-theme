@@ -67,7 +67,7 @@ export default function AdminShell({
                 {
                     id: "/dashboard/server-group",
                     href: "/dashboard/server-group",
-                    label: t("Group"),
+                    label: t("ServerGroups"),
                     icon: <Folder />,
                 },
                 {
@@ -133,7 +133,7 @@ export default function AdminShell({
                 {
                     id: "/dashboard/notification-group",
                     href: "/dashboard/notification-group",
-                    label: t("Group"),
+                    label: t("NotificationGroups"),
                     icon: <Folder />,
                 },
             ],

@@ -5,7 +5,6 @@ import {
     setMCPOAuthClientDisabled,
 } from "@/api/mcp-oauth"
 import { ConfirmActionDialog } from "@/components/action-button-group"
-import { SettingsTab } from "@/components/settings-tab"
 import { Button } from "@/components/ui/button"
 import { TablePagination } from "@/components/ui/pagination"
 import {
@@ -324,7 +323,6 @@ export default function MCPOAuthManagementPage() {
         <Page
             title={t("MCPOAuthManager.Title")}
             description={t("MCPOAuthManager.Description")}
-            tabs={<SettingsTab />}
         >
             {loading || !profile ? (
                 <p role="status">{t("Loading")}</p>

@@ -142,11 +142,21 @@ describe("U7: localized AgentConfig & AlertRule labels, closing row menu on dial
         expect(dialog.textContent).toContain(i18n.t("Coverage"))
     })
 
+    test("R11: historical instants display and expire, including the Unix epoch", () => {
+        for (const value of ["0001-01-02T00:00:00Z", "1969-12-31T23:59:59Z", "1970-01-01T00:00:00Z", "0001-01-01T00:00:00.000000001Z", 0, -1]) {
+            expect(utils.formatDateTime(value, "en", "Never")).not.toBe("Never")
+            expect(utils.isTimestampExpired(value, 1)).toBe(true)
+        }
+        for (const value of [null, undefined, "", "invalid", NaN, "0001-01-01T08:00:00+08:00"]) {
+            expect(utils.formatDateTime(value, "en", "Never")).toBe("Never")
+            expect(utils.isTimestampExpired(value)).toBe(false)
+        }
+    })
+
     test("formatDateTime formats per locale and CronPage + ApiTokensPage handle zero dates and expired tokens", async () => {
         const formatDateTime = utils.formatDateTime
         expect(typeof formatDateTime).toBe("function")
         expect(formatDateTime("0001-01-01T00:00:00Z", "zh-CN", "从未")).toBe("从未")
-        expect(formatDateTime(0, "en", "Never")).toBe("Never")
         for (const lng of ["en", "zh-CN", "zh-TW", "ja"]) {
             const formatted = formatDateTime("2026-05-10T08:30:00Z", lng, "—")
             expect(formatted).not.toContain("T08:30:00Z")

@@ -93,59 +93,6 @@ test("tabs render Kumo segmented indicator, localize overflow controls, and scro
     expect(list.scrollLeft).toBeGreaterThan(0)
 })
 
-test("route sub-navigation tabs use Kumo underline variant, set aria-current=page, and navigate via keyboard and click without page reload", async () => {
-    const { MemoryRouter, Route, Routes, useLocation } = await import("react-router-dom")
-    const { GroupTab } = await import("@/components/group-tab")
-    const { NotificationTab } = await import("@/components/notification-tab")
-
-    function Probe() {
-        const { pathname } = useLocation()
-        return <p data-testid="path">{pathname}</p>
-    }
-
-    const { unmount } = render(
-        <MemoryRouter initialEntries={["/dashboard/server-group"]}>
-            <GroupTab />
-            <Routes>
-                <Route path="*" element={<Probe />} />
-            </Routes>
-        </MemoryRouter>,
-    )
-
-    const list = screen.getByRole("tablist")
-    expect(list.className).toContain("border-b")
-    const serverTab = screen.getByRole("tab", { name: /Server|服务器/ })
-    const notifTab = screen.getByRole("tab", { name: /Notification|通知/ })
-    expect(serverTab.tagName).toBe("A")
-    expect(serverTab.getAttribute("aria-current")).toBe("page")
-    expect(notifTab.getAttribute("aria-current")).toBeNull()
-
-    // Keyboard navigation: ArrowRight moves roving focus, Enter navigates via client router
-    serverTab.focus()
-    fireEvent.keyDown(serverTab, { key: "ArrowRight" })
-    await Promise.resolve()
-    expect(document.activeElement).toBe(notifTab)
-    fireEvent.keyDown(notifTab, { key: "Enter" })
-    expect(screen.getByTestId("path").textContent).toBe("/dashboard/notification-group")
-    expect(notifTab.getAttribute("aria-current")).toBe("page")
-    expect(serverTab.getAttribute("aria-current")).toBeNull()
-
-    unmount()
-
-    render(
-        <MemoryRouter initialEntries={["/dashboard/notification"]}>
-            <NotificationTab />
-            <Routes>
-                <Route path="*" element={<Probe />} />
-            </Routes>
-        </MemoryRouter>,
-    )
-    const alertTab = screen.getByRole("tab", { name: /Alert|警报/ })
-    fireEvent.click(alertTab)
-    expect(screen.getByTestId("path").textContent).toBe("/dashboard/alert-rule")
-    expect(alertTab.getAttribute("aria-current")).toBe("page")
-})
-
 test("select trigger displays only item text when SelectItem has rich description", () => {
     render(
         <Select value="user-kumo">

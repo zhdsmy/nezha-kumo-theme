@@ -171,6 +171,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  '@cloudflare/kumo@2.18.1': 3c0b23394bf312a595ac06d9e41f4810328f1b012d1b6678174d6b545cb6b3a9
+
 importers:
 
   .: {}
@@ -179,7 +182,7 @@ importers:
     dependencies:
       '@cloudflare/kumo':
         specifier: 2.18.1
-        version: 2.18.1(@date-fns/tz@1.5.0)(@phosphor-icons/react@2.1.10(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(date-fns@4.4.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(zod@4.6.7)
+        version: 2.18.1(patch_hash=3c0b23394bf312a595ac06d9e41f4810328f1b012d1b6678174d6b545cb6b3a9)(@date-fns/tz@1.5.0)(@phosphor-icons/react@2.1.10(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(date-fns@4.4.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(zod@4.6.7)
       '@fontsource-variable/inter':
         specifier: ^5.3.0
         version: 5.3.0
@@ -381,7 +384,7 @@ importers:
     dependencies:
       '@cloudflare/kumo':
         specifier: 2.18.1
-        version: 2.18.1(@date-fns/tz@1.5.0)(@phosphor-icons/react@2.1.10(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(date-fns@4.4.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(zod@4.6.7)
+        version: 2.18.1(patch_hash=3c0b23394bf312a595ac06d9e41f4810328f1b012d1b6678174d6b545cb6b3a9)(@date-fns/tz@1.5.0)(@phosphor-icons/react@2.1.10(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(date-fns@4.4.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(zod@4.6.7)
       '@fontsource-variable/inter':
         specifier: ^5.3.0
         version: 5.3.0
@@ -451,7 +454,7 @@ importers:
     dependencies:
       '@cloudflare/kumo':
         specifier: 2.18.1
-        version: 2.18.1(@date-fns/tz@1.5.0)(@phosphor-icons/react@2.1.10(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(date-fns@4.4.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(zod@4.6.7)
+        version: 2.18.1(patch_hash=3c0b23394bf312a595ac06d9e41f4810328f1b012d1b6678174d6b545cb6b3a9)(@date-fns/tz@1.5.0)(@phosphor-icons/react@2.1.10(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(date-fns@4.4.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(zod@4.6.7)
       react:
         specifier: ^19.0.0
         version: 19.3.1
@@ -3419,7 +3422,7 @@ snapshots:
     dependencies:
       css-tree: 3.2.1
 
-  '@cloudflare/kumo@2.18.1(@date-fns/tz@1.5.0)(@phosphor-icons/react@2.1.10(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(date-fns@4.4.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(zod@4.6.7)':
+  '@cloudflare/kumo@2.18.1(patch_hash=3c0b23394bf312a595ac06d9e41f4810328f1b012d1b6678174d6b545cb6b3a9)(@date-fns/tz@1.5.0)(@phosphor-icons/react@2.1.10(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(date-fns@4.4.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(zod@4.6.7)':
     dependencies:
       '@base-ui/react': 1.9.0(@date-fns/tz@1.5.0)(@types/react@19.3.0)(date-fns@4.4.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@phosphor-icons/react': 2.1.10(react-dom@19.3.1(react@19.3.1))(react@19.3.1)

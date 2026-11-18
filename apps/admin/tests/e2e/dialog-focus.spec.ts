@@ -153,6 +153,10 @@ for (const [engine, driver] of Object.entries({ chromium, webkit })) {
             await page.getByRole("button", { name: "Edit", exact: true }).first().click()
             const extra = page.locator('[data-note-field="extra"] input[aria-label]')
             await extra.scrollIntoViewIfNeeded()
+            await extra.fill("new-tag")
+            await page.keyboard.press("Tab")
+            await expect(extra).not.toBeFocused()
+            await expect(page.locator('[data-note-field="extra"]').getByText("new-tag", { exact: true })).toBeVisible()
             await extra.focus()
             let submitFocused = false
             for (let i = 0; i < 6; i++) {

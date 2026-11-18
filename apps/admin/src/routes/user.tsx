@@ -2,7 +2,6 @@ import { swrFetcher } from "@/api/api"
 import { deleteUser } from "@/api/user"
 import { ActionButtonGroup } from "@/components/action-button-group"
 import { HeaderButtonGroup } from "@/components/header-button-group"
-import { SettingsTab } from "@/components/settings-tab"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
     Table,
@@ -40,6 +39,9 @@ export default function UserPage() {
             })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
+
+    const currentUserId = profile?.id
+    const hasIdentity = currentUserId !== undefined && Number.isSafeInteger(currentUserId) && currentUserId > 0
 
     const columns: ColumnDef<typeof selectableTableFeatures, ModelUser>[] = [
         {
@@ -100,15 +102,16 @@ export default function UserPage() {
             header: t("Actions"),
             cell: ({ row }) => {
                 const s = row.original
-                if (s.id === profile?.id) {
+                if (!row.getCanSelect()) {
+                    const reason = t(hasIdentity ? "CannotDeleteCurrentUser" : "UnknownCurrentUser")
                     return (
                         <div className="flex gap-2">
                             <IconButton
                                 variant="destructive"
                                 icon="trash"
                                 disabled
-                                title={t("CannotDeleteCurrentUser")}
-                                aria-label={t("CannotDeleteCurrentUser")}
+                                title={reason}
+                                aria-label={reason}
                             />
                         </div>
                     )
@@ -137,18 +140,17 @@ export default function UserPage() {
     const table = useSelectableTable(
         dataCache,
         columns,
-        (row) => row.original.id !== profile?.id,
+        (row) => hasIdentity && row.original.id !== currentUserId,
     )
 
     const selectedRows = table.getSelectedRowModel().rows
     const deletableSelectedIds = selectedRows
-        .map((r) => r.original.id)
-        .filter((id) => id !== profile?.id)
+        .filter((row) => row.getCanSelect())
+        .map((row) => row.original.id)
 
     return (
         <Page
             title={t("User")}
-            tabs={<SettingsTab />}
             actions={
                 <HeaderButtonGroup
                     className="flex flex-wrap gap-2"

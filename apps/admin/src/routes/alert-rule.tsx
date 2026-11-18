@@ -5,7 +5,6 @@ import { AlertRuleCard } from "@/components/alert-rule"
 import { CopyButton } from "@/components/copy-button"
 import { flagCell } from "@/components/flag"
 import { HeaderButtonGroup } from "@/components/header-button-group"
-import { NotificationTab } from "@/components/notification-tab"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
     Table,
@@ -145,7 +144,6 @@ export default function AlertRulePage() {
     return (
         <Page
             title={t("AlertRule")}
-            tabs={<NotificationTab />}
             actions={
                 <HeaderButtonGroup
                     className="flex ml-auto self-end sm:self-auto gap-2 flex-wrap shrink-0"

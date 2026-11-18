@@ -17,6 +17,16 @@ const resources = {
 
 const FIELD_LABEL_KEYS: Record<string, string> = {
     name: "Name",
+    role: "Role",
+    display_index: "Weight",
+    type: "Type",
+    trigger_mode: "TriggerMode",
+    request_method: "RequestMethod",
+    request_type: "RequestType",
+    min_latency: "MinimumLatency",
+    max_latency: "MaximumLatency",
+    notification_group_id: "NotifierGroup",
+    ip_change_notification_group_id: "NotifierGroup",
     username: "Username",
     password: "Password",
     original_password: "OriginalPassword",
@@ -39,10 +49,12 @@ const FIELD_LABEL_KEYS: Record<string, string> = {
 function fieldLabelForPath(path: PropertyKey[] | undefined): string {
     const raw = String(path?.at(-1) ?? "")
     if (!raw) return ""
-    if (raw === "url" || raw === "webhook_url") return "URL"
-    const key = FIELD_LABEL_KEYS[raw]
-    if (key) return i18n.t(key)
-    return raw
+    if (raw === "url") return "URL"
+    if (raw === "webhook_url") return "Webhook URL"
+    if (raw === "webhook_method") return `Webhook ${i18n.t("RequestMethod")}`
+    if (raw === "webhook_request_type") return `Webhook ${i18n.t("RequestType")}`
+    if (raw === "server_id") return `${i18n.t("Server")} ID`
+    return Object.hasOwn(FIELD_LABEL_KEYS, raw) ? i18n.t(FIELD_LABEL_KEYS[raw]!) : ""
 }
 
 function applyZodLocale(lng: string) {

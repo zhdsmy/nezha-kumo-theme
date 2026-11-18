@@ -12,6 +12,8 @@ import { ServerConfigCard } from "@/components/server-config"
 import { ServerConfigCardBatch } from "@/components/server-config-batch"
 import { TerminalButton } from "@/components/terminal"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -96,6 +98,10 @@ export default function ServerPage() {
         revalidateOnReconnect: false,
     })
     const { serverGroups } = useServer()
+    const [query, setQuery] = useState("")
+    const [groupId, setGroupId] = useState("all")
+    const search = query.trim().toLowerCase()
+    const group = serverGroups?.find((item) => String(item.group.id) === groupId)
     const routes = useMemo(
         () =>
             splitTags(
@@ -302,11 +308,21 @@ export default function ServerPage() {
         },
     ]
 
-    const dataCache = useMemo(() => {
-        return data ?? []
-    }, [data])
+    const visibleServers = useMemo(() => {
+        if (!data) return []
+        if (!search && !group) return data
+        const members = group && new Set(group.servers)
+        return data.filter((server) => {
+            if (members && !members.has(server.id)) return false
+            if (!search) return true
+            const ip = server.geoip?.ip
+            return [server.name, String(server.id), ip?.ipv4_addr, ip?.ipv6_addr].some(
+                (value) => value?.toLowerCase().includes(search),
+            )
+        })
+    }, [data, group, search])
 
-    const table = useSelectableTable(dataCache, columns)
+    const table = useSelectableTable(visibleServers, columns)
 
     const selectedRows = table.getSelectedRowModel().rows
     const selectedServerIds = selectedRows.map((r) => r.original.id)
@@ -368,6 +384,29 @@ export default function ServerPage() {
             }
         >
             <div>
+                <div className="mb-3 flex flex-wrap gap-2">
+                    <Input
+                        type="search"
+                        className="max-w-sm"
+                        aria-label={t("SearchServers")}
+                        placeholder={t("SearchServers")}
+                        value={query}
+                        onChange={(event) => setQuery(event.target.value)}
+                    />
+                    {!!serverGroups?.length && (
+                        <Select value={group ? groupId : "all"} onValueChange={setGroupId}>
+                            <SelectTrigger className="max-w-48" aria-label={t("ServerGroups")}>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">{t("AllGroups")}</SelectItem>
+                                {serverGroups.map(({ group }) => (
+                                    <SelectItem key={group.id} value={String(group.id)}>{group.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
+                </div>
                 <Table
                     columnPriority={[
                         ["id", 108],
@@ -410,6 +449,7 @@ export default function ServerPage() {
                             isLoading={isLoading}
                             error={error}
                             onRetry={mutate}
+                            emptyLabel={search || group ? t("NoMatchingServers") : undefined}
                         />
                         {table.getRowModel().rows.map((row) => (
                             <TableRow

@@ -4,7 +4,6 @@ import { ActionButtonGroup } from "@/components/action-button-group"
 import { CopyButton } from "@/components/copy-button"
 import { flagCell } from "@/components/flag"
 import { HeaderButtonGroup } from "@/components/header-button-group"
-import { NotificationTab } from "@/components/notification-tab"
 import { NotifierCard } from "@/components/notifier"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -144,7 +143,6 @@ export default function NotificationPage() {
     return (
         <Page
             title={t("Notifier")}
-            tabs={<NotificationTab />}
             actions={
                 <HeaderButtonGroup
                     className="flex ml-auto self-end sm:self-auto gap-2 flex-wrap shrink-0"

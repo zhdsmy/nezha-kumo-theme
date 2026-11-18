@@ -2,7 +2,6 @@ import { swrFetcher } from "@/api/api"
 import { deleteWAF } from "@/api/waf"
 import { ActionButtonGroup } from "@/components/action-button-group"
 import { HeaderButtonGroup } from "@/components/header-button-group"
-import { SettingsTab } from "@/components/settings-tab"
 import { Checkbox } from "@/components/ui/checkbox"
 import { TablePagination } from "@/components/ui/pagination"
 import {
@@ -164,7 +163,6 @@ export default function WAFPage() {
     return (
         <Page
             title={t("WAF")}
-            tabs={<SettingsTab />}
             actions={
                 isAdmin && (
                     <HeaderButtonGroup
