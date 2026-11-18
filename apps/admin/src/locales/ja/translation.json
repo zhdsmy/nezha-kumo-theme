@@ -506,6 +506,7 @@
     "SelectRow": "行を選択",
     "SelectTheme": "テーマを選択",
     "ServerGroups": "サーバーグループ",
+    "NotificationGroups": "通知グループ",
     "ToggleMenu": "メニューを切り替え",
     "WAFBlockReasonTypeBruteForceOauth2": "OAuth2 ブルートフォース攻撃",
     "breadcrumb": "パンくずリスト",

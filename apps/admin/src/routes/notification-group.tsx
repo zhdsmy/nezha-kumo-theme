@@ -1,7 +1,6 @@
 import { swrFetcher } from "@/api/api"
 import { deleteNotificationGroups } from "@/api/notification-group"
 import { ActionButtonGroup } from "@/components/action-button-group"
-import { GroupTab } from "@/components/group-tab"
 import { HeaderButtonGroup } from "@/components/header-button-group"
 import { NotificationGroupCard } from "@/components/notification-group"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -126,8 +125,7 @@ export default function NotificationGroupPage() {
 
     return (
         <Page
-            title={`${t("Notification")} · ${t("Group")}`}
-            tabs={<GroupTab />}
+            title={t("NotificationGroups")}
             actions={
                 <HeaderButtonGroup
                     className="flex ml-auto self-end sm:self-auto gap-2 flex-wrap shrink-0"

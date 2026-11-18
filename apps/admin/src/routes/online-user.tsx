@@ -2,7 +2,6 @@ import { swrFetcher } from "@/api/api"
 import { blockUser } from "@/api/online-user"
 import { BlockButtonGroup } from "@/components/action-button-group"
 import { HeaderBlockButtonGroup } from "@/components/header-button-group"
-import { SettingsTab } from "@/components/settings-tab"
 import { Checkbox } from "@/components/ui/checkbox"
 import { TablePagination } from "@/components/ui/pagination"
 import {
@@ -133,7 +132,6 @@ export default function OnlineUserPage() {
     return (
         <Page
             title={t("OnlineUser")}
-            tabs={<SettingsTab />}
             actions={
                 isAdmin && (
                     <HeaderBlockButtonGroup

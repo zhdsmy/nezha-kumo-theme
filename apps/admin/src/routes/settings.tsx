@@ -1,5 +1,4 @@
 import { updateSettings } from "@/api/settings"
-import { SettingsTab } from "@/components/settings-tab"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -151,7 +150,7 @@ export default function SettingsPage() {
     })
 
     return (
-        <Page title={t("Settings")} tabs={<SettingsTab />}>
+        <Page title={t("Settings")}>
             <div>
                 <Form {...form}>
                     <form

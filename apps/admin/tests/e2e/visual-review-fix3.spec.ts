@@ -59,6 +59,40 @@ function attachAdminMock(page: import("@playwright/test").Page, language = "en-U
 }
 
 for (const [engine, driver] of Object.entries({ chromium, webkit })) {
+    test(`AW14: ${engine} reaches every former cross-module tab from the sidebar`, async ({ baseURL }) => {
+        const browser = await driver.launch()
+        try {
+            const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, locale: "en" })
+            await attachAdminMock(page)
+            await page.route("**/api/v1/frontend", (route) => route.fulfill({
+                json: { success: true, data: { templates: [] } },
+            }))
+            await page.route("**/api/v1/mcp/oauth/grants**", (route) => route.fulfill({
+                json: { success: true, data: { items: [], total: 0 } },
+            }))
+            await page.goto(`${baseURL}/dashboard/`)
+            const sidebar = page.locator("aside.nk-sidebar")
+            await expect(sidebar.getByRole("link", { name: "Server groups", exact: true })).toBeVisible()
+            await expect(sidebar.getByRole("link", { name: "Notification groups", exact: true })).toBeVisible()
+            for (const target of [
+                "server-group", "notification-group", "alert-rule", "notification", "settings",
+                "settings/frontends", "settings/user", "settings/online-user", "settings/waf",
+                "settings/api-tokens", "settings/mcp-oauth",
+            ]) {
+                const path = `/dashboard/${target}`
+                const link = sidebar.locator(`a[href="${path}"]`)
+                await link.click()
+                await expect(page).toHaveURL(`${baseURL}${path}`)
+                await expect(link).toHaveAttribute("aria-current", "page")
+                await expect(page.locator(".nk-main h1")).toBeVisible()
+                await expect(page.getByRole("tablist")).toHaveCount(target === "settings/mcp-oauth" ? 1 : 0)
+            }
+            await expect(page.getByRole("tab")).toHaveCount(3)
+        } finally {
+            await browser.close()
+        }
+    })
+
     test(`A2: ${engine} scrolls to and focuses Actual expense on first click in a tall 375x667 dialog`, async ({
         baseURL,
     }) => {
@@ -266,7 +300,7 @@ for (const [engine, driver] of Object.entries({ chromium, webkit })) {
         }
     })
 
-    test(`A5: ${engine} shows sidebar scroll cue at <=900px height and underline tab overflow controls at 1024px`, async ({
+    test(`A5: ${engine} shows sidebar scroll cue at <=900px height and a single navigation path at 1024px`, async ({
         baseURL,
     }) => {
         const browser = await driver.launch()
@@ -279,7 +313,8 @@ for (const [engine, driver] of Object.entries({ chromium, webkit })) {
             await page.addInitScript(() => localStorage.setItem("language", "ja"))
             await attachAdminMock(page, "ja")
             await page.goto(`${baseURL}/dashboard/settings`)
-            await expect(page.locator('[role="tablist"]')).toBeVisible()
+            await expect(page.locator(".nk-main h1")).toBeVisible()
+            await expect(page.getByRole("tablist")).toHaveCount(0)
 
             const sidebarMetrics = await page.evaluate(() => {
                 const vp = document.querySelector<HTMLElement>(
@@ -305,27 +340,6 @@ for (const [engine, driver] of Object.entries({ chromium, webkit })) {
             expect(sidebarMetrics.scrollbarOpacity, JSON.stringify(sidebarMetrics)).toBeGreaterThan(
                 0.2,
             )
-
-            const endControl = page.locator(
-                '.nk-page-tabs [data-kumo-part="overflow-control"][data-side="end"]',
-            )
-            await expect(endControl).toBeVisible()
-            const beforeScroll = await page
-                .locator('.nk-page-tabs [role="tablist"]')
-                .evaluate((el) => ({
-                    scrollLeft: el.scrollLeft,
-                    scrollWidth: el.scrollWidth,
-                    clientWidth: el.clientWidth,
-                }))
-            expect(beforeScroll.scrollWidth).toBeGreaterThan(beforeScroll.clientWidth)
-            await endControl.click()
-            await expect
-                .poll(() =>
-                    page
-                        .locator('.nk-page-tabs [role="tablist"]')
-                        .evaluate((el) => el.scrollLeft),
-                )
-                .toBeGreaterThan(0)
 
             await page.goto(`${baseURL}/dashboard/profile`)
             await expect

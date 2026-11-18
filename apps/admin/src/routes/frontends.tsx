@@ -9,7 +9,6 @@ import {
     removeFrontend,
 } from "@/api/frontends"
 import { ConfirmActionDialog } from "@/components/action-button-group"
-import { SettingsTab } from "@/components/settings-tab"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -94,7 +93,6 @@ export default function FrontendsPage() {
         <Page
             title={t("FrontendManager.Title")}
             description={t("FrontendManager.Description")}
-            tabs={<SettingsTab />}
         >
             <Card>
                 <CardContent className="space-y-6 pt-6">

@@ -93,9 +93,7 @@ test("members see only their authorizations and confirm revocation", async () =>
     openManagement()
     await screen.findByText("ChatGPT")
     expect(mocks.grants).toHaveBeenCalledWith(false, 1)
-    expect(screen.getByRole("tab", { name: "MCPOAuthManager.Title" }).getAttribute("href")).toBe(
-        "/dashboard/settings/mcp-oauth",
-    )
+    expect(screen.getAllByRole("tablist")).toHaveLength(1)
     expect(screen.queryByRole("tab", { name: "MCPOAuthManager.All" })).toBeNull()
     expect(screen.queryByRole("tab", { name: "MCPOAuthManager.Clients" })).toBeNull()
     expect(mocks.clients).not.toHaveBeenCalled()

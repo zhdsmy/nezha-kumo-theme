@@ -1,7 +1,6 @@
 import { swrFetcher } from "@/api/api"
 import { deleteServerGroups } from "@/api/server-group"
 import { ActionButtonGroup } from "@/components/action-button-group"
-import { GroupTab } from "@/components/group-tab"
 import { HeaderButtonGroup } from "@/components/header-button-group"
 import { ServerGroupCard } from "@/components/server-group"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -142,8 +141,7 @@ export default function ServerGroupPage() {
 
     return (
         <Page
-            title={`${t("Server")} · ${t("Group")}`}
-            tabs={<GroupTab />}
+            title={t("ServerGroups")}
             actions={
                 <HeaderButtonGroup
                     className="flex ml-auto self-end sm:self-auto gap-2 flex-wrap shrink-0"

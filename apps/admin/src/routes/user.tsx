@@ -2,7 +2,6 @@ import { swrFetcher } from "@/api/api"
 import { deleteUser } from "@/api/user"
 import { ActionButtonGroup } from "@/components/action-button-group"
 import { HeaderButtonGroup } from "@/components/header-button-group"
-import { SettingsTab } from "@/components/settings-tab"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
     Table,
@@ -152,7 +151,6 @@ export default function UserPage() {
     return (
         <Page
             title={t("User")}
-            tabs={<SettingsTab />}
             actions={
                 <HeaderButtonGroup
                     className="flex flex-wrap gap-2"

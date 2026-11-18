@@ -17,7 +17,6 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock("@/hooks/useAuth", () => ({ useAuth: () => mocks.auth }))
-vi.mock("@/components/settings-tab", () => ({ SettingsTab: () => null }))
 vi.mock("react-i18next", () => ({
     useTranslation: () => ({
         t: (key: string, opts?: Record<string, unknown>) =>
