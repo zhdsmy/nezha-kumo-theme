@@ -125,7 +125,7 @@ Two configuration methods are supported and can be used together:
    ```
 
    - When both `<script id="nezha-kumo-config">` and `config.js` exist, settings are merged key-by-key and **`config.js` takes precedence**.
-   - When `config.js` is absent, the frontend falls back cleanly with no console errors.
+   - When `config.js` is absent, the page works normally on the panel JSON or defaults. The browser logs a 404 for the missing file; `dist.zip` ships a commented `config.js`, so this only happens if you delete it.
 
 ### Theme Settings Reference
 
