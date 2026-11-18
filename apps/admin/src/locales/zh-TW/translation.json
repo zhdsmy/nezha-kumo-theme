@@ -190,7 +190,7 @@
     "ConfigTLS": "Agent 使用 TLS 連線",
     "LoginFailed": "登入失敗",
     "BruteForceAttackingToken": "暴力攻擊令牌",
-    "BruteForceAttackingAgentSecret": "暴力攻擊代理秘密",
+    "BruteForceAttackingAgentSecret": "暴力破解 Agent 金鑰",
     "Language": "語言",
     "CustomCodes": "自訂程式碼（樣式和腳本）",
     "CustomCodesDashboard": "儀表板的自訂程式碼",

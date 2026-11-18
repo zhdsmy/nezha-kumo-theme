@@ -63,7 +63,7 @@
         "cpu": "CPU",
         "memory": "内存",
         "disk": "磁盘",
-        "swap": "Swap",
+        "swap": "交换空间",
         "load": "负载",
         "load1": "1 分钟负载",
         "network": "网络",

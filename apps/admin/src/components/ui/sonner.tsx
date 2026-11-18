@@ -52,6 +52,7 @@ const Toaster = ({
             className="toaster group !font-sans"
             style={{ ...KUMO_SONNER_STYLE, ...style }}
             toastOptions={{
+                closeButtonAriaLabel: t("Close"),
                 ...toastOptions,
                 classNames: {
                     toast: "group toast shadow-lg",
