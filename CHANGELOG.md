@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3] - 2026-11-18
+
+- Add Traditional Chinese (Hong Kong) next to Traditional Chinese (Taiwan), each with its own regional wording.
+- Use Hong Kong Chinese for Hong Kong and Macau browsers, and keep saved Taiwan selections.
+- Show costs in Hong Kong dollars for Hong Kong Chinese and New Taiwan dollars for Taiwan Chinese.
+- Use the same language names and globe icon in the public and admin language menus.
+
 ## [0.1.2] - 2026-11-18
 
 - Complete missing Simplified Chinese, Traditional Chinese and Japanese translations.
