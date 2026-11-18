@@ -140,7 +140,12 @@ const Table = forwardRef<
                     "--nkt-table-columns",
                     columns
                         .filter((id) => visible.has(id))
-                        .map((id) => (id === primaryColumn ? "minmax(0, 1fr)" : `${size(id)}px`))
+                        .map((id) => {
+                            if (id === primaryColumn) return "minmax(0, 1fr)"
+                            if (id === "owner")
+                                return `minmax(${size(id)}px, var(--nkt-owner-grow, 0fr))`
+                            return `${size(id)}px`
+                        })
                         .join(" "),
                 )
             }
