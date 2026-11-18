@@ -188,12 +188,15 @@ export async function copyToClipboard(text: string) {
     throw new Error("Failed to copy text to clipboard")
 }
 
+const GO_ZERO_TIME = Date.parse("0001-01-01T00:00:00Z")
+
 function parseValidDate(value: string | number | null | undefined): Date | null {
     if (value === null || value === undefined || value === "") return null
-    if (typeof value === "number" && (!Number.isFinite(value) || value <= 0)) return null
     const date = new Date(value)
     const time = date.getTime()
-    if (Number.isNaN(time) || date.getUTCFullYear() <= 1 || time <= 0) return null
+    if (Number.isNaN(time)) return null
+    // RFC 3339 permits fractional seconds below JavaScript's millisecond precision.
+    if (time === GO_ZERO_TIME && !(typeof value === "string" && /\.\d*[1-9]/.test(value))) return null
     return date
 }
 
