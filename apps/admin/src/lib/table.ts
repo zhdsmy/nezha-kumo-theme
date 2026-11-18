@@ -44,6 +44,9 @@ export function useSelectableTable<T extends EntityRow>(
         columns,
         getRowId: entityRowId,
     })
+    for (const row of table.getCoreRowModel().rows) {
+        ;(row as { _valuesCache?: Record<string, unknown> })._valuesCache = {}
+    }
     useEffect(() => {
         const ids = new Set(data.map(entityRowId))
         table.setRowSelection((selected) => {

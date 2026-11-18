@@ -137,12 +137,21 @@ export default function ServerPage() {
         {
             header: t("Group"),
             accessorKey: "groups",
-            accessorFn: (row) => {
-                return (
+            accessorFn: (row) =>
+                serverGroups
+                    ?.filter((sg) => sg.servers?.includes(row.id))
+                    .map((sg) => sg.group.name)
+                    .join(", ") || "",
+            cell: ({ row }) => {
+                const names =
                     serverGroups
-                        ?.filter((sg) => sg.servers?.includes(row.id))
-                        .map((sg) => sg.group.id) || []
-                )
+                        ?.filter((sg) => sg.servers?.includes(row.original.id))
+                        .map((sg) => sg.group.name)
+                        .filter(Boolean) ?? []
+                if (names.length === 0) {
+                    return <span className="text-muted-foreground">—</span>
+                }
+                return <div className="max-w-40 whitespace-normal break-words">{names.join(", ")}</div>
             },
         },
         {
