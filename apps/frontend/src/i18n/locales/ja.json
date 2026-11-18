@@ -11,6 +11,8 @@
         "attention_other": "{{count}} 台に注意が必要",
         "noNodes": "ノードはまだありません。",
         "expired": "期限切れ",
+        "expiringInDays_other": "{{count}} 日後に期限",
+        "expiringToday": "今日が期限",
         "quotaExceeded": "転送量超過",
         "stale": "データ停止",
         "live": "ライブ",

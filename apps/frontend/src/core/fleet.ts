@@ -1,4 +1,5 @@
 import { nodeCondition } from "./condition"
+import { resolveExpiry } from "./expiry"
 import { formatPercent, ratio } from "./format"
 import type { NodeInfo, Snapshot } from "./model"
 
@@ -80,6 +81,7 @@ export type IssueReason =
     | { kind: "offline" }
     | { kind: "stale" }
     | { kind: "expired" }
+    | { kind: "expiring"; days: number }
     | { kind: "quota" }
     | { kind: "cpu" | "memory" | "disk"; percent: string }
 
@@ -90,6 +92,7 @@ export function nodeIssues(
     now = Date.now(),
 ): IssueReason[] {
     const c = nodeCondition(n, s, now, fed)
+    const expiry = resolveExpiry(n, now)
     const reasons: IssueReason[] = []
     if (fed && !s?.online) reasons.push({ kind: "offline" })
     if (s?.online) {
@@ -104,10 +107,17 @@ export function nodeIssues(
             reasons.push({ kind: "disk", percent: formatPercent(disk) })
     }
     if (c.expired) reasons.push({ kind: "expired" })
+    else if (!n.autoRenewal && expiry?.kind === "expiring" && expiry.level === "danger")
+        reasons.push({ kind: "expiring", days: expiry.days })
     if (c.quotaUsed) reasons.push({ kind: "quota" })
     return reasons
 }
 
-export function needsAttention(n: NodeInfo, s: Snapshot | undefined, fed: boolean) {
-    return nodeIssues(n, s, fed).some((r) => r.kind !== "offline")
+export function needsAttention(
+    n: NodeInfo,
+    s: Snapshot | undefined,
+    fed: boolean,
+    now = Date.now(),
+) {
+    return nodeIssues(n, s, fed, now).some((r) => r.kind !== "offline")
 }

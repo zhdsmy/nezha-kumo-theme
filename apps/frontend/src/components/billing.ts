@@ -2,7 +2,8 @@
 import { useMoney } from "@/app/money"
 import { useStore } from "@/app/store"
 import { convertAmount } from "@/core/cost"
-import { daysUntil, formatBytes, formatMoney, monthlyCost } from "@/core/format"
+import { resolveExpiry } from "@/core/expiry"
+import { formatBytes, formatMoney, monthlyCost } from "@/core/format"
 import type { NodeInfo } from "@/core/model"
 import { useTranslation } from "react-i18next"
 
@@ -46,16 +47,23 @@ export function useBilling() {
             if (n.trafficLimit === 0) return t("metric.unlimited")
             return `${formatBytes(n.trafficLimit)}${cycle(n.trafficLimitPeriod ?? 0)}`
         },
-        expiry(n: NodeInfo): { text: string; level?: "warn" | "danger" } | null {
-            if (n.expiredAt === null) return null
-            if (n.expiredAt === 0) return { text: t("expiry.longTerm") }
-            const days = daysUntil(n.expiredAt)
-            if (days > 3650) return { text: t("expiry.longTerm") }
-            if (days < 0) return { text: t("expiry.expired"), level: "danger" }
-            if (days === 0) return { text: t("expiry.today"), level: "danger" }
-            return {
-                text: t("expiry.inDays", { count: days }),
-                level: days <= 7 ? "danger" : days <= 30 ? "warn" : undefined,
+        expiry(n: NodeInfo): { text: string; at: number | null; level?: "warn" | "danger" } | null {
+            const e = resolveExpiry(n)
+            if (!e) return null
+            switch (e.kind) {
+                case "longTerm":
+                    return { text: t("expiry.longTerm"), at: e.at }
+                case "expired":
+                    return { text: t("expiry.expired"), at: e.at, level: "danger" }
+                case "expiring":
+                    return {
+                        text:
+                            e.days === 0
+                                ? t("expiry.today")
+                                : t("expiry.inDays", { count: e.days }),
+                        at: e.at,
+                        level: e.level,
+                    }
             }
         },
     }

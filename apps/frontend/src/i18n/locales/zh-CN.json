@@ -11,6 +11,8 @@
         "attention_other": "{{count}} 个需要注意",
         "noNodes": "还没有节点。",
         "expired": "已过期",
+        "expiringInDays_other": "{{count}} 天后到期",
+        "expiringToday": "今天到期",
         "quotaExceeded": "流量超额",
         "stale": "数据停更",
         "live": "实时",

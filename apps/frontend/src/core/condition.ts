@@ -1,4 +1,5 @@
 // Adapted from zool-theme/src/core/condition.ts (MIT, luoleiorg).
+import { resolveExpiry } from "./expiry"
 import { quotaUsage, ratio } from "./format"
 import type { NodeInfo, Snapshot } from "./model"
 
@@ -56,7 +57,7 @@ export function nodeCondition(
         kind,
         lastSeen,
         readings: hasReadings(snap),
-        expired: node.expiredAt !== null && node.expiredAt > 0 && node.expiredAt < now,
+        expired: resolveExpiry(node, now)?.kind === "expired",
         quotaUsed: quota >= 100,
     }
 }

@@ -402,7 +402,11 @@ export function HomePage() {
     const formatReason = (r: IssueReason) =>
         r.kind === "cpu" || r.kind === "memory" || r.kind === "disk"
             ? `${t(`metric.${r.kind}`)} ${r.percent}%`
-            : t(`status.${r.kind === "quota" ? "quotaExceeded" : r.kind}`)
+            : r.kind === "expiring"
+              ? r.days === 0
+                  ? t("status.expiringToday")
+                  : t("status.expiringInDays", { count: r.days })
+              : t(`status.${r.kind === "quota" ? "quotaExceeded" : r.kind}`)
     const nodesSub = !fed ? (
         t("status.connecting")
     ) : !nodes.length ? (
