@@ -149,6 +149,7 @@
     "Provider": "提供者",
     "Domains": "網域",
     "MaximumRetryAttempts": "最大重試次數",
+    "RefreshFailed": "重新整理失敗：{{reason}}",
     "Refresh": "刷新",
     "CopyPath": "複製路徑",
     "Goto": "前往",

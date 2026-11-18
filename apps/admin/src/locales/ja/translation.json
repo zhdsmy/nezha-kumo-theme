@@ -149,6 +149,7 @@
     "Provider": "プロバイダー",
     "Domains": "ドメイン",
     "MaximumRetryAttempts": "最大リトライ回数",
+    "RefreshFailed": "更新に失敗しました：{{reason}}",
     "Refresh": "更新",
     "CopyPath": "パスをコピー",
     "Goto": "移動",

@@ -6,7 +6,7 @@ import TransferPage from "@/routes/transfer"
 import WAFPage from "@/routes/waf"
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { MemoryRouter } from "react-router-dom"
-import { SWRConfig } from "swr"
+import { SWRConfig, useSWRConfig } from "swr"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
 
 const state = vi.hoisted(() => ({
@@ -43,7 +43,7 @@ vi.mock("@/api/api-tokens", async (importOriginal) => {
             if (state.mode === "error") {
                 throw new Error("Token store offline")
             }
-            return []
+            return state.mode === "ok" ? [{ id: 1, name: "Existing entry" }] : []
         },
     }
 })
@@ -116,4 +116,28 @@ test("U2: ServicePage, WAFPage, TransferPage, and ApiTokensPage all share inline
         expect(screen.queryByText("No results")).toBeNull()
         unmount()
     }
+})
+
+test("R01: a cached resource row stays visible with its refresh error and retry", async () => {
+    function Refresh() {
+        const { mutate } = useSWRConfig()
+        return <button onClick={() => void mutate(() => true)}>Refresh list</button>
+    }
+    state.mode = "ok"
+    render(
+        <MemoryRouter>
+            <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false }}>
+                <Refresh />
+                <ApiTokensPage />
+            </SWRConfig>
+        </MemoryRouter>,
+    )
+    await screen.findByText("Existing entry")
+    state.mode = "error"
+    fireEvent.click(screen.getByRole("button", { name: "Refresh list" }))
+    expect((await screen.findByRole("alert")).textContent).toContain("Refresh failed: Token store offline")
+    expect(screen.getByText("Existing entry")).toBeTruthy()
+    state.mode = "empty"
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }))
+    await screen.findByText("No results")
 })

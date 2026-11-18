@@ -149,6 +149,7 @@
     "Provider": "提供商",
     "Domains": "域名",
     "MaximumRetryAttempts": "最大重试次数",
+    "RefreshFailed": "刷新失败：{{reason}}",
     "Refresh": "刷新",
     "CopyPath": "复制路径",
     "Goto": "前往",

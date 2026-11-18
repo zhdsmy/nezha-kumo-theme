@@ -149,6 +149,7 @@
     "Provider": "Provider",
     "Domains": "Domains",
     "MaximumRetryAttempts": "Maximum time for retry attempts",
+    "RefreshFailed": "Refresh failed: {{reason}}",
     "Refresh": "Refresh",
     "CopyPath": "Copy path",
     "Goto": "Go to",

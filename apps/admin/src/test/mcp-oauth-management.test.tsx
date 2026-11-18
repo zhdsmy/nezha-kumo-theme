@@ -203,3 +203,24 @@ test("pagination loads another page and list errors are visible", async () => {
     expect(mocks.grants).toHaveBeenLastCalledWith(false, 2)
     expect(screen.queryByText("ChatGPT")).toBeNull()
 })
+
+test("R13: loading the authorization table announces its status", () => {
+    mocks.grants.mockReturnValue(new Promise(() => {}))
+    openManagement()
+    expect(screen.getByRole("status").textContent).toContain("Loading")
+})
+
+test("R01: refresh failure keeps the current authorization rows until retry succeeds", async () => {
+    openManagement()
+    await screen.findByText("ChatGPT")
+    mocks.grants.mockRejectedValueOnce(new Error("Service unavailable"))
+    fireEvent.click(screen.getByRole("button", { name: "Revoke" }))
+    fireEvent.click(await screen.findByRole("button", { name: "Confirm" }))
+    const alert = await screen.findByRole("alert")
+    expect(alert.textContent).toContain("RefreshFailed")
+    expect(screen.getByText("ChatGPT")).toBeTruthy()
+    mocks.grants.mockResolvedValue({ items: [], total: 0 })
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }))
+    await screen.findByText("NoResults")
+    expect(screen.queryByRole("alert")).toBeNull()
+})

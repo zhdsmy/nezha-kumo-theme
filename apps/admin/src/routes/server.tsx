@@ -408,34 +408,32 @@ export default function ServerPage() {
                         ))}
                     </TableHeader>
                     <TableBody>
-                        {isLoading || !table.getRowModel().rows?.length ? (
-                            <TableStateRow
-                                colSpan={columns.length}
-                                isLoading={isLoading}
-                                error={error}
-                                onRetry={mutate}
-                            />
-                        ) : (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    data-state={row.getIsSelected() && "selected"}
-                                >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell
-                                            key={cell.id}
-                                            data-col={cell.column.id}
-                                            className="text-xsm"
-                                        >
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext(),
-                                            )}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            ))
-                        )}
+                        <TableStateRow
+                            rowCount={table.getRowModel().rows.length}
+                            colSpan={columns.length}
+                            isLoading={isLoading}
+                            error={error}
+                            onRetry={mutate}
+                        />
+                        {table.getRowModel().rows.map((row) => (
+                            <TableRow
+                                key={row.id}
+                                data-state={row.getIsSelected() && "selected"}
+                            >
+                                {row.getVisibleCells().map((cell) => (
+                                    <TableCell
+                                        key={cell.id}
+                                        data-col={cell.column.id}
+                                        className="text-xsm"
+                                    >
+                                        {flexRender(
+                                            cell.column.columnDef.cell,
+                                            cell.getContext(),
+                                        )}
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
             </div>
