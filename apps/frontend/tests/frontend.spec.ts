@@ -105,7 +105,7 @@ test("node tabs hash navigation, overview responsive panels, #billing link and l
     await expect(page).toHaveURL(/\/server\/6#load$/)
     await expect(page.locator(".metric-tile")).toHaveCount(0)
     await expect(page.locator(".spark")).toHaveCount(0)
-    await expect(page.locator(".chart svg")).toHaveCount(6)
+    await expect(page.locator(".chart svg")).toHaveCount(7)
     await expect(page.getByRole("tab", { name: "7 d", exact: true })).toHaveCount(0)
     await page
         .locator(".chart svg")
@@ -232,7 +232,7 @@ test("login and OAuth use local mocks, authenticated history unlocks and shares 
     requested.length = 0
     await sevenDays.click()
     await expect(sevenDays).toHaveAttribute("aria-selected", "true")
-    await expect(page.locator(".chart svg")).toHaveCount(6)
+    await expect(page.locator(".chart svg")).toHaveCount(7)
     expect(requested.some((u) => u.includes("/metrics?period=7d&"))).toBe(true)
     await page.getByRole("tab", { name: "Latency", exact: true }).click()
     await expect(page.getByRole("tab", { name: "7 d", exact: true })).toHaveAttribute(
@@ -400,7 +400,7 @@ test("768–879 persistent sidebar defaults expanded at 867, collapses to 57px, 
             await expectZeroOverflow(`node overview ${width} ${state}`)
 
             await page.getByRole("tab", { name: "Load", exact: true }).click()
-            await expect(page.locator(".chart svg")).toHaveCount(6)
+            await expect(page.locator(".chart svg")).toHaveCount(7)
             await expectZeroOverflow(`node load ${width} ${state}`)
 
             await page.getByRole("tab", { name: "Latency", exact: true }).click()
@@ -462,7 +462,7 @@ test("empty fleet and history-disabled states", async ({ page }) => {
     await expect(page.getByText("No nodes yet.", { exact: true })).toBeVisible()
     await expect(
         page.getByRole("heading", { name: "No nodes match these filters.", exact: true }),
-    ).toBeVisible()
+    ).toHaveCount(0)
 })
 
 test("startup timeout offers retry after a loading state", async ({ page }) => {
@@ -655,7 +655,7 @@ test("navigation: clickable brand/topbar reset filters, back link preserves list
     const nodeScrollY = await mainScrollTop()
     expect(nodeScrollY).toBeGreaterThan(40)
     await page.getByRole("tab", { name: "Load", exact: true }).click()
-    await expect(page.locator(".chart svg")).toHaveCount(6)
+    await expect(page.locator(".chart svg")).toHaveCount(7)
     expect(await mainScrollTop()).toBe(nodeScrollY)
     await page.getByRole("tab", { name: "Latency", exact: true }).click()
     await page.getByRole("tab", { name: "Reporting history", exact: true }).click()

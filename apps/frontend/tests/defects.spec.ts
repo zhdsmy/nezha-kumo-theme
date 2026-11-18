@@ -47,11 +47,17 @@ test("load charts round integer series, fit y-axis labels at 375 and 1440, and f
         .locator(".chart-heading p")
     await expect(connectionsValue).toHaveText("TCP 66 · UDP 15")
 
+    const loadValue = page
+        .locator(".chart-card")
+        .filter({ hasText: "Load (1m)" })
+        .locator(".chart-heading p")
+    await expect(loadValue).toHaveText("0.72")
+
     const processesValue = page
         .locator(".chart-card")
         .filter({ hasText: "Processes" })
         .locator(".chart-heading p")
-    await expect(processesValue).toHaveText("0.72 · 183")
+    await expect(processesValue).toHaveText("183")
 
     for (const width of [375, 1440]) {
         await page.setViewportSize({ width, height: 812 })

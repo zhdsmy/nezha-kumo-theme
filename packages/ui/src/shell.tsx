@@ -484,6 +484,7 @@ export function AppShell(props: AppShellProps) {
                 <a
                     className="nk-skip-link"
                     href="#main-content"
+                    tabIndex={0}
                     onClick={(event) => {
                         const main = getShellScroller()
                         if (main) {

@@ -12,6 +12,7 @@ import {
     mergeMetrics,
     parsePublicNote,
 } from "../src/adapters/nezha"
+import { cleanSnapshot } from "../src/core/condition"
 import nezhaFrame from "./fixtures/nezha-frame.json"
 import nezhaGroups from "./fixtures/nezha-groups.json"
 
@@ -209,6 +210,14 @@ describe("nezha adapter", () => {
 
 describe("nezha mapState last_active", () => {
     const now = Date.parse("2026-09-16T08:00:00Z")
+
+    it("keeps absent live process counts distinct from a reported zero", () => {
+        const server = { id: 1, name: "x" }
+        expect(cleanSnapshot(mapState(server, now)).process).toBeNaN()
+        expect(
+            cleanSnapshot(mapState({ ...server, state: { process_count: 0 } }, now)).process,
+        ).toBe(0)
+    })
 
     it("treats Go zero time as never seen, not 739,874 days ago", () => {
         const s = mapState({ id: 1, name: "x", last_active: "0001-01-01T00:00:00Z" } as never, now)

@@ -10,7 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { RegionFlag } from "./RegionFlag"
-import { Status } from "./ui"
+import { Status, useScrollMore } from "./ui"
 
 export interface SearchPaletteProps {
     open: boolean
@@ -73,6 +73,7 @@ export function SearchPalette({ open, onOpenChange }: SearchPaletteProps) {
                   }),
         [nodes, trimmed, showRegions, i18n.language],
     )
+    const listRef = useScrollMore<HTMLDivElement>(open, matches.length)
 
     const openNode = useCallback(
         (id: string, newTab = false) => {
@@ -121,7 +122,7 @@ export function SearchPalette({ open, onOpenChange }: SearchPaletteProps) {
                         />
                     }
                 />
-                <CommandPalette.List className="search-results">
+                <CommandPalette.List ref={listRef} className="search-results">
                     <CommandPalette.Results>
                         {(n: NodeInfo) => {
                             const name = stripFlag(n.name)

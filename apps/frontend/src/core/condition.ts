@@ -68,7 +68,7 @@ export function cleanSnapshot(s: Snapshot): Snapshot {
     for (const key of Object.keys(out) as (keyof Snapshot)[]) {
         const v = out[key]
         if (typeof v === "number" && !(Number.isFinite(v) && v >= 0))
-            (out as Record<string, unknown>)[key] = 0
+            (out as Record<string, unknown>)[key] = key === "process" ? NaN : 0
     }
     out.cpu = Math.min(100, out.cpu)
     return out

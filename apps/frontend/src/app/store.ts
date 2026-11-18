@@ -96,6 +96,15 @@ export function useStore<T>(selector: (s: State) => T): T {
     )
 }
 
+export type LiveConnectionState = "live" | "reconnecting" | "connecting"
+
+export const selectConnectionState = (
+    s: Pick<State, "connection" | "everConnected">,
+): LiveConnectionState =>
+    s.connection === "open" ? "live" : s.everConnected ? "reconnecting" : "connecting"
+
+export const useConnectionState = () => useStore(selectConnectionState)
+
 /* ---------- live buffer: what the node page charts in "Live" mode ---------- */
 
 const LIVE_CAPACITY = 450 // 15 minutes at a 2 s cadence

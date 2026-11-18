@@ -1,12 +1,33 @@
-import { useStore } from "@/app/store"
+import { useConnectionState, useStore } from "@/app/store"
 import { levelFor } from "@/core/fleet"
-import { formatPercent } from "@/core/format"
 import type { Bucket } from "@/core/live"
 import type { Snapshot } from "@/core/model"
 import { readStorage } from "@/core/storage"
 import { Badge, Banner, Button, Empty, SkeletonLine } from "@cloudflare/kumo"
-import { type ReactNode, useId } from "react"
+import { type ReactNode, useEffect, useId, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+export function useScrollMore<T extends HTMLElement>(active: boolean, itemCount?: number) {
+    const [node, setNode] = useState<T | null>(null)
+    useEffect(() => {
+        if (!active || !node) return
+        const sync = () => {
+            const more = node.scrollHeight - node.scrollTop - node.clientHeight > 2
+            if (more) node.setAttribute("data-scroll-more", "")
+            else node.removeAttribute("data-scroll-more")
+        }
+        sync()
+        node.addEventListener("scroll", sync, { passive: true })
+        const ro = new ResizeObserver(sync)
+        ro.observe(node)
+        if (node.firstElementChild) ro.observe(node.firstElementChild)
+        return () => {
+            node.removeEventListener("scroll", sync)
+            ro.disconnect()
+        }
+    }, [active, itemCount, node])
+    return setNode
+}
 
 // Palette from measurements/traffic-chart-options-{light,dark}.json; same in both modes.
 export const CHART_PALETTE = ["#4290F0", "#F5B647", "#E8649D", "#8D58EE", "#50C3B6", "#D37536"]
@@ -14,9 +35,10 @@ export const CHART_PALETTE = ["#4290F0", "#F5B647", "#E8649D", "#8D58EE", "#50C3
 export function Status({ snapshot }: { snapshot?: Snapshot }) {
     const { t } = useTranslation()
     const fed = useStore((s) => s.fed)
+    const stale = useConnectionState() === "reconnecting"
     const kind = !snapshot && !fed ? "connecting" : snapshot?.online ? "online" : "offline"
     return (
-        <span className="status" data-status={kind}>
+        <span className="status" data-status={kind} data-stale={stale ? "" : undefined}>
             <Badge
                 variant={kind === "online" ? "success" : kind === "offline" ? "error" : "warning"}
                 appearance="dot"
@@ -39,8 +61,8 @@ export function Meter({
     /** Small line under the track, for example "1.1 GB / 2 GB". */
     detail?: string
 }) {
-    const clamped = Math.max(0, Math.min(100, value))
-    const pct = `${formatPercent(value)}%`
+    const clamped = Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0))
+    const pct = `${clamped.toFixed(1)}%`
     return (
         <span
             className="meter"
@@ -475,7 +497,7 @@ export function Loading({ variant = "home" }: { variant?: LoadingVariant } = {})
             )}
             {variant === "charts" && (
                 <div className="chart-grid" aria-hidden="true">
-                    {Array.from({ length: 6 }, (_, i) => (
+                    {Array.from({ length: 7 }, (_, i) => (
                         <div key={i} className="chart-card">
                             <div className="chart-heading">
                                 <div className="flex flex-1 items-center" style={{ height: 21 }}>

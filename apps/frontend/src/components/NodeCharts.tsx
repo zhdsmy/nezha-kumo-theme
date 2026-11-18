@@ -2,7 +2,9 @@
 import { formatBytes, formatClock, formatNumber, formatPercent, formatSpeed } from "@/core/format"
 import type { HistoryPoint, NodeInfo, PingData } from "@/core/model"
 import { spikeLimit } from "@/core/summary"
+import { Popover } from "@cloudflare/kumo/components/popover"
 import { Switch } from "@cloudflare/kumo/components/switch"
+import { InfoIcon } from "@phosphor-icons/react"
 import { type ReactNode, memo, useId, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -155,9 +157,19 @@ export const LoadCharts = memo(function LoadCharts({
             <ChartCard
                 title={t("metric.memory")}
                 value={
-                    last
-                        ? `${reading(last.memUsed, formatBytes)} / ${formatBytes(memTotal)}`
-                        : undefined
+                    last ? (
+                        node.swapTotal ? (
+                            <>
+                                <SeriesDot color={CHART_PALETTE[1]} />
+                                {reading(last.memUsed, formatBytes)} / {formatBytes(memTotal)} ·{" "}
+                                <SeriesDot color={CHART_PALETTE[2]} />
+                                {t("metric.swap")} {reading(last.swapUsed, formatBytes)} /{" "}
+                                {formatBytes(node.swapTotal)}
+                            </>
+                        ) : (
+                            `${reading(last.memUsed, formatBytes)} / ${formatBytes(memTotal)}`
+                        )
+                    ) : undefined
                 }
             >
                 <Chart
@@ -246,19 +258,30 @@ export const LoadCharts = memo(function LoadCharts({
                 />
             </ChartCard>
             <ChartCard
-                title={`${t("metric.load")} · ${t("metric.process")}`}
-                value={
-                    last
-                        ? `${reading(last.load1, formatNumber)} · ${reading(last.process, (v) => formatNumber(v, 0))}`
-                        : undefined
-                }
+                title={t("metric.load1")}
+                value={last ? reading(last.load1, (v) => v.toFixed(2)) : undefined}
             >
                 <Chart
                     {...common}
-                    label={t("metric.load")}
-                    format={(v) => formatNumber(v, 2)}
+                    label={t("metric.load1")}
+                    format={(v) => v.toFixed(2)}
                     formatTick={(v, step) => formatNumber(v, stepDigits(step))}
-                    series={[s("load", t("metric.load"), CHART_PALETTE[1], (p) => p.load1, true)]}
+                    series={[s("load", t("metric.load1"), CHART_PALETTE[1], (p) => p.load1, true)]}
+                />
+            </ChartCard>
+            <ChartCard
+                title={t("metric.process")}
+                value={last ? reading(last.process, (v) => formatNumber(v, 0)) : undefined}
+            >
+                <Chart
+                    {...common}
+                    label={t("metric.process")}
+                    minStep={1}
+                    format={(v) => formatNumber(v, 0)}
+                    formatTick={(v) => formatNumber(v, 0)}
+                    series={[
+                        s("process", t("metric.process"), CHART_PALETTE[4], (p) => p.process, true),
+                    ]}
                 />
             </ChartCard>
         </div>
@@ -315,13 +338,37 @@ export const PingChart = memo(function PingChart({
         <ChartCard
             title={t("node.pingLines", { count: data.tasks.length })}
             action={
-                <Switch
-                    size="sm"
-                    checked={shave}
-                    onCheckedChange={onShaveChange}
-                    label={t("node.shave")}
-                    labelTooltip={t("node.shaveHint")}
-                />
+                <div className="shave-action">
+                    <Switch
+                        size="sm"
+                        checked={shave}
+                        onCheckedChange={onShaveChange}
+                        label={t("node.shave")}
+                    />
+                    <Popover.Root>
+                        <Popover.Trigger
+                            openOnHover
+                            delay={150}
+                            render={(props) => (
+                                <button
+                                    {...props}
+                                    type="button"
+                                    className="info-trigger"
+                                    aria-label={t("ui.moreInfo")}
+                                >
+                                    <InfoIcon size={15} />
+                                </button>
+                            )}
+                        />
+                        <Popover.Content
+                            side="top"
+                            align="end"
+                            className="max-w-64 px-3 py-2 text-xs leading-relaxed"
+                        >
+                            {t("node.shaveHint")}
+                        </Popover.Content>
+                    </Popover.Root>
+                </div>
             }
         >
             <Chart
@@ -329,7 +376,7 @@ export const PingChart = memo(function PingChart({
                 height={height}
                 robust
                 focus={focus !== null && visible(focus) ? String(focus) : null}
-                format={(v) => `${formatNumber(v, v > 0 && v < 10 ? 1 : 0)} ms`}
+                format={(v) => `${v.toFixed(1)} ms`}
                 formatTick={(v, step) => `${formatNumber(v, stepDigits(step))} ms`}
                 formatTime={fmt.axis}
                 formatTooltipTime={fmt.tooltip}
@@ -359,9 +406,7 @@ export const PingChart = memo(function PingChart({
                             }
                         />
                         <span className="truncate">{task.name}</span>
-                        <span className="num text-kumo-subtle">
-                            {formatNumber(task.avg, task.avg < 10 ? 1 : 0)}
-                        </span>
+                        <span className="num text-kumo-subtle">{`${task.avg.toFixed(1)} ms`}</span>
                     </button>
                 ))}
                 {shown !== null && (
@@ -377,7 +422,7 @@ export const PingChart = memo(function PingChart({
             {solo && (
                 <p className="node-ping-detail num mt-1 text-[12px] text-kumo-subtle">
                     {t("node.avg")}{" "}
-                    <span className="text-kumo-default">{formatNumber(solo.avg, 1)} ms</span> ·{" "}
+                    <span className="text-kumo-default">{`${solo.avg.toFixed(1)} ms`}</span> ·{" "}
                     {t("node.min")} {formatNumber(solo.min, 0)} · {t("node.max")}{" "}
                     {formatNumber(solo.max, 0)}
                 </p>
