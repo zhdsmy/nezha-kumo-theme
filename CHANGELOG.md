@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.4] - 2026-11-18
+
+- Fix admin editors reverting a row to its old values when it is edited and saved a second time.
+- Show the server ID next to servers that share a name in admin server selectors.
+- Show that exchange rates are unavailable, instead of loading, when the display currency has no quote.
+
 ## [0.1.3] - 2026-11-18
 
 - Add Traditional Chinese (Hong Kong) next to Traditional Chinese (Taiwan), each with its own regional wording.
