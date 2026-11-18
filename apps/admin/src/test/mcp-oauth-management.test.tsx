@@ -98,7 +98,7 @@ test("members see only their authorizations and confirm revocation", async () =>
     expect(screen.queryByRole("tab", { name: "MCPOAuthManager.Clients" })).toBeNull()
     expect(mocks.clients).not.toHaveBeenCalled()
     expect(screen.getByText("nezha:server:read")).toBeTruthy()
-    expect(screen.getByText("7")).toBeTruthy()
+    expect(screen.getByText("#7")).toBeTruthy()
 
     fireEvent.click(screen.getByRole("button", { name: "Revoke" }))
     expect(await screen.findByText("MCPOAuthManager.ConfirmRevoke:ChatGPT")).toBeTruthy()

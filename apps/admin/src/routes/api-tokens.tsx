@@ -1,3 +1,4 @@
+import { useServerNames } from "@/hooks/useEntityNames"
 import {
     ApiTokenCreateResponse,
     ApiTokenView,
@@ -9,6 +10,7 @@ import {
     parseServerIDsInput,
 } from "@/api/api-tokens"
 import { ConfirmActionDialog } from "@/components/action-button-group"
+import { ServerSelect } from "@/components/server-select"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -43,6 +45,7 @@ import useSWR from "swr"
 
 export default function ApiTokensPage() {
     const { t, i18n } = useTranslation()
+    const serverName = useServerNames()
     const { profile } = useAuth()
     const isAdmin = profile?.role === 0
 
@@ -121,7 +124,7 @@ export default function ApiTokensPage() {
                             </TableCell>
                             <TableCell data-col="servers" className="text-xs">
                                 {tok.server_ids?.length
-                                    ? tok.server_ids.join(", ")
+                                    ? tok.server_ids.map(serverName).join(", ")
                                     : t("ApiTokenAllServers")}
                             </TableCell>
                             <TableCell
@@ -213,7 +216,7 @@ function CreateApiTokenDialog({
     const { t } = useTranslation()
     const [name, setName] = useState("")
     const [scopes, setScopes] = useState<string[]>([])
-    const [serverIDs, setServerIDs] = useState("")
+    const [serverIDs, setServerIDs] = useState<string[]>([])
     const [expiresInDays, setExpiresInDays] = useState<string>("90")
     const { submitting, runSubmit, showError } = useSubmitLock()
 
@@ -230,7 +233,7 @@ function CreateApiTokenDialog({
             showError(t("Error"), { description: t("ApiTokenScopeRequired") })
             return
         }
-        const parsedRes = parseServerIDsInput(serverIDs)
+        const parsedRes = parseServerIDsInput(serverIDs.join(","))
         if (!parsedRes.ok) {
             showError(t("Error"), { description: t("ApiTokenServersInvalid") })
             return
@@ -253,7 +256,7 @@ function CreateApiTokenDialog({
             onOpenChange(false)
             setName("")
             setScopes([])
-            setServerIDs("")
+            setServerIDs([])
             setExpiresInDays("90")
         } catch (e: unknown) {
             showError(t("Error"), { description: errorMessage(e, t("Results.UnExpectedError")) })
@@ -314,12 +317,12 @@ function CreateApiTokenDialog({
                         <Label id="api-token-server-ids-label" htmlFor="server-ids">
                             {t("ApiTokenServerIDs")}
                         </Label>
-                        <Input
+                        <ServerSelect
                             id="server-ids"
                             aria-labelledby="api-token-server-ids-label"
-                            placeholder={t("ApiTokenServerIDsPlaceholder")}
-                            value={serverIDs}
-                            onChange={(e) => setServerIDs(e.target.value)}
+                            placeholder={t("ApiTokenAllServers")}
+                            selectedValues={serverIDs}
+                            onValueChange={setServerIDs}
                         />
                     </div>
                     <div className="grid gap-2">

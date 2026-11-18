@@ -1,4 +1,5 @@
 import { createNAT, updateNAT } from "@/api/nat"
+import { ServerSelect } from "@/components/server-select"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -124,23 +125,21 @@ export const NATCard: React.FC<NATCardProps> = ({ data, mutate }) => {
                                 <FormField
                                     control={form.control}
                                     name="server_id"
-                                    render={({ field }) => {
-                                        const { value, ...fieldProps } = field
-                                        return (
-                                            <FormItem>
-                                                <FormLabel>{t("Server")} ID</FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        type="number"
-                                                        placeholder="1"
-                                                        value={String(value ?? "")}
-                                                        {...fieldProps}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )
-                                    }}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>{t("Server")}</FormLabel>
+                                            <FormControl>
+                                                <ServerSelect
+                                                    single
+                                                    ref={field.ref}
+                                                    onBlur={field.onBlur}
+                                                    selectedValues={field.value ? [String(field.value)] : []}
+                                                    onValueChange={([id]) => field.onChange(Number(id ?? 0))}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
                                 />
                                 <FormField
                                     control={form.control}

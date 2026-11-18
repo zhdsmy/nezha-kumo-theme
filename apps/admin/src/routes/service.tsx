@@ -1,3 +1,4 @@
+import { useServerNames, useNotificationGroupNames, useTaskNames } from "@/hooks/useEntityNames"
 import { swrFetcher } from "@/api/api"
 import { deleteService } from "@/api/service"
 import { ActionButtonGroup } from "@/components/action-button-group"
@@ -15,18 +16,20 @@ import {
     TableStateRow,
 } from "@/components/ui/table"
 import { selectableTableFeatures, useSelectableTable } from "@/lib/table"
-import { conv } from "@/lib/utils"
 import { ModelService as Service } from "@/types"
 import { serviceTypes } from "@/types"
 import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender } from "@tanstack/react-table"
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import useSWR from "swr"
 
 export default function ServicePage() {
     const { t } = useTranslation()
+    const serverName = useServerNames()
+    const groupName = useNotificationGroupNames()
+    const taskName = useTaskNames()
     const { data, mutate, error, isLoading } = useSWR<Service[]>("/api/v1/service/list", swrFetcher)
 
     useEffect(() => {
@@ -128,7 +131,7 @@ export default function ServicePage() {
                 const s = row.original
                 return (
                     <div className="max-w-32 whitespace-normal break-words">
-                        {Object.keys(s.skip_servers ?? {}).join(",")}
+                        {Object.keys(s.skip_servers ?? {}).map(serverName).join(", ")}
                     </div>
                 )
             },
@@ -145,11 +148,10 @@ export default function ServicePage() {
             accessorFn: (row) => row.duration,
         },
         {
-            header: t("NotifierGroupID"),
+            header: t("NotifierGroup"),
             accessorKey: "ngroup",
-            accessorFn: (row) => row.notification_group_id,
-            cell: ({ getValue }) =>
-                getValue<number>() || <span className="text-muted-foreground/60">—</span>,
+            cell: ({ row }) =>
+                row.original.notification_group_id ? groupName(row.original.notification_group_id) : <span className="text-muted-foreground/60">—</span>,
         },
         {
             header: t("Trigger"),
@@ -160,17 +162,17 @@ export default function ServicePage() {
         {
             header: t("TasksToTriggerOnAlert"),
             accessorKey: "failTriggerTasks",
-            accessorFn: (row) => conv.arrToStr(row.fail_trigger_tasks),
+            cell: ({ row }) => (row.original.fail_trigger_tasks ?? []).map(taskName).join(", "),
         },
         {
             header: t("TasksToTriggerAfterRecovery"),
             accessorKey: "recoverTriggerTasks",
-            accessorFn: (row) => conv.arrToStr(row.recover_trigger_tasks),
+            cell: ({ row }) => (row.original.recover_trigger_tasks ?? []).map(taskName).join(", "),
         },
         {
             id: "actions",
             header: t("Actions"),
-            cell: ({ row }) => {
+            cell: useCallback(({ row }) => {
                 const s = row.original
                 return (
                     <ActionButtonGroup
@@ -180,7 +182,7 @@ export default function ServicePage() {
                         <ServiceCard mutate={mutate} data={s} />
                     </ActionButtonGroup>
                 )
-            },
+            }, [mutate]),
         },
     ]
 
