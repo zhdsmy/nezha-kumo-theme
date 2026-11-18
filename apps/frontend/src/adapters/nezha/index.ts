@@ -221,9 +221,9 @@ export function parsePublicNote(note: string | undefined) {
         out.expiredAt =
             end === 0 ? 0 : end !== undefined && new Date(end).getUTCFullYear() > 2000 ? end : null
         if (out.expiredAt) {
-            const raw = text(b.endDate)
-            const z = /([+-])(\d\d):?(\d\d)$/.exec(raw)
-            if (z) out.tz = (+z[2] * 60 + +z[3]) * (z[1] === "+" ? 1 : -1)
+            const raw = text(b.endDate),
+                z = /([+-])(\d\d):?(\d\d)$/.exec(raw)
+            if (z) out.tz = +(z[1] + 1) * (+z[2] * 60 + +z[3])
             else if (/Z$/i.test(raw) || !/[T ]/.test(raw)) out.tz = 0
         }
     }

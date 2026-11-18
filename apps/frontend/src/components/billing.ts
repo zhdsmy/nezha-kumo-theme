@@ -47,19 +47,22 @@ export function useBilling() {
             if (n.trafficLimit === 0) return t("metric.unlimited")
             return `${formatBytes(n.trafficLimit)}${cycle(n.trafficLimitPeriod ?? 0)}`
         },
-        expiry(n: NodeInfo): { text: string; at: number | null; level?: "warn" | "danger" } | null {
+        expiry(n: NodeInfo) {
             const e = resolveExpiry(n)
             if (!e) return null
             const k = e.kind
-            const text =
-                k === "autoRenew"
-                    ? t("metric.autoRenew").toLowerCase()
-                    : k === "renews"
-                      ? t(e.days ? "expiry.renewInDays" : "expiry.renewToday", { count: e.days })
-                      : k === "expiring"
-                        ? t(e.days ? "expiry.inDays" : "expiry.today", { count: e.days })
-                        : t(`expiry.${k}`)
-            return { text, at: e.at, level: e.level }
+            return {
+                ...e,
+                text:
+                    k === "autoRenew"
+                        ? t("metric.autoRenew").toLowerCase()
+                        : k === "renews" || k === "expiring"
+                          ? t(
+                                `expiry.${k === "renews" ? (e.days ? "renewInDays" : "renewToday") : e.days ? "inDays" : "today"}`,
+                                { count: e.days },
+                            )
+                          : t(`expiry.${k}`),
+            }
         },
     }
 }

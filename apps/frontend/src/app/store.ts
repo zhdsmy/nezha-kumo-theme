@@ -2,6 +2,7 @@
 import { nezha as adapter } from "@/adapters/nezha"
 import { cleanSnapshot } from "@/core/condition"
 import type { ExchangeRates } from "@/core/cost"
+import { resolveExpiry } from "@/core/expiry"
 import { isCanceledError } from "@/core/http"
 import type {
     ActualCost,
@@ -176,7 +177,13 @@ function pushLive(snapshots: Record<string, Snapshot>) {
 
 /* ---------- lifecycle ---------- */
 
-const sameNodes = (a: NodeInfo[], b: NodeInfo[]) => JSON.stringify(a) === JSON.stringify(b)
+let lastSig = ""
+export function syncExpiryClock(now = Date.now(), incoming = state.nodes) {
+    const sig = JSON.stringify(incoming.map((n) => [n, resolveExpiry(n, now)]))
+    if (sig === lastSig) return
+    lastSig = sig
+    return incoming === state.nodes ? incoming.map((n) => ({ ...n })) : incoming
+}
 
 let unsubscribe: (() => void) | null = null
 let refreshTimer: ReturnType<typeof setTimeout> | undefined
@@ -192,6 +199,8 @@ const load = async () => {
     const settings = normalizeSettings(site.settings)
     const resolvedTitle = settings.siteTitle || site.name
     if (resolvedTitle) writeStorage(SITE_TITLE_KEY, resolvedTitle)
+    lastSig = ""
+    syncExpiryClock(Date.now(), nodes)
     set({
         site,
         nodes,
@@ -211,28 +220,28 @@ function connect() {
             // Frames carry the whole fleet. A node that was reporting and is now missing from one has
             // gone offline: keep its last readings and report time, and say so.
             const snapshots: Record<string, Snapshot> = {}
+            let snapChanged = false
             for (const [id, prev] of Object.entries(state.snapshots))
-                if (!event.snapshots[id])
-                    snapshots[id] = prev.online ? { ...prev, online: false } : prev
+                if (!event.snapshots[id]) {
+                    snapshots[id] = prev.online
+                        ? ((snapChanged = true), { ...prev, online: false })
+                        : prev
+                }
             for (const [id, incoming] of Object.entries(event.snapshots)) {
                 const next = cleanSnapshot(incoming),
                     prev = state.snapshots[id]
                 snapshots[id] =
-                    prev &&
-                    (Object.keys(next) as (keyof Snapshot)[]).every((k) => next[k] === prev[k])
+                    JSON.stringify(next) === JSON.stringify(prev)
                         ? prev
-                        : next
+                        : ((snapChanged = true), next)
             }
-            const stable =
-                Object.keys(snapshots).length === Object.keys(state.snapshots).length &&
-                Object.keys(snapshots).every((id) => snapshots[id] === state.snapshots[id])
             const patch: Partial<State> = {
-                snapshots: stable ? state.snapshots : snapshots,
+                snapshots: snapChanged ? snapshots : state.snapshots,
+                nodes: syncExpiryClock(Date.now(), event.nodes) ?? state.nodes,
                 everConnected: true,
                 fed: true,
                 refreshing: false,
             }
-            if (event.nodes && !sameNodes(event.nodes, state.nodes)) patch.nodes = event.nodes
             if (pushLive(snapshots)) patch.liveVersion = state.liveVersion + 1
             clearTimeout(refreshTimer)
             set(patch)

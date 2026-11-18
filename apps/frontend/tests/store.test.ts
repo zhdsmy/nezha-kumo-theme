@@ -74,6 +74,8 @@ const snap = {
     totalUp: 0,
     totalDown: 0,
     load1: 0,
+    load5: 0,
+    load15: 0,
     uptime: 0,
     tcp: 0,
     udp: 0,
@@ -262,4 +264,51 @@ it("publishes counter reports even when their browser receipt timestamp is equal
     }
     expect(getState().liveVersion).toBe(version + 4)
     expect(dailyTraffic(getTraffic("burst"), now - 1000).at(-1)?.totalUp).toBe(700)
+})
+
+it("refreshes node references on live frames when crossing midnight or a renewal timestamp", async () => {
+    vi.useFakeTimers()
+    const beforeMidnight = new Date(2026, 10, 18, 23, 59, 58).getTime()
+    const renewAt = new Date(2026, 10, 19, 12, 0, 0).getTime()
+    const expAt = new Date(2026, 10, 26, 18, 0, 0).getTime()
+    vi.setSystemTime(beforeMidnight)
+
+    const { refresh, getState } = await import("../src/app/store")
+    const { needsAttention } = await import("../src/core/fleet")
+    const { resolveExpiry } = await import("../src/core/expiry")
+
+    fake.nodes = [
+        { ...fake.node("exp"), expiredAt: expAt, autoRenewal: false } as never,
+        {
+            ...fake.node("ren"),
+            expiredAt: renewAt,
+            autoRenewal: true,
+            cycle: { count: 1, unit: "Month" },
+        } as never,
+    ]
+    await refresh()
+    emit("exp")
+    const initialNodes = getState().nodes
+    expect(needsAttention(initialNodes[0], { ...snap, at: beforeMidnight }, true)).toBe(false)
+
+    // Frame 1 second later (same calendar day, before renewal): state.nodes stays identical
+    vi.setSystemTime(beforeMidnight + 1000)
+    emit("exp")
+    expect(getState().nodes).toBe(initialNodes)
+
+    // Cross local midnight -> next frame updates state.nodes so day count drops 8 -> 7 (attention!)
+    const afterMidnight = new Date(2026, 10, 19, 0, 0, 2).getTime()
+    vi.setSystemTime(afterMidnight)
+    emit("exp")
+    const midnightNodes = getState().nodes
+    expect(midnightNodes).not.toBe(initialNodes)
+    expect(needsAttention(midnightNodes[0], { ...snap, at: afterMidnight }, true)).toBe(true)
+
+    // Cross renewal timestamp -> next frame updates state.nodes while preserving raw expiredAt
+    vi.setSystemTime(renewAt + 1000)
+    emit("ren")
+    const renewedNodes = getState().nodes
+    expect(renewedNodes).not.toBe(midnightNodes)
+    expect(renewedNodes[1].expiredAt).toBe(renewAt)
+    expect(resolveExpiry(renewedNodes[1])?.at).toBe(new Date(2026, 11, 19, 12, 0, 0).getTime())
 })

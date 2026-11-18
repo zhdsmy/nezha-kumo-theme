@@ -23,31 +23,29 @@ export function addCycles(
     base: number,
     { count, unit }: Cycle,
     steps: number,
-    offsetMin?: number,
+    offsetMin = -new Date(base).getTimezoneOffset(),
 ): number {
     if (steps <= 0) return base
     const n = steps * count
     if (unit === "Day" || unit === "Week") return base + n * (unit === "Week" ? 7 : 1) * DAY_MS
-    const shift = (offsetMin ?? -new Date(base).getTimezoneOffset()) * 60_000
-    const d = new Date(base + shift)
-    const day = d.getUTCDate()
+    const shift = offsetMin * 60_000,
+        d = new Date(base + shift),
+        day = d.getUTCDate()
     d.setUTCMonth(d.getUTCMonth() + n * (unit === "Year" ? 12 : 1) + 1, 0)
-    d.setUTCDate(Math.min(day, d.getUTCDate()))
-    return d.getTime() - shift
+    return d.setUTCDate(Math.min(day, d.getUTCDate())) - shift
 }
 
 export function resolveExpiry(node: NodeInfo, now = Date.now()): ExpiryState | null {
     const base = node.expiredAt
     if (base === 0) return { kind: "longTerm", at: null }
-    if (!base || base < 0) return node.autoRenewal ? { kind: "autoRenew", at: null } : null
-    if (node.autoRenewal) {
-        if (!node.cycle) return { kind: "autoRenew", at: null }
-    } else if (base < now) return { kind: "expired", at: base, level: "danger" }
+    if (!base || base < 0 || (node.autoRenewal && !node.cycle))
+        return node.autoRenewal ? { kind: "autoRenew", at: null } : null
+    if (!node.autoRenewal && base < now) return { kind: "expired", at: base, level: "danger" }
     let at = base
     if (node.autoRenewal && at <= now) {
-        let k = Math.max(1, Math.floor((now - base) / (cycleDays(node.cycle!) * 90_720_000)))
-        for (at = addCycles(base, node.cycle!, k, node.tz); at <= now;)
-            at = addCycles(base, node.cycle!, ++k, node.tz)
+        let k = Math.floor((now - base) / (cycleDays(node.cycle!) * 90_720_000))
+        do at = addCycles(base, node.cycle!, ++k, node.tz)
+        while (at <= now)
     }
     const days = calendarDays(at, now)
     return days > LONG_TERM_DAYS

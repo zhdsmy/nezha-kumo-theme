@@ -261,7 +261,7 @@ export function HomePage() {
         const ctrl = new AbortController()
         void seedLive(all, ctrl.signal).catch(() => {})
         return () => ctrl.abort()
-    }, [all, settings.showOverview])
+    }, [all.map((n) => n.id).join(), settings.showOverview])
     useEffect(() => {
         writeStorage("nkt:sort", JSON.stringify(sort))
         writeStorage("nkt:desc", JSON.stringify(desc))
@@ -400,9 +400,9 @@ export function HomePage() {
         desc,
     )
     const formatReason = (r: IssueReason) =>
-        r.kind === "cpu" || r.kind === "memory" || r.kind === "disk"
+        "percent" in r
             ? `${t(`metric.${r.kind}`)} ${r.percent}%`
-            : r.kind === "expiring"
+            : "days" in r
               ? t(r.days ? "status.expiringInDays" : "status.expiringToday", { count: r.days })
               : t(`status.${r.kind === "quota" ? "quotaExceeded" : r.kind}`)
     const nodesSub = !fed ? (

@@ -368,3 +368,75 @@ describe("auto-renewal calendar cycle advancement", () => {
         expect(renderBillingExpiry(unknownCycle)).toBe(`<span>none|${auto}</span>`)
     })
 })
+
+describe("Goal 3: time progression across midnight and renewal timestamps", () => {
+    it("updates remaining days and attention state across local midnight", () => {
+        const expiryAt = localAt(2026, 11, 26, 15, 30, 0)
+        const node = makeNode({ expiredAt: expiryAt })
+        const onlineSnap = {
+            ...emptySnapshot(true),
+            at: localAt(2026, 11, 18, 23, 59, 0),
+        }
+
+        // Nov 18 23:59:58 -> 8 calendar days left, warn level, not needing attention
+        const beforeMidnight = localAt(2026, 11, 18, 23, 59, 58)
+        expect(resolveExpiry(node, beforeMidnight)).toEqual({
+            kind: "expiring",
+            at: expiryAt,
+            days: 8,
+            level: "warn",
+        })
+        expect(needsAttention(node, onlineSnap, true, beforeMidnight)).toBe(false)
+
+        // Nov 19 00:00:02 -> 7 calendar days left, danger level, now needs attention!
+        const afterMidnight = localAt(2026, 11, 19, 0, 0, 2)
+        expect(resolveExpiry(node, afterMidnight)).toEqual({
+            kind: "expiring",
+            at: expiryAt,
+            days: 7,
+            level: "danger",
+        })
+        expect(
+            needsAttention(node, { ...onlineSnap, at: afterMidnight }, true, afterMidnight),
+        ).toBe(true)
+        expect(nodeIssues(node, { ...onlineSnap, at: afterMidnight }, true, afterMidnight)).toEqual(
+            [{ kind: "expiring", days: 7 }],
+        )
+
+        // Nov 26 00:00:01 -> 0 calendar days left ("今天到期"), then after 15:30:00 -> expired
+        const expiryMorning = localAt(2026, 11, 26, 0, 0, 1)
+        expect(resolveExpiry(node, expiryMorning)).toMatchObject({
+            kind: "expiring",
+            days: 0,
+            level: "danger",
+        })
+        const afterExpiryMoment = localAt(2026, 11, 26, 15, 30, 1)
+        expect(resolveExpiry(node, afterExpiryMoment)).toEqual({
+            kind: "expired",
+            at: expiryAt,
+            level: "danger",
+        })
+    })
+
+    it("rolls auto-renewal to the next cycle as soon as the renewal timestamp passes", () => {
+        const autoNode = makeNoteNode("auto", {
+            endDate: "2026-11-18T14:00:00+08:00",
+            autoRenewal: "1",
+            cycle: "Month",
+        })
+        const beforeRenew = Date.parse("2026-11-18T13:59:59+08:00")
+        expect(resolveExpiry(autoNode, beforeRenew)).toEqual({
+            kind: "renews",
+            at: Date.parse("2026-11-18T14:00:00+08:00"),
+            days: 0,
+        })
+
+        // Exact moment & 1s after -> advances to Dec 18, 2026 14:00:00+08:00
+        const exactMoment = Date.parse("2026-11-18T14:00:00+08:00")
+        expect(resolveExpiry(autoNode, exactMoment)).toMatchObject({
+            kind: "renews",
+            at: Date.parse("2026-12-18T14:00:00+08:00"),
+        })
+        expect(autoNode.expiredAt).toBe(Date.parse("2026-11-18T14:00:00+08:00"))
+    })
+})

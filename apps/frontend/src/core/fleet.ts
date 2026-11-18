@@ -98,14 +98,12 @@ export function nodeIssues(
     if (fed && !s?.online) reasons.push({ kind: "offline" })
     if (s?.online) {
         if (c.kind === "stale") reasons.push({ kind: "stale" })
-        const mem = ratio(s.memUsed, s.memTotal || n.memTotal)
-        const disk = ratio(s.diskUsed, s.diskTotal || n.diskTotal)
-        if (levelFor("cpu", s.cpu) !== "good")
-            reasons.push({ kind: "cpu", percent: formatPercent(s.cpu) })
-        if (levelFor("memory", mem) !== "good")
-            reasons.push({ kind: "memory", percent: formatPercent(mem) })
-        if (levelFor("disk", disk) !== "good")
-            reasons.push({ kind: "disk", percent: formatPercent(disk) })
+        for (const [kind, v] of [
+            ["cpu", s.cpu],
+            ["memory", ratio(s.memUsed, s.memTotal || n.memTotal)],
+            ["disk", ratio(s.diskUsed, s.diskTotal || n.diskTotal)],
+        ] as const)
+            if (levelFor(kind, v) !== "good") reasons.push({ kind, percent: formatPercent(v) })
     }
     if (expiry?.level === "danger")
         reasons.push(
