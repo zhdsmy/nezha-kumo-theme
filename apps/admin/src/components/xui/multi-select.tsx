@@ -92,6 +92,8 @@ interface MultiSelectProps
 
     /** The default selected values when the component mounts. */
     defaultValue?: string[]
+    selectedValues?: string[]
+    single?: boolean
 
     /**
      * Placeholder text to be displayed when no values are selected.
@@ -135,6 +137,8 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
     (
         {
             options,
+            selectedValues: controlledValues,
+            single = false,
             onValueChange,
             variant,
             defaultValue = [],
@@ -149,7 +153,19 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
     ) => {
         const { t } = useTranslation()
         const resolvedPlaceholder = placeholder ?? t("SelectOptions")
-        const [selectedValues, setSelectedValues] = useState<string[]>(defaultValue)
+        const [localValues, setLocalValues] = useState<string[]>(defaultValue)
+        const selectedValues = controlledValues ?? localValues
+        const availableValues = new Set(options.map((option) => option.value))
+        const missing = selectedValues.filter((value) => !availableValues.has(value))
+        const displayOptions: MultiSelectProps["options"] = [
+            ...options,
+            ...missing.map((value) => ({ value, label: `#${value}` })),
+        ]
+        const allSelected = options.length > 0 && options.every((option) => selectedValues.includes(option.value))
+        const change = (values: string[]) => {
+            if (controlledValues === undefined) setLocalValues(values)
+            onValueChange(values)
+        }
         const [isPopoverOpen, setIsPopoverOpen] = useState(false)
         const [isAnimating, setIsAnimating] = useState(false)
 
@@ -157,45 +173,24 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
             if (event.key === "Enter") {
                 setIsPopoverOpen(true)
             } else if (event.key === "Backspace" && !event.currentTarget.value) {
-                const newSelectedValues = [...selectedValues]
-                newSelectedValues.pop()
-                setSelectedValues(newSelectedValues)
-                onValueChange(newSelectedValues)
+                change(selectedValues.slice(0, -1))
             }
         }
 
         const toggleOption = (option: string) => {
-            const newSelectedValues = selectedValues.includes(option)
-                ? selectedValues.filter((value) => value !== option)
-                : [...selectedValues, option]
-            setSelectedValues(newSelectedValues)
-            onValueChange(newSelectedValues)
-        }
-
-        const handleClear = () => {
-            setSelectedValues([])
-            onValueChange([])
-        }
-
-        const handleTogglePopover = () => {
-            setIsPopoverOpen((prev) => !prev)
-        }
-
-        const clearExtraOptions = () => {
-            const newSelectedValues = selectedValues.slice(0, maxCount)
-            setSelectedValues(newSelectedValues)
-            onValueChange(newSelectedValues)
-        }
-
-        const toggleAll = () => {
-            if (selectedValues.length === options.length) {
-                handleClear()
-            } else {
-                const allValues = options.map((option) => option.value)
-                setSelectedValues(allValues)
-                onValueChange(allValues)
+            if (single) {
+                change([option])
+                setIsPopoverOpen(false)
+                return
             }
+            change(selectedValues.includes(option)
+                ? selectedValues.filter((value) => value !== option)
+                : [...selectedValues, option])
         }
+
+        const handleClear = () => change([])
+        const clearExtraOptions = () => change(selectedValues.slice(0, maxCount))
+        const toggleAll = () => change(allSelected ? missing : [...options.map((option) => option.value), ...missing])
 
         const stopWheelEventPropagation: React.WheelEventHandler = (e) => {
             e.stopPropagation()
@@ -212,7 +207,7 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                         ref={ref}
                         variant="outline"
                         {...props}
-                        onClick={handleTogglePopover}
+                        type="button"
                         className={cn(
                             "flex min-w-0 w-full p-1 rounded-lg border min-h-9 h-auto items-center justify-between bg-kumo-control text-foreground hover:bg-accent [&_svg]:pointer-events-auto [&>span]:min-w-0 [&>span]:w-full",
                             className,
@@ -239,15 +234,15 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                                                 )}
                                                 <span
                                                     className="min-w-0 truncate"
-                                                    title={option?.label}
+                                                    title={option?.label ?? `#${value}`}
                                                 >
-                                                    {option?.label}
+                                                    {option?.label ?? `#${value}`}
                                                 </span>
                                                 <XIcon
                                                     className="ml-1.5 h-3 w-3 shrink-0 cursor-pointer"
                                                     onClick={(event) => {
                                                         event.stopPropagation()
-                                                        toggleOption(value)
+                                                        change(selectedValues.filter((id) => id !== value))
                                                     }}
                                                 />
                                             </Badge>
@@ -318,28 +313,32 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                         <CommandList>
                             <CommandEmpty>{t("NoResults")}</CommandEmpty>
                             <CommandGroup>
-                                <CommandItem
-                                    key="all"
-                                    onSelect={toggleAll}
-                                    className="cursor-pointer"
-                                >
-                                    <div
-                                        className={cn(
-                                            "mr-2 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-primary",
-                                            selectedValues.length === options.length
-                                                ? "bg-primary text-primary-foreground"
-                                                : "opacity-50 [&_svg]:invisible",
-                                        )}
+                                {!single && (
+                                    <CommandItem
+                                        key="all"
+                                        onSelect={toggleAll}
+                                        className="cursor-pointer"
                                     >
-                                        <CheckIcon className="h-4 w-4" />
-                                    </div>
-                                    <span>({t("SelectAll")})</span>
-                                </CommandItem>
-                                {options.map((option) => {
+                                        <div
+                                            className={cn(
+                                                "mr-2 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-primary",
+                                                allSelected
+                                                    ? "bg-primary text-primary-foreground"
+                                                    : "opacity-50 [&_svg]:invisible",
+                                            )}
+                                        >
+                                            <CheckIcon className="h-4 w-4" />
+                                        </div>
+                                        <span>({t("SelectAll")})</span>
+                                    </CommandItem>
+                                )}
+                                {displayOptions.map((option) => {
                                     const isSelected = selectedValues.includes(option.value)
                                     return (
                                         <CommandItem
                                             key={option.value}
+                                            value={option.value}
+                                            keywords={[option.label]}
                                             onSelect={() => toggleOption(option.value)}
                                             className="cursor-pointer items-start"
                                         >

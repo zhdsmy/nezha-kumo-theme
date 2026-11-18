@@ -1,3 +1,4 @@
+import { useServerNames, entityNames } from "@/hooks/useEntityNames"
 import { swrFetcher } from "@/api/api"
 import { cancelServerTransfer, retryServerTransfer } from "@/api/transfer"
 import { Badge } from "@/components/ui/badge"
@@ -14,6 +15,7 @@ import {
 import { useAuth } from "@/hooks/useAuth"
 import { formatDateTime } from "@/lib/utils"
 import {
+    ModelUser,
     ModelServerTransfer,
     ModelServerTransferStatus,
     ModelServerTransferStatusCancelled,
@@ -45,9 +47,13 @@ const statusMeta: Record<
 
 export default function TransferPage() {
     const { t, i18n } = useTranslation()
+    const serverName = useServerNames()
     const { profile } = useAuth()
     const isAdmin = profile?.role === 0
     const callerID = profile?.id
+    const { data: users } = useSWR<ModelUser[]>("/api/v1/user", null)
+    const loadedUserName = entityNames(users?.map(({ id, username }) => ({ id, name: username })))
+    const userName = (id: number) => id === callerID && profile?.username ? profile.username : loadedUserName(id)
     const { data, mutate, error, isLoading } = useSWR<ModelServerTransfer[]>(
         "/api/v1/transfer",
         swrFetcher,
@@ -200,7 +206,7 @@ export default function TransferPage() {
                 <TableHeader>
                     <TableRow>
                         <TableHead data-col="id">ID</TableHead>
-                        <TableHead data-col="server">{t("ServerID")}</TableHead>
+                        <TableHead data-col="server">{t("Server")}</TableHead>
                         <TableHead data-col="from">{t("Transfer.From")}</TableHead>
                         <TableHead data-col="to">{t("Transfer.To")}</TableHead>
                         <TableHead data-col="initiator">{t("Transfer.Initiator")}</TableHead>
@@ -228,10 +234,10 @@ export default function TransferPage() {
                         return (
                             <TableRow key={row.id}>
                                 <TableCell data-col="id">{row.id}</TableCell>
-                                <TableCell data-col="server">{row.server_id}</TableCell>
-                                <TableCell data-col="from">{row.from_user_id}</TableCell>
-                                <TableCell data-col="to">{row.to_user_id}</TableCell>
-                                <TableCell data-col="initiator">{row.initiator_id}</TableCell>
+                                <TableCell data-col="server">{serverName(row.server_id)}</TableCell>
+                                <TableCell data-col="from">{userName(row.from_user_id)}</TableCell>
+                                <TableCell data-col="to">{userName(row.to_user_id)}</TableCell>
+                                <TableCell data-col="initiator">{userName(row.initiator_id)}</TableCell>
                                 <TableCell data-col="status">
                                     <Badge variant={meta.variant}>{t(meta.key)}</Badge>
                                 </TableCell>

@@ -27,6 +27,8 @@ beforeEach(async () => {
                 (init?.method === "POST" && String(url).endsWith("/server/config"))
             )
                 writes.push({ url: String(url), body: JSON.parse(init.body) })
+            if (String(url).endsWith("/api/v1/server") && init?.method !== "PATCH")
+                return new Response(JSON.stringify({ success: true, data: [] }))
             if (String(url).includes("/server/config/"))
                 return new Response(
                     JSON.stringify({ success: true, data: '{"nic_allowlist":null}' }),

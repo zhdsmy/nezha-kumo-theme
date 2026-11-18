@@ -1,3 +1,4 @@
+import { useServerNames } from "@/hooks/useEntityNames"
 import { swrFetcher } from "@/api/api"
 import { deleteNAT } from "@/api/nat"
 import { ActionButtonGroup } from "@/components/action-button-group"
@@ -18,13 +19,14 @@ import { selectableTableFeatures, useSelectableTable } from "@/lib/table"
 import { ModelNAT } from "@/types"
 import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender } from "@tanstack/react-table"
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import useSWR from "swr"
 
 export default function NATPage() {
     const { t } = useTranslation()
+    const serverName = useServerNames()
     const { data, mutate, error, isLoading } = useSWR<ModelNAT[]>("/api/v1/nat", swrFetcher)
 
     useEffect(() => {
@@ -80,9 +82,9 @@ export default function NATPage() {
             },
         },
         {
-            header: t("Server") + " ID",
+            header: t("Server"),
             accessorKey: "serverID",
-            accessorFn: (row) => row.server_id,
+            cell: ({ row }) => serverName(row.original.server_id),
         },
         {
             header: t("LocalService"),
@@ -105,7 +107,7 @@ export default function NATPage() {
         {
             id: "actions",
             header: t("Actions"),
-            cell: ({ row }) => {
+            cell: useCallback(({ row }) => {
                 const s = row.original
                 return (
                     <ActionButtonGroup
@@ -115,7 +117,7 @@ export default function NATPage() {
                         <NATCard mutate={mutate} data={s} />
                     </ActionButtonGroup>
                 )
-            },
+            }, [mutate]),
         },
     ]
 

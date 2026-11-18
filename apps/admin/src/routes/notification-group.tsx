@@ -1,3 +1,5 @@
+import { useNotification } from "@/hooks/useNotfication"
+import { entityNames } from "@/hooks/useEntityNames"
 import { swrFetcher } from "@/api/api"
 import { deleteNotificationGroups } from "@/api/notification-group"
 import { ActionButtonGroup } from "@/components/action-button-group"
@@ -17,7 +19,7 @@ import { selectableTableFeatures, useSelectableTable } from "@/lib/table"
 import { ModelNotificationGroupResponseItem } from "@/types"
 import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender } from "@tanstack/react-table"
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import useSWR from "swr"
@@ -29,6 +31,7 @@ type NotificationGroupColumn = ColumnDef<
 
 export default function NotificationGroupPage() {
     const { t } = useTranslation()
+    const notifierName = entityNames(useNotification().notifiers)
     const { data, mutate, error, isLoading } = useSWR<ModelNotificationGroupResponseItem[]>(
         "/api/v1/notification-group",
         swrFetcher,
@@ -81,14 +84,14 @@ export default function NotificationGroupPage() {
             },
         },
         {
-            header: t("Notifier") + "(ID)",
+            header: t("Notifier"),
             accessorKey: "notifications",
             accessorFn: (row) => row.notifications,
             cell: ({ row }) => {
                 const s = row.original
                 return (
                     <div className="max-w-48 whitespace-normal break-words">
-                        <span>{(s.notifications || []).join(",")}</span>
+                        <span>{(s.notifications ?? []).map(notifierName).join(", ")}</span>
                     </div>
                 )
             },
@@ -96,7 +99,7 @@ export default function NotificationGroupPage() {
         {
             id: "actions",
             header: t("Actions"),
-            cell: ({ row }) => {
+            cell: useCallback(({ row }) => {
                 const s = row.original
                 return (
                     <ActionButtonGroup
@@ -111,7 +114,7 @@ export default function NotificationGroupPage() {
                         <NotificationGroupCard mutate={mutate} data={s} />
                     </ActionButtonGroup>
                 )
-            },
+            }, [mutate]),
         },
     ]
 

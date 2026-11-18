@@ -1,4 +1,5 @@
 import { createAlertRule, updateAlertRule } from "@/api/alert-rule"
+import { ServerSelect } from "@/components/server-select"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -486,46 +487,22 @@ export const AlertRuleCard: React.FC<AlertRuleCardProps> = ({ data, mutate }) =>
                                                                 htmlFor={`alert-rule-${idx}-ignore`}
                                                                 className="text-sm"
                                                             >
-                                                                {t("AlertRules.IgnoreHint", {
-                                                                    server: t("Server"),
-                                                                })}
+                                                                {t("SpecificServers")}
                                                             </Label>
-                                                            {/* 简化：以 JSON 对象输入 */}
-                                                            <Textarea
+                                                            <ServerSelect
                                                                 id={`alert-rule-${idx}-ignore`}
                                                                 aria-labelledby={`alert-rule-${idx}-ignore-label`}
-                                                                className="resize-y"
-                                                                value={(() => {
-                                                                    try {
-                                                                        return r.ignore
-                                                                            ? JSON.stringify(
-                                                                                  r.ignore,
-                                                                              )
-                                                                            : ""
-                                                                    } catch {
-                                                                        return ""
-                                                                    }
-                                                                })()}
-                                                                onChange={(e) => {
+                                                                selectedValues={Object.keys(r.ignore ?? {}).filter((id) => r.ignore?.[id])}
+                                                                onValueChange={(ids) => {
+                                                                    // Preserve explicit false entries from Advanced JSON.
+                                                                    const ignore = Object.fromEntries(
+                                                                        Object.entries(r.ignore ?? {}).filter(([, value]) => !value),
+                                                                    )
+                                                                    for (const id of ids) ignore[id] = true
                                                                     const next = [...rulesUI]
-                                                                    try {
-                                                                        const obj = e.target.value
-                                                                            ? JSON.parse(
-                                                                                  e.target.value,
-                                                                              )
-                                                                            : undefined
-                                                                        next[idx] = {
-                                                                            ...next[idx],
-                                                                            ignore: obj,
-                                                                        }
-                                                                    } catch {
-                                                                        // 保持原值，避免无效 JSON 覆盖
-                                                                    }
+                                                                    next[idx] = { ...r, ignore }
                                                                     setRulesUI(next)
                                                                 }}
-                                                                placeholder={t(
-                                                                    "AlertRules.IgnoreExample",
-                                                                )}
                                                             />
                                                         </div>
                                                     </div>

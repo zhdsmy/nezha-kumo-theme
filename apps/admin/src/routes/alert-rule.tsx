@@ -1,3 +1,4 @@
+import { useNotificationGroupNames, useTaskNames } from "@/hooks/useEntityNames"
 import { deleteAlertRules } from "@/api/alert-rule"
 import { swrFetcher } from "@/api/api"
 import { ActionButtonGroup } from "@/components/action-button-group"
@@ -19,13 +20,15 @@ import { selectableTableFeatures, useSelectableTable } from "@/lib/table"
 import { ModelAlertRule, triggerModes } from "@/types"
 import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender } from "@tanstack/react-table"
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import useSWR from "swr"
 
 export default function AlertRulePage() {
     const { t } = useTranslation()
+    const groupName = useNotificationGroupNames()
+    const taskName = useTaskNames()
 
     const { data, mutate, error, isLoading } = useSWR<ModelAlertRule[]>(
         "/api/v1/alert-rule",
@@ -79,7 +82,7 @@ export default function AlertRulePage() {
         {
             header: t("NotifierGroup"),
             accessorKey: "ngroup",
-            accessorFn: (row) => row.notification_group_id,
+            cell: ({ row }) => groupName(row.original.notification_group_id),
         },
         {
             header: t("TriggerMode"),
@@ -98,12 +101,12 @@ export default function AlertRulePage() {
         {
             header: t("TasksToTriggerOnAlert"),
             accessorKey: "failTriggerTasks",
-            accessorFn: (row) => row.fail_trigger_tasks,
+            cell: ({ row }) => (row.original.fail_trigger_tasks ?? []).map(taskName).join(", "),
         },
         {
             header: t("TasksToTriggerAfterRecovery"),
             accessorKey: "recoverTriggerTasks",
-            accessorFn: (row) => row.recover_trigger_tasks,
+            cell: ({ row }) => (row.original.recover_trigger_tasks ?? []).map(taskName).join(", "),
         },
         {
             header: t("Enable"),
@@ -114,7 +117,7 @@ export default function AlertRulePage() {
         {
             id: "actions",
             header: t("Actions"),
-            cell: ({ row }) => {
+            cell: useCallback(({ row }) => {
                 const s = row.original
                 return (
                     <ActionButtonGroup
@@ -129,7 +132,7 @@ export default function AlertRulePage() {
                         <AlertRuleCard mutate={mutate} data={s} />
                     </ActionButtonGroup>
                 )
-            },
+            }, [mutate]),
         },
     ]
 

@@ -1,4 +1,5 @@
 import { updateSettings } from "@/api/settings"
+import { ServerSelect } from "@/components/server-select"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -498,11 +499,11 @@ export default function SettingsPage() {
                                                     <FormLabel>{t("Coverage")}</FormLabel>
                                                     <Select
                                                         onValueChange={field.onChange}
-                                                        value={`${field.value}`}
+                                                        value={settingCoverageTypes[Number(field.value)] ? String(field.value) : ""}
                                                     >
                                                         <FormControl>
                                                             <SelectTrigger>
-                                                                <SelectValue />
+                                                                <SelectValue placeholder={t("SelectCoverage")} />
                                                             </SelectTrigger>
                                                         </FormControl>
                                                         <SelectContent>
@@ -524,13 +525,14 @@ export default function SettingsPage() {
                                             name="ignored_ip_notification"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel>
-                                                        {t("SpecificServers") +
-                                                            " " +
-                                                            t("SeparateWithComma")}
-                                                    </FormLabel>
+                                                    <FormLabel>{t("SpecificServers")}</FormLabel>
                                                     <FormControl>
-                                                        <Input placeholder="1,2,3" {...field} />
+                                                        <ServerSelect
+                                                            ref={field.ref}
+                                                            onBlur={field.onBlur}
+                                                            selectedValues={field.value?.split(",").map((id) => id.trim()).filter(Boolean) ?? []}
+                                                            onValueChange={(ids) => field.onChange(ids.join(","))}
+                                                        />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>

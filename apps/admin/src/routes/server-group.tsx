@@ -1,3 +1,4 @@
+import { useServerNames } from "@/hooks/useEntityNames"
 import { swrFetcher } from "@/api/api"
 import { deleteServerGroups } from "@/api/server-group"
 import { ActionButtonGroup } from "@/components/action-button-group"
@@ -27,6 +28,7 @@ import useSWR from "swr"
 
 export default function ServerGroupPage() {
     const { t } = useTranslation()
+    const serverName = useServerNames()
     const { mutate: mutateSetting } = useSetting()
     const { data, mutate, error, isLoading } = useSWR<ModelServerGroupResponseItem[]>(
         "/api/v1/server-group",
@@ -97,14 +99,14 @@ export default function ServerGroupPage() {
             },
         },
         {
-            header: t("Server") + "(ID)",
+            header: t("Server"),
             accessorKey: "servers",
             accessorFn: (row) => row.servers,
             cell: ({ row }) => {
                 const s = row.original
                 return (
                     <div className="max-w-48 whitespace-normal break-words">
-                        <span>{(s.servers || []).join(",")}</span>
+                        <span>{(s.servers ?? []).map(serverName).join(", ")}</span>
                     </div>
                 )
             },
@@ -112,7 +114,7 @@ export default function ServerGroupPage() {
         {
             id: "actions",
             header: t("Actions"),
-            cell: ({ row }) => {
+            cell: useCallback(({ row }) => {
                 const s = row.original
                 return (
                     <ActionButtonGroup
@@ -127,7 +129,7 @@ export default function ServerGroupPage() {
                         <ServerGroupCard mutate={mutate} data={s} />
                     </ActionButtonGroup>
                 )
-            },
+            }, [handleDeleteGroups, mutate]),
         },
     ]
 

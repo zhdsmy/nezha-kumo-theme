@@ -1,3 +1,4 @@
+import { useServerNames } from "@/hooks/useEntityNames"
 import {
     listMCPOAuthClients,
     listMCPOAuthGrants,
@@ -34,6 +35,7 @@ function errorMessage(error: unknown) {
 
 function OAuthGrants({ all, userID }: { all: boolean; userID: number }) {
     const { t, i18n } = useTranslation()
+    const serverName = useServerNames()
     const [page, setPage] = useState(1)
     const [busy, setBusy] = useState(false)
     const [actionError, setActionError] = useState("")
@@ -126,7 +128,7 @@ function OAuthGrants({ all, userID }: { all: boolean; userID: number }) {
                                     className="max-w-48 break-words whitespace-normal"
                                 >
                                     {grant.server_ids.length
-                                        ? grant.server_ids.join(", ")
+                                        ? grant.server_ids.map(serverName).join(", ")
                                         : t("MCPOAuth.AllServers")}
                                 </TableCell>
                                 <TableCell

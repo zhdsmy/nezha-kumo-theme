@@ -1,3 +1,4 @@
+import { useServerNames, useNotificationGroupNames } from "@/hooks/useEntityNames"
 import { swrFetcher } from "@/api/api"
 import { deleteCron, runCron } from "@/api/cron"
 import { ActionButtonGroup } from "@/components/action-button-group"
@@ -22,13 +23,15 @@ import { ModelCron } from "@/types"
 import { cronTypes } from "@/types"
 import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender } from "@tanstack/react-table"
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import useSWR from "swr"
 
 export default function CronPage() {
     const { t, i18n } = useTranslation()
+    const serverName = useServerNames()
+    const groupName = useNotificationGroupNames()
     const { data, mutate, error, isLoading } = useSWR<ModelCron[]>("/api/v1/cron", swrFetcher)
 
     useEffect(() => {
@@ -97,7 +100,7 @@ export default function CronPage() {
         {
             header: t("NotifierGroup"),
             accessorKey: "ngroup",
-            accessorFn: (row) => row.notification_group_id,
+            cell: ({ row }) => groupName(row.original.notification_group_id),
         },
         {
             header: t("SendSuccessNotification"),
@@ -137,8 +140,8 @@ export default function CronPage() {
             cell: ({ row }) => {
                 const s = row.original
                 return (
-                    <div className="max-w-16 whitespace-normal break-words">
-                        <span>{(s.servers || []).join(",")}</span>
+                    <div className="max-w-48 whitespace-normal break-words">
+                        <span>{(s.servers ?? []).map(serverName).join(", ")}</span>
                     </div>
                 )
             },
@@ -165,7 +168,7 @@ export default function CronPage() {
         {
             id: "actions",
             header: t("Actions"),
-            cell: ({ row }) => {
+            cell: useCallback(({ row }) => {
                 const s = row.original
                 return (
                     <ActionButtonGroup
@@ -200,7 +203,7 @@ export default function CronPage() {
                         </>
                     </ActionButtonGroup>
                 )
-            },
+            }, [mutate, t]),
         },
     ]
 
