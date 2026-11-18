@@ -488,7 +488,7 @@ export function HomePage() {
     const costLabel = t(money.period === "year" ? "overview.costYear" : "overview.cost")
     const costHint =
         cost.amount === null
-            ? t(rateError ? "overview.costUnavailable" : "overview.costLoading")
+            ? t(rates || rateError ? "overview.costUnavailable" : "overview.costLoading")
             : t("overview.costNodes", { count: cost.paid })
     return (
         <Page

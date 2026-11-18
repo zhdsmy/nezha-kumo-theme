@@ -98,6 +98,35 @@ test("zh-CN interface localizes screen-reader labels, tooltips, placeholders, an
     expect(leaked).toEqual([])
 })
 
+for (const [currency, language, loading, unavailable] of [
+    ["TWD", "zh-TW", "正在取得匯率…", "無法取得匯率，暫時無法計算總額"],
+    ["JPY", "ja", "為替レートを取得中…", "為替レートを取得できません"],
+]) {
+    test(`monthly fee hint changes from loading to unavailable when ${currency} is missing`, async ({
+        page,
+    }) => {
+        await mockNezha(page)
+        await page.addInitScript((lang) => localStorage.setItem("nkt:language", lang), language)
+        let releaseRates!: () => void
+        const pending = new Promise<void>((resolve) => {
+            releaseRates = resolve
+        })
+        await page.route("https://api.frankfurter.dev/**", async (route) => {
+            await pending
+            await route.fulfill({
+                json: [{ base: "USD", quote: "CNY", date: "2026-11-16", rate: 7 }],
+            })
+        })
+        await page.goto("/")
+        await expect(page.locator(".cost-value")).toHaveText("—")
+        await page.locator(".cost-button").hover()
+        await expect(page.getByText(loading, { exact: true })).toBeVisible()
+        releaseRates()
+        await expect(page.getByText(unavailable, { exact: true })).toBeVisible()
+        await expect(page.locator(".cost-value")).toHaveText("—")
+    })
+}
+
 test.describe("Traditional Chinese preferences", () => {
     test.use({ locale: "zh-MO" })
 
