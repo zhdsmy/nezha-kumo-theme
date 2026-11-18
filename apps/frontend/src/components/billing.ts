@@ -50,21 +50,16 @@ export function useBilling() {
         expiry(n: NodeInfo): { text: string; at: number | null; level?: "warn" | "danger" } | null {
             const e = resolveExpiry(n)
             if (!e) return null
-            switch (e.kind) {
-                case "longTerm":
-                    return { text: t("expiry.longTerm"), at: e.at }
-                case "expired":
-                    return { text: t("expiry.expired"), at: e.at, level: "danger" }
-                case "expiring":
-                    return {
-                        text:
-                            e.days === 0
-                                ? t("expiry.today")
-                                : t("expiry.inDays", { count: e.days }),
-                        at: e.at,
-                        level: e.level,
-                    }
-            }
+            const k = e.kind
+            const text =
+                k === "autoRenew"
+                    ? t("metric.autoRenew").toLowerCase()
+                    : k === "renews"
+                      ? t(e.days ? "expiry.renewInDays" : "expiry.renewToday", { count: e.days })
+                      : k === "expiring"
+                        ? t(e.days ? "expiry.inDays" : "expiry.today", { count: e.days })
+                        : t(`expiry.${k}`)
+            return { text, at: e.at, level: e.level }
         },
     }
 }

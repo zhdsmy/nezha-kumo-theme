@@ -1,7 +1,13 @@
-import type { TrafficBilling as TrafficLimitType } from "../../../../packages/shared/public-note"
+import type {
+    Cycle,
+    TrafficBilling as TrafficLimitType,
+} from "../../../../packages/shared/public-note"
 
 // Adapted from zool-theme/src/core/model.ts (MIT, luoleiorg).
-export type { TrafficBilling as TrafficLimitType } from "../../../../packages/shared/public-note"
+export type {
+    Cycle,
+    TrafficBilling as TrafficLimitType,
+} from "../../../../packages/shared/public-note"
 
 export interface SiteInfo {
     name: string
@@ -41,9 +47,13 @@ export interface NodeInfo {
     currency: string
     /** Billing cycle in days (30 ≈ monthly, 365 ≈ yearly). 0 = not set, -1 = one-time. */
     billingCycle: number
+    /** Parsed calendar cycle from public note, when recognized. */
+    cycle?: Cycle
     autoRenewal: boolean
     /** Expiry as epoch ms; 0 = explicitly permanent, null = not set. */
     expiredAt: number | null
+    /** UTC offset in minutes of the original expiry string, when present. */
+    tz?: number
     /** Bytes; 0 = unlimited, -1 = unknown. */
     trafficLimit: number
     trafficLimitType: TrafficLimitType

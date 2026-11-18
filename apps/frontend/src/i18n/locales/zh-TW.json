@@ -95,6 +95,8 @@
     "expiry": {
         "inDays_other": "{{count}} 天後",
         "today": "今天",
+        "renewInDays_other": "{{count}} 天後續約",
+        "renewToday": "今天續約",
         "expired": "已到期",
         "longTerm": "長期"
     },

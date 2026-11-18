@@ -95,6 +95,8 @@
     "expiry": {
         "inDays_other": "{{count}} 天后",
         "today": "今天",
+        "renewInDays_other": "{{count}} 天后续费",
+        "renewToday": "今天续费",
         "expired": "已过期",
         "longTerm": "长期"
     },

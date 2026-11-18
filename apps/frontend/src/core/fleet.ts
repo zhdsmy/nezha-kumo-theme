@@ -26,6 +26,7 @@ export function sortNodes(
     snapshots: Record<string, Snapshot>,
     key: SortKey,
     desc: boolean,
+    now = Date.now(),
 ) {
     const value = (n: NodeInfo) => {
         const s = snapshots[n.id]
@@ -43,7 +44,7 @@ export function sortNodes(
             case "uptime":
                 return s?.uptime ?? -1
             case "expiry":
-                return n.expiredAt || Infinity
+                return resolveExpiry(n, now)?.at ?? (desc ? -Infinity : Infinity)
             default:
                 return n.weight
         }
@@ -54,9 +55,9 @@ export function sortNodes(
         const diff =
             typeof av === "string" && typeof bv === "string"
                 ? av.localeCompare(bv)
-                : Number(av) === Number(bv)
+                : av === bv
                   ? 0
-                  : Number(av) < Number(bv)
+                  : av < bv
                     ? -1
                     : 1
         return (desc ? -diff : diff) || a.id.localeCompare(b.id)
@@ -106,9 +107,12 @@ export function nodeIssues(
         if (levelFor("disk", disk) !== "good")
             reasons.push({ kind: "disk", percent: formatPercent(disk) })
     }
-    if (c.expired) reasons.push({ kind: "expired" })
-    else if (!n.autoRenewal && expiry?.kind === "expiring" && expiry.level === "danger")
-        reasons.push({ kind: "expiring", days: expiry.days })
+    if (expiry?.level === "danger")
+        reasons.push(
+            expiry.kind === "expired"
+                ? { kind: "expired" }
+                : { kind: "expiring", days: expiry.days },
+        )
     if (c.quotaUsed) reasons.push({ kind: "quota" })
     return reasons
 }

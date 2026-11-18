@@ -101,6 +101,9 @@
         "inDays_one": "in {{count}} day",
         "inDays_other": "in {{count}} days",
         "today": "today",
+        "renewInDays_one": "renews in {{count}} day",
+        "renewInDays_other": "renews in {{count}} days",
+        "renewToday": "renews today",
         "expired": "expired",
         "longTerm": "long-term"
     },

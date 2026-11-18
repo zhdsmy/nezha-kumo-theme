@@ -403,9 +403,7 @@ export function HomePage() {
         r.kind === "cpu" || r.kind === "memory" || r.kind === "disk"
             ? `${t(`metric.${r.kind}`)} ${r.percent}%`
             : r.kind === "expiring"
-              ? r.days === 0
-                  ? t("status.expiringToday")
-                  : t("status.expiringInDays", { count: r.days })
+              ? t(r.days ? "status.expiringInDays" : "status.expiringToday", { count: r.days })
               : t(`status.${r.kind === "quota" ? "quotaExceeded" : r.kind}`)
     const nodesSub = !fed ? (
         t("status.connecting")
@@ -658,14 +656,16 @@ export function HomePage() {
                                         value={desc ? "desc" : "asc"}
                                         onValueChange={(v: string) => setDesc(v === "desc")}
                                     >
-                                        <DropdownMenu.RadioItem value="asc">
-                                            {t("toolbar.ascending")}
-                                            <DropdownMenu.RadioItemIndicator />
-                                        </DropdownMenu.RadioItem>
-                                        <DropdownMenu.RadioItem value="desc">
-                                            {t("toolbar.descending")}
-                                            <DropdownMenu.RadioItemIndicator />
-                                        </DropdownMenu.RadioItem>
+                                        {(["asc", "desc"] as const).map((d) => (
+                                            <DropdownMenu.RadioItem key={d} value={d}>
+                                                {t(
+                                                    d === "desc"
+                                                        ? "toolbar.descending"
+                                                        : "toolbar.ascending",
+                                                )}
+                                                <DropdownMenu.RadioItemIndicator />
+                                            </DropdownMenu.RadioItem>
+                                        ))}
                                     </DropdownMenu.RadioGroup>
                                 </DropdownMenu.Group>
                             </DropdownMenu.Content>

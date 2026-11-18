@@ -5,8 +5,13 @@
             "price": 42.25,
             "currency": "CNY",
             "billingCycle": 30,
+            "cycle": {
+                "count": 1,
+                "unit": "Month"
+            },
             "autoRenewal": true,
             "expiredAt": 1933106828000,
+            "tz": 480,
             "trafficLimit": 2147483648,
             "trafficLimitType": "max",
             "trafficLimitPeriod": 30,
@@ -24,8 +29,13 @@
             "price": 43.25,
             "currency": "CNY",
             "billingCycle": 30,
+            "cycle": {
+                "count": 1,
+                "unit": "Month"
+            },
             "autoRenewal": true,
             "expiredAt": 1933106828000,
+            "tz": 480,
             "trafficLimit": 0,
             "trafficLimitType": "max",
             "trafficLimitPeriod": 0,
@@ -43,8 +53,13 @@
             "price": 44.25,
             "currency": "CNY",
             "billingCycle": 30,
+            "cycle": {
+                "count": 1,
+                "unit": "Month"
+            },
             "autoRenewal": true,
             "expiredAt": 1933106828000,
+            "tz": 480,
             "trafficLimit": 4294967296,
             "trafficLimitType": "max",
             "trafficLimitPeriod": 30,
@@ -62,8 +77,13 @@
             "price": 45.25,
             "currency": "CNY",
             "billingCycle": 30,
+            "cycle": {
+                "count": 1,
+                "unit": "Month"
+            },
             "autoRenewal": true,
             "expiredAt": 1933106828000,
+            "tz": 480,
             "trafficLimit": 0,
             "trafficLimitType": "max",
             "trafficLimitPeriod": 0,
@@ -81,8 +101,13 @@
             "price": 46.25,
             "currency": "CNY",
             "billingCycle": 365,
+            "cycle": {
+                "count": 1,
+                "unit": "Year"
+            },
             "autoRenewal": false,
             "expiredAt": 1933106828000,
+            "tz": 480,
             "trafficLimit": 6597069766656,
             "trafficLimitType": "max",
             "trafficLimitPeriod": 30,
@@ -100,8 +125,13 @@
             "price": 47.25,
             "currency": "USD",
             "billingCycle": 30,
+            "cycle": {
+                "count": 1,
+                "unit": "Month"
+            },
             "autoRenewal": false,
             "expiredAt": 1933106828000,
+            "tz": 480,
             "trafficLimit": 7516192768,
             "trafficLimitType": "sum",
             "trafficLimitPeriod": 30,
@@ -119,8 +149,13 @@
             "price": 48.25,
             "currency": "USD",
             "billingCycle": 30,
+            "cycle": {
+                "count": 1,
+                "unit": "Month"
+            },
             "autoRenewal": true,
             "expiredAt": 1933106828000,
+            "tz": 480,
             "trafficLimit": -1,
             "trafficLimitType": "max",
             "trafficLimitPeriod": 0,
@@ -136,8 +171,13 @@
             "price": -1,
             "currency": "$",
             "billingCycle": 365,
+            "cycle": {
+                "count": 1,
+                "unit": "Year"
+            },
             "autoRenewal": false,
             "expiredAt": 1933106828000,
+            "tz": 480,
             "trafficLimit": 9663676416,
             "trafficLimitType": "max",
             "trafficLimitPeriod": 30,
@@ -155,8 +195,13 @@
             "price": 50.25,
             "currency": "CNY",
             "billingCycle": 365,
+            "cycle": {
+                "count": 1,
+                "unit": "Year"
+            },
             "autoRenewal": false,
             "expiredAt": 1933106828000,
+            "tz": 480,
             "trafficLimit": 10995116277760,
             "trafficLimitType": "sum",
             "trafficLimitPeriod": 30,
@@ -174,6 +219,10 @@
             "price": -1,
             "currency": "$",
             "billingCycle": 30,
+            "cycle": {
+                "count": 1,
+                "unit": "Month"
+            },
             "autoRenewal": true,
             "expiredAt": 0,
             "trafficLimit": 11811160064,
@@ -193,8 +242,13 @@
             "price": 52.25,
             "currency": "USD",
             "billingCycle": 365,
+            "cycle": {
+                "count": 1,
+                "unit": "Year"
+            },
             "autoRenewal": false,
             "expiredAt": 1933106828000,
+            "tz": 480,
             "trafficLimit": 13194139533312,
             "trafficLimitType": "sum",
             "trafficLimitPeriod": 30,
@@ -212,8 +266,13 @@
             "price": 53.25,
             "currency": "USD",
             "billingCycle": 365,
+            "cycle": {
+                "count": 1,
+                "unit": "Year"
+            },
             "autoRenewal": false,
             "expiredAt": 1933106828000,
+            "tz": 480,
             "trafficLimit": 14293651161088,
             "trafficLimitType": "sum",
             "trafficLimitPeriod": 30,
@@ -231,8 +290,13 @@
             "price": 54.25,
             "currency": "USD",
             "billingCycle": 365,
+            "cycle": {
+                "count": 1,
+                "unit": "Year"
+            },
             "autoRenewal": false,
             "expiredAt": 1933106828000,
+            "tz": 480,
             "trafficLimit": 15393162788864,
             "trafficLimitType": "sum",
             "trafficLimitPeriod": 30,
@@ -250,8 +314,13 @@
             "price": 55.25,
             "currency": "USD",
             "billingCycle": 365,
+            "cycle": {
+                "count": 1,
+                "unit": "Year"
+            },
             "autoRenewal": false,
             "expiredAt": 1933106828000,
+            "tz": 480,
             "trafficLimit": 16492674416640,
             "trafficLimitType": "max",
             "trafficLimitPeriod": 30,
@@ -269,8 +338,13 @@
             "price": 56.25,
             "currency": "USD",
             "billingCycle": 365,
+            "cycle": {
+                "count": 1,
+                "unit": "Year"
+            },
             "autoRenewal": false,
             "expiredAt": 1933106828000,
+            "tz": 480,
             "trafficLimit": 17592186044416,
             "trafficLimitType": "sum",
             "trafficLimitPeriod": 30,
@@ -288,8 +362,13 @@
             "price": 57.25,
             "currency": "AUD",
             "billingCycle": 365,
+            "cycle": {
+                "count": 1,
+                "unit": "Year"
+            },
             "autoRenewal": false,
             "expiredAt": 1933106828000,
+            "tz": 480,
             "trafficLimit": 18253611008,
             "trafficLimitType": "sum",
             "trafficLimitPeriod": 30,
@@ -307,8 +386,13 @@
             "price": 58.25,
             "currency": "USD",
             "billingCycle": 90,
+            "cycle": {
+                "count": 3,
+                "unit": "Month"
+            },
             "autoRenewal": false,
             "expiredAt": 1933106828000,
+            "tz": 480,
             "trafficLimit": -1,
             "trafficLimitType": "max",
             "trafficLimitPeriod": 0,
@@ -326,8 +410,13 @@
             "price": 59.25,
             "currency": "CNY",
             "billingCycle": 30,
+            "cycle": {
+                "count": 1,
+                "unit": "Month"
+            },
             "autoRenewal": false,
             "expiredAt": 1933106828000,
+            "tz": 480,
             "trafficLimit": 20890720927744,
             "trafficLimitType": "sum",
             "trafficLimitPeriod": 30,
@@ -345,8 +434,13 @@
             "price": 60.25,
             "currency": "USD",
             "billingCycle": 365,
+            "cycle": {
+                "count": 1,
+                "unit": "Year"
+            },
             "autoRenewal": false,
             "expiredAt": 1933106828000,
+            "tz": 480,
             "trafficLimit": 21990232555520,
             "trafficLimitType": "sum",
             "trafficLimitPeriod": 30,
@@ -364,8 +458,13 @@
             "price": 61.25,
             "currency": "EUR",
             "billingCycle": 365,
+            "cycle": {
+                "count": 1,
+                "unit": "Year"
+            },
             "autoRenewal": false,
             "expiredAt": 1933106828000,
+            "tz": 480,
             "trafficLimit": 22548578304,
             "trafficLimitType": "sum",
             "trafficLimitPeriod": 30,
