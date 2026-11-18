@@ -86,6 +86,16 @@
     "AdvancedJSON": "進階 JSON",
     "Confirm": "確認",
     "ConfirmDeletion": "確認刪除？",
+    "FieldValidation": {
+        "Required": "請填寫{{field}}",
+        "RequiredGeneric": "此欄位為必填",
+        "StringMin": "{{field}}至少需要 {{min}} 個字元",
+        "StringMax": "{{field}}不能超過 {{max}} 個字元",
+        "NumberMin": "{{field}}不能小於 {{min}}",
+        "NumberMax": "{{field}}不能大於 {{max}}",
+        "InvalidURL": "請輸入有效的 URL",
+        "InvalidNumber": "請為{{field}}輸入有效的數字"
+    },
     "Coverages": {
         "Excludes": "排除特定伺服器",
         "Only": "僅特定伺服器",

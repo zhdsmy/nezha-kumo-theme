@@ -22,17 +22,54 @@ import {
     useFormContext,
 } from "react-hook-form"
 
+import { toast } from "sonner"
+
 const Form = FormProvider
+
+export function scrollFieldIntoContainer(container: HTMLElement, control: HTMLElement) {
+    if (!container.contains(control)) return
+    const item = control.closest<HTMLElement>("[data-form-item]")
+    const field = control.getBoundingClientRect()
+    const itemRect = item?.getBoundingClientRect()
+    const topEdge = itemRect ? Math.min(itemRect.top, field.top) : field.top
+    const bottomEdge = itemRect ? Math.max(itemRect.bottom, field.bottom) : field.bottom
+    const bounds = container.getBoundingClientRect()
+    const pad = 16
+    if (topEdge < bounds.top + pad) {
+        container.scrollTop += topEdge - bounds.top - pad
+    } else if (bottomEdge > bounds.bottom - pad) {
+        const delta = Math.min(
+            bottomEdge - bounds.bottom + pad,
+            Math.max(0, topEdge - (bounds.top + pad)),
+        )
+        container.scrollTop += delta
+    }
+}
 
 function FormErrors() {
     const context = useFormContext()
     const errors = context?.formState.errors
     const submitCount = context?.formState.submitCount
     const summary = useRef<HTMLParagraphElement>(null)
+    const hasErrors = !!errors && Object.keys(errors).length > 0
     useEffect(() => {
-        if (submitCount) summary.current?.focus()
-    }, [submitCount])
-    if (!errors || Object.keys(errors).length === 0) return null
+        if (!submitCount || !hasErrors || !summary.current) return
+        toast.dismiss?.()
+        const dialog = summary.current.closest<HTMLElement>('[role="dialog"]')
+        const scope = dialog ?? summary.current.closest("form") ?? document
+        const invalidControl = scope.querySelector<HTMLElement>('[aria-invalid="true"]')
+        if (invalidControl) {
+            if (document.activeElement !== invalidControl) {
+                invalidControl.focus()
+            }
+            if (dialog) {
+                requestAnimationFrame(() => scrollFieldIntoContainer(dialog, invalidControl))
+            }
+            return
+        }
+        summary.current.focus()
+    }, [submitCount, hasErrors])
+    if (!hasErrors) return null
     const messages = (value: object): string[] =>
         Object.entries(value).flatMap(([key, error]) => {
             if (key === "ref" || !error || typeof error !== "object") return []
@@ -102,7 +139,12 @@ const FormItem = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
 
         return (
             <FormItemContext.Provider value={{ id }}>
-                <div ref={ref} className={cn("space-y-2", className)} {...props} />
+                <div
+                    ref={ref}
+                    data-form-item=""
+                    className={cn("space-y-2", className)}
+                    {...props}
+                />
             </FormItemContext.Provider>
         )
     },

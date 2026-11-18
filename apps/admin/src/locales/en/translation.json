@@ -86,6 +86,16 @@
     "AdvancedJSON": "Advanced JSON",
     "Confirm": "Confirm",
     "ConfirmDeletion": "Confirm Deletion?",
+    "FieldValidation": {
+        "Required": "{{field}} is required",
+        "RequiredGeneric": "This field is required",
+        "StringMin": "{{field}} must be at least {{min}} characters",
+        "StringMax": "{{field}} must be at most {{max}} characters",
+        "NumberMin": "{{field}} must be at least {{min}}",
+        "NumberMax": "{{field}} must be at most {{max}}",
+        "InvalidURL": "Please enter a valid URL",
+        "InvalidNumber": "Please enter a valid number for {{field}}"
+    },
     "Coverages": {
         "Excludes": "Excludes Specific Servers",
         "Only": "Only Specific Servers",

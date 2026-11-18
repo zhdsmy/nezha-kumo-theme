@@ -86,6 +86,16 @@
     "AdvancedJSON": "詳細 JSON",
     "Confirm": "確認",
     "ConfirmDeletion": "削除を確認しますか？",
+    "FieldValidation": {
+        "Required": "{{field}}を入力してください",
+        "RequiredGeneric": "この項目は必須です",
+        "StringMin": "{{field}}は {{min}} 文字以上で入力してください",
+        "StringMax": "{{field}}は {{max}} 文字以内で入力してください",
+        "NumberMin": "{{field}}は {{min}} 以上で入力してください",
+        "NumberMax": "{{field}}は {{max}} 以下で入力してください",
+        "InvalidURL": "有効な URL を入力してください",
+        "InvalidNumber": "{{field}}には有効な数値を入力してください"
+    },
     "Coverages": {
         "Excludes": "特定のサーバーを除外",
         "Only": "特定のサーバーのみ",

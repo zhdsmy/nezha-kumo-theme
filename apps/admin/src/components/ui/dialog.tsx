@@ -1,4 +1,4 @@
-import { FormErrors } from "@/components/ui/form"
+import { FormErrors, scrollFieldIntoContainer } from "@/components/ui/form"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { cn } from "@/lib/utils"
 import { BREAKPOINTS } from "@nezha-kumo/ui"
@@ -49,14 +49,7 @@ const DialogContent = forwardRef<ComponentRef<typeof DialogPrimitive.Content>, D
                         const dialog = event.currentTarget
                         const control = event.target as HTMLElement
                         requestAnimationFrame(() => {
-                            if (!dialog.contains(control)) return
-                            const field = control.getBoundingClientRect()
-                            const bounds = dialog.getBoundingClientRect()
-                            // Native focus scrolling can reveal only the caret of a textarea.
-                            if (field.bottom > bounds.bottom - 8)
-                                dialog.scrollTop += field.bottom - bounds.bottom + 8
-                            else if (field.top < bounds.top + 8)
-                                dialog.scrollTop += field.top - bounds.top - 8
+                            scrollFieldIntoContainer(dialog, control)
                         })
                     }}
                     data-layout={sheet ? "sheet" : "dialog"}

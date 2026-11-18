@@ -14,9 +14,10 @@ import { PasswordInput } from "@/components/ui/password-input"
 import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/hooks/useAuth"
 import useSetting from "@/hooks/useSetting"
+import { useSubmitLock } from "@/hooks/useSubmitLock"
+import i18n from "@/lib/i18n"
 import { zodResolver } from "@hookform/resolvers/zod"
-import i18next from "i18next"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
@@ -24,16 +25,18 @@ import { z } from "zod"
 
 const formSchema = z.object({
     username: z.string().min(2, {
-        message: i18next.t("Results.UsernameMin", { number: 2 }),
+        error: () => i18n.t("Results.UsernameMin", { number: 2 }),
     }),
     password: z.string().min(1, {
-        message: i18next.t("Results.PasswordRequired"),
+        error: () => i18n.t("Results.PasswordRequired"),
     }),
 })
 
 function Login() {
     const { login, loginOauth2 } = useAuth()
     const { data: settingData } = useSetting()
+    const [loginError, setLoginError] = useState<string | null>(null)
+    const { submitting, runSubmit } = useSubmitLock()
 
     useEffect(() => {
         const oauth2 = new URLSearchParams(window.location.search).get("oauth2")
@@ -50,9 +53,13 @@ function Login() {
         },
     })
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        login(values.username, values.password)
-    }
+    const onSubmit = runSubmit(async (values: z.infer<typeof formSchema>) => {
+        setLoginError(null)
+        const err = await login(values.username, values.password)
+        if (typeof err === "string" && err) {
+            setLoginError(err)
+        }
+    })
 
     async function loginWith(provider: string) {
         try {
@@ -85,7 +92,15 @@ function Login() {
                             <FormItem>
                                 <FormLabel>{t("Username")}</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="admin" autoComplete="username" {...field} />
+                                    <Input
+                                        placeholder="admin"
+                                        autoComplete="username"
+                                        {...field}
+                                        onChange={(e) => {
+                                            setLoginError(null)
+                                            field.onChange(e)
+                                        }}
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -102,13 +117,25 @@ function Login() {
                                         placeholder="admin"
                                         autoComplete="current-password"
                                         {...field}
+                                        onChange={(e) => {
+                                            setLoginError(null)
+                                            field.onChange(e)
+                                        }}
                                     />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
-                    <Button type="submit" className="w-full">
+                    {loginError && (
+                        <p
+                            role="alert"
+                            className="rounded-lg border border-kumo-danger/40 bg-kumo-danger/10 px-3 py-2 text-sm font-medium text-destructive break-words"
+                        >
+                            {loginError}
+                        </p>
+                    )}
+                    <Button type="submit" className="w-full" loading={submitting} disabled={submitting}>
                         {t("Login")}
                     </Button>
                 </form>
