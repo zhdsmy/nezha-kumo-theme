@@ -294,17 +294,21 @@ function ShellLayout({
         )
         const viewport = active?.closest<HTMLElement>('[data-sidebar="viewport"]')
         if (!active || !viewport) return
-        const vpRect = viewport.getBoundingClientRect()
-        if (vpRect.height <= 0) return
-        const stickyBottom =
-            viewport.querySelector<HTMLElement>(".nk-context")?.getBoundingClientRect().bottom ??
-            vpRect.top
-        const itemRect = active.getBoundingClientRect()
-        if (itemRect.top < stickyBottom) {
-            viewport.scrollTop -= stickyBottom - itemRect.top + 8
-        } else if (itemRect.bottom > vpRect.bottom) {
-            viewport.scrollTop += itemRect.bottom - vpRect.bottom + 8
-        }
+        const observer = new ResizeObserver(() => {
+            const vpRect = viewport.getBoundingClientRect()
+            if (vpRect.height <= 0) return
+            const stickyBottom =
+                viewport.querySelector<HTMLElement>(".nk-context")?.getBoundingClientRect()
+                    .bottom ?? vpRect.top
+            const itemRect = active.getBoundingClientRect()
+            if (itemRect.top < stickyBottom) {
+                viewport.scrollTop -= stickyBottom - itemRect.top + 8
+            } else if (itemRect.bottom > vpRect.bottom) {
+                viewport.scrollTop += itemRect.bottom - vpRect.bottom + 8
+            }
+        })
+        observer.observe(viewport)
+        return () => observer.disconnect()
     }, [activeId, navItemCount, Boolean(context), isMobile, openMobile])
 
     return (
