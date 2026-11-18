@@ -97,3 +97,24 @@ test("zh-CN interface localizes screen-reader labels, tooltips, placeholders, an
     })
     expect(leaked).toEqual([])
 })
+
+test.describe("Traditional Chinese preferences", () => {
+    test.use({ locale: "zh-MO" })
+
+    test("uses Hong Kong Chinese for a Macau browser and keeps a saved Taiwan choice", async ({
+        page,
+    }) => {
+        await mockNezha(page)
+        await page.route("**/api/v1/setting", (route) =>
+            route.fulfill({ json: { success: true, data: { config: { site_name: "Demo" } } } }),
+        )
+        await page.goto("/")
+        await expect(page.locator("[data-server]").first()).toBeVisible()
+        await expect(page.locator("html")).toHaveAttribute("lang", "zh-HK")
+        await page.getByRole("button", { name: "語言", exact: true }).click()
+        await page.getByRole("menuitemradio", { name: "繁體中文（台灣）" }).click()
+        await page.reload()
+        await expect(page.locator("html")).toHaveAttribute("lang", "zh-TW")
+        await expect(page.getByText("線上節點", { exact: true })).toBeVisible()
+    })
+})

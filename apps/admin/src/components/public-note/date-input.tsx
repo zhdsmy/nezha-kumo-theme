@@ -1,5 +1,6 @@
+import { resolveInterfaceLanguage } from "@/lib/languages"
 import { Button, DatePicker, Input, Popover, Switch } from "@cloudflare/kumo"
-import { enUS, ja, zhCN, zhTW } from "date-fns/locale"
+import { enUS, ja, zhCN, zhHK, zhTW } from "date-fns/locale"
 import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -61,13 +62,9 @@ export function DateInput({
     }
     const period = parseCycle(cycle)
     const estimated = start && period ? addCycle(start, period) : undefined
-    const locale = i18n.language.startsWith("zh-CN")
-        ? zhCN
-        : i18n.language.startsWith("zh")
-          ? zhTW
-          : i18n.language.startsWith("ja")
-            ? ja
-            : enUS
+    const locale = { en: enUS, ja, "zh-CN": zhCN, "zh-HK": zhHK, "zh-TW": zhTW }[
+        resolveInterfaceLanguage(i18n.resolvedLanguage)
+    ]
     const display = noExpiry
         ? t("PublicNote.NoExpiry")
         : selected

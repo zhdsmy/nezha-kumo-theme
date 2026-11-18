@@ -1,7 +1,7 @@
 import i18n from "@/lib/i18n"
 import { expect, test } from "vitest"
 
-test.each(["en", "zh-CN", "zh-TW", "ja"])(
+test.each(["en", "zh-CN", "zh-HK", "zh-TW", "ja"])(
     "note form labels and errors resolve in %s",
     (language) => {
         for (const key of [
@@ -27,7 +27,7 @@ test.each(["en", "zh-CN", "zh-TW", "ja"])(
     },
 )
 
-test("all 4 locales share the exact same leaf key set", () => {
+test("all 5 locales share the exact same leaf key set", () => {
     const flatten = (obj: Record<string, unknown>, prefix = ""): string[] =>
         Object.entries(obj)
             .flatMap(([k, v]) =>
@@ -37,7 +37,7 @@ test("all 4 locales share the exact same leaf key set", () => {
             )
             .sort()
     const base = flatten(i18n.getResourceBundle("en", "translation") as Record<string, unknown>)
-    for (const lang of ["zh-CN", "zh-TW", "ja"]) {
+    for (const lang of ["zh-CN", "zh-HK", "zh-TW", "ja"]) {
         const current = flatten(
             i18n.getResourceBundle(lang, "translation") as Record<string, unknown>,
         )

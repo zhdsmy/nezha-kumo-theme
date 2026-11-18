@@ -10,8 +10,8 @@ afterEach(async () => {
 })
 
 describe("U6: document.documentElement.lang synchronization and 44px mobile icon touch targets", () => {
-    test("switching i18n language updates document.documentElement.lang across all 4 supported locales", async () => {
-        for (const lng of ["zh-CN", "zh-TW", "ja", "en"] as const) {
+    test("switching i18n language updates document.documentElement.lang across all 5 supported locales", async () => {
+        for (const lng of ["zh-CN", "zh-HK", "zh-TW", "ja", "en"] as const) {
             await i18n.changeLanguage(lng)
             expect(document.documentElement.lang).toBe(lng)
         }

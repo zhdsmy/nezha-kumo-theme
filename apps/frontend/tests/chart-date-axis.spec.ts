@@ -8,7 +8,7 @@ test("1d load and latency x-axes distinguish dates across midnight without overl
     await mockNezha(page)
 
     const widths = [375, 867, 952, 1440]
-    const locales = ["en", "zh-CN", "zh-TW", "ja"] as const
+    const locales = ["en", "zh-CN", "zh-HK", "zh-TW", "ja"] as const
 
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto("/server/6#load")

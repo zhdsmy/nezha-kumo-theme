@@ -108,9 +108,9 @@ describe("chart y-axis ticks", () => {
 })
 
 describe("chart x-axis time ticks", () => {
-    const locales = ["en", "zh-CN", "zh-TW", "ja"] as const
+    const locales = ["en", "zh-CN", "zh-HK", "zh-TW", "ja"] as const
 
-    it("keeps < 24h clock-only and >= 168h date-only across all 4 locales", () => {
+    it("keeps < 24h clock-only and >= 168h date-only across all 5 locales", () => {
         const ticks = [
             new Date(2026, 10, 16, 17, 30).getTime(),
             new Date(2026, 10, 17, 1, 30).getTime(),

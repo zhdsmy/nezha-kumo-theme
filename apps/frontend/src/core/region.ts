@@ -43,6 +43,7 @@ export function regionName(code: string, locale: string) {
 /** Display names that override Intl.DisplayNames for some region codes. */
 const REGION_NAME_OVERRIDES: Record<string, string> = {
     "zh-CN": "中国台湾",
+    "zh-HK": "中國台灣",
     "zh-TW": "中國台灣",
     ja: "中国台湾",
     en: "Taiwan, China",

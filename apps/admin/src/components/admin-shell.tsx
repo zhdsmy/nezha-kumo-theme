@@ -21,7 +21,6 @@ import {
     FileKey,
     Folder,
     Globe,
-    Languages,
     Lock,
     Monitor,
     Network,
@@ -282,7 +281,7 @@ export function AdminActions() {
                         title={`${t("Language")}: ${interfaceLanguages[language]}`}
                         aria-label={t("Language")}
                     >
-                        <Languages />
+                        <Globe />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="max-h-[70dvh] overflow-y-auto">

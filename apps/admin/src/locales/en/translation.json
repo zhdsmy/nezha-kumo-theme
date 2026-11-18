@@ -529,8 +529,7 @@
         "LocalService": "192.168.1.1:80 (with port)",
         "GroupName": "Group Name",
         "NotifierName": "My Notifier",
-        "ServiceName": "My Service Monitor",
-        "SelectType": "Select type"
+        "ServiceName": "My Service Monitor"
     },
     "TerminalKeys": {
         "Escape": "Escape",

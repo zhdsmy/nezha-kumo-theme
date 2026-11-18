@@ -52,6 +52,21 @@ test("notification en_US displays English and saves en-US without switching the 
     expect(i18n.resolvedLanguage).toBe("en")
 })
 
+test("Hong Kong interface keeps the backend notification language independent", async () => {
+    h.data.config.language = "zh_TW"
+    await i18n.changeLanguage("zh-HK")
+    await showSettings()
+    const language = screen.getByRole("combobox", { name: i18n.t("Language") })
+    expect(language.textContent).toContain("台灣")
+    await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: i18n.t("Confirm") }))
+    })
+    await waitFor(() =>
+        expect(h.update).toHaveBeenCalledWith(expect.objectContaining({ language: "zh-TW" })),
+    )
+    expect(i18n.resolvedLanguage).toBe("zh-HK")
+})
+
 test.each([
     ["ja_JP", "日本語"],
     ["ru_RU", "Русский"],
@@ -73,6 +88,8 @@ test.each([
 test.each([
     ["ja-JP", "日本語"],
     ["ru-RU", "English"],
+    ["zh-HK", "繁體中文（香港）"],
+    ["zh-TW", "繁體中文（台灣）"],
 ])("interface menu marks the resolved language for %s", async (saved, label) => {
     await i18n.changeLanguage(saved)
     const { AdminActions } = await import("@/components/admin-shell")
@@ -87,5 +104,5 @@ test.each([
     fireEvent.keyDown(trigger, { key: "Enter" })
     const current = await screen.findByRole("menuitemradio", { name: label })
     expect(current.getAttribute("aria-checked")).toBe("true")
-    expect(screen.getAllByRole("menuitemradio")).toHaveLength(4)
+    expect(screen.getAllByRole("menuitemradio")).toHaveLength(5)
 })

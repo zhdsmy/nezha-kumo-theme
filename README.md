@@ -134,7 +134,7 @@ All keys are optional and defined in [`apps/frontend/src/core/settings.ts`](apps
 | Key                 | Type                                           | Default    | Description                                                                                                            |
 | ------------------- | ---------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------- |
 | `defaultAppearance` | `"system" \| "light" \| "dark"`                | `"system"` | Initial color scheme before a visitor chooses one (`nkt:appearance`).                                                  |
-| `defaultLanguage`   | `"auto" \| "en" \| "zh-CN" \| "zh-TW" \| "ja"` | `"auto"`   | Initial UI language (`"auto"` follows browser / panel language).                                                       |
+| `defaultLanguage`   | `"auto" \| "en" \| "zh-CN" \| "zh-HK" \| "zh-TW" \| "ja"` | `"auto"`   | Initial UI language (`"auto"` follows browser / panel language).                                                       |
 | `siteTitle`         | `string`                                       | `""`       | Custom brand title in the sidebar and `<title>`. Falls back to the panel's `site_name` (or `"Nezha"`) when empty.      |
 | `showOverview`      | `boolean`                                      | `true`     | Show the summary metric tiles at the top of the home page.                                                             |
 | `showCost`          | `boolean`                                      | `true`     | Show the aggregated recurring fee menu on the home page and enable currency conversion.                                |

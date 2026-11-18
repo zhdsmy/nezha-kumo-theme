@@ -64,7 +64,8 @@ export function loadExchangeRates() {
 
 const LOCALE_CURRENCY: Record<string, string> = {
     "zh-CN": "CNY",
-    "zh-TW": "HKD",
+    "zh-HK": "HKD",
+    "zh-TW": "TWD",
     ja: "JPY",
 }
 

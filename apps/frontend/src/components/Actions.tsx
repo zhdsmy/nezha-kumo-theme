@@ -1,7 +1,7 @@
 import { setAppearance, useAppearance } from "@/app/prefs"
 import { adapter, useStore } from "@/app/store"
 import type { Appearance } from "@/core/settings"
-import { LOCALES, type Locale, setLocale } from "@/i18n"
+import { setLocale } from "@/i18n"
 import { Button, DropdownMenu, LinkButton, Loader, Tooltip } from "@cloudflare/kumo"
 import { useSidebar } from "@cloudflare/kumo/components/sidebar"
 import { LinkProvider } from "@cloudflare/kumo/utils"
@@ -24,6 +24,7 @@ import {
 import { createPortal } from "react-dom"
 import { useTranslation } from "react-i18next"
 
+import { type Locale, interfaceLanguages, matchLocale } from "../../../../packages/shared/languages"
 import type { LoginDialogProps } from "./LoginDialog"
 import type { SearchPaletteProps } from "./SearchPalette"
 
@@ -110,6 +111,7 @@ export function SidebarSearch() {
 
 export function Actions() {
     const { t, i18n } = useTranslation()
+    const language = matchLocale(i18n.resolvedLanguage) ?? "en"
     const appearance = useAppearance()
     const search = useSyncExternalStore(subscribeSearch, () => searchOpenState)
     const loadingRef = useRef<HTMLDivElement>(null)
@@ -221,28 +223,22 @@ export function Actions() {
                         title={t("prefs.language")}
                     >
                         <GlobeIcon size={16} />
-                        <span className="action-label">
-                            {LOCALES.find((l) => l.code === i18n.language)?.label}
-                        </span>
+                        <span className="action-label">{interfaceLanguages[language]}</span>
                     </Button>
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Content align="end" className="min-w-40">
                     <DropdownMenu.RadioGroup
-                        value={
-                            LOCALES.find((l) => l.code === i18n.language)?.code ??
-                            LOCALES.find((l) => i18n.language.startsWith(l.code))?.code ??
-                            "en"
-                        }
+                        value={language}
                         onValueChange={(v: string) => void setLocale(v as Locale).catch(() => {})}
                     >
-                        {LOCALES.map((l) => (
+                        {Object.entries(interfaceLanguages).map(([code, label]) => (
                             <DropdownMenu.RadioItem
-                                key={l.code}
-                                value={l.code}
-                                lang={l.code}
+                                key={code}
+                                value={code}
+                                lang={code}
                                 closeOnClick
                             >
-                                {l.label}
+                                {label}
                                 <DropdownMenu.RadioItemIndicator />
                             </DropdownMenu.RadioItem>
                         ))}

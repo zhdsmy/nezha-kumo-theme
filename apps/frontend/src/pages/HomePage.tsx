@@ -342,7 +342,11 @@ export function HomePage() {
     )
     const costValue =
         cost.amount !== null
-            ? formatMoney(cost.amount * (money.period === "year" ? 12 : 1), money.currency)
+            ? formatMoney(
+                  cost.amount * (money.period === "year" ? 12 : 1),
+                  money.currency,
+                  i18n.language,
+              )
             : "—"
     const midnight = new Date().setHours(0, 0, 0, 0)
     const trafficPoints = useMemo(

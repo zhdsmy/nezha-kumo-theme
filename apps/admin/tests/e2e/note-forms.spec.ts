@@ -4,6 +4,7 @@ import { mkdirSync, writeFileSync } from "node:fs"
 import en from "../../src/locales/en/translation.json" with { type: "json" }
 import ja from "../../src/locales/ja/translation.json" with { type: "json" }
 import zhCN from "../../src/locales/zh-CN/translation.json" with { type: "json" }
+import zhHK from "../../src/locales/zh-HK/translation.json" with { type: "json" }
 import zhTW from "../../src/locales/zh-TW/translation.json" with { type: "json" }
 
 const artifact = process.env.NKT_NOTE_ARTIFACTS
@@ -19,7 +20,7 @@ const originalHeights = {
 
 async function expectChoicesToFit(page: Page) {
     for (const group of await page.locator(".nkt-note-choices").all()) {
-        expect(await group.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true)
+        expect(await group.evaluate((el) => el.scrollWidth <= el.clientWidth), await group.innerText()).toBe(true)
         const bounds = await group.boundingBox()
         const options = await group.locator('[data-kumo-part="item-label"]').evaluateAll((els) =>
             els.map((el) => {
@@ -54,7 +55,7 @@ async function expectChoicesToFit(page: Page) {
 }
 
 for (const [engine, driver] of Object.entries({ webkit, chromium }))
-    for (const [language, messages] of Object.entries({ en, ja, "zh-CN": zhCN, "zh-TW": zhTW }))
+    for (const [language, messages] of Object.entries({ en, ja, "zh-CN": zhCN, "zh-HK": zhHK, "zh-TW": zhTW }))
         for (const width of [375, 952, 1440])
             test(`note layout ${engine} ${language} ${width}: translated choices and aligned billing`, async ({
                 baseURL,

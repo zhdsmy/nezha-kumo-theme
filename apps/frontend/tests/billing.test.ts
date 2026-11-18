@@ -11,6 +11,7 @@ import type { NodeInfo } from "../src/core/model"
 import en from "../src/i18n/locales/en.json"
 import ja from "../src/i18n/locales/ja.json"
 import zhCN from "../src/i18n/locales/zh-CN.json"
+import zhHK from "../src/i18n/locales/zh-HK.json"
 import zhTW from "../src/i18n/locales/zh-TW.json"
 
 const privateBilling = vi.hoisted(() => ({
@@ -21,7 +22,7 @@ const privateBilling = vi.hoisted(() => ({
     > | null,
     exchangeRates: {
         date: "2026-11-04",
-        rates: { USD: 1, CNY: 7, HKD: 7.8, JPY: 150, EUR: 0.9, AUD: 1.5 },
+        rates: { USD: 1, CNY: 7, HKD: 7.8, TWD: 30, JPY: 150, EUR: 0.9, AUD: 1.5 },
     } as {
         date: string
         rates: Record<string, number>
@@ -40,6 +41,7 @@ const i18n = createInstance()
 const resources = {
     en: { translation: en },
     "zh-CN": { translation: zhCN },
+    "zh-HK": { translation: zhHK },
     "zh-TW": { translation: zhTW },
     ja: { translation: ja },
 }
@@ -77,7 +79,7 @@ function render(note: object, overrides?: Partial<NodeInfo>) {
 }
 
 describe("Nezha billing display", () => {
-    it.each(["en", "zh-CN", "zh-TW", "ja"] as const)(
+    it.each(["en", "zh-CN", "zh-HK", "zh-TW", "ja"] as const)(
         "shows permanent, free, period quotas and pay-as-you-go in %s",
         async (locale) => {
             await i18n.changeLanguage(locale)
@@ -116,7 +118,8 @@ describe("Nezha billing display", () => {
     it.each([
         ["en", "$0.83", "$0.17"],
         ["zh-CN", "¥5.83", "¥1.17"],
-        ["zh-TW", "HK$6.50", "HK$1.30"],
+        ["zh-HK", "HK$6.50", "HK$1.30"],
+        ["zh-TW", "NT$25.00", "NT$5.00"],
         ["ja", "JP¥125", "JP¥25"],
     ] as const)(
         "binds currency to %s and restates recurring bills monthly by default",
@@ -151,7 +154,7 @@ describe("Nezha billing display", () => {
         await i18n.changeLanguage("zh-CN")
         privateBilling.exchangeRates = {
             date: "2026-11-04",
-            rates: { USD: 1, CNY: 7, HKD: 7.8, JPY: 150, EUR: 0.9, AUD: 1.5 },
+            rates: { USD: 1, CNY: 7, HKD: 7.8, TWD: 30, JPY: 150, EUR: 0.9, AUD: 1.5 },
         }
         const saved: Record<string, string> = { "nkt:currency": "EUR" }
         vi.stubGlobal("localStorage", {

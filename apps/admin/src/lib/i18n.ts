@@ -5,6 +5,7 @@ import { z } from "zod"
 import enTranslation from "../locales/en/translation.json"
 import jaTranslation from "../locales/ja/translation.json"
 import zhCNTranslation from "../locales/zh-CN/translation.json"
+import zhHKTranslation from "../locales/zh-HK/translation.json"
 import zhTWTranslation from "../locales/zh-TW/translation.json"
 import { resolveInterfaceLanguage } from "./languages"
 
@@ -12,6 +13,7 @@ const resources = {
     en: { translation: enTranslation },
     ja: { translation: jaTranslation },
     "zh-CN": { translation: zhCNTranslation },
+    "zh-HK": { translation: zhHKTranslation },
     "zh-TW": { translation: zhTWTranslation },
 }
 
@@ -59,14 +61,13 @@ function fieldLabelForPath(path: PropertyKey[] | undefined): string {
 
 function applyZodLocale(lng: string) {
     const resolved = resolveInterfaceLanguage(lng)
-    const baseLocale =
-        resolved === "zh-CN"
-            ? z.locales.zhCN()
-            : resolved === "zh-TW"
-              ? z.locales.zhTW()
-              : resolved === "ja"
-                ? z.locales.ja()
-                : z.locales.en()
+    const baseLocale = {
+        en: z.locales.en,
+        ja: z.locales.ja,
+        "zh-CN": z.locales.zhCN,
+        "zh-HK": z.locales.zhTW,
+        "zh-TW": z.locales.zhTW,
+    }[resolved]()
 
     z.config({
         ...baseLocale,

@@ -1,8 +1,8 @@
 {
     "_source": "zool-theme/src/i18n/locales/zh-TW.json (MIT, luoleiorg)",
     "app": {
-        "loadError": "暫時無法連線監控服務。",
-        "loadErrorHint": "後端沒有回應，請檢查網路後重試。",
+        "loadError": "暫時無法連上監控服務。",
+        "loadErrorHint": "伺服器沒有回應，請檢查網路連線後再試一次。",
         "retry": "重試"
     },
     "status": {
@@ -14,7 +14,7 @@
         "expiringInDays_other": "{{count}} 天後到期",
         "expiringToday": "今天到期",
         "quotaExceeded": "流量超額",
-        "stale": "資料停更",
+        "stale": "資料未更新",
         "live": "即時",
         "connecting": "連線中",
         "reconnecting": "重新連線中",
@@ -25,18 +25,18 @@
     "overview": {
         "nodes": "線上節點",
         "bandwidth": "即時頻寬",
-        "cost": "月度費用",
-        "costYear": "年度費用",
+        "cost": "每月費用",
+        "costYear": "每年費用",
         "costNodes_other": "{{count}} 台線上付費節點",
         "costLoading": "正在取得匯率…",
-        "costUnavailable": "匯率無法使用，暫無法合計"
+        "costUnavailable": "無法取得匯率，暫時無法計算總額"
     },
     "toolbar": {
         "all": "全部",
-        "groups": "分組",
+        "groups": "群組",
         "search": "搜尋",
         "clear": "清除",
-        "searchPlaceholder": "搜尋節點、地區、分組…",
+        "searchPlaceholder": "搜尋節點、地區、群組…",
         "searchHint": "按 Enter 開啟",
         "noResults": "沒有符合的節點",
         "sort": "排序",
@@ -44,10 +44,10 @@
         "empty": "沒有符合篩選條件的節點。",
         "ascending": "升冪",
         "descending": "降冪",
-        "ungrouped": "未分組",
+        "ungrouped": "未群組",
         "view": "檢視",
         "cards": "卡片",
-        "compact": "緊湊"
+        "compact": "精簡列表"
     },
     "sort": {
         "default": "預設",
@@ -56,7 +56,7 @@
         "memory": "記憶體",
         "network": "頻寬",
         "traffic": "流量",
-        "uptime": "線上時長",
+        "uptime": "運作時間",
         "expiry": "到期時間"
     },
     "metric": {
@@ -70,18 +70,18 @@
         "upload": "上傳",
         "download": "下載",
         "traffic": "流量",
-        "uptime": "線上",
+        "uptime": "運作時間",
         "process": "行程",
         "connections": "連線",
         "tcp": "TCP",
         "udp": "UDP",
         "quota": "流量配額",
         "expiry": "到期",
-        "price": "套餐費用",
+        "price": "方案費用",
         "free": "免費",
         "autoRenew": "自動續約",
         "unlimited": "不限",
-        "cores_other": "{{count}} 核",
+        "cores_other": "{{count}} 核心",
         "payAsYouGo": "隨用隨付",
         "unknown": "未知",
         "actualCost": "實際成本"
@@ -113,8 +113,8 @@
         "virtualization": "虛擬化",
         "gpu": "顯示卡",
         "region": "地區",
-        "group": "分組",
-        "peak": "峰值速度（24 小時）",
+        "group": "群組",
+        "peak": "最高傳輸速率（24 小時）",
         "pingLines_other": "{{count}} 條線路",
         "recentHours_other": "最近 {{count}} 小時",
         "recentDays_other": "最近 {{count}} 天",
@@ -122,19 +122,19 @@
         "reportedHours_other": "{{rate}}% · {{seen}}/{{count}} 小時",
         "historyUp": "正常回報",
         "historyDown": "未回報",
-        "historyEmpty": "未觀察",
+        "historyEmpty": "無觀測資料",
         "notFound": "節點不存在或已隱藏。",
         "rangeLive": "即時",
         "rangeHours": "{{count}} 小時",
         "rangeDays": "{{count}} 天",
         "noHistory": "這個時段還沒有資料。",
-        "liveOnly": "此面板不保存伺服器端歷史，圖表會在頁面開啟期間持續記錄。",
+        "liveOnly": "伺服器未保留歷史資料。圖表只會記錄開啟此頁期間的資料。",
         "noPing": "這個節點還沒有設定延遲監測。",
         "avg": "平均",
         "min": "最低",
         "max": "最高",
         "showAllLines": "顯示全部",
-        "shave": "削峰",
+        "shave": "隱藏尖峰",
         "shaveHint": "隱藏偶發的異常高點",
         "refresh": "重新整理",
         "bandwidth": "頻寬",
@@ -144,8 +144,8 @@
         "trafficBilling": "流量計費方式",
         "traffic": {
             "sum": "雙向",
-            "out": "僅出站",
-            "max": "取較大"
+            "out": "僅計傳出",
+            "max": "取傳入與傳出較大值"
         }
     },
     "auth": {
@@ -159,7 +159,7 @@
         "submitting": "正在登入…",
         "oauth": "使用 {{provider}} 登入",
         "invalid": "使用者名稱或密碼不正確。",
-        "network": "無法連線伺服器，請重試。",
+        "network": "無法連上伺服器，請再試一次。",
         "wafHint": "多次登入失敗可能會暫時封鎖你的 IP。",
         "close": "關閉"
     },
@@ -184,13 +184,13 @@
         "status": "狀態",
         "todayTraffic": "今日流量",
         "sinceMidnight": "自本地午夜起",
-        "dailyUnavailable": "暫無今日計數基準",
+        "dailyUnavailable": "尚無今日流量的起始值",
         "averageCpu": "平均 CPU",
         "onlineOnly": "線上伺服器",
         "bootTime": "啟動時間",
         "agentVersion": "Agent 版本",
         "quotaUsed": "配額已用",
-        "historyHint": "每格表示該小時是否有回報。未觀察和未來時段留空。",
+        "historyHint": "每格代表一小時的回報狀態。沒有觀測資料或尚未到達的時段會留白。",
         "notFound": "頁面不存在",
         "dailyIncluded": "自今日零時 · 含 {{count}}/{{total}} 個節點",
         "footerNote": "Nezha · Kumo 主題",
