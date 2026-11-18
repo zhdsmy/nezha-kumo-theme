@@ -22,7 +22,6 @@
         "UnExpectedError": "予期しないエラーが発生しました。詳細はコンソールを確認してください。",
         "ForceUpdate": "強制更新:",
         "NoRowsAreSelected": "行が選択されていません",
-        "ThisOperationIsUnrecoverable": "この操作は元に戻せません！",
         "TaskTriggeredSuccessfully": "タスクを実行しました",
         "TheServerDoesNotOnline": "サーバーが存在しないか、まだ接続されていません",
         "InstallHostRequired": "設定に Agent 接続先アドレスが入力されていません。",
