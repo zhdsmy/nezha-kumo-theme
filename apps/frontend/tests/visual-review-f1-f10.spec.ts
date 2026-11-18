@@ -48,13 +48,13 @@ test.describe("Visual review F1–F10 fixes", () => {
     }) => {
         await page.setViewportSize({ width: 320, height: 667 })
         await mockNezha(page)
-        const servers = structuredClone(fixture.servers).map((s, i) => ({
+        const servers = structuredClone(fixture.servers).map((s) => ({
             ...s,
             last_active: new Date().toISOString(),
             public_note: JSON.stringify({
                 billingDataMod: { amount: "USD 12.00", cycle: "Year" },
                 planDataMod: {
-                    extra: i === 0 ? `tag_${"a".repeat(114)}` : "Public server information",
+                    extra: `tag_${"a".repeat(114)}`,
                 },
             }),
         }))
@@ -311,5 +311,62 @@ test.describe("Visual review F1–F10 fixes", () => {
         await expect(page.getByText(/99th percentile|spikes/i)).toBeVisible()
         expect(await shaveSwitch.getAttribute("aria-checked")).toBe(beforeChecked)
         await ctx.close()
+    })
+
+    test("F6: narrow and coarse viewports provide >= 44x44px hit targets on topbar, page tabs, time range, info button, and legend", async ({
+        page,
+    }) => {
+        await page.setViewportSize({ width: 375, height: 667 })
+        await mockNezha(page)
+
+        const measureHit = async (locator: import("@playwright/test").Locator) => {
+            await locator.scrollIntoViewIfNeeded()
+            return locator.evaluate((e) => {
+                const b = e.getBoundingClientRect()
+                const cx = Math.round(b.x + b.width / 2)
+                const cy = Math.round(b.y + b.height / 2)
+                const hit = (x: number, y: number) => {
+                    const t = document.elementFromPoint(x, y)
+                    return Boolean(t && (e.contains(t) || e === t))
+                }
+                let l = cx
+                let r = cx
+                let u = cy
+                let d = cy
+                while (l > 0 && hit(l - 1, cy)) l--
+                while (r < window.innerWidth - 1 && hit(r + 1, cy)) r++
+                while (u > 0 && hit(cx, u - 1)) u--
+                while (d < window.innerHeight - 1 && hit(cx, d + 1)) d++
+                return { width: r - l + 1, height: d - u + 1 }
+            })
+        }
+
+        await page.goto("/")
+        await expect(page.locator("[data-server]").first()).toBeVisible()
+
+        for (const loc of [
+            page.locator(".nk-drawer-trigger"),
+            page.getByRole("button", { name: "Appearance" }),
+            page.getByRole("button", { name: "Language" }),
+            page.getByRole("button", { name: "Sign in" }),
+        ]) {
+            const hit = await measureHit(loc)
+            expect(hit.width).toBeGreaterThanOrEqual(44)
+            expect(hit.height).toBeGreaterThanOrEqual(44)
+        }
+
+        await page.goto("/server/6#latency")
+        await page.getByRole("tab", { name: "1 h" }).click()
+        for (const loc of [
+            page.getByRole("tab", { name: "Latency", exact: true }),
+            page.getByRole("tab", { name: "4 h", exact: true }),
+            page.locator(".chart-toolbar > button"),
+            page.getByRole("button", { name: "More information" }),
+            page.locator(".node-ping-row").first(),
+        ]) {
+            const hit = await measureHit(loc)
+            expect(hit.width).toBeGreaterThanOrEqual(44)
+            expect(hit.height).toBeGreaterThanOrEqual(44)
+        }
     })
 })

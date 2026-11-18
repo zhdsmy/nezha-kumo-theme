@@ -680,13 +680,61 @@
     min-height: 32px;
 }
 @media (max-width: 767px) {
+    .nk-topbar {
+        gap: 4px;
+        padding-inline: 12px;
+    }
+    .nk-topbar-actions {
+        gap: 4px;
+    }
+}
+@media (max-width: 767px), (pointer: coarse) {
+    .nk-drawer-trigger,
+    .nk-topbar-actions > button,
+    .nk-topbar-actions > a {
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+    }
+    .nk-drawer-trigger {
+        width: 44px;
+    }
+    .chart-toolbar > button {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+    }
     .chart-toolbar [data-kumo-component="Tabs"] > div:first-child,
     .chart-toolbar .kumo-tabs-list {
-        height: 36px;
+        height: 48px;
+        padding-block: 2px;
     }
     .chart-toolbar [role="tab"] {
-        min-width: 32px;
+        min-width: 44px;
+        min-height: 44px;
         justify-content: center;
+    }
+    .shave-action {
+        gap: 6px;
+        margin-block: -10px;
+    }
+    .info-trigger {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+    }
+    .status-trigger::after {
+        width: max(100%, 44px);
+        height: max(100%, 44px);
+    }
+    .node-ping-list {
+        gap: 4px;
+    }
+    .node-ping-list > button {
+        min-width: 44px;
+        min-height: 44px;
     }
 }
 .chart-grid {
@@ -784,6 +832,15 @@
     min-width: 32px;
     justify-content: center;
     padding-block: 0;
+}
+@media (max-width: 767px), (pointer: coarse) {
+    .nk-page-tabs .kumo-tabs-list {
+        height: 50px;
+    }
+    .nk-page-tabs [role="tab"] {
+        min-width: 44px;
+        min-height: 44px;
+    }
 }
 .node-live-strip {
     display: grid;
