@@ -2,7 +2,15 @@
 import { useDailyCounters } from "@/app/history"
 import { type MoneyPeriod, setMoneyPeriod, useMoney } from "@/app/money"
 import { Link, RESET_EVENT, navigate, usePathname } from "@/app/router"
-import { adapter, getSpark, getTraffic, seedLive, useStore, useVisibleNodes } from "@/app/store"
+import {
+    adapter,
+    getSpark,
+    getTraffic,
+    seedLive,
+    useConnectionState,
+    useStore,
+    useVisibleNodes,
+} from "@/app/store"
 import { RegionFlag } from "@/components/RegionFlag"
 import { useBilling } from "@/components/billing"
 import { Meter, NoData, PageFootnote, Spark, Status, Tile } from "@/components/ui"
@@ -18,6 +26,7 @@ import { type IssueReason, SORT_KEYS, type SortKey, nodeIssues, sortNodes } from
 import {
     duration,
     formatBytes,
+    formatClock,
     formatMoney,
     formatPercent,
     formatSpeed,
@@ -106,16 +115,23 @@ interface RowProps {
     snap?: Snapshot
     showBilling: boolean
     showRegions: boolean
+    stale?: boolean
 }
 
 /** Card view: everything the list knows about a node, with nothing left behind an expander. */
-const ServerCard = memo(function ServerCard({ node, snap, showBilling, showRegions }: RowProps) {
+const ServerCard = memo(function ServerCard({
+    node,
+    snap,
+    showBilling,
+    showRegions,
+    stale,
+}: RowProps) {
     const { t } = useTranslation()
     const memTotal = snap?.memTotal || node.memTotal
     const diskTotal = snap?.diskTotal || node.diskTotal
     const meta = [node.os, node.arch, ...node.groups].filter(Boolean).join(" · ")
     return (
-        <article className="server-card" data-server={node.id}>
+        <article className="server-card" data-server={node.id} data-stale={stale ? "" : undefined}>
             <header className="card-head">
                 <div className="min-w-0">
                     <Link className="card-name" href={adapter.nodePath(node.id)} title={node.name}>
@@ -161,10 +177,10 @@ const ServerCard = memo(function ServerCard({ node, snap, showBilling, showRegio
 })
 
 /** Compact view: one table row of the readings that matter at a glance. */
-const ServerRow = memo(function ServerRow({ node, snap, showRegions }: RowProps) {
+const ServerRow = memo(function ServerRow({ node, snap, showRegions, stale }: RowProps) {
     const { t } = useTranslation()
     return (
-        <Table.Row className="server-row" data-server={node.id}>
+        <Table.Row className="server-row" data-server={node.id} data-stale={stale ? "" : undefined}>
             <Table.Cell className="server-name">
                 <Link href={adapter.nodePath(node.id)} title={node.name}>
                     <span className="block truncate">
@@ -214,6 +230,11 @@ export function HomePage() {
     const all = useVisibleNodes()
     const snapshots = useStore((s) => s.snapshots)
     const fed = useStore((s) => s.fed)
+    const stale = useConnectionState() === "reconnecting"
+    const lastUpdatedAt = useMemo(
+        () => Object.values(snapshots).reduce((max, s) => (s.at > max ? s.at : max), 0),
+        [snapshots],
+    )
     const settings = useStore((s) => s.settings)
     const rates = useStore((s) => s.exchangeRates)
     const rateError = useStore((s) => s.exchangeRateError)
@@ -514,7 +535,13 @@ export function HomePage() {
                     <Tile
                         label={t("overview.bandwidth")}
                         value={fed ? formatSpeed(bandwidth) : "—"}
-                        sub={t("node.rangeLive")}
+                        sub={
+                            stale
+                                ? lastUpdatedAt
+                                    ? `${t("status.reconnecting")} · ${formatClock(lastUpdatedAt, false, i18n.language)}`
+                                    : t("status.reconnecting")
+                                : t("node.rangeLive")
+                        }
                     >
                         <Spark buckets={sparks.network} />
                     </Tile>
@@ -748,6 +775,7 @@ export function HomePage() {
                                 snap={snapshots[n.id]}
                                 showBilling={settings.showBilling}
                                 showRegions={settings.showRegions}
+                                stale={stale}
                             />
                         ))}
                     </div>
@@ -780,6 +808,7 @@ export function HomePage() {
                                         snap={snapshots[n.id]}
                                         showBilling={settings.showBilling}
                                         showRegions={settings.showRegions}
+                                        stale={stale}
                                     />
                                 ))}
                             </Table.Body>

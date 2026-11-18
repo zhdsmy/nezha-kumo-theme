@@ -26,6 +26,7 @@ import {
     nodeHref,
     setExchangeRates,
     start,
+    useConnectionState,
     useSiteTitle,
     useStore,
     useVisibleNodes,
@@ -167,10 +168,7 @@ export function App() {
     const settings = useStore((s) => s.settings)
     const groupOrder = useStore((s) => s.groupOrder)
     const groupIcons = useStore((s) => s.groupIcons)
-    const connection = useStore((s) => s.connection)
-    const everConnected = useStore((s) => s.everConnected)
-    const connectionState =
-        connection === "open" ? "live" : everConnected ? "reconnecting" : "connecting"
+    const connectionState = useConnectionState()
     const location = usePathname()
     const lastListHref = useLastListHref()
     const url = new URL(location, window.location.origin)
@@ -261,16 +259,7 @@ export function App() {
         })
         return () => cancelAnimationFrame(frame)
     }, [nodeId, peers.length])
-    const [disconnected, setDisconnected] = useState(false)
-    const isConnected = connection === "open"
-    useEffect(() => {
-        if (phase !== "ready" || isConnected) {
-            setDisconnected(false)
-            return
-        }
-        const timer = setTimeout(() => setDisconnected(true), 5_000)
-        return () => clearTimeout(timer)
-    }, [phase, isConnected])
+    const reconnecting = phase === "ready" && connectionState === "reconnecting"
     const kumoTranslations = useMemo(
         () => ({
             label: {
@@ -394,15 +383,35 @@ export function App() {
                           ]
                 }
                 topbar={
-                    <Link className="topbar-title" href="/" reset title={siteTitle || undefined}>
-                        {siteTitle}
-                    </Link>
+                    <div className="topbar-head">
+                        <Link
+                            className="topbar-title"
+                            href="/"
+                            reset
+                            title={siteTitle || undefined}
+                        >
+                            {siteTitle}
+                        </Link>
+                        {reconnecting && (
+                            <span
+                                className="topbar-reconnect"
+                                role="status"
+                                aria-label={t("status.reconnecting")}
+                                title={t("status.reconnecting")}
+                            >
+                                <i />
+                                <span className="topbar-reconnect-text">
+                                    {t("status.reconnecting")}
+                                </span>
+                            </span>
+                        )}
+                    </div>
                 }
                 actions={<Actions />}
                 footer={
                     <span
                         className="connection"
-                        data-open={connection === "open"}
+                        data-open={connectionState === "live"}
                         data-status={connectionState}
                     >
                         <i />
@@ -410,7 +419,7 @@ export function App() {
                     </span>
                 }
             >
-                {disconnected && (
+                {reconnecting && (
                     <div className="disconnect-banner-wrap" data-node={nodeId ? "" : undefined}>
                         <Banner
                             variant="alert"

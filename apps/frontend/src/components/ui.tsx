@@ -1,4 +1,4 @@
-import { useStore } from "@/app/store"
+import { useConnectionState, useStore } from "@/app/store"
 import { levelFor } from "@/core/fleet"
 import { formatPercent } from "@/core/format"
 import type { Bucket } from "@/core/live"
@@ -14,9 +14,10 @@ export const CHART_PALETTE = ["#4290F0", "#F5B647", "#E8649D", "#8D58EE", "#50C3
 export function Status({ snapshot }: { snapshot?: Snapshot }) {
     const { t } = useTranslation()
     const fed = useStore((s) => s.fed)
+    const stale = useConnectionState() === "reconnecting"
     const kind = !snapshot && !fed ? "connecting" : snapshot?.online ? "online" : "offline"
     return (
-        <span className="status" data-status={kind}>
+        <span className="status" data-status={kind} data-stale={stale ? "" : undefined}>
             <Badge
                 variant={kind === "online" ? "success" : kind === "offline" ? "error" : "warning"}
                 appearance="dot"
