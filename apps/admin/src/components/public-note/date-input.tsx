@@ -29,8 +29,12 @@ export function DateInput({
         if (next && button && dialog) {
             const anchor = button.getBoundingClientRect()
             const frame = dialog.getBoundingClientRect()
+            const footer = dialog.querySelector<HTMLElement>(".nkt-dialog-footer")
+            const bottomLimit = footer
+                ? Math.min(frame.bottom, footer.getBoundingClientRect().top)
+                : frame.bottom
             // Make room inside the scrollable dialog when neither side fits the calendar.
-            if (Math.max(anchor.top - frame.top, frame.bottom - anchor.bottom) < 440)
+            if (Math.max(anchor.top - frame.top, bottomLimit - anchor.bottom) < 440)
                 dialog.scrollTop += anchor.top - frame.top - 16
         }
         setOpen(next)
@@ -88,9 +92,12 @@ export function DateInput({
                     <Popover.Positioner align="start" sideOffset={8} collisionPadding={8}>
                         <Popover.Popup
                             finalFocus={trigger}
-                            className="w-auto max-h-[var(--available-height)] overflow-y-auto p-3"
+                            className="flex w-auto max-h-[var(--available-height)] flex-col overflow-hidden p-3"
                         >
-                            <div data-note-calendar>
+                            <div
+                                data-note-calendar
+                                className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+                            >
                                 <DatePicker
                                     navLayout="around"
                                     className="[--cell-size:36px] [--cell-width:36px]"
@@ -107,7 +114,7 @@ export function DateInput({
                                     }}
                                 />
                             </div>
-                            <div className="mt-3 flex items-end gap-2">
+                            <div className="mt-2 flex shrink-0 items-end gap-2 border-t border-border/60 pt-2">
                                 <Input
                                     type="time"
                                     label={t("PublicNote.Time")}

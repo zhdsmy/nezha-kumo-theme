@@ -670,6 +670,15 @@ body,
 [data-note-calendar] :is(button, select) {
     min-height: 36px;
 }
+@media (max-height: 480px) {
+    [data-note-calendar] > * {
+        --cell-size: 30px;
+        --cell-width: 32px;
+    }
+    [data-note-calendar] :is(button, select) {
+        min-height: 30px;
+    }
+}
 .nkt-note-editor :is(input, textarea, select) {
     font-size: 16px;
 }
