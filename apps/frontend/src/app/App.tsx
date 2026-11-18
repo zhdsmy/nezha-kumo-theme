@@ -118,7 +118,6 @@ function NodeLoadingShell({
     const { t } = useTranslation()
     return (
         <Page
-            maxWidth={1100}
             title={title}
             actions={actions}
             tabs={
@@ -430,6 +429,9 @@ export function App() {
                         </Page>
                     }
                 >
+                    {nodeId && phase !== "error" && (
+                        <style>{".nk-shell-body { --nk-page-max: 1100px; }"}</style>
+                    )}
                     {phase === "loading" ? (
                         nodeId ? (
                             <NodeLoadingShell

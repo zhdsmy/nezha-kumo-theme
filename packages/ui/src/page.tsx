@@ -10,14 +10,18 @@ export function Page({
     actions,
     tabs,
     aside,
-    maxWidth = 1200,
+    maxWidth,
     children,
 }: PageProps) {
     const asideLabel = useContext(AsideLabelContext)
     return (
         <div
             className={`nk-page${aside ? " nk-page-with-aside" : ""}`}
-            style={{ "--nk-page-max": `${maxWidth}px` } as CSSProperties}
+            style={
+                maxWidth === undefined
+                    ? undefined
+                    : ({ "--nk-page-max": `${maxWidth}px` } as CSSProperties)
+            }
         >
             <div className="nk-page-main">
                 <div className="nk-page-inner">
