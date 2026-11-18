@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
  * Generate release screenshots in docs/screenshots/ using mocked Nezha APIs.
+ * Set NKT_DOCS_LANG=zh-CN for Simplified Chinese. English is the default.
  * Ports used: 5381 (frontend Vite dev server), 5382 (admin Vite preview server).
  */
 import { execFileSync, spawn } from "node:child_process";
@@ -14,7 +15,15 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = resolve(__dirname, "..");
 const feDir = join(rootDir, "apps/frontend");
 const adminDir = join(rootDir, "apps/admin");
-const outDir = join(__dirname, "screenshots");
+const language = process.env.NKT_DOCS_LANG ?? "en";
+if (!["en", "zh-CN"].includes(language)) {
+  throw new Error("NKT_DOCS_LANG must be en or zh-CN");
+}
+const chinese = language === "zh-CN";
+const browserLocale = chinese
+  ? { locale: "zh-CN", timezoneId: "Asia/Shanghai" }
+  : { locale: "en-US", timezoneId: "UTC" };
+const outDir = join(__dirname, "screenshots", chinese ? "zh-CN" : "");
 const tmpDir = join(outDir, ".tmp-png");
 
 const FE_PORT = Number(process.env.NKT_DOCS_FE_PORT) || 5381;
@@ -345,7 +354,7 @@ async function setupAdminMock(page) {
           data: {
             config: {
               site_name: "Infrastructure",
-              language: "en",
+              language,
               install_host: "status.example.invalid:8008",
               tls: true,
               user_template: "user-dist",
@@ -414,7 +423,8 @@ async function captureFrontend(browser, feUrl) {
       viewport: { width: 1440, height: 900 },
       colorScheme: "light",
       path: "/server/29",
-      waitSelector: ".info-section",
+      // The peak speed appears after the daily metrics finish loading.
+      waitSelector: '[data-panel="network"] dd[title^="↑"]',
     },
   ];
 
@@ -424,22 +434,22 @@ async function captureFrontend(browser, feUrl) {
       viewport: shot.viewport,
       deviceScaleFactor: 2,
       colorScheme: shot.colorScheme,
-      locale: "en-US",
-      timezoneId: "UTC",
+      ...browserLocale,
       reducedMotion: "reduce",
     });
     const page = await context.newPage();
     await page.addInitScript(
-      ({ mode }) => {
+      ({ mode, language }) => {
         localStorage.setItem("nkt:appearance", mode);
-        localStorage.setItem("nkt:lang", "en");
+        localStorage.setItem("nkt:language", language);
         localStorage.setItem("nkt:sidebar-collapsed", "false");
       },
-      { mode: shot.colorScheme },
+      { mode: shot.colorScheme, language },
     );
     await setupFrontendMock(page);
     await page.goto(`${feUrl}${shot.path}`, { waitUntil: "networkidle" });
     await page.locator(shot.waitSelector).first().waitFor({ state: "visible" });
+    await page.locator(`html[lang="${language}"]`).waitFor();
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(300);
     const pngPath = join(tmpDir, `${shot.name}.png`);
@@ -461,20 +471,20 @@ async function captureAdmin(browser, adminUrl) {
       viewport: { width: 1440, height: 900 },
       deviceScaleFactor: 2,
       colorScheme: "light",
-      locale: "en-US",
-      timezoneId: "UTC",
+      ...browserLocale,
       reducedMotion: "reduce",
     });
     const page = await context.newPage();
-    await page.addInitScript(() => {
-      localStorage.setItem("language", "en");
+    await page.addInitScript((language) => {
+      localStorage.setItem("language", language);
       localStorage.setItem("nkt:theme", "light");
       localStorage.setItem("vite-ui-theme", "light");
       localStorage.setItem("nkt:sidebar-collapsed", "false");
-    });
+    }, language);
     await setupAdminMock(page);
     await page.goto(`${adminUrl}/dashboard/`, { waitUntil: "networkidle" });
     await page.locator("table tbody tr").nth(4).waitFor({ state: "visible" });
+    await page.locator(`html[lang="${language}"]`).waitFor();
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(300);
     const pngPath = join(tmpDir, "admin-servers.png");
@@ -485,7 +495,7 @@ async function captureAdmin(browser, adminUrl) {
 
     // 2. Public note editor (open Edit dialog on row 1 and scroll to public note editor)
     await page
-      .getByRole("button", { name: "Edit", exact: true })
+      .getByRole("button", { name: chinese ? "编辑" : "Edit", exact: true })
       .first()
       .click();
     const editor = page.locator("[data-public-note-editor]");
