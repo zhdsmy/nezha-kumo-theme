@@ -8,19 +8,19 @@
 
 | 桌面端（浅色）                                              | 桌面端（深色）                                             |
 | ----------------------------------------------------------- | ---------------------------------------------------------- |
-| ![桌面端浅色首页](docs/screenshots/home-desktop-light.webp) | ![桌面端深色首页](docs/screenshots/home-desktop-dark.webp) |
+| ![桌面端浅色首页](docs/screenshots/zh-CN/home-desktop-light.webp) | ![桌面端深色首页](docs/screenshots/zh-CN/home-desktop-dark.webp) |
 
 | 移动端（浅色）                                                                         | 移动端（深色）                                                                        |
 | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| <img src="docs/screenshots/home-mobile-light.webp" alt="移动端浅色首页" width="320" /> | <img src="docs/screenshots/home-mobile-dark.webp" alt="移动端深色首页" width="320" /> |
+| <img src="docs/screenshots/zh-CN/home-mobile-light.webp" alt="移动端浅色首页" width="320" /> | <img src="docs/screenshots/zh-CN/home-mobile-dark.webp" alt="移动端深色首页" width="320" /> |
 
 | 节点详情页                                       | 管理后台服务器列表                                         |
 | ------------------------------------------------ | ---------------------------------------------------------- |
-| ![节点详情页](docs/screenshots/node-detail.webp) | ![管理后台服务器列表](docs/screenshots/admin-servers.webp) |
+| ![节点详情页](docs/screenshots/zh-CN/node-detail.webp) | ![管理后台服务器列表](docs/screenshots/zh-CN/admin-servers.webp) |
 
 | 结构化公开备注编辑器                                       |
 | ---------------------------------------------------------- |
-| ![公开备注编辑器](docs/screenshots/admin-public-note.webp) |
+| ![公开备注编辑器](docs/screenshots/zh-CN/admin-public-note.webp) |
 
 ## 兼容版本
 
