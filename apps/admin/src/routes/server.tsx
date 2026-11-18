@@ -30,7 +30,7 @@ import {
 import { IconButton } from "@/components/xui/icon-button"
 import { useServer } from "@/hooks/useServer"
 import { isNoteObject, parseJsonNote } from "@/lib/json-note"
-import { selectableTableFeatures, useSelectableTable } from "@/lib/table"
+import { groupNamesByMember, selectableTableFeatures, useSelectableTable } from "@/lib/table"
 import { errorMessage } from "@/lib/utils"
 import { ModelServerTaskResponse, ModelServer as Server } from "@/types"
 import { Page } from "@nezha-kumo/ui"
@@ -120,6 +120,11 @@ export default function ServerPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
 
+    const groupNames = useMemo(
+        () => groupNamesByMember(serverGroups, (group) => group.servers),
+        [serverGroups],
+    )
+
     const columns: ColumnDef<typeof selectableTableFeatures, Server>[] = [
         {
             id: "select",
@@ -187,22 +192,13 @@ export default function ServerPage() {
         },
         {
             header: t("Group"),
-            accessorKey: "groups",
-            accessorFn: (row) =>
-                serverGroups
-                    ?.filter((sg) => sg.servers?.includes(row.id))
-                    .map((sg) => sg.group.name)
-                    .join(", ") || "",
+            id: "groups",
             cell: ({ row }) => {
-                const names =
-                    serverGroups
-                        ?.filter((sg) => sg.servers?.includes(row.original.id))
-                        .map((sg) => sg.group.name)
-                        .filter(Boolean) ?? []
-                if (names.length === 0) {
+                const names = groupNames.get(row.original.id)
+                if (!names) {
                     return <span className="text-muted-foreground">—</span>
                 }
-                return <div className="max-w-40 whitespace-normal break-words">{names.join(", ")}</div>
+                return <div className="max-w-40 whitespace-normal break-words">{names}</div>
             },
         },
         {
@@ -256,7 +252,7 @@ export default function ServerPage() {
         {
             header: t("Version"),
             accessorKey: "host.version",
-            accessorFn: (row) => row.host.version || t("Unknown"),
+            cell: ({ row }) => row.original.host.version || t("Unknown"),
         },
         {
             header: t("EnableDDNS"),

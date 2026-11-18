@@ -104,10 +104,10 @@ export default function WAFPage() {
         {
             header: t("BlockIdentifier"),
             accessorKey: "BlockIdentifier",
-            accessorFn: (row) => {
-                return wafBlockIdentifiers[row.block_identifier]
-                    ? t(wafBlockIdentifiers[row.block_identifier])
-                    : row.block_identifier
+            cell: ({ row: { original } }) => {
+                return wafBlockIdentifiers[original.block_identifier]
+                    ? t(wafBlockIdentifiers[original.block_identifier])
+                    : original.block_identifier
             },
         },
         {

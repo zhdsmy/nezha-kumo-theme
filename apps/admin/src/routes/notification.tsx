@@ -17,7 +17,7 @@ import {
     TableStateRow,
 } from "@/components/ui/table"
 import { useNotification } from "@/hooks/useNotfication"
-import { selectableTableFeatures, useSelectableTable } from "@/lib/table"
+import { groupNamesByMember, selectableTableFeatures, useSelectableTable } from "@/lib/table"
 import { ModelNotification } from "@/types"
 import { Page } from "@nezha-kumo/ui"
 import { ColumnDef, flexRender } from "@tanstack/react-table"
@@ -43,6 +43,11 @@ export default function NotificationPage() {
             })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
+
+    const groupNames = useMemo(
+        () => groupNamesByMember(notifierGroup, (group) => group.notifications),
+        [notifierGroup],
+    )
 
     const columns: ColumnDef<typeof selectableTableFeatures, ModelNotification>[] = [
         {
@@ -82,22 +87,13 @@ export default function NotificationPage() {
         },
         {
             header: t("Group"),
-            accessorKey: "groups",
-            accessorFn: (row) =>
-                notifierGroup
-                    ?.filter((ng) => ng.notifications?.includes(row.id))
-                    .map((ng) => ng.group.name)
-                    .join(", ") || "",
+            id: "groups",
             cell: ({ row }) => {
-                const names =
-                    notifierGroup
-                        ?.filter((ng) => ng.notifications?.includes(row.original.id))
-                        .map((ng) => ng.group.name)
-                        .filter(Boolean) ?? []
-                if (names.length === 0) {
+                const names = groupNames.get(row.original.id)
+                if (!names) {
                     return <span className="text-muted-foreground">—</span>
                 }
-                return <div className="max-w-40 whitespace-normal break-words">{names.join(", ")}</div>
+                return <div className="max-w-40 whitespace-normal break-words">{names}</div>
             },
         },
         {
