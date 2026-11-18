@@ -323,7 +323,38 @@ body {
 .nk-page-tabs .kumo-tabs-list {
     margin: -2px -2px 0;
     padding: 2px 2px 8px;
-    height: 32px;
+    height: 36px;
+}
+.kumo-tabs-list[data-overflow-start]:not([data-overflow-end]) {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 2rem);
+    mask-image: linear-gradient(to right, transparent, #000 2rem);
+}
+.kumo-tabs-list[data-overflow-end]:not([data-overflow-start]) {
+    -webkit-mask-image: linear-gradient(to left, transparent, #000 2rem);
+    mask-image: linear-gradient(to left, transparent, #000 2rem);
+}
+.kumo-tabs-list[data-overflow-start][data-overflow-end] {
+    -webkit-mask-image: linear-gradient(
+        to right,
+        transparent,
+        #000 2rem,
+        #000 calc(100% - 2rem),
+        transparent
+    );
+    mask-image: linear-gradient(
+        to right,
+        transparent,
+        #000 2rem,
+        #000 calc(100% - 2rem),
+        transparent
+    );
+}
+.nk-sidebar [data-sidebar="content"] [data-orientation="vertical"][data-has-overflow-y] {
+    display: flex;
+    opacity: 0.5;
+}
+.nk-sidebar [data-sidebar="content"]:hover [data-orientation="vertical"][data-has-overflow-y] {
+    opacity: 0.85;
 }
 .nk-page-content {
     min-width: 0;

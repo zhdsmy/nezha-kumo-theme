@@ -281,6 +281,32 @@ function ShellLayout({
         }
     }, [isMobile, openMobile])
 
+    const navItemCount = nav.reduce(
+        (sum, section) =>
+            sum + section.items.reduce((s, item) => s + 1 + (item.children?.length ?? 0), 0),
+        0,
+    )
+
+    useEffect(() => {
+        if (!activeId) return
+        const active = sidebarRef.current?.querySelector<HTMLElement>(
+            '[data-sidebar="sliding-view"]:not([inert]) [aria-current="page"]',
+        )
+        const viewport = active?.closest<HTMLElement>('[data-sidebar="viewport"]')
+        if (!active || !viewport) return
+        const vpRect = viewport.getBoundingClientRect()
+        if (vpRect.height <= 0) return
+        const stickyBottom =
+            viewport.querySelector<HTMLElement>(".nk-context")?.getBoundingClientRect().bottom ??
+            vpRect.top
+        const itemRect = active.getBoundingClientRect()
+        if (itemRect.top < stickyBottom) {
+            viewport.scrollTop -= stickyBottom - itemRect.top + 8
+        } else if (itemRect.bottom > vpRect.bottom) {
+            viewport.scrollTop += itemRect.bottom - vpRect.bottom + 8
+        }
+    }, [activeId, navItemCount, Boolean(context), isMobile, openMobile])
+
     return (
         <LinkProvider component={kumoLink}>
             <Sidebar

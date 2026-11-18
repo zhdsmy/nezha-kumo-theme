@@ -175,4 +175,87 @@ for (const [engine, driver] of Object.entries({ chromium, webkit })) {
             await browser.close()
         }
     })
+
+    test(`A5: ${engine} shows sidebar scroll cue at <=900px height and underline tab overflow controls at 1024px`, async ({
+        baseURL,
+    }) => {
+        const browser = await driver.launch()
+        try {
+            if (!baseURL) throw new Error("A local preview baseURL is required")
+            const page = await browser.newPage({
+                viewport: { width: 1024, height: 768 },
+                locale: "ja",
+            })
+            await page.addInitScript(() => localStorage.setItem("language", "ja"))
+            await attachAdminMock(page, "ja")
+            await page.goto(`${baseURL}/dashboard/settings`)
+            await expect(page.locator('[role="tablist"]')).toBeVisible()
+
+            const sidebarMetrics = await page.evaluate(() => {
+                const vp = document.querySelector<HTMLElement>(
+                    'aside.nk-sidebar [data-sidebar="sliding-view"]:not([inert]) [data-sidebar="viewport"]',
+                )!
+                const sb = document.querySelector<HTMLElement>(
+                    'aside.nk-sidebar [data-sidebar="sliding-view"]:not([inert]) [data-orientation="vertical"]',
+                )!
+                const vpStyle = getComputedStyle(vp)
+                const sbStyle = getComputedStyle(sb)
+                const mask =
+                    vpStyle.maskImage && vpStyle.maskImage !== "none"
+                        ? vpStyle.maskImage
+                        : vpStyle.webkitMaskImage
+                return {
+                    overflowY: vp.scrollHeight - vp.clientHeight,
+                    mask: mask || "none",
+                    scrollbarOpacity: parseFloat(sbStyle.opacity),
+                }
+            })
+            expect(sidebarMetrics.overflowY).toBeGreaterThan(0)
+            expect(sidebarMetrics.mask, JSON.stringify(sidebarMetrics)).not.toBe("none")
+            expect(sidebarMetrics.scrollbarOpacity, JSON.stringify(sidebarMetrics)).toBeGreaterThan(
+                0.2,
+            )
+
+            const endControl = page.locator(
+                '.nk-page-tabs [data-kumo-part="overflow-control"][data-side="end"]',
+            )
+            await expect(endControl).toBeVisible()
+            const beforeScroll = await page
+                .locator('.nk-page-tabs [role="tablist"]')
+                .evaluate((el) => ({
+                    scrollLeft: el.scrollLeft,
+                    scrollWidth: el.scrollWidth,
+                    clientWidth: el.clientWidth,
+                }))
+            expect(beforeScroll.scrollWidth).toBeGreaterThan(beforeScroll.clientWidth)
+            await endControl.click()
+            await expect
+                .poll(() =>
+                    page
+                        .locator('.nk-page-tabs [role="tablist"]')
+                        .evaluate((el) => el.scrollLeft),
+                )
+                .toBeGreaterThan(0)
+
+            await page.goto(`${baseURL}/dashboard/profile`)
+            await expect
+                .poll(() =>
+                    page.evaluate(() => {
+                        const active = document.querySelector<HTMLElement>(
+                            'aside.nk-sidebar [data-sidebar="sliding-view"]:not([inert]) a[aria-current="page"]',
+                        )
+                        const vp = active?.closest<HTMLElement>('[data-sidebar="viewport"]')
+                        if (!active || !vp) return false
+                        const ar = active.getBoundingClientRect()
+                        const vr = vp.getBoundingClientRect()
+                        return ar.top >= vr.top - 1 && ar.bottom <= vr.bottom + 1
+                    }),
+                )
+                .toBe(true)
+            expect(await page.evaluate(() => window.scrollY)).toBe(0)
+            await page.close()
+        } finally {
+            await browser.close()
+        }
+    })
 }
