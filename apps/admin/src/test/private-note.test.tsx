@@ -403,3 +403,16 @@ test("A7: structured mode replaces raw billingDataMod/actualAmount keys, drops r
     ).toBe(raw)
 })
 
+
+test("R08: a billing card with only actual expense can add and remove a sibling field", () => {
+    render(<Harness raw='{"billingDataMod":{"actualAmount":"USD 8"}}' />)
+    fireEvent.click(screen.getByRole("button", {
+        name: i18n.t("PrivateNote.AddRowIn", { name: i18n.t("PublicNote.Billing") }),
+    }))
+    fireEvent.change(screen.getByRole("textbox", { name: label("Key", "billingDataMod.") }), {
+        target: { value: "invoice" },
+    })
+    expect(JSON.parse(saved()).billingDataMod).toEqual({ actualAmount: "USD 8", invoice: "" })
+    fireEvent.click(screen.getByRole("button", { name: label("Delete", "billingDataMod.actualAmount") }))
+    expect(JSON.parse(saved()).billingDataMod).toEqual({ invoice: "" })
+})
