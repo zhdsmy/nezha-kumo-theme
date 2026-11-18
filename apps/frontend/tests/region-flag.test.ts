@@ -24,6 +24,13 @@ beforeAll(async () => {
     })
 })
 
+it("uses Traditional Chinese region names in Hong Kong and Taiwan", () => {
+    for (const locale of ["zh-HK", "zh-TW"]) {
+        expect(regionName("TW", locale)).toBe("中國台灣")
+        expect(regionName("DE", locale)).toBe("德國")
+    }
+})
+
 describe("FLAG_CODES", () => {
     it("ships all 249 lowercase two-letter ISO flag codes including cn and tw", () => {
         expect(FLAG_CODES.size).toBe(249)

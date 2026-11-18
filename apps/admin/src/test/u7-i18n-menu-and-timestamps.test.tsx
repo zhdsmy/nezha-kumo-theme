@@ -157,7 +157,7 @@ describe("U7: localized AgentConfig & AlertRule labels, closing row menu on dial
         const formatDateTime = utils.formatDateTime
         expect(typeof formatDateTime).toBe("function")
         expect(formatDateTime("0001-01-01T00:00:00Z", "zh-CN", "从未")).toBe("从未")
-        for (const lng of ["en", "zh-CN", "zh-TW", "ja"]) {
+        for (const lng of ["en", "zh-CN", "zh-HK", "zh-TW", "ja"]) {
             const formatted = formatDateTime("2026-05-10T08:30:00Z", lng, "—")
             expect(formatted).not.toContain("T08:30:00Z")
             expect(formatted).toContain("2026")

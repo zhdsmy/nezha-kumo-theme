@@ -25,7 +25,7 @@ afterEach(async () => {
 })
 
 describe("U3: localized validation, login inline alert, toast offset & retry dismissal, and invalid field focus", () => {
-    test.each(["en", "zh-CN", "zh-TW", "ja"])("R12: label known fields and omit unknown paths in %s", async (lang) => {
+    test.each(["en", "zh-CN", "zh-HK", "zh-TW", "ja"])("R12: label known fields and omit unknown paths in %s", async (lang) => {
         await i18n.changeLanguage(lang)
         const schema = z.object({ webhook_method: z.number().min(1), internal_value: z.number().min(1) })
         const result = schema.safeParse({ webhook_method: 0, internal_value: 0 })
@@ -34,7 +34,7 @@ describe("U3: localized validation, login inline alert, toast offset & retry dis
         expect(messages[1]).toBe(z.number().min(1).safeParse(0).error!.issues[0]!.message)
     })
 
-    test("Zod validation errors localize across en, zh-CN, zh-TW, and ja without raw 'Too small' jargon", async () => {
+    test("Zod validation errors localize across en, zh-CN, zh-HK, zh-TW, and ja without raw 'Too small' jargon", async () => {
         const schema = z.object({
             name: z.string().min(1),
             password: z.string().min(8),
@@ -42,7 +42,7 @@ describe("U3: localized validation, login inline alert, toast offset & retry dis
             duration: z.number().min(30),
         })
 
-        for (const lng of ["en", "zh-CN", "zh-TW", "ja"] as const) {
+        for (const lng of ["en", "zh-CN", "zh-HK", "zh-TW", "ja"] as const) {
             await i18n.changeLanguage(lng)
             const res = schema.safeParse({ name: "", password: "short", url: "not-a-url", duration: 5 })
             expect(res.success).toBe(false)

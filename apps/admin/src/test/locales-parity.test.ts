@@ -2,6 +2,7 @@ import { SCOPE_OPTIONS } from "@/api/api-tokens"
 import en from "@/locales/en/translation.json"
 import ja from "@/locales/ja/translation.json"
 import zhCN from "@/locales/zh-CN/translation.json"
+import zhHK from "@/locales/zh-HK/translation.json"
 import zhTW from "@/locales/zh-TW/translation.json"
 import { triggerModes } from "@/types/alert-rule"
 import { cronCoverageTypes, cronTypes } from "@/types/cron"
@@ -33,18 +34,21 @@ function interpolationVars(text: string): string[] {
 describe("admin locale parity", () => {
     const flatEn = flatten(en)
     const flatZhCN = flatten(zhCN)
+    const flatZhHK = flatten(zhHK)
     const flatZhTW = flatten(zhTW)
     const flatJa = flatten(ja)
     const enKeys = Object.keys(flatEn).sort()
 
-    test("en, zh-CN, zh-TW, and ja have identical non-empty key sets", () => {
+    test("en, zh-CN, zh-HK, zh-TW, and ja have identical non-empty key sets", () => {
         expect(Object.keys(flatZhCN).sort()).toEqual(enKeys)
+        expect(Object.keys(flatZhHK).sort()).toEqual(enKeys)
         expect(Object.keys(flatZhTW).sort()).toEqual(enKeys)
         expect(Object.keys(flatJa).sort()).toEqual(enKeys)
 
         for (const [locale, dict] of [
             ["en", flatEn],
             ["zh-CN", flatZhCN],
+            ["zh-HK", flatZhHK],
             ["zh-TW", flatZhTW],
             ["ja", flatJa],
         ] as const) {
@@ -57,16 +61,17 @@ describe("admin locale parity", () => {
     })
 
     test("R14: retired confirmation text is absent and dynamic boolean labels remain", () => {
-        for (const dict of [flatEn, flatZhCN, flatZhTW, flatJa]) {
+        for (const dict of [flatEn, flatZhCN, flatZhHK, flatZhTW, flatJa]) {
             expect(dict["Results.ThisOperationIsUnrecoverable"]).toBeUndefined()
             expect(dict["PrivateNote.Types.boolean"]).toBeTruthy()
         }
     })
 
-    test("interpolation placeholders match across en, zh-CN, zh-TW, and ja", () => {
+    test("interpolation placeholders match across en, zh-CN, zh-HK, zh-TW, and ja", () => {
         for (const key of enKeys) {
             const expected = interpolationVars(flatEn[key])
             expect(interpolationVars(flatZhCN[key]), `zh-CN:${key}`).toEqual(expected)
+            expect(interpolationVars(flatZhHK[key]), `zh-HK:${key}`).toEqual(expected)
             expect(interpolationVars(flatZhTW[key]), `zh-TW:${key}`).toEqual(expected)
             expect(interpolationVars(flatJa[key]), `ja:${key}`).toEqual(expected)
         }

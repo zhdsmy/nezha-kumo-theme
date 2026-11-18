@@ -4,6 +4,7 @@ import copy from "copy-to-clipboard"
 import { twMerge } from "tailwind-merge"
 import { z } from "zod"
 
+import { resolveInterfaceLanguage } from "./languages"
 import FMWorker from "./fm?worker"
 
 export function cn(...inputs: ClassValue[]) {
@@ -207,16 +208,7 @@ export function formatDateTime(
 ): string {
     const date = parseValidDate(value)
     if (!date) return emptyFallback
-    const normalizedLocale = locale === "zh-CN" || locale === "zh-TW" || locale === "ja" || locale === "en"
-        ? locale
-        : locale.toLowerCase().startsWith("zh-tw") || locale.toLowerCase().startsWith("zh-hk")
-          ? "zh-TW"
-          : locale.toLowerCase().startsWith("zh")
-            ? "zh-CN"
-            : locale.toLowerCase().startsWith("ja")
-              ? "ja"
-              : "en"
-    return new Intl.DateTimeFormat(normalizedLocale, {
+    return new Intl.DateTimeFormat(resolveInterfaceLanguage(locale), {
         year: "numeric",
         month: "2-digit",
         day: "2-digit",

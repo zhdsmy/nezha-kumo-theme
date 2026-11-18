@@ -435,7 +435,7 @@ test("group and sort controls, locale persistence, and system theme", async ({ p
     await page.getByRole("menuitemradio", { name: "日本語", exact: true }).click()
     await expect(page.getByRole("heading", { name: "概要", exact: true })).toBeVisible()
     await page.getByRole("button", { name: "言語", exact: true }).click()
-    await page.getByRole("menuitemradio", { name: "繁體中文", exact: true }).click()
+    await page.getByRole("menuitemradio", { name: "繁體中文（台灣）", exact: true }).click()
     await expect(page.getByRole("heading", { name: "概覽", exact: true })).toBeVisible()
     await page.getByRole("button", { name: "語言", exact: true }).click()
     await page.getByRole("menuitemradio", { name: "English", exact: true }).click()

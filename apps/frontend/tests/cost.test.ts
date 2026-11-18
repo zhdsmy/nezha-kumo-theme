@@ -27,7 +27,8 @@ afterEach(() => {
 describe("monthly fleet cost", () => {
     it("binds display currency to interface locale and validates conversion", () => {
         expect(displayCurrency("zh-CN")).toBe("CNY")
-        expect(displayCurrency("zh-TW")).toBe("HKD")
+        expect(displayCurrency("zh-HK")).toBe("HKD")
+        expect(displayCurrency("zh-TW")).toBe("TWD")
         expect(displayCurrency("ja")).toBe("JPY")
         for (const locale of ["en", "fr", undefined]) expect(displayCurrency(locale)).toBe("USD")
         expect(convertAmount(10, "USD", "CNY", rates)).toBe(70)

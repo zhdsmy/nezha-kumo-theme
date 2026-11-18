@@ -125,9 +125,9 @@ const SYMBOLS: Record<string, string> = {
     KRW: "₩",
 }
 
-export function formatMoney(amount: number, currency: string) {
+export function formatMoney(amount: number, currency: string, locale = "en-US") {
     const code = currencyCode(currency)
     const symbol = SYMBOLS[code ?? ""] ?? (code ? `${code} ` : currency)
     const digits = code === "JPY" || code === "KRW" ? 0 : 2
-    return `${symbol}${amount.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits })}`
+    return `${symbol}${amount.toLocaleString(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits })}`
 }

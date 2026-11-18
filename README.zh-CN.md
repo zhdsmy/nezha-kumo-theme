@@ -134,7 +134,7 @@
 | 配置键              | 类型                                           | 默认值     | 说明                                                                             |
 | ------------------- | ---------------------------------------------- | ---------- | -------------------------------------------------------------------------------- |
 | `defaultAppearance` | `"system" \| "light" \| "dark"`                | `"system"` | 访客未手动切换外观时的默认配色模式（本地存储键 `nkt:appearance`）。              |
-| `defaultLanguage`   | `"auto" \| "en" \| "zh-CN" \| "zh-TW" \| "ja"` | `"auto"`   | 默认界面语言（`"auto"` 自动跟随浏览器或面板语言）。                              |
+| `defaultLanguage`   | `"auto" \| "en" \| "zh-CN" \| "zh-HK" \| "zh-TW" \| "ja"` | `"auto"`   | 默认界面语言（`"auto"` 自动跟随浏览器或面板语言）。                              |
 | `siteTitle`         | `string`                                       | `""`       | 自定义左上角与页面标题；为空时回退使用面板 `site_name`（或 `"Nezha"`）。         |
 | `showOverview`      | `boolean`                                      | `true`     | 是否在首页顶部展示概览统计卡片。                                                 |
 | `showCost`          | `boolean`                                      | `true`     | 是否在首页展示费用汇总菜单并启用多币种汇率换算。                                 |

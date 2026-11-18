@@ -2,7 +2,7 @@
 // Optional manual settings. Preserve your own file when upgrading a manual deployment.
 // window.NezhaKumoConfig = {
 //     defaultAppearance: 'system', // light | dark | system
-//     defaultLanguage: 'auto', // zh-CN | zh-TW | en | ja | auto
+//     defaultLanguage: 'auto', // zh-CN | zh-HK | zh-TW | en | ja | auto
 //     siteTitle: '',
 //     showOverview: true,
 //     showCost: true,

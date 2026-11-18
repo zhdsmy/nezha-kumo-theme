@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest"
 import en from "../src/i18n/locales/en.json"
 import ja from "../src/i18n/locales/ja.json"
 import zhCN from "../src/i18n/locales/zh-CN.json"
+import zhHK from "../src/i18n/locales/zh-HK.json"
 import zhTW from "../src/i18n/locales/zh-TW.json"
 
 type JsonRecord = Record<string, unknown>
@@ -41,11 +42,12 @@ describe("i18n locale bundles", () => {
     const bundles = {
         en: flatten(en as JsonRecord),
         "zh-CN": flatten(zhCN as JsonRecord),
+        "zh-HK": flatten(zhHK as JsonRecord),
         "zh-TW": flatten(zhTW as JsonRecord),
         ja: flatten(ja as JsonRecord),
     } as const
 
-    it("keeps canonical key sets and CLDR plural categories identical across all 4 locales", () => {
+    it("keeps canonical key sets and CLDR plural categories identical across all 5 locales", () => {
         const canonical = (keys: string[]) =>
             [...new Set(keys.map((k) => k.replace(/_(one|other)$/, "")))].sort()
 
@@ -57,7 +59,8 @@ describe("i18n locale bundles", () => {
             }
         }
 
-        // zh-CN, zh-TW, and ja share identical raw key sets ("other" plural rule)
+        // zh-CN, zh-HK, zh-TW, and ja share identical raw key sets ("other" plural rule)
+        expect(Object.keys(bundles["zh-HK"]).sort()).toEqual(Object.keys(bundles["zh-CN"]).sort())
         expect(Object.keys(bundles["zh-TW"]).sort()).toEqual(Object.keys(bundles["zh-CN"]).sort())
         expect(Object.keys(bundles.ja).sort()).toEqual(Object.keys(bundles["zh-CN"]).sort())
 
@@ -76,7 +79,7 @@ describe("i18n locale bundles", () => {
         }
     })
 
-    it("preserves interpolation variables across all 4 locales and Japanese script in ja", () => {
+    it("preserves interpolation variables across all 5 locales and Japanese script in ja", () => {
         const acronym = /^(CPU|TCP|UDP|OS|GPU)$/
         const jpScript = /[\u3040-\u30ff\u4e00-\u9faf]/
 

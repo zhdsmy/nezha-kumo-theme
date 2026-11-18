@@ -529,8 +529,7 @@
         "LocalService": "192.168.1.1:80（ポート番号付き）",
         "GroupName": "グループ名",
         "NotifierName": "マイ通知先",
-        "ServiceName": "マイサービス監視",
-        "SelectType": "種類を選択"
+        "ServiceName": "マイサービス監視"
     },
     "TerminalKeys": {
         "Escape": "エスケープ",

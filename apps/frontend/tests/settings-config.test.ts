@@ -33,7 +33,10 @@ describe("site-owner configuration", () => {
         })
     })
     it("keeps manual config.js support", async () => {
-        expect(await settings(undefined, { showOffline: false })).toMatchObject({
+        expect(
+            await settings(undefined, { showOffline: false, defaultLanguage: "zh-HK" }),
+        ).toMatchObject({
+            defaultLanguage: "zh-HK",
             showOffline: false,
         })
     })

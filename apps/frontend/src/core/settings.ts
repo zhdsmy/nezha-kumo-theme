@@ -1,6 +1,8 @@
 // Adapted from zool-theme/src/core/settings.ts (MIT, luoleiorg).
+import { type Locale, interfaceLanguages } from "../../../../packages/shared/languages"
+
 export type Appearance = "system" | "light" | "dark"
-type LanguagePreference = "auto" | "en" | "zh-CN" | "zh-TW" | "ja"
+type LanguagePreference = "auto" | Locale
 
 /** Optional site-owner settings from panel JSON and config.js. Layout follows the shared responsive contract. */
 export interface ThemeSettings {
@@ -66,11 +68,11 @@ export function normalizeSettings(raw: unknown): ThemeSettings {
             ["system", "light", "dark"],
             d.defaultAppearance,
         ),
-        defaultLanguage: oneOf(
-            r.defaultLanguage,
-            ["auto", "en", "zh-CN", "zh-TW", "ja"],
-            d.defaultLanguage,
-        ),
+        defaultLanguage:
+            typeof r.defaultLanguage === "string" &&
+            Object.hasOwn(interfaceLanguages, r.defaultLanguage)
+                ? (r.defaultLanguage as Locale)
+                : d.defaultLanguage,
         siteTitle: str(r.siteTitle, d.siteTitle).trim(),
         showOverview: bool(r.showOverview, d.showOverview),
         showCost: bool(r.showCost, d.showCost),

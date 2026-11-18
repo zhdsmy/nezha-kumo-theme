@@ -68,6 +68,7 @@ export async function mockNezha(
             json: [
                 { base: "USD", quote: "CNY", date: "2026-11-16", rate: 7 },
                 { base: "USD", quote: "HKD", date: "2026-11-16", rate: 7.8 },
+                { base: "USD", quote: "TWD", date: "2026-11-16", rate: 30 },
                 { base: "USD", quote: "JPY", date: "2026-11-16", rate: 150 },
                 { base: "USD", quote: "EUR", date: "2026-11-16", rate: 0.9 },
             ],

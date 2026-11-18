@@ -8,7 +8,7 @@ import type { NodeInfo } from "@/core/model"
 import { useTranslation } from "react-i18next"
 
 export function useBilling() {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const loggedIn = useStore((s) => s.session.loggedIn)
     const actualCosts = useStore((s) => s.actualCosts)
     const rates = useStore((s) => s.exchangeRates)
@@ -31,7 +31,9 @@ export function useBilling() {
         const suffix =
             days > 0 ? t(period === "year" ? "unit.perYear" : "unit.perMonth") : cycle(days)
         const converted = convertAmount(value, source, currency, rates?.rates)
-        return converted === null ? "—" : `${formatMoney(converted, currency)}${suffix}`
+        return converted === null
+            ? "—"
+            : `${formatMoney(converted, currency, i18n.language)}${suffix}`
     }
     return {
         price,

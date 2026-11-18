@@ -529,8 +529,7 @@
         "LocalService": "192.168.1.1:80（含端口）",
         "GroupName": "分组名称",
         "NotifierName": "我的通知方式",
-        "ServiceName": "我的服务监控",
-        "SelectType": "选择类型"
+        "ServiceName": "我的服务监控"
     },
     "TerminalKeys": {
         "Escape": "Esc 键",

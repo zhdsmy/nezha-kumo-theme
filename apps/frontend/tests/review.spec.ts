@@ -124,7 +124,8 @@ test("compact tiles and full seeded sparks fit the first phone screen; numbers s
     await page.keyboard.press("Escape")
     for (const [buttonLabel, menuLabel, symbol, cardSample] of [
         ["Language", "简体中文", "¥", "¥1,888.00/月"],
-        ["语言", "繁體中文", "HK$", "HK$2,103.77/月"],
+        ["语言", "繁體中文（香港）", "HK$", "HK$2,103.77/月"],
+        ["語言", "繁體中文（台灣）", "NT$", "NT$8,091.43/月"],
         ["語言", "日本語", "JP¥", "JP¥40,457/月"],
         ["言語", "English", "$", "$269.71/mo"],
     ] as const) {
