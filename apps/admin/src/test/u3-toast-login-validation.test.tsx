@@ -82,6 +82,7 @@ describe("U3: localized validation, login inline alert, toast offset & retry dis
             </SWRConfig>,
         )
 
+        const dismiss = vi.spyOn(toast, "dismiss")
         // Dynamic language validation check
         fireEvent.click(screen.getByRole("button", { name: i18n.t("Login") }))
         expect(await screen.findByText(i18n.t("Results.UsernameMin", { number: 2 }))).toBeTruthy()
@@ -94,41 +95,33 @@ describe("U3: localized validation, login inline alert, toast offset & retry dis
 
         const alert = await screen.findByRole("alert")
         expect(alert.textContent).toContain(i18n.t("InvalidUsernameOrPassword"))
+        expect(dismiss).not.toHaveBeenCalledWith()
     })
 
-    test("useSubmitLock dismisses stale toasts on retry and Toaster offsets above dialog footer", async () => {
+    test("R03: retry dismisses only its own form error and preserves other toasts", async () => {
         const dismissSpy = vi.spyOn(toast, "dismiss")
-
-        function RetryProbe({ onRun }: { onRun: () => Promise<void> }) {
-            const { runSubmit } = useSubmitLock()
+        let fail = true
+        function RetryProbe() {
+            const { runSubmit, showError } = useSubmitLock()
             return (
                 <>
                     <Toaster />
-                    <button type="button" onClick={() => void runSubmit(onRun)()}>
-                        Save
-                    </button>
+                    <button onClick={runSubmit(async () => {
+                        if (fail) showError("First failure", { duration: Infinity })
+                    })}>Save</button>
                 </>
             )
         }
 
-        const runner = vi
-            .fn<() => Promise<void>>()
-            .mockImplementationOnce(async () => {
-                toast.error("First failure")
-            })
-            .mockImplementationOnce(async () => {
-                toast.success("Saved")
-            })
-
-        render(<RetryProbe onRun={runner} />)
-        await act(async () => {
-            fireEvent.click(screen.getByRole("button", { name: "Save" }))
-        })
-        const callsAfterFirst = dismissSpy.mock.calls.length
-        await act(async () => {
-            fireEvent.click(screen.getByRole("button", { name: "Save" }))
-        })
-        expect(dismissSpy.mock.calls.length).toBeGreaterThan(callsAfterFirst)
+        render(<RetryProbe />)
+        act(() => { toast.info("Independent operation", { duration: Infinity }) })
+        await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Save" })) })
+        await screen.findByText("First failure")
+        fail = false
+        await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Save" })) })
+        await waitFor(() => expect(screen.queryByText("First failure")).toBeNull())
+        expect(screen.getByText("Independent operation")).toBeTruthy()
+        expect(dismissSpy).not.toHaveBeenCalledWith()
 
         const toaster = await waitFor(() => {
             const el = document.querySelector("[data-sonner-toaster]") as HTMLElement | null
@@ -205,6 +198,7 @@ describe("U3: localized validation, login inline alert, toast offset & retry dis
             )
         }
 
+        const dismiss = vi.spyOn(toast, "dismiss")
         render(<DialogFormProbe />)
         const dialog = await screen.findByRole("dialog")
         const textarea = dialog.querySelector('textarea[name="domains_json"]') as HTMLTextAreaElement
@@ -255,5 +249,6 @@ describe("U3: localized validation, login inline alert, toast offset & retry dis
         expect(item).toBeTruthy()
         expect(document.activeElement).toBe(textarea)
         await waitFor(() => expect(dialog.scrollTop).toBeLessThan(240))
+        expect(dismiss).not.toHaveBeenCalledWith()
     })
 })

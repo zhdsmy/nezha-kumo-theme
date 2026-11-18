@@ -1,7 +1,23 @@
 import { useCallback, useRef, useState } from "react"
 import { toast } from "sonner"
 
+export function useErrorToast() {
+    const toastId = useRef<ReturnType<typeof toast.error> | undefined>(undefined)
+    const dismissError = useCallback(() => {
+        if (toastId.current !== undefined) {
+            toast.dismiss(toastId.current)
+            toastId.current = undefined
+        }
+    }, [])
+    const showError = useCallback((...args: Parameters<typeof toast.error>) => {
+        dismissError()
+        toastId.current = toast.error(...args)
+    }, [dismissError])
+    return { showError, dismissError }
+}
+
 export function useSubmitLock() {
+    const { showError, dismissError } = useErrorToast()
     const [submitting, setSubmitting] = useState(false)
     const lockRef = useRef(false)
 
@@ -11,7 +27,7 @@ export function useSubmitLock() {
                 if (lockRef.current) return
                 lockRef.current = true
                 setSubmitting(true)
-                toast.dismiss?.()
+                dismissError()
                 try {
                     await fn(...args)
                 } finally {
@@ -19,8 +35,8 @@ export function useSubmitLock() {
                     setSubmitting(false)
                 }
             },
-        [],
+        [dismissError],
     )
 
-    return { submitting, runSubmit }
+    return { submitting, runSubmit, showError, dismissError }
 }

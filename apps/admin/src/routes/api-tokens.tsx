@@ -217,7 +217,7 @@ function CreateApiTokenDialog({
     const [scopes, setScopes] = useState<string[]>([])
     const [serverIDs, setServerIDs] = useState("")
     const [expiresInDays, setExpiresInDays] = useState<string>("90")
-    const { submitting, runSubmit } = useSubmitLock()
+    const { submitting, runSubmit, showError } = useSubmitLock()
 
     const toggleScope = (s: string) => {
         setScopes((cur) => (cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s]))
@@ -225,22 +225,22 @@ function CreateApiTokenDialog({
 
     const submit = runSubmit(async () => {
         if (!name.trim()) {
-            toast.error(t("Error"), { description: t("NameRequired") })
+            showError(t("Error"), { description: t("NameRequired") })
             return
         }
         if (scopes.length === 0) {
-            toast.error(t("Error"), { description: t("ApiTokenScopeRequired") })
+            showError(t("Error"), { description: t("ApiTokenScopeRequired") })
             return
         }
         const parsedRes = parseServerIDsInput(serverIDs)
         if (!parsedRes.ok) {
-            toast.error(t("Error"), { description: t("ApiTokenServersInvalid") })
+            showError(t("Error"), { description: t("ApiTokenServersInvalid") })
             return
         }
         const parsedServers = parsedRes.value
         const expRes = parseExpiresInDaysInput(expiresInDays)
         if (!expRes.ok) {
-            toast.error(t("Error"), { description: t("ApiTokenExpiryInvalid") })
+            showError(t("Error"), { description: t("ApiTokenExpiryInvalid") })
             return
         }
         const expDays = expRes.value
@@ -258,7 +258,7 @@ function CreateApiTokenDialog({
             setServerIDs("")
             setExpiresInDays("90")
         } catch (e: unknown) {
-            toast.error(t("Error"), { description: errorMessage(e, t("Results.UnExpectedError")) })
+            showError(t("Error"), { description: errorMessage(e, t("Results.UnExpectedError")) })
         }
     })
 

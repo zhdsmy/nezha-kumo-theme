@@ -37,7 +37,6 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { toast } from "sonner"
 import { KeyedMutator } from "swr"
 import { z } from "zod"
 
@@ -112,7 +111,7 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
     })
 
     const [open, setOpen] = useState(false)
-    const { submitting, runSubmit } = useSubmitLock()
+    const { submitting, runSubmit, showError, dismissError } = useSubmitLock()
 
     const onSubmit = runSubmit(async (values: DDNSFormData) => {
         try {
@@ -124,7 +123,7 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
             }
         } catch (e) {
             console.error(e)
-            toast.error(t("Error"), {
+            showError(t("Error"), {
                 description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
@@ -147,7 +146,7 @@ export const DDNSCard: React.FC<DDNSCardProps> = ({ data, providers, mutate }) =
                             <DialogDescription />
                         </DialogHeader>
                         <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2 my-2">
+                            <form onSubmit={form.handleSubmit(onSubmit, dismissError)} className="space-y-2 my-2">
                                 <FormField
                                     control={form.control}
                                     name="name"

@@ -32,7 +32,7 @@ export const BatchMoveServerIcon: React.FC<BatchMoveServerIconProps> = ({
     const { t } = useTranslation()
     const [open, setOpen] = useState(false)
     const [toUserId, setToUserId] = useState<number | undefined>(undefined)
-    const { submitting, runSubmit } = useSubmitLock()
+    const { submitting, runSubmit, showError } = useSubmitLock()
 
     const onSubmit = runSubmit(async () => {
         let results
@@ -43,7 +43,7 @@ export const BatchMoveServerIcon: React.FC<BatchMoveServerIconProps> = ({
             })
         } catch (e) {
             console.error(e)
-            toast.error(t("Error"), {
+            showError(t("Error"), {
                 description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return

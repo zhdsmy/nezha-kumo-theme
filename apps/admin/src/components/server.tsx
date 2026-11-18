@@ -98,7 +98,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate, routes }) 
     const [privateNoteValid, setPrivateNoteValid] = useState(true)
     const formRef = useRef<HTMLFormElement>(null)
     const showNoteError = () => {
-        toast.error(t("Validation.InvalidForm"), { description: t("PrivateNote.CheckErrors") })
+        showError(t("Validation.InvalidForm"), { description: t("PrivateNote.CheckErrors") })
         formRef.current
             ?.querySelector<HTMLElement>(
                 '[data-private-note-editor] [aria-invalid="true"], [data-private-note-editor] input:invalid',
@@ -109,7 +109,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate, routes }) 
     const [publicNoteRaw, setPublicNoteRaw] = useState(data?.public_note ?? "")
     const [publicNoteMode, setPublicNoteMode] = useState(detectNoteMode(data?.public_note))
 
-    const { submitting, runSubmit } = useSubmitLock()
+    const { submitting, runSubmit, showError, dismissError } = useSubmitLock()
 
     const onSubmit = runSubmit(async (values: any) => {
         if (
@@ -135,7 +135,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate, routes }) 
             await updateServer(data!.id!, values)
         } catch (e) {
             console.error(e)
-            toast.error(t("Error"), {
+            showError(t("Error"), {
                 description: errorMessage(e, t("Results.UnExpectedError")),
             })
             return
@@ -195,7 +195,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({ data, mutate, routes }) 
                                         showNoteError()
                                     }
                                 }}
-                                onSubmit={form.handleSubmit(onSubmit)}
+                                onSubmit={form.handleSubmit(onSubmit, dismissError)}
                                 className="space-y-2 my-2"
                             >
                                 <div className="space-y-1">

@@ -20,7 +20,6 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { toast } from "sonner"
 import { z } from "zod"
 
 const formSchema = z.object({
@@ -36,7 +35,7 @@ function Login() {
     const { login, loginOauth2 } = useAuth()
     const { data: settingData } = useSetting()
     const [loginError, setLoginError] = useState<string | null>(null)
-    const { submitting, runSubmit } = useSubmitLock()
+    const { submitting, runSubmit, showError, dismissError } = useSubmitLock()
 
     useEffect(() => {
         const oauth2 = new URLSearchParams(window.location.search).get("oauth2")
@@ -66,7 +65,7 @@ function Login() {
             const redirectUrl = await getOauth2RedirectURL(provider, Oauth2RequestType.LOGIN)
             window.location.assign(redirectUrl.redirect!)
         } catch (error: any) {
-            toast.error(error.message)
+            showError(error.message)
         }
     }
 
@@ -84,7 +83,7 @@ function Login() {
                 </p>
             </div>
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form onSubmit={form.handleSubmit(onSubmit, dismissError)} className="space-y-6">
                     <FormField
                         control={form.control}
                         name="username"

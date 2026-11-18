@@ -1,10 +1,10 @@
+import { useErrorToast } from "@/hooks/useSubmitLock"
 import { getProfile, login as loginRequest } from "@/api/user"
 import { clearMCPOAuthReturn, consumeMCPOAuthReturn } from "@/lib/mcp-oauth-navigation"
 import { AuthContextProps } from "@/types"
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { toast } from "sonner"
 import { SWRConfig } from "swr"
 
 import { useMainStore } from "./useMainStore"
@@ -43,6 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // mount probe is still in flight must win: bump this so the stale probe's
     // result is discarded instead of clobbering the authenticated state.
     const authEpoch = useRef(0)
+    const { showError, dismissError } = useErrorToast()
 
     useEffect(() => {
         clearSessionData()
@@ -67,6 +68,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const login = useCallback(
         async (username: string, password: string) => {
             try {
+                dismissError()
                 await loginRequest(username, password)
                 const epoch = ++authEpoch.current
                 clearSessionData()
@@ -78,14 +80,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 navigate(consumeMCPOAuthReturn())
             } catch (error: any) {
                 const msg = error?.message
-                toast.dismiss?.()
                 const displayError =
                     msg === "ApiErrorUnauthorized" ||
                     msg === "Unauthorized" ||
                     (typeof msg === "string" && /incorrect|unauthorized|invalid.*password/i.test(msg))
                         ? t("InvalidUsernameOrPassword")
                         : msg || t("NetworkError")
-                toast.error(displayError)
+                showError(displayError)
                 return displayError
             } finally {
                 // An explicit login resolves auth regardless of the still-pending
@@ -93,11 +94,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 setLoading(false)
             }
         },
-        [navigate, setProfile, t, clearSessionData],
+        [navigate, setProfile, t, clearSessionData, showError, dismissError],
     )
 
     const loginOauth2 = useCallback(async () => {
         try {
+            dismissError()
             // Consume the callback before cache isolation can remount Login.
             window.history.replaceState(
                 window.history.state,
@@ -113,11 +115,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setProfile(user)
             navigate(consumeMCPOAuthReturn())
         } catch (error: any) {
-            toast.error(error.message)
+            showError(error.message)
         } finally {
             setLoading(false)
         }
-    }, [navigate, setProfile, clearSessionData])
+    }, [navigate, setProfile, clearSessionData, showError, dismissError])
 
     const logout = useCallback(() => {
         clearMCPOAuthReturn()
