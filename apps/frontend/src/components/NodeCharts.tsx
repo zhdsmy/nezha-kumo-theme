@@ -1,7 +1,7 @@
 // Chart composition adapted from zool-theme/src/pages/NodePage.tsx (MIT, luoleiorg).
 import { formatBytes, formatClock, formatNumber, formatPercent, formatSpeed } from "@/core/format"
 import type { HistoryPoint, NodeInfo, PingData } from "@/core/model"
-import { spikeLimit } from "@/core/summary"
+import { chartWindow, spikeLimit } from "@/core/summary"
 import { Popover } from "@cloudflare/kumo/components/popover"
 import { Switch } from "@cloudflare/kumo/components/switch"
 import { InfoIcon } from "@phosphor-icons/react"
@@ -44,9 +44,6 @@ export function formatTimeTick(
 export function formatTimeAxis(ticks: readonly number[], hours: number, locale?: string): string[] {
     return ticks.map((t, i) => formatTimeTick(t, i, ticks, hours, locale))
 }
-
-// Every range keeps a fixed axis of its full length, ending at the newest point.
-const chartWindow = (hours: number) => hours * 3_600_000
 
 function useTimeFormats(hours: number) {
     const { i18n } = useTranslation()
@@ -141,7 +138,7 @@ export const LoadCharts = memo(function LoadCharts({
         height,
         formatTime: fmt.axis,
         formatTooltipTime: fmt.tooltip,
-        windowMs: chartWindow(hours),
+        timeWindow: chartWindow(points.at(-1)?.at ?? 0, hours),
     }
     const last = points[points.length - 1]
     const reading = (value: number, format: (value: number) => string) =>
@@ -325,6 +322,7 @@ export const PingChart = memo(function PingChart({
             return next.size === 0 || next.size === data.tasks.length ? null : next
         })
     const solo = shown?.size === 1 ? data.tasks.find((task) => shown.has(task.id)) : undefined
+    const timeWindow = chartWindow(data.points.at(-1)?.at ?? 0, hours)
     const series: ChartSeries[] = useMemo(
         () =>
             data.tasks.flatMap((task, i) => {
@@ -334,12 +332,16 @@ export const PingChart = memo(function PingChart({
                     .map((p) => ({ t: p.at, v: p.value >= 0 ? p.value : null }))
                 if (shave) {
                     // spikes are dropped, not blanked, so the line runs straight through them
-                    const limit = spikeLimit(points.flatMap((p) => (p.v === null ? [] : [p.v])))
+                    const limit = spikeLimit(
+                        points.flatMap((p) =>
+                            p.t >= timeWindow.start && p.v !== null ? [p.v] : [],
+                        ),
+                    )
                     points = points.filter((p) => p.v === null || p.v <= limit)
                 }
                 return [{ key: String(task.id), label: task.name, color: color(i), points }]
             }),
-        [data, shown, shave],
+        [data, shown, shave, timeWindow.start],
     )
 
     return (
@@ -388,7 +390,8 @@ export const PingChart = memo(function PingChart({
                 formatTick={(v, step) => `${formatNumber(v, stepDigits(step))} ms`}
                 formatTime={fmt.axis}
                 formatTooltipTime={fmt.tooltip}
-                windowMs={chartWindow(hours)}
+                timeWindow={timeWindow}
+                showFailedProbes
                 label={t("ui.latency")}
             />
             {/* chips, not a table: a line's colour, name and average; the full figures show when it is the only line */}

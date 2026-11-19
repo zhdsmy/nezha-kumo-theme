@@ -97,6 +97,9 @@ export function summariseDay(
     return s
 }
 
+/** Chart bounds use the newest raw sample, before route selection or downsampling. */
+export const chartWindow = (end: number, hours: number) => ({ start: end - hours * 3_600_000, end })
+
 /**
  * Latency above this counts as a spike: Tukey's far-out fence (Q3 + 3 × IQR), never
  * tighter than 1.5 × the median, so a steady 2 ms line keeps its normal 3–4 ms jitter.

@@ -119,14 +119,15 @@ export function Spark({
     color?: string
 }) {
     const uid = useId().replace(/:/g, "")
-    // a line needs two points; until then show the placeholder
-    if (buckets.filter((b) => b.value !== null).length < 2)
+    const count = buckets.filter((b) => b.value !== null).length
+    if (!count)
         return (
             <div className="spark relative">
                 <ChartEmpty />
             </div>
         )
-    const max = Math.max(1, ...buckets.map((b) => b.value ?? 0))
+    const max = buckets.reduce((peak, b) => Math.max(peak, b.value ?? 0), 1)
+    let dot: ReactNode
     let line = "",
         area = "",
         start: number | null = null,
@@ -139,6 +140,7 @@ export function Spark({
             return
         }
         const y = 45 - (b.value / max) * 37
+        if (count === 1) dot = <circle cx={x} cy={y} r={2} fill={color} />
         const point = `${x.toFixed(1)},${y.toFixed(1)}`
         line += `${start === null ? "M" : "L"}${point}`
         area += `${start === null ? "M" : "L"}${point}`
@@ -154,6 +156,7 @@ export function Spark({
                     <stop offset="100%" stopColor={color} stopOpacity={0.02} />
                 </linearGradient>
             </defs>
+            {dot}
             <path d={area} fill={`url(#${uid})`} />
             <path
                 d={line}

@@ -368,16 +368,16 @@ test.describe("Layout polish (fe2)", () => {
         const tileMetrics = await page.evaluate(() => {
             const trigger = document.querySelector<HTMLElement>(".status-trigger")!
             const onlineTile = trigger.closest<HTMLElement>(".metric-tile")!
-            // the spark is a line once it has two points, and the "No data" pill before that
-            const strokePath = onlineTile.querySelector<Element>(
-                ".spark path[stroke], .spark .chart-empty-label",
+            // Measure the visible mark, including the first bucket before a line can form.
+            const sparkMark = onlineTile.querySelector<Element>(
+                ".spark circle, .spark path[stroke], .spark .chart-empty-label",
             )!
             const sparks = Array.from(
                 document.querySelectorAll<Element>(".metric-grid .metric-tile .spark"),
             )
             return {
                 gapToStroke:
-                    strokePath.getBoundingClientRect().top - trigger.getBoundingClientRect().bottom,
+                    sparkMark.getBoundingClientRect().top - trigger.getBoundingClientRect().bottom,
                 sparkBottoms: sparks.map((s) => Math.round(s.getBoundingClientRect().bottom)),
             }
         })

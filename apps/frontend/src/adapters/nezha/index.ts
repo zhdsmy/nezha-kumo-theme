@@ -14,6 +14,7 @@ import type {
 } from "@/core/model"
 import { flagToRegion } from "@/core/region"
 import { readThemeConfig } from "@/core/settings"
+import { chartWindow } from "@/core/summary"
 
 import { parseGroupIcons } from "../../../../../packages/shared/group-icons"
 import {
@@ -104,25 +105,37 @@ interface NezhaServiceInfo {
 }
 
 /** Nezha reports the average delay per probe window. */
-export function mapServices(services: NezhaServiceInfo[], since = 0): PingData {
+export function mapServices(services: NezhaServiceInfo[], since = 0, hours = Infinity): PingData {
     const tasks: PingData["tasks"] = []
     const points: PingData["points"] = []
+    let newest = 0
+    for (const service of services)
+        for (const at of service.created_at ?? []) newest = Math.max(newest, at)
+    const { start } = chartWindow(newest, hours)
     for (const s of services) {
         const id = s.monitor_id ?? s.service_id ?? 0
-        const keep = (s.created_at ?? [])
-            .map((t, i) => [t, s.avg_delay?.[i] ?? -1] as const)
-            .filter(([t]) => t >= since)
-        const at = keep.map(([t]) => t)
-        const delay = keep.map(([, v]) => v)
-        const values = delay.filter((v) => v > 0)
+        let sum = 0,
+            count = 0,
+            min = Infinity,
+            max = 0
+        s.created_at?.forEach((at, i) => {
+            if (at < since) return
+            const value = s.avg_delay?.[i] ?? -1
+            points.push({ at, task: id, value })
+            if (at >= start && value > 0) {
+                sum += value
+                count++
+                min = Math.min(min, value)
+                max = Math.max(max, value)
+            }
+        })
         tasks.push({
             id,
             name: s.monitor_name ?? s.service_name ?? "",
-            avg: values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0,
-            min: values.length ? Math.min(...values) : 0,
-            max: values.length ? Math.max(...values) : 0,
+            avg: count ? sum / count : 0,
+            min: count ? min : 0,
+            max,
         })
-        at.forEach((t, i) => points.push({ at: t, task: id, value: delay[i] ?? -1 }))
     }
     points.sort((a, b) => a.at - b.at)
     return { tasks, points }
@@ -755,7 +768,7 @@ export const nezha = {
             hours < 1 ? 30_000 : HISTORY_CACHE_MS,
             signal,
         )
-        return mapServices(data, Date.now() - hours * 3_600_000 - edgePad(hours))
+        return mapServices(data, chartWindow(Date.now(), hours).start - edgePad(hours), hours)
     },
 
     async login(username: string, password: string): Promise<LoginResult> {

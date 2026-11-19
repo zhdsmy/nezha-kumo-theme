@@ -1,4 +1,5 @@
 // Adapted from zool-theme/src/components/Chart.tsx (MIT, luoleiorg).
+import type { chartWindow } from "@/core/summary"
 import {
     type PointerEvent,
     useEffect,
@@ -41,7 +42,8 @@ interface Props {
     /** Key of a series to emphasise; the others fade. */
     focus?: string | null
     /** Fixed axis span ending at the newest point; older points are dropped. */
-    windowMs?: number
+    timeWindow: ReturnType<typeof chartWindow>
+    showFailedProbes?: boolean
 }
 
 export type ChartScale = "decimal" | "binary"
@@ -269,7 +271,8 @@ export function Chart({
     label,
     robust,
     focus,
-    windowMs,
+    timeWindow: { start: t0, end: t1 },
+    showFailedProbes,
 }: Props) {
     const tooltipTime = formatTooltipTime ?? ((t: number) => formatTime(t, 0, [t]))
     const box = useRef<HTMLDivElement>(null)
@@ -296,26 +299,23 @@ export function Chart({
     const gap = isMobile ? 6 : 8
     const sampleBuckets = Math.max(40, Math.floor(Math.max(0, width - basePad.l - basePad.r) / 2))
 
-    const prepared = useMemo(() => {
-        const from = windowMs
-            ? Math.max(...series.flatMap((s) => s.points.map((p) => p.t))) - windowMs
-            : -Infinity
-        return series.map((s) => ({
-            ...s,
-            // keep one point before the window so the line reaches the clipped left edge
-            points: downsample(
-                s.points.filter((p, i, a) => p.t >= from || (a[i + 1]?.t ?? -Infinity) >= from),
-                sampleBuckets,
-            ),
-        }))
-    }, [series, sampleBuckets, windowMs])
+    const prepared = useMemo(
+        () =>
+            series.map((s) => {
+                const first = s.points.findIndex((p) => p.t >= t0)
+                const visible = first < 0 ? [] : downsample(s.points.slice(first), sampleBuckets)
+                // Only the stroke needs a predecessor. Keep it out of the first bucket.
+                const points = first > 0 ? [s.points[first - 1], ...visible] : visible
+                return { ...s, points, visible }
+            }),
+        [series, sampleBuckets, t0],
+    )
 
-    const all = prepared.flatMap((s) => s.points)
-    const t1 = all.length ? Math.max(...all.map((p) => p.t)) : 1
-    const t0 = !all.length ? 0 : windowMs ? t1 - windowMs : Math.min(...all.map((p) => p.t))
+    const visible = prepared.flatMap((s) => s.visible)
     const span = t1 - t0 || 1
-    const vals = all.flatMap((p) => (p.v === null ? [] : [p.v]))
-    let dataMax = Math.max(0, ...vals)
+    const vals = visible.flatMap((p) => (p.v === null ? [] : [p.v]))
+    const empty = showFailedProbes ? !visible.length : !vals.length
+    let dataMax = vals.reduce((max, v) => Math.max(max, v), 0)
     if (robust && vals.length > 20) {
         vals.sort((a, b) => a - b)
         dataMax = Math.min(dataMax, vals[Math.floor((vals.length - 1) * 0.99)] * 1.25)
@@ -380,17 +380,15 @@ export function Chart({
     })
 
     const xAxis =
-        width > 0 && all.length ? buildXTicks(t0, t1, plotW, formatTime) : { ticks: [], labels: [] }
+        width > 0 && !empty ? buildXTicks(t0, t1, plotW, formatTime) : { ticks: [], labels: [] }
     const tickTextClass = "chart-axis"
 
     const hover =
-        hoverT === null
+        hoverT === null || empty
             ? null
             : prepared.map((s) => {
-                  let i = s.points.length ? nearest(s.points, hoverT) : -1
-                  // the kept point before a fixed window is drawn but never shown
-                  if (i >= 0 && s.points[i].t < t0) i = i + 1 < s.points.length ? i + 1 : -1
-                  return { s, p: i >= 0 ? s.points[i] : null }
+                  const p = s.visible.length ? s.visible[nearest(s.visible, hoverT)] : null
+                  return { s, p }
               })
     const hasHover = Boolean(hover && hover.some((h) => h.p))
     const twoCol = (hover?.length ?? 0) > 8 && width >= 360
@@ -427,7 +425,7 @@ export function Chart({
     const toHoverT = (clientX: number, el: SVGSVGElement) => {
         const rect = el.getBoundingClientRect()
         const px = clientX - rect.left
-        if (px < pad.l || px > width - pad.r || plotW <= 0 || !all.length) return null
+        if (px < pad.l || px > width - pad.r || plotW <= 0 || empty) return null
         return t0 + (Math.min(plotW, px - pad.l) / plotW) * span
     }
 
@@ -458,8 +456,6 @@ export function Chart({
         }
         tapRef.current = null
     }
-
-    const empty = all.every((p) => p.v === null)
 
     return (
         <div
@@ -545,7 +541,7 @@ export function Chart({
                             {xAxis.labels[i]}
                         </text>
                     ))}
-                    <g clipPath={windowMs ? `url(#${uid}-plot)` : undefined}>
+                    <g clipPath={`url(#${uid}-plot)`}>
                         {paths.map(
                             (p) =>
                                 p.area && (

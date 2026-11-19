@@ -188,3 +188,31 @@ it("aborts underlying metric fetch only when all shared cache waiters cancel", a
     release()
     await expect(p3).resolves.toHaveLength(1)
 })
+
+it.each([0.25, 1, 4, 24, 168, 720])(
+    "uses the visible %sh for latency statistics and retains the left edge",
+    async (hours) => {
+        const end = Date.now() - 30_000
+        const start = end - hours * 3_600_000
+        vi.stubGlobal("fetch", async () =>
+            Response.json({
+                success: true,
+                data: [
+                    {
+                        monitor_id: 1,
+                        created_at: [start - 1000, start, end],
+                        avg_delay: [900, 10, 20],
+                    },
+                    { monitor_id: 2, created_at: [start - 1000, start + 1], avg_delay: [800, -1] },
+                ],
+            }),
+        )
+        const { nezha } = await import("../src/adapters/nezha")
+        const data = await nezha.loadPing("bounds-" + hours, hours)
+        expect(data.tasks.map(({ avg, min, max }) => [avg, min, max])).toEqual([
+            [15, 10, 20],
+            [0, 0, 0],
+        ])
+        expect(data.points[0].at).toBe(start - 1000)
+    },
+)
