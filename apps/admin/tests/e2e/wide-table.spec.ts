@@ -65,3 +65,27 @@ for (const [engine, driver] of Object.entries({ chromium, webkit })) {
         }
     })
 }
+
+test("group lists take the spare width instead of the short name column", async ({ page }) => {
+    const servers = Array.from({ length: 6 }, (_, i) => ({ id: i + 1, name: `Seoul BGP V${i}` }))
+    await page.route("**/api/v1/**", async (route) => {
+        const path = new URL(route.request().url()).pathname
+        const data = path.endsWith("/profile")
+            ? { id: 1, role: 0, username: "demo" }
+            : path.endsWith("/setting")
+              ? { config: { site_name: "Layout", language: "en" } }
+              : path.endsWith("/server")
+                ? servers.map((s) => ({ ...s, host: {} }))
+                : path.endsWith("/server-group")
+                  ? [{ group: { id: 1, name: "Akile" }, servers: servers.map((s) => s.id) }]
+                  : []
+        await route.fulfill({ json: { success: true, data } })
+    })
+    await page.setViewportSize({ width: 1000, height: 800 })
+    await page.goto("/dashboard/server-group")
+    const cell = (col: string) => page.locator(`tbody td[data-col="${col}"]`).first()
+    await expect(cell("servers")).toContainText("Seoul BGP V5")
+    const name = (await cell("name").boundingBox())!.width
+    const list = (await cell("servers").boundingBox())!.width
+    expect(list).toBeGreaterThan(name)
+})

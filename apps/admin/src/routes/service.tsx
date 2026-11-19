@@ -85,7 +85,7 @@ export default function ServicePage() {
             cell: ({ row }) => {
                 const s = row.original
                 return (
-                    <div className="min-w-16 max-w-40 whitespace-normal break-words">{s.name}</div>
+                    <div className="min-w-16 whitespace-normal break-words">{s.name}</div>
                 )
             },
         },
@@ -130,7 +130,7 @@ export default function ServicePage() {
             cell: ({ row }) => {
                 const s = row.original
                 return (
-                    <div className="max-w-32 whitespace-normal break-words">
+                    <div className="whitespace-normal break-words">
                         {Object.keys(s.skip_servers ?? {}).map(serverName).join(", ")}
                     </div>
                 )
@@ -211,6 +211,7 @@ export default function ServicePage() {
             }
         >
             <Table
+                fillColumn="servers"
                 columnPriority={[
                     ["id", 108],
                     ["type", 104],

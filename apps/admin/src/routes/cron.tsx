@@ -76,7 +76,7 @@ export default function CronPage() {
             accessorKey: "name",
             cell: ({ row }) => {
                 const s = row.original
-                return <div className="max-w-32 whitespace-normal break-words">{s.name}</div>
+                return <div className="whitespace-normal break-words">{s.name}</div>
             },
         },
         {
@@ -140,7 +140,7 @@ export default function CronPage() {
             cell: ({ row }) => {
                 const s = row.original
                 return (
-                    <div className="max-w-48 whitespace-normal break-words">
+                    <div className="whitespace-normal break-words">
                         <span>{(s.servers ?? []).map(serverName).join(", ")}</span>
                     </div>
                 )
@@ -232,6 +232,7 @@ export default function CronPage() {
             }
         >
             <Table
+                fillColumn="servers"
                 columnPriority={[
                     ["id", 64],
                     ["taskType", 100],

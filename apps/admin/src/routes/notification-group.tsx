@@ -80,7 +80,7 @@ export default function NotificationGroupPage() {
             accessorFn: (row) => row.group.name,
             cell: ({ row }) => {
                 const s = row.original
-                return <div className="max-w-48 whitespace-normal break-words">{s.group.name}</div>
+                return <div className="whitespace-normal break-words">{s.group.name}</div>
             },
         },
         {
@@ -90,7 +90,7 @@ export default function NotificationGroupPage() {
             cell: ({ row }) => {
                 const s = row.original
                 return (
-                    <div className="max-w-48 whitespace-normal break-words">
+                    <div className="whitespace-normal break-words">
                         <span>{(s.notifications ?? []).map(notifierName).join(", ")}</span>
                     </div>
                 )
@@ -143,6 +143,7 @@ export default function NotificationGroupPage() {
             }
         >
             <Table
+                fillColumn="notifications"
                 columnPriority={[
                     ["id", 64],
                     ["notifications", 150],

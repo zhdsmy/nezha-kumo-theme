@@ -65,6 +65,7 @@ function OAuthGrants({ all, userID }: { all: boolean; userID: number }) {
                 </p>
             )}
             <Table
+                fillColumn="servers"
                 columnPriority={[
                     ["user", 120],
                     ["permissions", 180],
@@ -125,7 +126,7 @@ function OAuthGrants({ all, userID }: { all: boolean; userID: number }) {
                                 </TableCell>
                                 <TableCell
                                     data-col="servers"
-                                    className="max-w-48 break-words whitespace-normal"
+                                    className="break-words whitespace-normal"
                                 >
                                     {grant.server_ids.length
                                         ? grant.server_ids.map(serverName).join(", ")

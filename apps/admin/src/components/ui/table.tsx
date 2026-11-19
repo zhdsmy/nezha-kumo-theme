@@ -31,12 +31,14 @@ const Table = forwardRef<
     HTMLTableElement,
     HTMLAttributes<HTMLTableElement> & {
         primaryColumn?: string
+        /** A list column that takes 2fr of the spare width, next to 1fr for the primary column. */
+        fillColumn?: string
         containerLayout?: boolean
         columnPriority?: [string, number][]
     }
 >(
     (
-        { className, primaryColumn = "name", containerLayout, columnPriority = defaultPriority, children, ...props },
+        { className, primaryColumn = "name", fillColumn, containerLayout, columnPriority = defaultPriority, children, ...props },
         ref,
     ) => {
         const box = useRef<HTMLDivElement>(null)
@@ -143,7 +145,12 @@ const Table = forwardRef<
                     columns
                         .filter((id) => visible.has(id))
                         .map((id) => {
-                            if (id === primaryColumn) return "minmax(0, 1fr)"
+                            // With a visible fill column, the primary keeps the width it reserved.
+                            if (id === primaryColumn)
+                                return fillColumn && visible.has(fillColumn)
+                                    ? `minmax(${size(id)}px, 1fr)`
+                                    : "minmax(0, 1fr)"
+                            if (id === fillColumn) return `minmax(${size(id)}px, 2fr)`
                             if (id === "owner")
                                 return `minmax(${size(id)}px, var(--nkt-owner-grow, 0fr))`
                             return `${size(id)}px`
@@ -171,7 +178,7 @@ const Table = forwardRef<
                 cancelAnimationFrame(frame)
                 selectionObserver?.disconnect()
             }
-        }, [children, columnPriority, containerLayout, primaryColumn, tableWidth])
+        }, [children, columnPriority, containerLayout, fillColumn, primaryColumn, tableWidth])
         return (
             <TableContext.Provider value={{ primaryColumn, layout, hiddenColumns, selectedCount }}>
                 <div
