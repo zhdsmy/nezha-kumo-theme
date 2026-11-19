@@ -1,0 +1,2289 @@
+[
+  {
+    "slug": "aws",
+    "name": "Amazon Web Services",
+    "names": {
+      "zh-CN": "亚马逊云科技"
+    },
+    "aliases": [
+      "aws",
+      "lightsail",
+      "amazon",
+      "yamaxun"
+    ]
+  },
+  {
+    "slug": "google-cloud",
+    "name": "Google Cloud",
+    "names": {
+      "zh-CN": "谷歌云"
+    },
+    "aliases": [
+      "gcp",
+      "google",
+      "gugeyun"
+    ]
+  },
+  {
+    "slug": "azure",
+    "name": "Microsoft Azure",
+    "names": {
+      "zh-CN": "微软 Azure"
+    },
+    "aliases": [
+      "azure",
+      "weiruan"
+    ]
+  },
+  {
+    "slug": "oracle-cloud",
+    "name": "Oracle Cloud Infrastructure",
+    "names": {
+      "zh-CN": "甲骨文云"
+    },
+    "aliases": [
+      "oci",
+      "oracle",
+      "jiaguwen"
+    ]
+  },
+  {
+    "slug": "ibm-cloud",
+    "name": "IBM Cloud",
+    "names": {
+      "zh-CN": "IBM 云"
+    },
+    "aliases": [
+      "ibm",
+      "bluemix"
+    ]
+  },
+  {
+    "slug": "cloudflare",
+    "name": "Cloudflare",
+    "names": {
+      "zh-CN": "Cloudflare"
+    },
+    "aliases": [
+      "cf",
+      "cloudflare workers"
+    ]
+  },
+  {
+    "slug": "alibaba-cloud",
+    "name": "Alibaba Cloud",
+    "names": {
+      "zh-CN": "阿里云"
+    },
+    "aliases": [
+      "aliyun",
+      "ali",
+      "alibabacloud"
+    ]
+  },
+  {
+    "slug": "tencent-cloud",
+    "name": "Tencent Cloud",
+    "names": {
+      "zh-CN": "腾讯云"
+    },
+    "aliases": [
+      "tencent",
+      "tengxunyun",
+      "qcloud"
+    ]
+  },
+  {
+    "slug": "huawei-cloud",
+    "name": "Huawei Cloud",
+    "names": {
+      "zh-CN": "华为云"
+    },
+    "aliases": [
+      "huawei",
+      "huaweiyun"
+    ]
+  },
+  {
+    "slug": "jd-cloud",
+    "name": "JD Cloud",
+    "names": {
+      "zh-CN": "京东云"
+    },
+    "aliases": [
+      "jd",
+      "jingdongyun"
+    ]
+  },
+  {
+    "slug": "volcengine",
+    "name": "Volcengine",
+    "names": {
+      "zh-CN": "火山引擎"
+    },
+    "aliases": [
+      "volc",
+      "huoshanyinqing"
+    ]
+  },
+  {
+    "slug": "ucloud",
+    "name": "UCloud",
+    "names": {
+      "zh-CN": "优刻得"
+    },
+    "aliases": [
+      "ucloud",
+      "youkede"
+    ]
+  },
+  {
+    "slug": "ctyun",
+    "name": "China Telecom Cloud",
+    "names": {
+      "zh-CN": "天翼云"
+    },
+    "aliases": [
+      "ctyun",
+      "tianyiyun",
+      "china telecom"
+    ]
+  },
+  {
+    "slug": "digitalocean",
+    "name": "DigitalOcean",
+    "names": {
+      "zh-CN": "DigitalOcean"
+    },
+    "aliases": [
+      "do",
+      "digital ocean"
+    ]
+  },
+  {
+    "slug": "vultr",
+    "name": "Vultr",
+    "names": {
+      "zh-CN": "Vultr"
+    },
+    "aliases": [
+      "vultr",
+      "choopa"
+    ]
+  },
+  {
+    "slug": "linode",
+    "name": "Linode",
+    "names": {
+      "zh-CN": "Linode"
+    },
+    "aliases": [
+      "linode",
+      "akamai cloud"
+    ]
+  },
+  {
+    "slug": "akamai",
+    "name": "Akamai",
+    "names": {
+      "zh-CN": "阿卡迈"
+    },
+    "aliases": [
+      "akamai",
+      "akamai technologies",
+      "akamaiyun"
+    ]
+  },
+  {
+    "slug": "hetzner",
+    "name": "Hetzner",
+    "names": {
+      "zh-CN": "Hetzner"
+    },
+    "aliases": [
+      "hz",
+      "hetzner cloud"
+    ]
+  },
+  {
+    "slug": "ovhcloud",
+    "name": "OVHcloud",
+    "names": {
+      "zh-CN": "OVHcloud"
+    },
+    "aliases": [
+      "ovh",
+      "ovh cloud"
+    ]
+  },
+  {
+    "slug": "scaleway",
+    "name": "Scaleway",
+    "names": {
+      "zh-CN": "Scaleway"
+    },
+    "aliases": [
+      "scw",
+      "online.net"
+    ]
+  },
+  {
+    "slug": "upcloud",
+    "name": "UpCloud",
+    "names": {
+      "zh-CN": "UpCloud"
+    },
+    "aliases": [
+      "upcloud",
+      "up cloud"
+    ]
+  },
+  {
+    "slug": "contabo",
+    "name": "Contabo",
+    "names": {
+      "zh-CN": "Contabo"
+    },
+    "aliases": [
+      "contabo"
+    ]
+  },
+  {
+    "slug": "netcup",
+    "name": "netcup",
+    "names": {
+      "zh-CN": "netcup"
+    },
+    "aliases": [
+      "netcup",
+      "nc"
+    ]
+  },
+  {
+    "slug": "kamatera",
+    "name": "Kamatera",
+    "names": {
+      "zh-CN": "Kamatera"
+    },
+    "aliases": [
+      "kamatera"
+    ]
+  },
+  {
+    "slug": "ionos",
+    "name": "IONOS",
+    "names": {
+      "zh-CN": "IONOS"
+    },
+    "aliases": [
+      "1and1",
+      "1&1"
+    ]
+  },
+  {
+    "slug": "hostinger",
+    "name": "Hostinger",
+    "names": {
+      "zh-CN": "Hostinger"
+    },
+    "aliases": [
+      "hostinger"
+    ]
+  },
+  {
+    "slug": "buyvm",
+    "name": "BuyVM",
+    "names": {
+      "zh-CN": "BuyVM"
+    },
+    "aliases": [
+      "buyvm",
+      "frantech"
+    ]
+  },
+  {
+    "slug": "hosthatch",
+    "name": "HostHatch",
+    "names": {
+      "zh-CN": "HostHatch"
+    },
+    "aliases": [
+      "hh",
+      "hosthatch"
+    ]
+  },
+  {
+    "slug": "cloudcone",
+    "name": "CloudCone",
+    "names": {
+      "zh-CN": "CloudCone"
+    },
+    "aliases": [
+      "cc",
+      "cloudcone"
+    ]
+  },
+  {
+    "slug": "racknerd",
+    "name": "RackNerd",
+    "names": {
+      "zh-CN": "RackNerd"
+    },
+    "aliases": [
+      "rn",
+      "racknerd"
+    ]
+  },
+  {
+    "slug": "greencloud",
+    "name": "GreenCloud",
+    "names": {
+      "zh-CN": "绿云"
+    },
+    "aliases": [
+      "greencloudvps",
+      "lvyun"
+    ]
+  },
+  {
+    "slug": "hostdare",
+    "name": "HostDare",
+    "names": {
+      "zh-CN": "HostDare"
+    },
+    "aliases": [
+      "hd",
+      "hostdare"
+    ]
+  },
+  {
+    "slug": "v-ps",
+    "name": "V.PS",
+    "names": {
+      "zh-CN": "小秘书"
+    },
+    "aliases": [
+      "v.ps",
+      "xiaomishu",
+      "xtom"
+    ]
+  },
+  {
+    "slug": "akile",
+    "name": "AkileCloud",
+    "names": {
+      "zh-CN": "AkileCloud"
+    },
+    "aliases": [
+      "ak",
+      "akile",
+      "akilecloud"
+    ]
+  },
+  {
+    "slug": "bagevm",
+    "name": "BageVM",
+    "names": {
+      "zh-CN": "BageVM"
+    },
+    "aliases": [
+      "bage",
+      "bagevm"
+    ]
+  },
+  {
+    "slug": "dmit",
+    "name": "DMIT",
+    "names": {
+      "zh-CN": "DMIT"
+    },
+    "aliases": [
+      "dmit",
+      "dama",
+      "大妈"
+    ]
+  },
+  {
+    "slug": "bandwagonhost",
+    "name": "BandwagonHost",
+    "names": {
+      "zh-CN": "搬瓦工"
+    },
+    "aliases": [
+      "bwh",
+      "bandwagon",
+      "banwagong"
+    ]
+  },
+  {
+    "slug": "dogyun",
+    "name": "DogYun",
+    "names": {
+      "zh-CN": "狗云"
+    },
+    "aliases": [
+      "dog yun",
+      "gouyun"
+    ]
+  },
+  {
+    "slug": "misaka",
+    "name": "Misaka Network",
+    "names": {
+      "zh-CN": "Misaka Network"
+    },
+    "aliases": [
+      "misaka",
+      "misaka.io"
+    ]
+  },
+  {
+    "slug": "zenlayer",
+    "name": "Zenlayer",
+    "names": {
+      "zh-CN": "Zenlayer"
+    },
+    "aliases": [
+      "zenlayer cloud"
+    ]
+  },
+  {
+    "slug": "colocrossing",
+    "name": "ColoCrossing",
+    "names": {
+      "zh-CN": "ColoCrossing"
+    },
+    "aliases": [
+      "ccs",
+      "colocrossing"
+    ]
+  },
+  {
+    "slug": "evoxt",
+    "name": "Evoxt",
+    "names": {
+      "zh-CN": "益沃斯"
+    },
+    "aliases": [
+      "evoxt",
+      "yiwosi"
+    ]
+  },
+  {
+    "slug": "spartan-host",
+    "name": "Spartan Host",
+    "names": {
+      "zh-CN": "斯巴达"
+    },
+    "aliases": [
+      "spartan",
+      "sibada"
+    ]
+  },
+  {
+    "slug": "baidu-cloud",
+    "name": "Baidu AI Cloud",
+    "names": {
+      "zh-CN": "百度智能云"
+    },
+    "aliases": [
+      "baiduyun",
+      "bce",
+      "baidu cloud"
+    ]
+  },
+  {
+    "slug": "civo",
+    "name": "Civo",
+    "names": {
+      "zh-CN": "Civo"
+    },
+    "aliases": [
+      "civo cloud"
+    ]
+  },
+  {
+    "slug": "exoscale",
+    "name": "Exoscale",
+    "names": {
+      "zh-CN": "Exoscale"
+    },
+    "aliases": [
+      "exo",
+      "exoscale"
+    ]
+  },
+  {
+    "slug": "vercel",
+    "name": "Vercel",
+    "names": {
+      "zh-CN": "Vercel"
+    },
+    "aliases": [
+      "vercel",
+      "zeit"
+    ]
+  },
+  {
+    "slug": "home",
+    "name": "Home",
+    "names": {
+      "zh-CN": "家宽"
+    },
+    "aliases": [
+      "home",
+      "jiakuan",
+      "家庭宽带"
+    ]
+  },
+  {
+    "slug": "nas",
+    "name": "NAS",
+    "names": {
+      "zh-CN": "网络存储"
+    },
+    "aliases": [
+      "nas",
+      "wangluocunchu",
+      "storage"
+    ]
+  },
+  {
+    "slug": "relay",
+    "name": "Relay",
+    "names": {
+      "zh-CN": "中转"
+    },
+    "aliases": [
+      "relay",
+      "zhongzhuan",
+      "forward"
+    ]
+  },
+  {
+    "slug": "other",
+    "name": "Other",
+    "names": {
+      "zh-CN": "其他"
+    },
+    "aliases": [
+      "other",
+      "qita",
+      "misc"
+    ]
+  },
+  {
+    "slug": "unknown",
+    "name": "Unknown",
+    "names": {
+      "zh-CN": "未知厂商"
+    },
+    "aliases": [
+      "unknown",
+      "weizhi",
+      "placeholder"
+    ]
+  },
+  {
+    "slug": "render",
+    "name": "Render",
+    "names": {
+      "zh-CN": "Render"
+    },
+    "aliases": [
+      "render.com"
+    ]
+  },
+  {
+    "slug": "railway",
+    "name": "Railway",
+    "names": {
+      "zh-CN": "Railway"
+    },
+    "aliases": [
+      "railway.app"
+    ]
+  },
+  {
+    "slug": "heroku",
+    "name": "Heroku",
+    "names": {
+      "zh-CN": "Heroku"
+    },
+    "aliases": [
+      "heroku cloud"
+    ]
+  },
+  {
+    "slug": "netlify",
+    "name": "Netlify",
+    "names": {
+      "zh-CN": "Netlify"
+    },
+    "aliases": [
+      "netlify hosting"
+    ]
+  },
+  {
+    "slug": "fastly",
+    "name": "Fastly",
+    "names": {
+      "zh-CN": "Fastly"
+    },
+    "aliases": [
+      "fastly cdn"
+    ]
+  },
+  {
+    "slug": "gcore",
+    "name": "Gcore",
+    "names": {
+      "zh-CN": "Gcore"
+    },
+    "aliases": [
+      "g-core labs",
+      "gcore cloud"
+    ]
+  },
+  {
+    "slug": "godaddy",
+    "name": "GoDaddy",
+    "names": {
+      "zh-CN": "GoDaddy"
+    },
+    "aliases": [
+      "go daddy"
+    ]
+  },
+  {
+    "slug": "backblaze",
+    "name": "Backblaze",
+    "names": {
+      "zh-CN": "Backblaze"
+    },
+    "aliases": [
+      "backblaze b2"
+    ]
+  },
+  {
+    "slug": "wasabi",
+    "name": "Wasabi",
+    "names": {
+      "zh-CN": "Wasabi"
+    },
+    "aliases": [
+      "wasabi cloud storage"
+    ]
+  },
+  {
+    "slug": "yandex-cloud",
+    "name": "Yandex Cloud",
+    "names": {
+      "zh-CN": "Yandex 云"
+    },
+    "aliases": [
+      "yandexcloud",
+      "yandex cloud"
+    ]
+  },
+  {
+    "slug": "fly-io",
+    "name": "Fly.io",
+    "names": {
+      "zh-CN": "Fly.io"
+    },
+    "aliases": [
+      "fly.io",
+      "flyio"
+    ]
+  },
+  {
+    "slug": "bunny",
+    "name": "bunny.net",
+    "names": {
+      "zh-CN": "bunny.net"
+    },
+    "aliases": [
+      "bunny.net",
+      "bunnycdn"
+    ]
+  },
+  {
+    "slug": "leaseweb",
+    "name": "Leaseweb",
+    "names": {
+      "zh-CN": "Leaseweb"
+    },
+    "aliases": [
+      "lease web"
+    ]
+  },
+  {
+    "slug": "hostwinds",
+    "name": "Hostwinds",
+    "names": {
+      "zh-CN": "Hostwinds"
+    },
+    "aliases": [
+      "hostwinds cloud"
+    ]
+  },
+  {
+    "slug": "liquid-web",
+    "name": "Liquid Web",
+    "names": {
+      "zh-CN": "Liquid Web"
+    },
+    "aliases": [
+      "liquidweb"
+    ]
+  },
+  {
+    "slug": "dreamhost",
+    "name": "DreamHost",
+    "names": {
+      "zh-CN": "DreamHost"
+    },
+    "aliases": [
+      "dream host"
+    ]
+  },
+  {
+    "slug": "namecheap",
+    "name": "Namecheap",
+    "names": {
+      "zh-CN": "Namecheap"
+    },
+    "aliases": [
+      "name cheap"
+    ]
+  },
+  {
+    "slug": "bluehost",
+    "name": "Bluehost",
+    "names": {
+      "zh-CN": "Bluehost"
+    },
+    "aliases": [
+      "blue host"
+    ]
+  },
+  {
+    "slug": "cherry-servers",
+    "name": "Cherry Servers",
+    "names": {
+      "zh-CN": "Cherry Servers"
+    },
+    "aliases": [
+      "cherryservers"
+    ]
+  },
+  {
+    "slug": "latitude-sh",
+    "name": "Latitude.sh",
+    "names": {
+      "zh-CN": "Latitude.sh"
+    },
+    "aliases": [
+      "latitude.sh",
+      "maxihost"
+    ]
+  },
+  {
+    "slug": "interserver",
+    "name": "InterServer",
+    "names": {
+      "zh-CN": "InterServer"
+    },
+    "aliases": [
+      "interserver.net"
+    ]
+  },
+  {
+    "slug": "virmach",
+    "name": "VirMach",
+    "names": {
+      "zh-CN": "VirMach"
+    },
+    "aliases": [
+      "virtual machine solutions"
+    ]
+  },
+  {
+    "slug": "psychz",
+    "name": "Psychz Networks",
+    "names": {
+      "zh-CN": "Psychz Networks"
+    },
+    "aliases": [
+      "psychz networks"
+    ]
+  },
+  {
+    "slug": "time4vps",
+    "name": "Time4VPS",
+    "names": {
+      "zh-CN": "Time4VPS"
+    },
+    "aliases": [
+      "time 4 vps"
+    ]
+  },
+  {
+    "slug": "aeza",
+    "name": "Aeza",
+    "names": {
+      "zh-CN": "Aeza"
+    },
+    "aliases": [
+      "aéza"
+    ]
+  },
+  {
+    "slug": "hostkey",
+    "name": "HOSTKEY",
+    "names": {
+      "zh-CN": "HOSTKEY"
+    },
+    "aliases": [
+      "hostkey cloud"
+    ]
+  },
+  {
+    "slug": "selectel",
+    "name": "Selectel",
+    "names": {
+      "zh-CN": "Selectel"
+    },
+    "aliases": [
+      "селектел"
+    ]
+  },
+  {
+    "slug": "timeweb",
+    "name": "Timeweb Cloud",
+    "names": {
+      "zh-CN": "Timeweb Cloud"
+    },
+    "aliases": [
+      "timeweb cloud",
+      "таймвэб"
+    ]
+  },
+  {
+    "slug": "reliablesite",
+    "name": "ReliableSite",
+    "names": {
+      "zh-CN": "ReliableSite"
+    },
+    "aliases": [
+      "reliable site",
+      "reliablesite.net"
+    ]
+  },
+  {
+    "slug": "ishosting",
+    "name": "is*hosting",
+    "names": {
+      "zh-CN": "is*hosting"
+    },
+    "aliases": [
+      "is*hosting",
+      "is hosting"
+    ]
+  },
+  {
+    "slug": "qiniu",
+    "name": "Qiniu Cloud",
+    "names": {
+      "zh-CN": "七牛云"
+    },
+    "aliases": [
+      "qiniuyun"
+    ]
+  },
+  {
+    "slug": "upyun",
+    "name": "Upyun",
+    "names": {
+      "zh-CN": "又拍云"
+    },
+    "aliases": [
+      "youpaiyun"
+    ]
+  },
+  {
+    "slug": "qingcloud",
+    "name": "QingCloud",
+    "names": {
+      "zh-CN": "青云"
+    },
+    "aliases": [
+      "qingyun"
+    ]
+  },
+  {
+    "slug": "byteplus",
+    "name": "BytePlus",
+    "names": {
+      "zh-CN": "BytePlus"
+    },
+    "aliases": [
+      "byteplus"
+    ]
+  },
+  {
+    "slug": "sakura-internet",
+    "name": "SAKURA internet",
+    "names": {
+      "zh-CN": "樱花互联网"
+    },
+    "aliases": [
+      "さくらインターネット",
+      "sakura cloud"
+    ]
+  },
+  {
+    "slug": "xserver",
+    "name": "XServer",
+    "names": {
+      "zh-CN": "XServer"
+    },
+    "aliases": [
+      "エックスサーバー"
+    ]
+  },
+  {
+    "slug": "kagoya",
+    "name": "KAGOYA Japan",
+    "names": {
+      "zh-CN": "KAGOYA Japan"
+    },
+    "aliases": [
+      "カゴヤ・ジャパン"
+    ]
+  },
+  {
+    "slug": "vmiss",
+    "name": "VMISS",
+    "names": {
+      "zh-CN": "VMISS"
+    },
+    "aliases": [
+      "vmiss"
+    ]
+  },
+  {
+    "slug": "vmrack",
+    "name": "VMRack",
+    "names": {
+      "zh-CN": "VMRack"
+    },
+    "aliases": [
+      "vmrack"
+    ]
+  },
+  {
+    "slug": "neburst",
+    "name": "Neburst Networks",
+    "names": {
+      "zh-CN": "奶爸云"
+    },
+    "aliases": [
+      "neburst networks",
+      "奶爸"
+    ]
+  },
+  {
+    "slug": "rainyun",
+    "name": "RainYun",
+    "names": {
+      "zh-CN": "雨云"
+    },
+    "aliases": [
+      "rainyun",
+      "yuyun"
+    ]
+  },
+  {
+    "slug": "lcayun",
+    "name": "Lcayun",
+    "names": {
+      "zh-CN": "莱卡云"
+    },
+    "aliases": [
+      "laikayun"
+    ]
+  },
+  {
+    "slug": "lightnode",
+    "name": "LightNode",
+    "names": {
+      "zh-CN": "LightNode"
+    },
+    "aliases": [
+      "lightnode"
+    ]
+  },
+  {
+    "slug": "conoha",
+    "name": "ConoHa",
+    "names": {
+      "zh-CN": "ConoHa"
+    },
+    "aliases": [
+      "このは",
+      "gmo conoha"
+    ]
+  },
+  {
+    "slug": "naver-cloud",
+    "name": "NAVER Cloud Platform",
+    "names": {
+      "zh-CN": "NAVER 云"
+    },
+    "aliases": [
+      "ncp",
+      "네이버 클라우드"
+    ]
+  },
+  {
+    "slug": "nhn-cloud",
+    "name": "NHN Cloud",
+    "names": {
+      "zh-CN": "NHN 云"
+    },
+    "aliases": [
+      "엔에이치엔 클라우드"
+    ]
+  },
+  {
+    "slug": "lisahost",
+    "name": "LisaHost",
+    "names": {
+      "zh-CN": "丽萨主机"
+    },
+    "aliases": [
+      "lisha",
+      "lisa host"
+    ]
+  },
+  {
+    "slug": "zgocloud",
+    "name": "ZgoCloud",
+    "names": {
+      "zh-CN": "ZgoCloud"
+    },
+    "aliases": [
+      "zgovps",
+      "zgo cloud"
+    ]
+  },
+  {
+    "slug": "yecaoyun",
+    "name": "YecaoYun",
+    "names": {
+      "zh-CN": "野草云"
+    },
+    "aliases": [
+      "yecao"
+    ]
+  },
+  {
+    "slug": "kingsoft-cloud",
+    "name": "Kingsoft Cloud",
+    "names": {
+      "zh-CN": "金山云"
+    },
+    "aliases": [
+      "ksyun",
+      "jinshanyun"
+    ]
+  },
+  {
+    "slug": "ecloud",
+    "name": "China Mobile Cloud",
+    "names": {
+      "zh-CN": "移动云"
+    },
+    "aliases": [
+      "移动云",
+      "ydyun"
+    ]
+  },
+  {
+    "slug": "unicom-cloud",
+    "name": "China Unicom Cloud",
+    "names": {
+      "zh-CN": "联通云"
+    },
+    "aliases": [
+      "中国联通云",
+      "liantongyun"
+    ]
+  },
+  {
+    "slug": "west-cn",
+    "name": "West.cn",
+    "names": {
+      "zh-CN": "西部数码"
+    },
+    "aliases": [
+      "west digital",
+      "xibushuma"
+    ]
+  },
+  {
+    "slug": "hncloud",
+    "name": "HNCloud",
+    "names": {
+      "zh-CN": "华纳云"
+    },
+    "aliases": [
+      "huanayun"
+    ]
+  },
+  {
+    "slug": "henghost",
+    "name": "Henghost",
+    "names": {
+      "zh-CN": "恒创科技"
+    },
+    "aliases": [
+      "hengchuang"
+    ]
+  },
+  {
+    "slug": "wangsu",
+    "name": "Wangsu",
+    "names": {
+      "zh-CN": "网宿科技"
+    },
+    "aliases": [
+      "chinanetcenter",
+      "wangsu"
+    ]
+  },
+  {
+    "slug": "kt-cloud",
+    "name": "kt cloud",
+    "names": {
+      "zh-CN": "KT 云"
+    },
+    "aliases": [
+      "케이티클라우드"
+    ]
+  },
+  {
+    "slug": "akkocloud",
+    "name": "AkkoCloud",
+    "names": {
+      "zh-CN": "AkkoCloud"
+    },
+    "aliases": [
+      "akko cloud"
+    ]
+  },
+  {
+    "slug": "rackspace",
+    "name": "Rackspace Technology",
+    "names": {
+      "zh-CN": "Rackspace Technology"
+    },
+    "aliases": [
+      "rackspace technology"
+    ]
+  },
+  {
+    "slug": "cloudways",
+    "name": "Cloudways",
+    "names": {
+      "zh-CN": "Cloudways"
+    },
+    "aliases": [
+      "cloudways hosting"
+    ]
+  },
+  {
+    "slug": "infomaniak",
+    "name": "Infomaniak",
+    "names": {
+      "zh-CN": "Infomaniak"
+    },
+    "aliases": [
+      "infomaniak cloud"
+    ]
+  },
+  {
+    "slug": "wp-engine",
+    "name": "WP Engine",
+    "names": {
+      "zh-CN": "WP Engine"
+    },
+    "aliases": [
+      "wpengine"
+    ]
+  },
+  {
+    "slug": "koyeb",
+    "name": "Koyeb",
+    "names": {
+      "zh-CN": "Koyeb"
+    },
+    "aliases": [
+      "koyeb cloud"
+    ]
+  },
+  {
+    "slug": "kinsta",
+    "name": "Kinsta",
+    "names": {
+      "zh-CN": "Kinsta"
+    },
+    "aliases": [
+      "kinsta hosting"
+    ]
+  },
+  {
+    "slug": "gandi",
+    "name": "Gandi",
+    "names": {
+      "zh-CN": "Gandi"
+    },
+    "aliases": [
+      "gandi.net"
+    ]
+  },
+  {
+    "slug": "strato",
+    "name": "STRATO",
+    "names": {
+      "zh-CN": "STRATO"
+    },
+    "aliases": [
+      "strato hosting"
+    ]
+  },
+  {
+    "slug": "servers-com",
+    "name": "Servers.com",
+    "names": {
+      "zh-CN": "Servers.com"
+    },
+    "aliases": [
+      "servers.com"
+    ]
+  },
+  {
+    "slug": "hostgator",
+    "name": "HostGator",
+    "names": {
+      "zh-CN": "HostGator"
+    },
+    "aliases": [
+      "host gator"
+    ]
+  },
+  {
+    "slug": "siteground",
+    "name": "SiteGround",
+    "names": {
+      "zh-CN": "SiteGround"
+    },
+    "aliases": [
+      "site ground"
+    ]
+  },
+  {
+    "slug": "hosting-com",
+    "name": "hosting.com",
+    "names": {
+      "zh-CN": "hosting.com"
+    },
+    "aliases": [
+      "a2 hosting",
+      "a2-hosting",
+      "a2hosting"
+    ]
+  },
+  {
+    "slug": "hostus",
+    "name": "HostUS",
+    "names": {
+      "zh-CN": "HostUS"
+    },
+    "aliases": [
+      "hostus.us"
+    ]
+  },
+  {
+    "slug": "webdock",
+    "name": "Webdock",
+    "names": {
+      "zh-CN": "Webdock"
+    },
+    "aliases": [
+      "webdock.io"
+    ]
+  },
+  {
+    "slug": "ruvds",
+    "name": "RUVDS",
+    "names": {
+      "zh-CN": "RUVDS"
+    },
+    "aliases": [
+      "ru vds"
+    ]
+  },
+  {
+    "slug": "firstvds",
+    "name": "FirstVDS",
+    "names": {
+      "zh-CN": "FirstVDS"
+    },
+    "aliases": [
+      "first vds"
+    ]
+  },
+  {
+    "slug": "clouvider",
+    "name": "Clouvider",
+    "names": {
+      "zh-CN": "Clouvider"
+    },
+    "aliases": [
+      "clouvider cloud"
+    ]
+  },
+  {
+    "slug": "reg-ru",
+    "name": "REG.RU",
+    "names": {
+      "zh-CN": "REG.RU"
+    },
+    "aliases": [
+      "reg.ru",
+      "рег.ру"
+    ]
+  },
+  {
+    "slug": "inmotion-hosting",
+    "name": "InMotion Hosting",
+    "names": {
+      "zh-CN": "InMotion Hosting"
+    },
+    "aliases": [
+      "inmotion"
+    ]
+  },
+  {
+    "slug": "cloudsigma",
+    "name": "CloudSigma",
+    "names": {
+      "zh-CN": "CloudSigma"
+    },
+    "aliases": [
+      "cloud sigma"
+    ]
+  },
+  {
+    "slug": "liteserver",
+    "name": "LiteServer",
+    "names": {
+      "zh-CN": "LiteServer"
+    },
+    "aliases": [
+      "liteserver.nl"
+    ]
+  },
+  {
+    "slug": "alphavps",
+    "name": "AlphaVPS",
+    "names": {
+      "zh-CN": "AlphaVPS"
+    },
+    "aliases": [
+      "alpha vps"
+    ]
+  },
+  {
+    "slug": "host-europe",
+    "name": "Host Europe",
+    "names": {
+      "zh-CN": "Host Europe"
+    },
+    "aliases": [
+      "hosteurope"
+    ]
+  },
+  {
+    "slug": "sharktech",
+    "name": "Sharktech",
+    "names": {
+      "zh-CN": "Sharktech"
+    },
+    "aliases": [
+      "sharktech.net"
+    ]
+  },
+  {
+    "slug": "atlantic-net",
+    "name": "Atlantic.Net",
+    "names": {
+      "zh-CN": "Atlantic.Net"
+    },
+    "aliases": [
+      "atlantic.net"
+    ]
+  },
+  {
+    "slug": "servarica",
+    "name": "ServaRICA",
+    "names": {
+      "zh-CN": "ServaRICA"
+    },
+    "aliases": [
+      "serva rica"
+    ]
+  },
+  {
+    "slug": "krypt",
+    "name": "Krypt",
+    "names": {
+      "zh-CN": "Krypt"
+    },
+    "aliases": [
+      "krypt.com"
+    ]
+  },
+  {
+    "slug": "beget",
+    "name": "Beget",
+    "names": {
+      "zh-CN": "Beget"
+    },
+    "aliases": [
+      "бегет"
+    ]
+  },
+  {
+    "slug": "coreweave",
+    "name": "CoreWeave",
+    "names": {
+      "zh-CN": "CoreWeave"
+    },
+    "aliases": [
+      "core weave"
+    ]
+  },
+  {
+    "slug": "lambda",
+    "name": "Lambda",
+    "names": {
+      "zh-CN": "Lambda"
+    },
+    "aliases": [
+      "lambda cloud",
+      "lambda labs",
+      "lambdalabs"
+    ]
+  },
+  {
+    "slug": "runpod",
+    "name": "Runpod",
+    "names": {
+      "zh-CN": "Runpod"
+    },
+    "aliases": [
+      "runpod.io"
+    ]
+  },
+  {
+    "slug": "vast-ai",
+    "name": "Vast.ai",
+    "names": {
+      "zh-CN": "Vast.ai"
+    },
+    "aliases": [
+      "vast.ai",
+      "vastai"
+    ]
+  },
+  {
+    "slug": "paperspace",
+    "name": "Paperspace",
+    "names": {
+      "zh-CN": "Paperspace"
+    },
+    "aliases": [
+      "paperspace cloud",
+      "digitalocean paperspace"
+    ]
+  },
+  {
+    "slug": "nebius",
+    "name": "Nebius",
+    "names": {
+      "zh-CN": "Nebius"
+    },
+    "aliases": [
+      "nebius ai cloud"
+    ]
+  },
+  {
+    "slug": "crusoe",
+    "name": "Crusoe",
+    "names": {
+      "zh-CN": "Crusoe"
+    },
+    "aliases": [
+      "crusoe cloud"
+    ]
+  },
+  {
+    "slug": "hyperstack",
+    "name": "Hyperstack",
+    "names": {
+      "zh-CN": "Hyperstack"
+    },
+    "aliases": [
+      "hyperstack cloud",
+      "nexgen cloud"
+    ]
+  },
+  {
+    "slug": "modal",
+    "name": "Modal",
+    "names": {
+      "zh-CN": "Modal"
+    },
+    "aliases": [
+      "modal labs"
+    ]
+  },
+  {
+    "slug": "zeabur",
+    "name": "Zeabur",
+    "names": {
+      "zh-CN": "Zeabur"
+    },
+    "aliases": [
+      "zeabur cloud"
+    ]
+  },
+  {
+    "slug": "tensordock",
+    "name": "TensorDock",
+    "names": {
+      "zh-CN": "TensorDock"
+    },
+    "aliases": [
+      "tensor dock"
+    ]
+  },
+  {
+    "slug": "deno-deploy",
+    "name": "Deno Deploy",
+    "names": {
+      "zh-CN": "Deno Deploy"
+    },
+    "aliases": [
+      "deno deploy",
+      "deno land"
+    ]
+  },
+  {
+    "slug": "cdn77",
+    "name": "CDN77",
+    "names": {
+      "zh-CN": "CDN77"
+    },
+    "aliases": [
+      "cdn77.com"
+    ]
+  },
+  {
+    "slug": "keycdn",
+    "name": "KeyCDN",
+    "names": {
+      "zh-CN": "KeyCDN"
+    },
+    "aliases": [
+      "key cdn"
+    ]
+  },
+  {
+    "slug": "sealos",
+    "name": "Sealos",
+    "names": {
+      "zh-CN": "Sealos"
+    },
+    "aliases": [
+      "sealos cloud"
+    ]
+  },
+  {
+    "slug": "advin-servers",
+    "name": "Advin Servers",
+    "names": {
+      "zh-CN": "Advin Servers"
+    },
+    "aliases": [
+      "advinservers"
+    ]
+  },
+  {
+    "slug": "lunanode",
+    "name": "LunaNode",
+    "names": {
+      "zh-CN": "LunaNode"
+    },
+    "aliases": [
+      "luna node"
+    ]
+  },
+  {
+    "slug": "dedibox",
+    "name": "Dedibox",
+    "names": {
+      "zh-CN": "Dedibox"
+    },
+    "aliases": [
+      "scaleway dedibox",
+      "online.net dedibox"
+    ]
+  },
+  {
+    "slug": "ramnode",
+    "name": "RamNode",
+    "names": {
+      "zh-CN": "RamNode"
+    },
+    "aliases": [
+      "ram node"
+    ]
+  },
+  {
+    "slug": "hostodo",
+    "name": "Hostodo",
+    "names": {
+      "zh-CN": "Hostodo"
+    },
+    "aliases": [
+      "hostodo.com"
+    ]
+  },
+  {
+    "slug": "hosteons",
+    "name": "HostEONS",
+    "names": {
+      "zh-CN": "HostEONS"
+    },
+    "aliases": [
+      "host eons"
+    ]
+  },
+  {
+    "slug": "letbox",
+    "name": "LetBox",
+    "names": {
+      "zh-CN": "LetBox"
+    },
+    "aliases": [
+      "let box"
+    ]
+  },
+  {
+    "slug": "webhorizon",
+    "name": "WebHorizon",
+    "names": {
+      "zh-CN": "WebHorizon"
+    },
+    "aliases": [
+      "web horizon"
+    ]
+  },
+  {
+    "slug": "nocix",
+    "name": "Nocix",
+    "names": {
+      "zh-CN": "Nocix"
+    },
+    "aliases": [
+      "nocix.net"
+    ]
+  },
+  {
+    "slug": "kimsufi",
+    "name": "Kimsufi",
+    "names": {
+      "zh-CN": "Kimsufi"
+    },
+    "aliases": [
+      "ovh kimsufi",
+      "ks"
+    ]
+  },
+  {
+    "slug": "soyoustart",
+    "name": "So you Start",
+    "names": {
+      "zh-CN": "So you Start"
+    },
+    "aliases": [
+      "so you start",
+      "ovh soyoustart",
+      "sys"
+    ]
+  },
+  {
+    "slug": "inspur-cloud",
+    "name": "Inspur Cloud",
+    "names": {
+      "zh-CN": "浪潮云"
+    },
+    "aliases": [
+      "inspur",
+      "langchaoyun"
+    ]
+  },
+  {
+    "slug": "webarena",
+    "name": "WebARENA",
+    "names": {
+      "zh-CN": "NTT WebARENA"
+    },
+    "aliases": [
+      "webarena",
+      "NTTPC"
+    ]
+  },
+  {
+    "slug": "gabia",
+    "name": "Gabia",
+    "names": {
+      "zh-CN": "Gabia"
+    },
+    "aliases": [
+      "가비아",
+      "gabia"
+    ]
+  },
+  {
+    "slug": "cafe24",
+    "name": "Cafe24",
+    "names": {
+      "zh-CN": "Cafe24"
+    },
+    "aliases": [
+      "카페24",
+      "cafe24"
+    ]
+  },
+  {
+    "slug": "bizfly-cloud",
+    "name": "BizFly Cloud",
+    "names": {
+      "zh-CN": "BizFly Cloud"
+    },
+    "aliases": [
+      "bizfly",
+      "vccorp"
+    ]
+  },
+  {
+    "slug": "idcloudhost",
+    "name": "IDCloudHost",
+    "names": {
+      "zh-CN": "IDCloudHost"
+    },
+    "aliases": [
+      "idch",
+      "idcloudhost"
+    ]
+  },
+  {
+    "slug": "exabytes",
+    "name": "Exabytes",
+    "names": {
+      "zh-CN": "Exabytes"
+    },
+    "aliases": [
+      "exabytes malaysia",
+      "exabytes"
+    ]
+  },
+  {
+    "slug": "nipa-cloud",
+    "name": "NIPA Cloud",
+    "names": {
+      "zh-CN": "NIPA Cloud"
+    },
+    "aliases": [
+      "nipa",
+      "nipa cloud"
+    ]
+  },
+  {
+    "slug": "unisyscloud",
+    "name": "Unicloud",
+    "names": {
+      "zh-CN": "紫光云"
+    },
+    "aliases": [
+      "unicloud",
+      "紫光云",
+      "ziguangyun"
+    ]
+  },
+  {
+    "slug": "e2e-networks",
+    "name": "E2E Networks",
+    "names": {
+      "zh-CN": "E2E Networks"
+    },
+    "aliases": [
+      "e2e",
+      "e2e networks"
+    ]
+  },
+  {
+    "slug": "baishan",
+    "name": "BaishanCloud",
+    "names": {
+      "zh-CN": "白山云"
+    },
+    "aliases": [
+      "baishanyun",
+      "baishan"
+    ]
+  },
+  {
+    "slug": "21vianet",
+    "name": "VNET Group",
+    "names": {
+      "zh-CN": "世纪互联"
+    },
+    "aliases": [
+      "21vianet",
+      "vnet",
+      "shijihulian"
+    ]
+  },
+  {
+    "slug": "capitalonline",
+    "name": "Capitalonline",
+    "names": {
+      "zh-CN": "首都在线"
+    },
+    "aliases": [
+      "cds",
+      "shouduzaixian"
+    ]
+  },
+  {
+    "slug": "netease-cloud",
+    "name": "NetEase Shufan",
+    "names": {
+      "zh-CN": "网易数帆"
+    },
+    "aliases": [
+      "netease shufan",
+      "wangyishufan"
+    ]
+  },
+  {
+    "slug": "zzidc",
+    "name": "ZZIDC",
+    "names": {
+      "zh-CN": "景安网络"
+    },
+    "aliases": [
+      "jingan",
+      "景安",
+      "gainet",
+      "景安网络"
+    ]
+  },
+  {
+    "slug": "xinnet",
+    "name": "Xinnet",
+    "names": {
+      "zh-CN": "新网"
+    },
+    "aliases": [
+      "xinnet",
+      "新网数码"
+    ]
+  },
+  {
+    "slug": "vpsor",
+    "name": "GYStack",
+    "names": {
+      "zh-CN": "硅云"
+    },
+    "aliases": [
+      "vpsor",
+      "guiyun",
+      "硅云"
+    ]
+  },
+  {
+    "slug": "iij",
+    "name": "Internet Initiative Japan",
+    "names": {
+      "zh-CN": "日本互联网倡议"
+    },
+    "aliases": [
+      "iij",
+      "インターネットイニシアティブ"
+    ]
+  },
+  {
+    "slug": "hicloud",
+    "name": "Chunghwa Telecom hicloud",
+    "names": {
+      "zh-CN": "中华电信 hicloud"
+    },
+    "aliases": [
+      "中華電信",
+      "hicloud",
+      "HiNet"
+    ]
+  },
+  {
+    "slug": "viettel-idc",
+    "name": "Viettel IDC",
+    "names": {
+      "zh-CN": "越南 Viettel IDC"
+    },
+    "aliases": [
+      "viettel idc",
+      "viettelidc"
+    ]
+  },
+  {
+    "slug": "biznet-gio",
+    "name": "Biznet Gio",
+    "names": {
+      "zh-CN": "Biznet Gio"
+    },
+    "aliases": [
+      "biznetgio",
+      "biznet gio"
+    ]
+  },
+  {
+    "slug": "100tb",
+    "name": "100TB",
+    "names": {
+      "zh-CN": "100TB"
+    },
+    "aliases": [
+      "100tb.io"
+    ]
+  },
+  {
+    "slug": "vollcloud",
+    "name": "VollCloud",
+    "names": {
+      "zh-CN": "VollCloud"
+    },
+    "aliases": [
+      "vollcloud.com"
+    ]
+  },
+  {
+    "slug": "terabix",
+    "name": "Terabix",
+    "names": {
+      "zh-CN": "Terabix"
+    },
+    "aliases": [
+      "terabix.net"
+    ]
+  },
+  {
+    "slug": "ipraft",
+    "name": "iPRaft",
+    "names": {
+      "zh-CN": "iPRaft"
+    },
+    "aliases": [
+      "ip raft"
+    ]
+  },
+  {
+    "slug": "cubecloud",
+    "name": "CubeCloud",
+    "names": {
+      "zh-CN": "魔方云"
+    },
+    "aliases": [
+      "魔方云",
+      "mofangyun"
+    ]
+  },
+  {
+    "slug": "onidel",
+    "name": "Onidel",
+    "names": {
+      "zh-CN": "Onidel"
+    },
+    "aliases": [
+      "onidel cloud"
+    ]
+  },
+  {
+    "slug": "raksmart",
+    "name": "RAKsmart",
+    "names": {
+      "zh-CN": "RAKsmart"
+    },
+    "aliases": [
+      "raksmart.com"
+    ]
+  },
+  {
+    "slug": "orangevps",
+    "name": "OrangeVPS",
+    "names": {
+      "zh-CN": "OrangeVPS"
+    },
+    "aliases": [
+      "orangevps.com"
+    ]
+  },
+  {
+    "slug": "tnahosting",
+    "name": "TNAHosting",
+    "names": {
+      "zh-CN": "TNAHosting"
+    },
+    "aliases": [
+      "tna hosting"
+    ]
+  },
+  {
+    "slug": "ethernet-servers",
+    "name": "Ethernet Servers",
+    "names": {
+      "zh-CN": "Ethernet Servers"
+    },
+    "aliases": [
+      "ethernetservers"
+    ]
+  },
+  {
+    "slug": "lightlayer",
+    "name": "LightLayer",
+    "names": {
+      "zh-CN": "LightLayer"
+    },
+    "aliases": [
+      "light layer",
+      "megalayer"
+    ]
+  },
+  {
+    "slug": "isif",
+    "name": "ISIF Cloud",
+    "names": {
+      "zh-CN": "ISIF Cloud"
+    },
+    "aliases": [
+      "isif cloud"
+    ]
+  },
+  {
+    "slug": "acckcloud",
+    "name": "ACCK Cloud",
+    "names": {
+      "zh-CN": "ACCK Cloud"
+    },
+    "aliases": [
+      "acck",
+      "acck.io"
+    ]
+  },
+  {
+    "slug": "desivps",
+    "name": "DesiVPS",
+    "names": {
+      "zh-CN": "DesiVPS"
+    },
+    "aliases": [
+      "desivps.com"
+    ]
+  },
+  {
+    "slug": "halocloud",
+    "name": "HaloCloud",
+    "names": {
+      "zh-CN": "HaloCloud"
+    },
+    "aliases": [
+      "halocloud.net"
+    ]
+  },
+  {
+    "slug": "bytevirt",
+    "name": "ByteVirt",
+    "names": {
+      "zh-CN": "ByteVirt"
+    },
+    "aliases": [
+      "bytevirt.com"
+    ]
+  },
+  {
+    "slug": "bestvm",
+    "name": "BestVM",
+    "names": {
+      "zh-CN": "BestVM（富婆）"
+    },
+    "aliases": [
+      "富婆",
+      "bestvm.cloud"
+    ]
+  },
+  {
+    "slug": "rabisu",
+    "name": "Rabisu",
+    "names": {
+      "zh-CN": "Rabisu"
+    },
+    "aliases": [
+      "rabisu.com"
+    ]
+  },
+  {
+    "slug": "tokyonline",
+    "name": "Tokyonline",
+    "names": {
+      "zh-CN": "Tokyonline"
+    },
+    "aliases": [
+      "tokyonline.com"
+    ]
+  },
+  {
+    "slug": "yt-net",
+    "name": "YT.NET",
+    "names": {
+      "zh-CN": "云途"
+    },
+    "aliases": [
+      "yt.net",
+      "云途"
+    ]
+  },
+  {
+    "slug": "rfchost",
+    "name": "RFCHost",
+    "names": {
+      "zh-CN": "花卷"
+    },
+    "aliases": [
+      "花卷",
+      "rfc host"
+    ]
+  },
+  {
+    "slug": "vmshell",
+    "name": "VmShell",
+    "names": {
+      "zh-CN": "VmShell"
+    },
+    "aliases": [
+      "vmshell.com"
+    ]
+  },
+  {
+    "slug": "zorocloud",
+    "name": "ZoroCloud",
+    "names": {
+      "zh-CN": "索隆云"
+    },
+    "aliases": [
+      "索隆云",
+      "zoro cloud"
+    ]
+  },
+  {
+    "slug": "fiberstate",
+    "name": "FiberState",
+    "names": {
+      "zh-CN": "FiberState"
+    },
+    "aliases": [
+      "fiber state",
+      "AS26042"
+    ]
+  },
+  {
+    "slug": "digitalvirt",
+    "name": "DigitalVirt",
+    "names": {
+      "zh-CN": "DigitalVirt"
+    },
+    "aliases": [
+      "digitalvirt.com"
+    ]
+  },
+  {
+    "slug": "moecloud",
+    "name": "MoeCloud",
+    "names": {
+      "zh-CN": "MoeCloud"
+    },
+    "aliases": [
+      "lite.moe"
+    ]
+  },
+  {
+    "slug": "zovps",
+    "name": "Ciyun Data",
+    "names": {
+      "zh-CN": "慈云数据"
+    },
+    "aliases": [
+      "慈云数据",
+      "ciyun data",
+      "ciyundata"
+    ]
+  },
+  {
+    "slug": "666clouds",
+    "name": "666Clouds",
+    "names": {
+      "zh-CN": "六六云"
+    },
+    "aliases": [
+      "六六云",
+      "666云"
+    ]
+  },
+  {
+    "slug": "v5-server",
+    "name": "V5 Server",
+    "names": {
+      "zh-CN": "V5 Server"
+    },
+    "aliases": [
+      "v5.net",
+      "v5"
+    ]
+  },
+  {
+    "slug": "wap-ac",
+    "name": "wap.ac",
+    "names": {
+      "zh-CN": "wap.ac"
+    },
+    "aliases": [
+      "wap.ac"
+    ]
+  }
+]

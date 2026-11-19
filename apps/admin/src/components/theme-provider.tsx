@@ -48,11 +48,13 @@ type ThemeProviderProps = {
 
 type ThemeProviderState = {
     theme: Theme
+    resolvedTheme: ResolvedTheme
     setTheme: (theme: Theme) => void
 }
 
 const initialState: ThemeProviderState = {
     theme: DEFAULT_THEME,
+    resolvedTheme: "light",
     setTheme: () => null,
 }
 
@@ -66,12 +68,18 @@ export function ThemeProvider({
 }: ThemeProviderProps) {
     const [theme, setTheme] = useState<Theme>(() => readStoredTheme(storageKey, defaultTheme))
 
+    const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() =>
+        resolveTheme(theme, window.matchMedia("(prefers-color-scheme: dark)").matches),
+    )
+
     useEffect(() => {
         const root = window.document.documentElement
         const media = window.matchMedia("(prefers-color-scheme: dark)")
 
         const sync = () => {
-            applyResolvedTheme(root, resolveTheme(theme, media.matches))
+            const resolved = resolveTheme(theme, media.matches)
+            applyResolvedTheme(root, resolved)
+            setResolvedTheme(resolved)
         }
         sync()
 
@@ -84,6 +92,7 @@ export function ThemeProvider({
 
     const value = {
         theme,
+        resolvedTheme,
         setTheme: (nextTheme: Theme) => {
             try {
                 localStorage.setItem(storageKey, nextTheme)

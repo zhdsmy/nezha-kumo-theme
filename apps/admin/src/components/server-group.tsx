@@ -1,4 +1,5 @@
 import { createServerGroup, updateServerGroup } from "@/api/server-group"
+import { useTheme } from "@/components/theme-provider"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -20,12 +21,13 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { VpsIconPicker } from "@/components/vps-icon-picker"
 import { IconButton } from "@/components/xui/icon-button"
 import { MultiSelect } from "@/components/xui/multi-select"
 import { useServer } from "@/hooks/useServer"
 import useSetting from "@/hooks/useSetting"
 import { useSubmitLock } from "@/hooks/useSubmitLock"
-import { saveServerGroupIcon } from "@/lib/group-icons"
+import { isValidGroupIcon, saveServerGroupIcon } from "@/lib/group-icons"
 import { serverOptions } from "@/lib/server-options"
 import { errorMessage } from "@/lib/utils"
 import { ModelServerGroupResponseItem } from "@/types"
@@ -37,7 +39,7 @@ import { useTranslation } from "react-i18next"
 import { KeyedMutator } from "swr"
 import { z } from "zod"
 
-import { classifyGroupIcon, parseGroupIcons } from "../../../../packages/shared/group-icons"
+import { classifyGroupIcon, parseGroupIcons, vpsIconUrl } from "../../../../packages/shared/group-icons"
 
 interface ServerGroupCardProps {
     data?: ModelServerGroupResponseItem
@@ -46,6 +48,7 @@ interface ServerGroupCardProps {
 
 export const ServerGroupCard: React.FC<ServerGroupCardProps> = ({ data, mutate }) => {
     const { t } = useTranslation()
+    const { resolvedTheme } = useTheme()
     const { data: settingData, mutate: mutateSetting } = useSetting()
     const existingIcon = useMemo(() => {
         if (!data?.group.id) return ""
@@ -57,7 +60,7 @@ export const ServerGroupCard: React.FC<ServerGroupCardProps> = ({ data, mutate }
             z.object({
                 name: z.string().min(1),
                 servers: z.array(z.number()),
-                icon: z.string().refine((val) => !val.trim() || classifyGroupIcon(val) !== null, {
+                icon: z.string().refine((val) => isValidGroupIcon(val).catch(() => false), {
                     message: t("GroupIconInvalid"),
                 }),
             }),
@@ -152,7 +155,13 @@ export const ServerGroupCard: React.FC<ServerGroupCardProps> = ({ data, mutate }
     const rawIcon = form.watch("icon") ?? ""
     const trimmedIcon = rawIcon.trim()
     const parsedIcon = trimmedIcon ? classifyGroupIcon(trimmedIcon) : null
-    const imageLoadFailed = parsedIcon?.kind === "image" && failedUrl === parsedIcon.value
+    const imageUrl =
+        parsedIcon?.kind === "vps"
+            ? vpsIconUrl(import.meta.env.BASE_URL, parsedIcon.slug, resolvedTheme)
+            : parsedIcon?.kind === "image"
+              ? parsedIcon.value
+              : undefined
+    const imageLoadFailed = imageUrl !== undefined && failedUrl === imageUrl
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -217,24 +226,21 @@ export const ServerGroupCard: React.FC<ServerGroupCardProps> = ({ data, mutate }
                                                     ) : (
                                                         <img
                                                             key={parsedIcon.value}
-                                                            src={parsedIcon.value}
+                                                            src={imageUrl}
                                                             alt=""
                                                             referrerPolicy="no-referrer"
                                                             className="h-5 w-5 rounded object-contain"
-                                                            onLoad={() => {
-                                                                if (
-                                                                    failedUrl === parsedIcon.value
-                                                                ) {
-                                                                    setFailedUrl(null)
-                                                                }
-                                                            }}
                                                             onError={() =>
-                                                                setFailedUrl(parsedIcon.value)
+                                                                setFailedUrl(imageUrl ?? null)
                                                             }
                                                         />
                                                     )}
                                                 </div>
                                             </div>
+                                            <VpsIconPicker
+                                                slug={parsedIcon?.kind === "vps" ? parsedIcon.slug : undefined}
+                                                onChange={field.onChange}
+                                            />
                                             {imageLoadFailed ? (
                                                 <p
                                                     role="alert"

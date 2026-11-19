@@ -805,3 +805,42 @@ test("node sidebar peer switcher: lists group peers, keeps hash & range, respect
     await expect(mobileDrawer).toHaveAttribute("data-state", "collapsed")
     await mobileCtx.close()
 })
+
+test("VPS group icons follow the effective theme and keep a failed slug on the folder", async ({
+    page,
+}) => {
+    let missingRequests = 0
+    await page.route("**/vps-icons/**/missing-provider.svg", (route) => {
+        missingRequests++
+        return route.fulfill({ status: 404, body: "" })
+    })
+    await mockNezha(page, {
+        customCode:
+            '<script type="application/json" id="nezha-kumo-group-icons">{"1":"vps:aws","2":"vps:missing-provider"}</script>',
+    })
+    await page.emulateMedia({ colorScheme: "light" })
+    await page.goto("/")
+    const image = page.locator('.nk-nav-link:has([title="🛜 宽带"]) img')
+    const checkImage = async (mode: string) => {
+        await expect(image).toHaveAttribute("src", `/vps-icons/v1.0.0/${mode}/aws.svg`)
+        await expect
+            .poll(() =>
+                image.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0),
+            )
+            .toBe(true)
+        await expect(image).toHaveCSS("opacity", "1")
+    }
+    await checkImage("light")
+    await expect.poll(() => missingRequests).toBe(1)
+    await expect(
+        page.locator('.nk-nav-link:has([title="🏠 HomeLab"]) .nk-nav-icon svg'),
+    ).toBeVisible()
+    await page.emulateMedia({ colorScheme: "dark" })
+    await checkImage("dark")
+    await page.emulateMedia({ colorScheme: "light" })
+    await checkImage("light")
+    await page.getByRole("button", { name: "Appearance", exact: true }).click()
+    await page.getByRole("menuitemradio", { name: "Dark", exact: true }).click()
+    await checkImage("dark")
+    expect(missingRequests).toBe(1)
+})

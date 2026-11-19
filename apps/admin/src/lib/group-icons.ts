@@ -44,3 +44,14 @@ export async function removeServerGroupIcons(groupIds: readonly number[]): Promi
         }
     })
 }
+
+export async function loadVpsIcons() {
+    return (await import("./vps-icons.json")).default
+}
+
+export async function isValidGroupIcon(raw: string): Promise<boolean> {
+    if (!raw.trim()) return true
+    const parsed = classifyGroupIcon(raw)
+    if (parsed?.kind !== "vps") return parsed !== null
+    return (await loadVpsIcons()).some((icon) => icon.slug === parsed.slug)
+}

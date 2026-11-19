@@ -369,6 +369,8 @@ describe("admin group-icons save, preview, delete, and i18n", () => {
                 "GroupIconHint",
                 "GroupIconLoadError",
                 "GroupIconInvalid",
+                "GroupIconChoose",
+                "GroupIconSearch",
             ]) {
                 const value = i18n.t(key)
                 expect(value).not.toBe(key)
@@ -431,3 +433,14 @@ test.each([false, true])(
         ).toHaveLength(2)
     },
 )
+
+test("an unknown VPS slug blocks group creation before any write", async () => {
+    renderFresh(<ServerGroupCard mutate={vi.fn()} />)
+    fireEvent.click(screen.getByRole("button"))
+    const dialog = within(await screen.findByRole("dialog"))
+    fireEvent.change(dialog.getByPlaceholderText("Group Name"), { target: { value: "Provider" } })
+    fireEvent.change(dialog.getByLabelText("Icon"), { target: { value: "vps:unknown-provider" } })
+    fireEvent.click(dialog.getByRole("button", { name: "Confirm" }))
+    await waitFor(() => expect(dialog.getByLabelText("Icon").getAttribute("aria-invalid")).toBe("true"))
+    expect(calls.every((call) => call.method === "GET")).toBe(true)
+})
