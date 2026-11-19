@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.10] - 2026-11-19
+
+- Fill the live charts after the page was in the background for more than 15 minutes, and retry a failed fill.
+- Fill live holes with fresh history, so CPU and network lines no longer break after opening a node from the home page.
+- Count only the visible range in latency average, minimum and maximum, chart scales and the empty state.
+- Keep failed probe times readable on hover when every probe of a route failed.
+- Draw a home spark with a single reading as a dot instead of "No data".
+- Render very long latency histories without a stack error.
+- Use a natural Japanese wording for the footer credit.
+
 ## [0.1.9] - 2026-11-19
 
 - Fill holes in the live charts from history when the page comes back from the background, and retry if the first request fails.
