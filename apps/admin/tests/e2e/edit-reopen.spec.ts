@@ -101,6 +101,32 @@ for (const [engine, driver] of Object.entries({ chromium, webkit })) {
                 await expect(dialog).toHaveCount(0)
                 expect(writes).toHaveLength(3)
                 expect(writes[2]).toEqual(writes[1])
+
+                // Hold the list refresh while the user starts a new edit of the same row.
+                let resume!: () => void
+                const paused = new Promise<void>((resolve) => {
+                    resume = resolve
+                })
+                await page.route("**/api/v1/" + resource, async (route) => {
+                    await paused
+                    await route.fallback()
+                })
+                await edit.click()
+                await name.fill("Slow save")
+                const refresh = page.waitForRequest((r) =>
+                    r.method() === "GET" && new URL(r.url()).pathname === "/api/v1/" + resource,
+                )
+                await dialog.getByRole("button", { name: "Confirm", exact: true }).click()
+                await refresh
+                await page.keyboard.press("Escape")
+                await edit.click()
+                await expect(name).toHaveValue("Second save")
+                await name.fill("Next draft")
+                resume()
+                await expect(row).toContainText("Slow save")
+                await expect(dialog.getByRole("button", { name: "Confirm", exact: true })).toBeEnabled()
+                await expect(dialog).toHaveAttribute("data-state", "open")
+                await expect(name).toHaveValue("Next draft")
             } finally {
                 await browser.close()
             }
