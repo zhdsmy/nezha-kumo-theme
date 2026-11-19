@@ -172,14 +172,6 @@
     border-color: transparent;
     background: transparent;
 }
-/* The 44px touch target is wider than the rail; hide the label so it does not leak past the
- * icon. visibility stays visible for the whole transition, so the label still clips in and out. */
-.sidebar-search-body {
-    transition: visibility var(--sidebar-animation-duration) var(--sidebar-easing);
-}
-.nk-sidebar:not([data-mobile])[data-state="collapsed"] .sidebar-search-body {
-    visibility: hidden;
-}
 .nk-sidebar:not([data-mobile])[data-state="collapsed"] .sidebar-search:hover {
     background: var(--sidebar-active-bg);
 }
@@ -1308,6 +1300,11 @@ svg.region-flag {
     .dialog-close-btn {
         min-width: 44px;
         min-height: 44px;
+    }
+    /* The 57px rail leaves 34px per item, and the item clips a wider box. */
+    .nk-sidebar:not([data-mobile])[data-state="collapsed"]
+        :is(.sidebar-search, .nk-nav-link, .nk-sidebar-footer button) {
+        min-width: 0;
     }
     .region-tabs .kumo-tabs-list,
     .node-subtabs .kumo-tabs-list,

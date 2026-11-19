@@ -166,11 +166,26 @@ test.describe("touch controls", () => {
                 await touchSize(page.locator(selector + ":visible").first())
             }
             if (width === 952) {
-                // The 44px search target is wider than the 57px rail; its label must not leak.
+                // The 57px rail leaves 34px per item. A wider target is clipped by the item and
+                // sits off center, so each control keeps equal insets inside the rail.
                 await page.getByRole("button", { name: "Collapse navigation" }).click()
                 await expect(page.locator(".nk-sidebar")).toHaveAttribute("data-state", "collapsed")
-                await expect(page.locator(".sidebar-search-body")).toBeHidden()
-                await touchSize(page.locator(".sidebar-search"))
+                const rail = await geometry(page.locator(".nk-sidebar [data-sidebar=viewport]"))
+                for (const selector of [
+                    ".sidebar-search",
+                    '.nk-sidebar .nk-nav-link[aria-current="page"]',
+                    ".nk-sidebar-footer button",
+                ]) {
+                    await expect
+                        .poll(async () => {
+                            const box = await geometry(page.locator(selector).first())
+                            return Math.abs(box.left - rail.left - (rail.right - box.right))
+                        }, selector)
+                        .toBeLessThanOrEqual(1)
+                    const box = await geometry(page.locator(selector).first())
+                    expect.soft(box.height, selector).toBeGreaterThanOrEqual(44)
+                }
+                await expect(page.locator(".sidebar-search-text")).not.toBeInViewport()
             }
         })
     }
