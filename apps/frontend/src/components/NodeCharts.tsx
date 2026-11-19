@@ -410,7 +410,11 @@ export const PingChart = memo(function PingChart({
                         aria-pressed={visible(task.id)}
                         onClick={() => toggle(task.id)}
                         onPointerEnter={(e) => e.pointerType === "mouse" && setFocus(task.id)}
-                        title={task.max > 0 ? `${task.name} · ${t("node.min")} ${formatNumber(task.min, 0)} · ${t("node.max")} ${formatNumber(task.max, 0)} ms` : task.name}
+                        title={
+                            task.max > 0
+                                ? `${task.name} · ${t("node.min")} ${formatNumber(task.min, 0)} · ${t("node.max")} ${formatNumber(task.max, 0)} ms`
+                                : task.name
+                        }
                         className={`node-ping-row inline-flex max-w-full min-h-8 min-w-8 items-center gap-1.5 rounded-full px-2 text-[12px] transition-opacity hover:bg-kumo-tint ${visible(task.id) ? "" : "opacity-40"}`}
                     >
                         <span
@@ -437,8 +441,7 @@ export const PingChart = memo(function PingChart({
             </div>
             {solo && solo.max > 0 && (
                 <p className="node-ping-detail num mt-1 text-[12px] text-kumo-subtle">
-                    {t("node.avg")}{" "}
-                    <span className="text-kumo-default">{avgText(solo)}</span> ·{" "}
+                    {t("node.avg")} <span className="text-kumo-default">{avgText(solo)}</span> ·{" "}
                     {t("node.min")} {formatNumber(solo.min, 0)} · {t("node.max")}{" "}
                     {formatNumber(solo.max, 0)}
                 </p>
