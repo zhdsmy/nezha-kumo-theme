@@ -117,7 +117,7 @@ async function assertNodeTabsUnified(page: Page, baseURL: string) {
     const rateRegion = page.getByRole("region", { name: "Reporting rate", exact: true })
     await expect(rateRegion).toBeVisible()
     await expect(rateRegion.locator(".chart-heading")).toContainText(
-        /\d+(?:\.\d+)?% · \d+\/\d+ hours?/,
+        /\d+(?:\.\d+)?% · \d+(?:\.\d+)?\/\d+ hours?/,
     )
     await expect(rateRegion.locator(".hour-grid-cell").first()).toBeVisible()
 
@@ -132,7 +132,7 @@ async function assertNodeTabsUnified(page: Page, baseURL: string) {
     await page.reload()
     await expect(page.locator(".chart-toolbar")).toContainText("最近 7 天")
     await expect(page.getByRole("region", { name: "上报率", exact: true })).toContainText(
-        /\d+(?:\.\d+)?% · \d+\/\d+ 小时/,
+        /\d+(?:\.\d+)?% · \d+(?:\.\d+)?\/\d+ 小时/,
     )
     await page.goto(`${baseURL}/server/6#latency`)
     await expect(page.getByRole("region", { name: "3 条线路", exact: true })).toBeVisible()
