@@ -675,7 +675,10 @@ export function PageFootnote() {
                     rel="noreferrer"
                 >
                     {t("ui.kumoTheme")}
-                </a>
+                </a>{" "}
+                <span className="page-footnote-build">
+                    v{__KUMO_VERSION__} ({__KUMO_COMMIT__})
+                </span>
             </p>
             {note && <p>{note}</p>}
         </footer>

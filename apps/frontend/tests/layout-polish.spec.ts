@@ -418,7 +418,7 @@ test.describe("Layout polish (fe2)", () => {
         const footnote = page.locator(".page-footnote")
         await footnote.scrollIntoViewIfNeeded()
         await expect(footnote.locator("p")).toHaveText([
-            /Powered by Nezha · Kumo theme$/,
+            /Powered by Nezha · Kumo theme v\S+ \(\S+\)$/,
             "Hosted note",
         ])
     })

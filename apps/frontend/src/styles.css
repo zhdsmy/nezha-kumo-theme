@@ -751,6 +751,10 @@
     text-decoration: underline;
     text-underline-offset: 2px;
 }
+.page-footnote-build {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
 .page-footnote a:hover {
     color: var(--text-color-kumo-default);
 }
