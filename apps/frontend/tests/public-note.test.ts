@@ -96,7 +96,7 @@ it.each([
     })
 })
 
-it.each([undefined, "", "  "])("keeps implicit traffic mode hidden for %s", (trafficType) => {
+it.each([undefined, "", "  ", "4"])("keeps implicit traffic mode hidden for %s", (trafficType) => {
     expect(parsePublicNote(JSON.stringify({ planDataMod: { trafficType } }))).toMatchObject({
         trafficLimitType: "max",
         trafficLimitTypeExplicit: false,

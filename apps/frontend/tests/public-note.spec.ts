@@ -82,14 +82,20 @@ for (const engine of ["chromium", "webkit"]) {
                         .evaluate((el) => getComputedStyle(el).whiteSpace),
                 ).toBe("pre-line")
                 await expect(target.locator("#node-panel-billing")).toContainText("$0.17/mo")
-                trafficType = undefined
-                await target.reload()
-                await target.locator("#node-subtab-network").click()
-                await expect(
-                    target
-                        .locator("#node-panel-network")
-                        .getByText("Traffic billing", { exact: true }),
-                ).toHaveCount(0)
+                for (const value of [undefined, "4"]) {
+                    trafficType = value
+                    await target.goto(`${baseURL}/`)
+                    const facts = target.locator('[data-server="6"] .card-facts')
+                    await expect(facts).toContainText("1.00 TB")
+                    await expect(facts.locator(".quota-fact")).toHaveCount(0)
+                    await target.goto(`${baseURL}/server/6#overview`)
+                    await target.locator("#node-subtab-network").click()
+                    await expect(
+                        target
+                            .locator("#node-panel-network")
+                            .getByText("Traffic billing", { exact: true }),
+                    ).toHaveCount(0)
+                }
             } finally {
                 await browser?.close()
             }

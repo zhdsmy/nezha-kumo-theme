@@ -18,12 +18,12 @@ import { chartWindow } from "@/core/summary"
 
 import { parseGroupIcons } from "../../../../../packages/shared/group-icons"
 import {
+    TRAFFIC_TYPES,
     cycleDays,
     parseAmount,
     parseCycle,
     parseNoteDate,
     parseTraffic,
-    parseTrafficType,
 } from "../../../../../packages/shared/public-note"
 
 /* ---------- API shapes (Nezha dashboard v1, tested on v2.0.13) ---------- */
@@ -247,8 +247,12 @@ export function parsePublicNote(note: string | undefined) {
             out.trafficLimit = traffic === "unlimited" ? 0 : traffic.bytes
             out.trafficLimitPeriod = traffic === "unlimited" ? 0 : cycleDays(traffic.cycle)
         }
-        out.trafficLimitType = parseTrafficType(p.trafficType)
-        out.trafficLimitTypeExplicit = !!text(p.trafficType)
+        const code = text(p.trafficType)
+        const trafficType = TRAFFIC_TYPES.find(({ value }) => value === code)
+        if (trafficType) {
+            out.trafficLimitType = trafficType.mode
+            out.trafficLimitTypeExplicit = true
+        }
         out.bandwidth = text(p.bandwidth)
         out.ipv4 = text(p.IPv4) === "1" ? true : text(p.IPv4) === "0" ? false : undefined
         out.ipv6 = text(p.IPv6) === "1" ? true : text(p.IPv6) === "0" ? false : undefined
