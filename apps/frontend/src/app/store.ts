@@ -107,6 +107,7 @@ export const useConnectionState = () => useStore(selectConnectionState)
 
 /* ---------- live buffer: what the node page charts in "Live" mode ---------- */
 
+const LIVE_WINDOW_MS = 15 * 60_000
 const LIVE_CAPACITY = 450 // 15 minutes at a 2 s cadence
 const live = new Map<string, HistoryPoint[]>()
 
@@ -178,6 +179,9 @@ function pushLive(snapshots: Record<string, Snapshot>) {
             continue
         buf.push(point)
         if (buf.length > LIVE_CAPACITY) buf.splice(0, buf.length - LIVE_CAPACITY)
+        // history fill is 30 s apart, so the count cap alone would let the window grow past 15 minutes
+        const stale = buf.findIndex((p) => p.at >= at - LIVE_WINDOW_MS)
+        if (stale > 0) buf.splice(0, stale)
         live.set(id, buf)
         changed = true
     }
@@ -278,16 +282,50 @@ export async function seedLive(nodes: readonly NodeInfo[], signal?: AbortSignal)
     await Promise.all(Array.from({ length: 4 }, worker))
 }
 
-/** Fill the 15 minutes before the page opened with complete history points, for the node page. */
+// A live hole wider than this (paused tab, sleep, dropped socket) is filled from history.
+const LIVE_GAP_MS = 10_000
+const LIVE_RETRY_MS = 10_000
+// Per node: live points up to here have already been checked against history.
+const filledThrough = new Map<string, number>()
+
+/** True when two live points are further apart than a few missed frames, and not yet filled. */
+export function liveNeedsFill(id: string) {
+    const buf = getLive(id)
+    const since = filledThrough.get(id) ?? 0
+    for (let i = 1; i < buf.length; i++)
+        if (
+            buf[i].at > since &&
+            buf[i].reportedAt !== undefined &&
+            buf[i].at - buf[i - 1].at > LIVE_GAP_MS
+        )
+            return true
+    return false
+}
+
+/**
+ * Fill the live 15 minutes from history wherever no live point is near: before the page opened,
+ * and holes left while the page was paused. Live points are kept as they are.
+ */
 export async function backfillLive(id: string, signal?: AbortSignal) {
     if (!state.site?.recordHours) return
-    const points = await adapter.loadHistory(id, 1, "overview", signal).catch(() => [])
+    // mark first, so frames arriving during the request do not start another one
+    const prev = filledThrough.get(id)
+    filledThrough.set(id, getLive(id).at(-1)?.at ?? Date.now())
+    const points = await adapter.loadHistory(id, 1, "overview", signal).catch(() => null)
     if (signal?.aborted) return
+    if (!points) {
+        // e.g. Safari wakes a suspended tab and the first request fails: unmark, so a later frame retries
+        setTimeout(() => filledThrough.set(id, prev ?? 0), LIVE_RETRY_MS)
+        return
+    }
     const buf = getLive(id)
-    const first = buf[0]?.at ?? Infinity
-    const older = points.filter((p) => p.at < first && p.at >= Date.now() - 15 * 60_000)
-    if (!older.length) return
-    live.set(id, [...older, ...buf].slice(-LIVE_CAPACITY))
+    const from = Date.now() - LIVE_WINDOW_MS
+    // ponytail: O(history × live) scan, at most ~450 × a few hundred points
+    const fill = points.filter(
+        (p) => p.at >= from && !buf.some((b) => Math.abs(b.at - p.at) < LIVE_GAP_MS),
+    )
+    if (!fill.length) return
+    live.set(id, [...fill, ...buf].sort((a, b) => a.at - b.at).slice(-LIVE_CAPACITY))
     set({ liveVersion: state.liveVersion + 1 })
 }
 

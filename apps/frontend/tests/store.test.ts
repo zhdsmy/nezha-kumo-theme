@@ -16,6 +16,10 @@ const fake = vi.hoisted(() => {
         loggedIn: false,
         privateLoads: 0,
         failPrivateLoad: false,
+        recordHours: 0,
+        history: [] as { at: number; cpu: number }[],
+        historyLoads: 0,
+        failHistory: false,
         node,
     }
     return f
@@ -27,7 +31,7 @@ vi.mock("@/adapters/nezha", () => ({
             name: "x",
             description: "",
             settings: {},
-            recordHours: 0,
+            recordHours: fake.recordHours,
             oauth: false,
             passwordLogin: true,
         }),
@@ -40,6 +44,11 @@ vi.mock("@/adapters/nezha", () => ({
             return fake.nodes
         },
         loadGroupOrder: async () => fake.groupOrder,
+        loadHistory: async () => {
+            fake.historyLoads++
+            if (fake.failHistory) throw new Error("offline")
+            return fake.history
+        },
         loadSession: async () => ({ loggedIn: fake.loggedIn }),
         loadActualCosts: async () => {
             fake.privateLoads++
@@ -311,4 +320,56 @@ it("refreshes node references on live frames when crossing midnight or a renewal
     expect(renewedNodes).not.toBe(midnightNodes)
     expect(renewedNodes[1].expiredAt).toBe(renewAt)
     expect(resolveExpiry(renewedNodes[1])?.at).toBe(new Date(2026, 11, 19, 12, 0, 0).getTime())
+})
+
+it("fills a live hole left by a paused page from history, once, and keeps live points", async () => {
+    vi.useFakeTimers()
+    const t0 = new Date(2026, 10, 19, 11, 0).getTime()
+    const { refresh, getLive, backfillLive, liveNeedsFill } = await import("../src/app/store")
+    fake.recordHours = 24
+    await refresh()
+    const frame = (at: number, cpu: number) => {
+        vi.setSystemTime(at)
+        fake.listeners.forEach((l) => l({ snapshots: { hole: { ...snap, at, cpu } } }))
+    }
+    frame(t0, 1)
+    frame(t0 + 2_000, 1)
+    // page paused for five minutes, then frames resume
+    frame(t0 + 302_000, 2)
+    frame(t0 + 304_000, 2)
+    expect(liveNeedsFill("hole")).toBe(true)
+    fake.history = [
+        { at: t0 + 1_000, cpu: 9 }, // next to a live point: skipped
+        { at: t0 + 60_000, cpu: 5 },
+        { at: t0 + 120_000, cpu: 5 },
+        { at: t0 - 20 * 60_000, cpu: 5 }, // outside the 15-minute window
+    ]
+    const loads = fake.historyLoads
+    await backfillLive("hole")
+    expect(fake.historyLoads).toBe(loads + 1)
+    expect(getLive("hole").map((p) => [p.at - t0, p.cpu])).toEqual([
+        [0, 1],
+        [2_000, 1],
+        [60_000, 5],
+        [120_000, 5],
+        [302_000, 2],
+        [304_000, 2],
+    ])
+    // the same hole is not fetched again; a new one is
+    expect(liveNeedsFill("hole")).toBe(false)
+    frame(t0 + 306_000, 2)
+    expect(liveNeedsFill("hole")).toBe(false)
+    frame(t0 + 400_000, 2)
+    expect(liveNeedsFill("hole")).toBe(true)
+    // a failed fetch (tab just woke up) is retried by a later frame, not every frame
+    fake.failHistory = true
+    await backfillLive("hole")
+    expect(liveNeedsFill("hole")).toBe(false)
+    vi.advanceTimersByTime(10_000)
+    expect(liveNeedsFill("hole")).toBe(true)
+    fake.failHistory = false
+    // the window is 15 minutes by time, not by count
+    frame(t0 + 15 * 60_000 + 61_000, 2)
+    expect(getLive("hole")[0].at - t0).toBe(120_000)
+    fake.recordHours = 0
 })

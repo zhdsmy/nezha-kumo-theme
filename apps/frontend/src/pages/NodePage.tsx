@@ -8,6 +8,7 @@ import {
     backfillLive,
     getLive,
     getTraffic,
+    liveNeedsFill,
     useSiteTitle,
     useStore,
     useVisibleNodes,
@@ -115,6 +116,14 @@ export default function NodePage({ id, section }: { id: string; section: Section
             })
         return () => ctrl.abort()
     }, [id, section, recordHours, dayKey])
+    // after the first fill, each new frame checks for a hole the page missed while paused
+    useEffect(() => {
+        if (section !== "load" || activeRange || liveBackfilledKey !== dayKey) return
+        if (!liveNeedsFill(id)) return
+        // The cached 1d history predates the hole; drop it so the fill reads fresh 30 s points.
+        adapter.clearHistory(id)
+        void backfillLive(id).catch(() => {})
+    }, [id, section, activeRange, liveBackfilledKey, dayKey, liveVersion])
     useEffect(() => {
         if (!title) return
         document.title = node ? `${stripFlag(node.name)} · ${title}` : title
