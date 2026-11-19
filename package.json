@@ -1,6 +1,6 @@
 {
   "name": "nezha-kumo-theme",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "description": "A Nezha dashboard theme (public frontend + admin) in the visual language of Cloudflare's Kumo design system.",
   "license": "MIT",

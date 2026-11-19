@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.7] - 2026-11-19
+
+- Fade the uncounted download arrow in the outbound-only traffic quota icon.
+
 ## [0.1.6] - 2026-11-19
 
 - Draw the traffic quota icons at the same weight as the surrounding text.
