@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.5] - 2026-11-19
+
+- Show an icon for the traffic quota type on home page server cards: an infinity sign for unlimited traffic, and arrows for both directions, outbound only, or the larger direction.
+
 ## [0.1.4] - 2026-11-18
 
 - Fix admin editors reverting a row to its old values when it is edited and saved a second time.
