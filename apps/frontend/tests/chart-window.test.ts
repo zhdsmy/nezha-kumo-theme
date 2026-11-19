@@ -106,6 +106,19 @@ it("keeps failed probe times hoverable and clears the tooltip for an empty route
     expect(chart.querySelector(".chart-tooltip")).toBeNull()
 })
 
+it("shows a dash instead of 0.0 ms for a route with no successful probe", () => {
+    const tasks = [{ id: 1, name: "down", avg: 0, min: 0, max: 0 }, task(2)]
+    act(() => root.render(ping({ tasks, points: [{ at: end, task: 1, value: -1 }] })))
+    const failed = el.querySelector(".chart svg")!.innerHTML
+    // Nezha reports some failed windows as 0, which must draw the same as -1, not a 0 ms line
+    act(() => root.render(ping({ tasks, points: [{ at: end, task: 1, value: 0 }] })))
+    expect(el.querySelector(".chart svg")!.innerHTML).toBe(failed)
+    const [down, up] = el.querySelectorAll<HTMLButtonElement>(".node-ping-row")
+    expect(down.textContent).toContain("—")
+    expect(down.textContent).not.toContain("ms")
+    expect(up.textContent).toContain("10.0 ms")
+})
+
 it("renders 172800 raw latency points without exhausting the argument stack", () => {
     const tasks = Array.from({ length: 8 }, (_, i) => task(i))
     const points = Array.from({ length: 21600 }, (_, i) =>

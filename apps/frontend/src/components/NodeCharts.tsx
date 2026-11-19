@@ -293,6 +293,10 @@ export const LoadCharts = memo(function LoadCharts({
     )
 })
 
+// only successful probes (> 0) count, so max is 0 exactly when a route has none
+const avgText = (task: PingData["tasks"][number]) =>
+    task.max > 0 ? `${task.avg.toFixed(1)} ms` : "—"
+
 export const PingChart = memo(function PingChart({
     data,
     hours,
@@ -329,7 +333,7 @@ export const PingChart = memo(function PingChart({
                 if (!visible(task.id)) return []
                 let points = data.points
                     .filter((p) => p.task === task.id)
-                    .map((p) => ({ t: p.at, v: p.value >= 0 ? p.value : null }))
+                    .map((p) => ({ t: p.at, v: p.value > 0 ? p.value : null }))
                 if (shave) {
                     // spikes are dropped, not blanked, so the line runs straight through them
                     const limit = spikeLimit(
@@ -406,7 +410,7 @@ export const PingChart = memo(function PingChart({
                         aria-pressed={visible(task.id)}
                         onClick={() => toggle(task.id)}
                         onPointerEnter={(e) => e.pointerType === "mouse" && setFocus(task.id)}
-                        title={`${task.name} · ${t("node.min")} ${formatNumber(task.min, 0)} · ${t("node.max")} ${formatNumber(task.max, 0)} ms`}
+                        title={task.max > 0 ? `${task.name} · ${t("node.min")} ${formatNumber(task.min, 0)} · ${t("node.max")} ${formatNumber(task.max, 0)} ms` : task.name}
                         className={`node-ping-row inline-flex max-w-full min-h-8 min-w-8 items-center gap-1.5 rounded-full px-2 text-[12px] transition-opacity hover:bg-kumo-tint ${visible(task.id) ? "" : "opacity-40"}`}
                     >
                         <span
@@ -418,7 +422,7 @@ export const PingChart = memo(function PingChart({
                             }
                         />
                         <span className="truncate">{task.name}</span>
-                        <span className="num text-kumo-subtle">{`${task.avg.toFixed(1)} ms`}</span>
+                        <span className="num text-kumo-subtle">{avgText(task)}</span>
                     </button>
                 ))}
                 {shown !== null && (
@@ -431,10 +435,10 @@ export const PingChart = memo(function PingChart({
                     </button>
                 )}
             </div>
-            {solo && (
+            {solo && solo.max > 0 && (
                 <p className="node-ping-detail num mt-1 text-[12px] text-kumo-subtle">
                     {t("node.avg")}{" "}
-                    <span className="text-kumo-default">{`${solo.avg.toFixed(1)} ms`}</span> ·{" "}
+                    <span className="text-kumo-default">{avgText(solo)}</span> ·{" "}
                     {t("node.min")} {formatNumber(solo.min, 0)} · {t("node.max")}{" "}
                     {formatNumber(solo.max, 0)}
                 </p>
