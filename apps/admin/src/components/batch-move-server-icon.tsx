@@ -84,7 +84,14 @@ export const BatchMoveServerIcon: React.FC<BatchMoveServerIconProps> = ({
             title={t("Results.NoRowsAreSelected")}
         />
     ) : (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog
+            open={open}
+            onOpenChange={(next) => {
+                // a cancelled target must not carry over to the next selection
+                if (next) setToUserId(undefined)
+                setOpen(next)
+            }}
+        >
             <DialogTrigger asChild>
                 <IconButton {...props} icon="user-pen" />
             </DialogTrigger>
