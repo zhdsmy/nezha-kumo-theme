@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.9] - 2026-11-19
+
+- Fill holes in the live charts from history when the page comes back from the background, and retry if the first request fails.
+- Keep the live charts at 15 minutes; the history fill no longer disappears after a minute or makes the window longer.
+- Give node page charts an axis of the full range (15 minutes, 1 hour, 4 hours, 1 day), with lines reaching the left edge.
+- Show the build version and commit at the end of the footer credits.
+
 ## [0.1.8] - 2026-11-19
 
 - Show "© year site · Powered by Nezha · Kumo theme" in the footer, with Nezha and the theme linked to their GitHub repositories.
