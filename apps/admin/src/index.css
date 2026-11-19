@@ -788,19 +788,25 @@ body,
     grid-template-rows: auto 1fr;
     align-content: start;
 }
-.nkt-note-billing-column > :is([data-note-field="autoRenewal"], [data-note-field="cycle"]) > .nkt-note-label {
+.nkt-note-billing-column
+    > :is([data-note-field="autoRenewal"], [data-note-field="cycle"])
+    > .nkt-note-label {
     grid-area: 1 / 1;
     display: flex;
     align-items: center;
     min-height: 36px;
     margin: 0;
 }
-.nkt-note-billing-column > :is([data-note-field="autoRenewal"], [data-note-field="cycle"]) > .nkt-note-clear {
+.nkt-note-billing-column
+    > :is([data-note-field="autoRenewal"], [data-note-field="cycle"])
+    > .nkt-note-clear {
     position: static;
     grid-area: 1 / 2;
     align-self: center;
 }
-.nkt-note-billing-column > :is([data-note-field="autoRenewal"], [data-note-field="cycle"]) > .nkt-note-control {
+.nkt-note-billing-column
+    > :is([data-note-field="autoRenewal"], [data-note-field="cycle"])
+    > .nkt-note-control {
     grid-area: 2 / 1 / 3 / -1;
     padding-right: 0;
 }
@@ -864,7 +870,7 @@ body,
     --close-size: 32px;
     width: var(--close-size);
     height: var(--close-size);
-    top: calc(max(1.5rem, env(safe-area-inset-top)) + .75rem - var(--close-size) / 2);
+    top: calc(max(1.5rem, env(safe-area-inset-top)) + 0.75rem - var(--close-size) / 2);
 }
 .nk-topbar-actions > :is(button, a[aria-label]) {
     display: inline-flex;
@@ -930,6 +936,122 @@ body,
         display: var(--label-display, none);
         flex: 0 0 34%;
         color: var(--muted-foreground);
+    }
+}
+
+/* Server table columns, in priority order. Each threshold reserves the checkbox (48),
+ * name (180) and row actions (156), plus every column before it; a column that does
+ * not fit moves into the expandable row details. */
+@media (min-width: 768px) {
+    .nkt-server-table [data-col="select"] {
+        flex-basis: 48px;
+    }
+    .nkt-server-table [data-col="actions"] {
+        flex-basis: 156px;
+    }
+    .nkt-server-table [data-col="id"] {
+        flex-basis: 108px;
+    }
+    @container server-table (width < 492px) {
+        .nkt-server-table [data-col="id"] {
+            --column-display: none;
+            flex-basis: 100%;
+            --detail-order: 1;
+            --label-display: block;
+        }
+    }
+    .nkt-server-table [data-col="groups"] {
+        flex-basis: 120px;
+    }
+    @container server-table (width < 612px) {
+        .nkt-server-table [data-col="groups"] {
+            --column-display: none;
+            flex-basis: 100%;
+            --detail-order: 1;
+            --label-display: block;
+        }
+    }
+    .nkt-server-table [data-col="geoip"] {
+        flex-basis: 156px;
+    }
+    @container server-table (width < 768px) {
+        .nkt-server-table [data-col="geoip"] {
+            --column-display: none;
+            flex-basis: 100%;
+            --detail-order: 1;
+            --label-display: block;
+        }
+    }
+    .nkt-server-table [data-col="host_version"] {
+        flex-basis: 92px;
+    }
+    @container server-table (width < 860px) {
+        .nkt-server-table [data-col="host_version"] {
+            --column-display: none;
+            flex-basis: 100%;
+            --detail-order: 1;
+            --label-display: block;
+        }
+    }
+    .nkt-server-table [data-col="owner"] {
+        flex-basis: 120px;
+    }
+    @container server-table (width < 980px) {
+        .nkt-server-table [data-col="owner"] {
+            --column-display: none;
+            flex-basis: 100%;
+            --detail-order: 1;
+            --label-display: block;
+        }
+    }
+    .nkt-server-table [data-col="enableDDNS"] {
+        flex-basis: 100px;
+    }
+    @container server-table (width < 1080px) {
+        .nkt-server-table [data-col="enableDDNS"] {
+            --column-display: none;
+            flex-basis: 100%;
+            --detail-order: 1;
+            --label-display: block;
+        }
+    }
+    .nkt-server-table [data-col="hideForGuest"] {
+        flex-basis: 110px;
+    }
+    @container server-table (width < 1190px) {
+        .nkt-server-table [data-col="hideForGuest"] {
+            --column-display: none;
+            flex-basis: 100%;
+            --detail-order: 1;
+            --label-display: block;
+        }
+    }
+    .nkt-server-table [data-col="note"] {
+        flex-basis: 80px;
+    }
+    @container server-table (width < 1270px) {
+        .nkt-server-table [data-col="note"] {
+            --column-display: none;
+            flex-basis: 100%;
+            --detail-order: 1;
+            --label-display: block;
+        }
+    }
+    .nkt-server-table [data-col="uuid"] {
+        flex-basis: 100px;
+    }
+    @container server-table (width < 1370px) {
+        .nkt-server-table [data-col="uuid"] {
+            --column-display: none;
+            flex-basis: 100%;
+            --detail-order: 1;
+            --label-display: block;
+        }
+    }
+    @container server-table (width >= 1370px) {
+        .nkt-server-table .nkt-details-toggle {
+            display: none;
+        }
     }
 }
 

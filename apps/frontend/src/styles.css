@@ -525,10 +525,11 @@
 .region-tabs [aria-hidden="true"][data-kumo-part="overflow-control"] {
     display: none;
 }
-[data-mode="light"] .region-tab,
-[data-mode="light"] .region-tab .muted,
+[data-mode="light"] .region-tab[aria-selected="false"],
+[data-mode="light"] .region-tab[aria-selected="false"] .muted,
 [data-mode="light"] .nk-nav-link[aria-current="page"] .nk-nav-badge {
-    color: var(--text-color-kumo-default);
+    /* subtle (#737373) is 4.3:1 on the recessed fill; neutral-600 keeps them a step below default */
+    color: var(--color-neutral-600, oklch(43.9% 0 0));
 }
 .region-tab {
     flex-shrink: 0;

@@ -91,31 +91,6 @@ function ServerRowMoreMenu({ server }: { server: Server }) {
     )
 }
 
-// Reserve the checkbox, name and three row actions before admitting optional columns.
-const serverColumns = [
-    ["id", 108], ["groups", 120], ["geoip", 156], ["host_version", 92], ["owner", 120],
-    ["enableDDNS", 100], ["hideForGuest", 110], ["note", 80], ["uuid", 100],
-] as const
-const selectionWidth = 48
-const actionsWidth = 156
-let requiredWidth = selectionWidth + 180 + actionsWidth
-const serverColumnRules = serverColumns.map(([id, width]) => {
-    requiredWidth += width
-    const cell = `.nkt-server-table [data-col="${id}"]`
-    return `${cell} { flex-basis: ${width}px; }
-        @container server-table (width < ${requiredWidth}px) {
-            ${cell} { --column-display: none; flex-basis: 100%; --detail-order: 1; --label-display: block; }
-        }`
-}).join("\n")
-const serverTableStyles = `@media (min-width: 768px) {
-    .nkt-server-table [data-col="select"] { flex-basis: ${selectionWidth}px; }
-    .nkt-server-table [data-col="actions"] { flex-basis: ${actionsWidth}px; }
-    ${serverColumnRules}
-    @container server-table (width >= ${requiredWidth}px) {
-        .nkt-server-table .nkt-details-toggle { display: none; }
-    }
-}`
-
 export default function ServerPage() {
     const { t } = useTranslation()
     const { data, mutate, error, isLoading } = useSWR<Server[]>("/api/v1/server", swrFetcher, {
@@ -432,7 +407,6 @@ export default function ServerPage() {
                         </Select>
                     )}
                 </div>
-                <style>{serverTableStyles}</style>
                 <Table containerLayout className="nkt-server-table">
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
