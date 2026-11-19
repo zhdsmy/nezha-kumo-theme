@@ -247,10 +247,17 @@ describe("nezha mapServices", () => {
         ])
         expect(new Set(data.points.map((p) => p.task))).toEqual(new Set([1, 2, 3]))
         const recent = mapServices(
-            [{ monitor_id: 1, monitor_name: "a", created_at: [1, 2, 3], avg_delay: [10, 4, 6] }],
-            2,
+            [
+                {
+                    monitor_id: 1,
+                    monitor_name: "a",
+                    created_at: [1, 300_000, 3_900_000],
+                    avg_delay: [10, 4, 6],
+                },
+            ],
+            1,
         )
-        expect(recent.points.map((p) => p.at)).toEqual([2, 3])
+        expect(recent.points.map((p) => p.at)).toEqual([300_000, 3_900_000])
         expect(recent.tasks[0].avg).toBe(5)
     })
 })

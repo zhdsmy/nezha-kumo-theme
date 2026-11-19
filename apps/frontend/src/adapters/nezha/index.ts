@@ -104,14 +104,20 @@ interface NezhaServiceInfo {
     avg_delay: number[] | null
 }
 
+// Keep a sample before the axis starts. Latency samples can be two minutes apart.
+function historyWindow(newest: number, hours: number) {
+    const { start } = chartWindow(newest, hours)
+    return { start, since: start - Math.max(240_000, hours * 60_000) }
+}
+
 /** Nezha reports the average delay per probe window. */
-export function mapServices(services: NezhaServiceInfo[], since = 0, hours = Infinity): PingData {
+export function mapServices(services: NezhaServiceInfo[], hours = Infinity): PingData {
     const tasks: PingData["tasks"] = []
     const points: PingData["points"] = []
     let newest = 0
     for (const service of services)
         for (const at of service.created_at ?? []) newest = Math.max(newest, at)
-    const { start } = chartWindow(newest, hours)
+    const { start, since } = historyWindow(newest, hours)
     for (const s of services) {
         const id = s.monitor_id ?? s.service_id ?? 0
         let sum = 0,
@@ -530,9 +536,6 @@ const METRICS = {
 } as const satisfies Record<string, keyof HistoryPoint>
 
 /** The API only takes these periods; shorter ranges are cut from `1d` client-side. */
-// Node page charts use a fixed axis ending at the newest point. Fetch a little before the range
-// (at least 4 min: latency is stored every 2 min) so a point lies before the axis start.
-const edgePad = (hours: number) => Math.max(240_000, hours * 60_000)
 const period = (hours: number) => (hours <= 24 ? "1d" : hours <= 168 ? "7d" : "30d")
 
 export function mergeMetrics(
@@ -751,8 +754,13 @@ export const nezha = {
                 return [metric, data] as const
             }),
         )
-        const pad = kind === "overview" ? edgePad(hours) : 0
-        return mergeMetrics(Object.fromEntries(series), Date.now() - hours * 3_600_000 - pad)
+        const metrics = Object.fromEntries(series)
+        if (kind !== "overview") return mergeMetrics(metrics, chartWindow(Date.now(), hours).start)
+        let newest = 0
+        for (const [, metric] of series)
+            for (const { ts, value } of metric.data_points ?? [])
+                if (ts > newest && Number.isFinite(value)) newest = ts
+        return mergeMetrics(metrics, historyWindow(newest, hours).since)
     },
 
     clearHistory(id: string) {
@@ -772,7 +780,7 @@ export const nezha = {
             hours < 1 ? 30_000 : HISTORY_CACHE_MS,
             signal,
         )
-        return mapServices(data, chartWindow(Date.now(), hours).start - edgePad(hours), hours)
+        return mapServices(data, hours)
     },
 
     async login(username: string, password: string): Promise<LoginResult> {

@@ -98,6 +98,36 @@ it("shares metric periods across tabs, fetches only requested series and expires
     expect(fetch).toHaveBeenCalledTimes(8)
 })
 
+it("keeps the left edge on a cached 4h to 1h switch and keeps reports clock-based", async () => {
+    vi.resetModules()
+    vi.useFakeTimers()
+    const newest = Date.UTC(2026, 10, 19, 12)
+    vi.setSystemTime(newest)
+    const times = [65, 64, 60, 51, 0].map((minutes) => newest - minutes * 60_000)
+    const fetch = vi.fn(async (url: string) =>
+        Response.json({
+            success: true,
+            data: url.includes("/service?")
+                ? [{ monitor_id: 1, created_at: times, avg_delay: [100, 90, 30, 20, 10] }]
+                : { data_points: times.map((ts) => ({ ts, value: 1 })) },
+        }),
+    )
+    vi.stubGlobal("fetch", fetch)
+    const { nezha } = await import("../src/adapters/nezha")
+    await nezha.loadHistory("6", 4, "overview")
+    await nezha.loadPing("6", 4)
+    const calls = fetch.mock.calls.length
+    vi.setSystemTime(newest + 9 * 60_000)
+    const overview = await nezha.loadHistory("6", 1, "overview")
+    const ping = await nezha.loadPing("6", 1)
+    const reports = await nezha.loadHistory("6", 1, "reports")
+    expect(fetch).toHaveBeenCalledTimes(calls)
+    expect(reports.map((p) => p.at)).toEqual(times.slice(3))
+    expect(overview.map((p) => p.at)).toEqual(times.slice(1))
+    expect(ping.points.map((p) => p.at)).toEqual(times.slice(1))
+    expect(ping.tasks[0].avg).toBe(20)
+})
+
 it("cancels queued and in-flight requests cleanly, normalizes WebKit canceled fetches, and keeps timeouts as real errors", async () => {
     vi.resetModules()
     vi.useFakeTimers()
