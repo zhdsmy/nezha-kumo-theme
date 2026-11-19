@@ -513,6 +513,9 @@ const METRICS = {
 } as const satisfies Record<string, keyof HistoryPoint>
 
 /** The API only takes these periods; shorter ranges are cut from `1d` client-side. */
+// Node page charts use a fixed axis ending at the newest point. Fetch a little before the range
+// (at least 4 min: latency is stored every 2 min) so a point lies before the axis start.
+const edgePad = (hours: number) => Math.max(240_000, hours * 60_000)
 const period = (hours: number) => (hours <= 24 ? "1d" : hours <= 168 ? "7d" : "30d")
 
 export function mergeMetrics(
@@ -732,7 +735,8 @@ export const nezha = {
                 return [metric, data] as const
             }),
         )
-        return mergeMetrics(Object.fromEntries(series), Date.now() - hours * 3_600_000)
+        const pad = kind === "overview" ? edgePad(hours) : 0
+        return mergeMetrics(Object.fromEntries(series), Date.now() - hours * 3_600_000 - pad)
     },
 
     clearHistory(id: string) {
@@ -752,7 +756,7 @@ export const nezha = {
             hours < 1 ? 30_000 : HISTORY_CACHE_MS,
             signal,
         )
-        return mapServices(data, Date.now() - hours * 3_600_000)
+        return mapServices(data, Date.now() - hours * 3_600_000 - edgePad(hours))
     },
 
     async login(username: string, password: string): Promise<LoginResult> {

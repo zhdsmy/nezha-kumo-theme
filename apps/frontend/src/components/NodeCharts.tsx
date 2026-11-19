@@ -45,6 +45,9 @@ export function formatTimeAxis(ticks: readonly number[], hours: number, locale?:
     return ticks.map((t, i) => formatTimeTick(t, i, ticks, hours, locale))
 }
 
+// Every range keeps a fixed axis of its full length, ending at the newest point.
+const chartWindow = (hours: number) => hours * 3_600_000
+
 function useTimeFormats(hours: number) {
     const { i18n } = useTranslation()
     const long = hours >= HOURS_PER_DAY
@@ -134,7 +137,12 @@ export const LoadCharts = memo(function LoadCharts({
         area,
         points: points.map((p) => ({ t: p.at, v: Number.isFinite(pick(p)) ? pick(p) : null })),
     })
-    const common = { height, formatTime: fmt.axis, formatTooltipTime: fmt.tooltip }
+    const common = {
+        height,
+        formatTime: fmt.axis,
+        formatTooltipTime: fmt.tooltip,
+        windowMs: chartWindow(hours),
+    }
     const last = points[points.length - 1]
     const reading = (value: number, format: (value: number) => string) =>
         Number.isFinite(value) ? format(value) : "—"
@@ -380,6 +388,7 @@ export const PingChart = memo(function PingChart({
                 formatTick={(v, step) => `${formatNumber(v, stepDigits(step))} ms`}
                 formatTime={fmt.axis}
                 formatTooltipTime={fmt.tooltip}
+                windowMs={chartWindow(hours)}
                 label={t("ui.latency")}
             />
             {/* chips, not a table: a line's colour, name and average; the full figures show when it is the only line */}

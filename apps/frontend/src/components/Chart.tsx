@@ -40,6 +40,8 @@ interface Props {
     robust?: boolean
     /** Key of a series to emphasise; the others fade. */
     focus?: string | null
+    /** Fixed axis span ending at the newest point; older points are dropped. */
+    windowMs?: number
 }
 
 export type ChartScale = "decimal" | "binary"
@@ -267,6 +269,7 @@ export function Chart({
     label,
     robust,
     focus,
+    windowMs,
 }: Props) {
     const tooltipTime = formatTooltipTime ?? ((t: number) => formatTime(t, 0, [t]))
     const box = useRef<HTMLDivElement>(null)
@@ -293,18 +296,23 @@ export function Chart({
     const gap = isMobile ? 6 : 8
     const sampleBuckets = Math.max(40, Math.floor(Math.max(0, width - basePad.l - basePad.r) / 2))
 
-    const prepared = useMemo(
-        () =>
-            series.map((s) => ({
-                ...s,
-                points: downsample(s.points, sampleBuckets),
-            })),
-        [series, sampleBuckets],
-    )
+    const prepared = useMemo(() => {
+        const from = windowMs
+            ? Math.max(...series.flatMap((s) => s.points.map((p) => p.t))) - windowMs
+            : -Infinity
+        return series.map((s) => ({
+            ...s,
+            // keep one point before the window so the line reaches the clipped left edge
+            points: downsample(
+                s.points.filter((p, i, a) => p.t >= from || (a[i + 1]?.t ?? -Infinity) >= from),
+                sampleBuckets,
+            ),
+        }))
+    }, [series, sampleBuckets, windowMs])
 
     const all = prepared.flatMap((s) => s.points)
-    const t0 = all.length ? Math.min(...all.map((p) => p.t)) : 0
     const t1 = all.length ? Math.max(...all.map((p) => p.t)) : 1
+    const t0 = !all.length ? 0 : windowMs ? t1 - windowMs : Math.min(...all.map((p) => p.t))
     const span = t1 - t0 || 1
     const vals = all.flatMap((p) => (p.v === null ? [] : [p.v]))
     let dataMax = Math.max(0, ...vals)
@@ -338,7 +346,9 @@ export function Chart({
     const y = (v: number) => pad.t + plotH - (Math.min(v, max) / max) * plotH
 
     const paths = prepared.map((s) => {
-        const gapStep = medianStep(s.points) * 4
+        // Live mixes 2 s frames with 30 s history fill; once frames are the majority a 2 s median
+        // would cut every history step, so a gap only breaks the line past 90 s.
+        const gapStep = Math.max(medianStep(s.points) * 4, 90_000)
         let line = ""
         let area = ""
         let segStart: number | null = null
@@ -377,7 +387,9 @@ export function Chart({
         hoverT === null
             ? null
             : prepared.map((s) => {
-                  const i = s.points.length ? nearest(s.points, hoverT) : -1
+                  let i = s.points.length ? nearest(s.points, hoverT) : -1
+                  // the kept point before a fixed window is drawn but never shown
+                  if (i >= 0 && s.points[i].t < t0) i = i + 1 < s.points.length ? i + 1 : -1
                   return { s, p: i >= 0 ? s.points[i] : null }
               })
     const hasHover = Boolean(hover && hover.some((h) => h.p))
@@ -474,6 +486,9 @@ export function Chart({
                     }}
                 >
                     <defs>
+                        <clipPath id={`${uid}-plot`}>
+                            <rect x={pad.l - 1} y={0} width={plotW + pad.r + 1} height={height} />
+                        </clipPath>
                         {prepared.map((s) => (
                             <linearGradient
                                 key={s.key}
@@ -530,38 +545,40 @@ export function Chart({
                             {xAxis.labels[i]}
                         </text>
                     ))}
-                    {paths.map(
-                        (p) =>
-                            p.area && (
-                                <path
-                                    key={`a-${p.key}`}
-                                    d={p.area}
-                                    style={{ fill: `url(#${uid}-${p.key})` }}
-                                />
-                            ),
-                    )}
-                    {(focus
-                        ? [
-                              ...paths.filter((p) => p.key !== focus),
-                              ...paths.filter((p) => p.key === focus),
-                          ]
-                        : paths
-                    ).map((p) => (
-                        <path
-                            key={p.key}
-                            d={p.line}
-                            fill="none"
-                            style={{
-                                stroke: p.color,
-                                opacity: focus && p.key !== focus ? 0.18 : 1,
-                                transition: "opacity 150ms",
-                            }}
-                            strokeWidth={2}
-                            strokeLinejoin="round"
-                            strokeLinecap="round"
-                            vectorEffect="non-scaling-stroke"
-                        />
-                    ))}
+                    <g clipPath={windowMs ? `url(#${uid}-plot)` : undefined}>
+                        {paths.map(
+                            (p) =>
+                                p.area && (
+                                    <path
+                                        key={`a-${p.key}`}
+                                        d={p.area}
+                                        style={{ fill: `url(#${uid}-${p.key})` }}
+                                    />
+                                ),
+                        )}
+                        {(focus
+                            ? [
+                                  ...paths.filter((p) => p.key !== focus),
+                                  ...paths.filter((p) => p.key === focus),
+                              ]
+                            : paths
+                        ).map((p) => (
+                            <path
+                                key={p.key}
+                                d={p.line}
+                                fill="none"
+                                style={{
+                                    stroke: p.color,
+                                    opacity: focus && p.key !== focus ? 0.18 : 1,
+                                    transition: "opacity 150ms",
+                                }}
+                                strokeWidth={2}
+                                strokeLinejoin="round"
+                                strokeLinecap="round"
+                                vectorEffect="non-scaling-stroke"
+                            />
+                        ))}
+                    </g>
                     {hover && (
                         <g>
                             <line
