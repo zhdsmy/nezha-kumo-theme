@@ -701,6 +701,7 @@
 }
 .quota-fact .quota-off {
     stroke: var(--text-color-kumo-subtle);
+    opacity: 0.5;
 }
 .card-facts dd[data-level="warn"] {
     color: var(--text-color-kumo-warning);
