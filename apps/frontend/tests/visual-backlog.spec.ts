@@ -165,6 +165,13 @@ test.describe("touch controls", () => {
             ]) {
                 await touchSize(page.locator(selector + ":visible").first())
             }
+            if (width === 952) {
+                // The 44px search target is wider than the 57px rail; its label must not leak.
+                await page.getByRole("button", { name: "Collapse navigation" }).click()
+                await expect(page.locator(".nk-sidebar")).toHaveAttribute("data-state", "collapsed")
+                await expect(page.locator(".sidebar-search-body")).toBeHidden()
+                await touchSize(page.locator(".sidebar-search"))
+            }
         })
     }
     test("NF05 login, overview tabs and latency switch hit areas", async ({ page }) => {

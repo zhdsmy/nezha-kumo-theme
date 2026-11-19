@@ -172,6 +172,14 @@
     border-color: transparent;
     background: transparent;
 }
+/* The 44px touch target is wider than the rail; hide the label so it does not leak past the
+ * icon. visibility stays visible for the whole transition, so the label still clips in and out. */
+.sidebar-search-body {
+    transition: visibility var(--sidebar-animation-duration) var(--sidebar-easing);
+}
+.nk-sidebar:not([data-mobile])[data-state="collapsed"] .sidebar-search-body {
+    visibility: hidden;
+}
 .nk-sidebar:not([data-mobile])[data-state="collapsed"] .sidebar-search:hover {
     background: var(--sidebar-active-bg);
 }
