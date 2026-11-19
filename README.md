@@ -144,7 +144,7 @@ All keys are optional and defined in [`apps/frontend/src/core/settings.ts`](apps
 | `showOffline`       | `boolean`                                      | `true`     | Include offline servers in the public server list (`false` hides offline servers).                                     |
 | `hiddenNodes`       | `string[]`                                     | `[]`       | Server IDs or exact server names to hide on the public frontend (also accepts a comma- or newline-separated `string`). |
 | `hideAdminEntry`    | `boolean`                                      | `false`    | Hide the sign-in / admin dashboard button in the top bar.                                                              |
-| `footerNote`        | `string`                                       | `""`       | Optional plain-text note rendered in the footer.                                                                       |
+| `footerNote`        | `string`                                       | `""`       | Optional plain-text note shown on its own line below the footer credits.                                                                       |
 
 ### Server Group Icons (`nezha-kumo-group-icons`)
 

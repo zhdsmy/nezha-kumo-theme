@@ -192,7 +192,9 @@
         "historyHint": "每格顯示該小時的回報狀態。未有觀測數據或尚未開始的時段會留空。",
         "notFound": "頁面不存在",
         "dailyIncluded": "由今日零時起計 · 已計入 {{count}}/{{total}} 個節點",
-        "footerNote": "Nezha · Kumo 主題",
+        "noData": "沒有數據",
+        "poweredBy": "基於",
+        "kumoTheme": "Kumo 主題",
         "moreInfo": "更多資料",
         "optional": "（選填）",
         "cancel": "取消"

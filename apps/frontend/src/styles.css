@@ -300,6 +300,38 @@
     height: 48px;
     border-radius: 0 0 8px 8px;
 }
+.chart-empty {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+}
+.chart-empty svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+.chart-empty-line {
+    fill: none;
+    stroke: var(--color-kumo-line);
+    stroke-width: 1.5;
+}
+.chart-empty-area {
+    fill: var(--color-kumo-line);
+    opacity: 0.25;
+}
+.chart-empty-label {
+    position: relative;
+    padding: 1px 10px;
+    border: 1px solid var(--color-kumo-line);
+    border-radius: 999px;
+    background: var(--color-kumo-base);
+    color: var(--text-color-kumo-subtle);
+    font-size: 12px;
+    line-height: 18px;
+}
 .status-number[data-level="good"] {
     color: var(--text-color-kumo-success);
 }
@@ -713,6 +745,14 @@
     color: var(--text-color-kumo-subtle);
     font-size: 12px;
     margin-top: 32px;
+}
+.page-footnote a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.page-footnote a:hover {
+    color: var(--text-color-kumo-default);
 }
 .chart-toolbar {
     display: flex;

@@ -203,7 +203,9 @@
         "historyHint": "Cells show whether a report was recorded in each hour. Unobserved and future hours stay empty.",
         "notFound": "Page not found",
         "dailyIncluded": "Since midnight · {{count}}/{{total}} nodes",
-        "footerNote": "Nezha · Kumo theme",
+        "noData": "No data",
+        "poweredBy": "Powered by",
+        "kumoTheme": "Kumo theme",
         "moreInfo": "More information",
         "optional": "(optional)",
         "cancel": "Cancel"

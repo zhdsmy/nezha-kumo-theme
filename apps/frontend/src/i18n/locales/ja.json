@@ -192,7 +192,9 @@
         "historyHint": "各セルは1時間ごとのレポートの有無です。未観測と未来の時間は空欄です。",
         "notFound": "ページが見つかりません",
         "dailyIncluded": "本日0時から · {{count}}/{{total}} ノード",
-        "footerNote": "Nezha · Kumo テーマ",
+        "noData": "データなし",
+        "poweredBy": "使用",
+        "kumoTheme": "Kumo テーマ",
         "moreInfo": "詳細情報",
         "optional": "（任意）",
         "cancel": "キャンセル"

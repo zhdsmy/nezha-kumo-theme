@@ -1,4 +1,4 @@
-import { useConnectionState, useStore } from "@/app/store"
+import { useConnectionState, useSiteTitle, useStore } from "@/app/store"
 import { levelFor } from "@/core/fleet"
 import type { Bucket } from "@/core/live"
 import type { Snapshot } from "@/core/model"
@@ -89,6 +89,28 @@ export function Meter({
 }
 
 // Gap-aware paths adapted from zool-theme/src/components/instruments.tsx (MIT, luoleiorg).
+// Fixed placeholder wave, drawn on a 300x100 box stretched to the chart.
+const EMPTY_WAVE =
+    "M0,52C20,46 38,58 58,57S92,40 112,47S146,70 168,63S198,30 220,36S254,64 276,56S294,42 300,44"
+
+/** Faint wave with a "No data" pill, shown where a chart has no points yet. */
+export function ChartEmpty() {
+    const { t } = useTranslation()
+    return (
+        <div className="chart-empty">
+            <svg viewBox="0 0 300 100" preserveAspectRatio="none" aria-hidden>
+                <path d={`${EMPTY_WAVE}V100H0Z`} className="chart-empty-area" />
+                <path
+                    d={EMPTY_WAVE}
+                    className="chart-empty-line"
+                    vectorEffect="non-scaling-stroke"
+                />
+            </svg>
+            <span className="chart-empty-label">{t("ui.noData")}</span>
+        </div>
+    )
+}
+
 export function Spark({
     buckets,
     color = CHART_PALETTE[0],
@@ -97,6 +119,13 @@ export function Spark({
     color?: string
 }) {
     const uid = useId().replace(/:/g, "")
+    // a line needs two points; until then show the placeholder
+    if (buckets.filter((b) => b.value !== null).length < 2)
+        return (
+            <div className="spark relative">
+                <ChartEmpty />
+            </div>
+        )
     const max = Math.max(1, ...buckets.map((b) => b.value ?? 0))
     let line = "",
         area = "",
@@ -630,5 +659,25 @@ export function Info({
 export function PageFootnote() {
     const { t } = useTranslation()
     const note = useStore((s) => s.settings.footerNote)
-    return <p className="page-footnote">{note || t("ui.footerNote")}</p>
+    const site = useSiteTitle()
+    return (
+        <footer className="page-footnote">
+            <p>
+                {site && `© ${new Date().getFullYear()} ${site} · `}
+                {t("ui.poweredBy")}{" "}
+                <a href="https://github.com/nezhahq/nezha" target="_blank" rel="noreferrer">
+                    Nezha
+                </a>
+                {" · "}
+                <a
+                    href="https://github.com/zhdsmy/nezha-kumo-theme"
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    {t("ui.kumoTheme")}
+                </a>
+            </p>
+            {note && <p>{note}</p>}
+        </footer>
+    )
 }

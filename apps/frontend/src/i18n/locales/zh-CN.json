@@ -192,7 +192,9 @@
         "historyHint": "每格表示该小时是否有上报。未观察和未来时段留空。",
         "notFound": "页面不存在",
         "dailyIncluded": "自今日零时 · 含 {{count}}/{{total}} 个节点",
-        "footerNote": "Nezha · Kumo 主题",
+        "noData": "无数据",
+        "poweredBy": "基于",
+        "kumoTheme": "Kumo 主题",
         "moreInfo": "更多信息",
         "optional": "（选填）",
         "cancel": "取消"

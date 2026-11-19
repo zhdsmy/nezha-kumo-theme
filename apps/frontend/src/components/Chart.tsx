@@ -9,6 +9,8 @@ import {
     useState,
 } from "react"
 
+import { ChartEmpty } from "./ui"
+
 interface ChartPoint {
     t: number
     v: number | null
@@ -455,7 +457,7 @@ export function Chart({
             role="img"
             aria-label={label}
         >
-            {width > 0 && (
+            {width > 0 && !empty && (
                 <svg
                     width={width}
                     height={height}
@@ -585,11 +587,7 @@ export function Chart({
                     )}
                 </svg>
             )}
-            {empty && width > 0 && (
-                <div className="pointer-events-none absolute inset-0 grid place-items-center text-[13px] text-kumo-subtle">
-                    —
-                </div>
-            )}
+            {empty && <ChartEmpty />}
             {hover && shown && hasHover && (
                 <div
                     ref={tipRef}

@@ -368,9 +368,12 @@ test.describe("Layout polish (fe2)", () => {
         const tileMetrics = await page.evaluate(() => {
             const trigger = document.querySelector<HTMLElement>(".status-trigger")!
             const onlineTile = trigger.closest<HTMLElement>(".metric-tile")!
-            const strokePath = onlineTile.querySelector<SVGPathElement>("svg.spark path[stroke]")!
+            // the spark is a line once it has two points, and the "No data" pill before that
+            const strokePath = onlineTile.querySelector<Element>(
+                ".spark path[stroke], .spark .chart-empty-label",
+            )!
             const sparks = Array.from(
-                document.querySelectorAll<SVGElement>(".metric-grid .metric-tile svg.spark"),
+                document.querySelectorAll<Element>(".metric-grid .metric-tile .spark"),
             )
             return {
                 gapToStroke:
@@ -386,12 +389,38 @@ test.describe("Layout polish (fe2)", () => {
 
         const homeFootnote = page.locator(".page-footnote")
         await homeFootnote.scrollIntoViewIfNeeded()
-        await expect(homeFootnote).toHaveText("Nezha · Kumo theme")
+        await expect(homeFootnote).toContainText("Powered by Nezha · Kumo theme")
 
         await page.goto("/server/6")
         const nodeFootnote = page.locator(".page-footnote")
         await nodeFootnote.scrollIntoViewIfNeeded()
-        await expect(nodeFootnote).toHaveText("Nezha · Kumo theme")
+        await expect(nodeFootnote).toContainText("Powered by Nezha · Kumo theme")
+        await expect(nodeFootnote.getByRole("link", { name: "Nezha" })).toHaveAttribute(
+            "href",
+            "https://github.com/nezhahq/nezha",
+        )
+        const themeLink = nodeFootnote.getByRole("link", { name: "Kumo theme" })
+        await expect(themeLink).toHaveAttribute(
+            "href",
+            "https://github.com/zhdsmy/nezha-kumo-theme",
+        )
+        await expect(themeLink).toHaveAttribute("target", "_blank")
+    })
+
+    test("footer note is added below the credits", async ({ page }) => {
+        await page.addInitScript(() => {
+            ;(window as { NezhaKumoConfig?: unknown }).NezhaKumoConfig = {
+                footerNote: "Hosted note",
+            }
+        })
+        await mockStressNezha(page)
+        await page.goto("/")
+        const footnote = page.locator(".page-footnote")
+        await footnote.scrollIntoViewIfNeeded()
+        await expect(footnote.locator("p")).toHaveText([
+            /Powered by Nezha · Kumo theme$/,
+            "Hosted note",
+        ])
     })
 
     test("Goal 4: focus-visible ring matches Kumo brand ring across links, triggers, buttons, and search dialog in light & dark modes", async ({

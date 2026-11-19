@@ -144,7 +144,7 @@
 | `showOffline`       | `boolean`                                      | `true`     | 是否在公开列表中显示离线节点（设为 `false` 时隐藏离线节点）。                    |
 | `hiddenNodes`       | `string[]`                                     | `[]`       | 在公开前台隐藏的服务器 ID 或完整服务器名称列表（也支持逗号或换行分隔的字符串）。 |
 | `hideAdminEntry`    | `boolean`                                      | `false`    | 是否隐藏顶部栏的登录 / 管理后台入口按钮。                                        |
-| `footerNote`        | `string`                                       | `""`       | 页脚附加纯文本说明。                                                             |
+| `footerNote`        | `string`                                       | `""`       | 页脚致谢下方另起一行的纯文本说明。                                                             |
 
 ### 分组图标配置（`nezha-kumo-group-icons`）
 

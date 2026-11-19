@@ -46,7 +46,7 @@ test("zh-CN interface localizes screen-reader labels, tooltips, placeholders, an
 
     // Uptime and footnote are localized in zh-CN
     await expect(page.locator(".card-facts").first()).toContainText(/天.*小时.*分/)
-    await expect(page.locator(".page-footnote")).toHaveText("Nezha · Kumo 主题")
+    await expect(page.locator(".page-footnote")).toContainText("基于 Nezha · Kumo 主题")
 
     // Mobile drawer <nav> uses localized shell.mainNav instead of Kumo's hardcoded "Navigation"
     await page.locator(".nk-drawer-trigger").click()
