@@ -83,7 +83,6 @@
         "unlimited": "無制限",
         "cores_other": "{{count}} コア",
         "payAsYouGo": "従量課金",
-        "unknown": "不明",
         "actualCost": "実際のコスト"
     },
     "unit": {

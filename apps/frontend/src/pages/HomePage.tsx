@@ -61,7 +61,7 @@ function readPreference<T>(key: string, fallback: T): T {
     }
 }
 
-// Inline icons: 16px grid, stroke follows the text colour.
+// Inline icons: 16px grid; the 1.1 stroke matches the weight of the text arrows.
 const UP = "M5 13.5v-11M2 5.5l3-3 3 3"
 const DOWN = "M11 2.5v11M8 10.5l3 3 3-3"
 const QUOTA_ICONS = {
@@ -73,7 +73,7 @@ const QUOTA_ICONS = {
     out: (
         <>
             <path d={UP} />
-            <path d={DOWN} opacity={0.35} />
+            <path d={DOWN} className="quota-off" />
         </>
     ),
     // a bar over both directions: the larger one counts
@@ -91,7 +91,7 @@ function QuotaFact({ node, text }: { node: NodeInfo; text: string }) {
                 viewBox="0 0 16 16"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth={1.5}
+                strokeWidth={1.1}
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 aria-hidden

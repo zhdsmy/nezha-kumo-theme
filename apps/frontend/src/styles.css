@@ -699,6 +699,9 @@
     width: 14px;
     height: 14px;
 }
+.quota-fact .quota-off {
+    stroke: var(--text-color-kumo-subtle);
+}
 .card-facts dd[data-level="warn"] {
     color: var(--text-color-kumo-warning);
 }

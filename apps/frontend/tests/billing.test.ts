@@ -94,7 +94,7 @@ describe("Nezha billing display", () => {
             const metered = render({ billingDataMod: { amount: "-1" } })
             expect(metered).toContain(t.metric.payAsYouGo)
             expect(metered).not.toContain(t.metric.free)
-            expect(render({})).toContain(t.metric.unknown)
+            expect(render({})).toContain("—")
             expect(render({ planDataMod: { trafficVol: "Unlimited" } })).toContain(
                 t.metric.unlimited,
             )

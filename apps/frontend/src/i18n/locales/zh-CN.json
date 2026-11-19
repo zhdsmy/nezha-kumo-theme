@@ -83,7 +83,6 @@
         "unlimited": "不限",
         "cores_other": "{{count}} 核",
         "payAsYouGo": "按量计费",
-        "unknown": "未知",
         "actualCost": "实际成本"
     },
     "unit": {

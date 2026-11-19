@@ -83,7 +83,6 @@
         "unlimited": "不限",
         "cores_other": "{{count}} 核心",
         "payAsYouGo": "隨用隨付",
-        "unknown": "未知",
         "actualCost": "實際成本"
     },
     "unit": {

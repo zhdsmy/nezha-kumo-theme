@@ -88,7 +88,6 @@
         "cores_one": "{{count}} core",
         "cores_other": "{{count}} cores",
         "payAsYouGo": "Pay as you go",
-        "unknown": "Unknown",
         "actualCost": "Actual cost"
     },
     "unit": {

@@ -45,7 +45,7 @@ export function useBilling() {
                 : price(n)
         },
         quota(n: NodeInfo) {
-            if (n.trafficLimit < 0) return t("metric.unknown")
+            if (n.trafficLimit < 0) return "—"
             if (n.trafficLimit === 0) return t("metric.unlimited")
             return `${formatBytes(n.trafficLimit)}${cycle(n.trafficLimitPeriod ?? 0)}`
         },
