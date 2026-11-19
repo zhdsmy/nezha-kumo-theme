@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.8] - 2026-11-19
+
+- Show "© year site · Powered by Nezha · Kumo theme" in the footer, with Nezha and the theme linked to their GitHub repositories.
+- Show the footer note on its own line below the credits instead of replacing them.
+- Show a "No data" placeholder in charts and home tile sparks that have no data yet.
+
 ## [0.1.7] - 2026-11-19
 
 - Fade the uncounted download arrow in the outbound-only traffic quota icon.
