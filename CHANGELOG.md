@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.6] - 2026-11-19
+
+- Draw the traffic quota icons at the same weight as the surrounding text.
+- Show an unknown traffic quota as a dash, like other empty billing facts.
+
 ## [0.1.5] - 2026-11-19
 
 - Show an icon for the traffic quota type on home page server cards: an infinity sign for unlimited traffic, and arrows for both directions, outbound only, or the larger direction.
