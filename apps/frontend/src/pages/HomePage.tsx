@@ -61,6 +61,49 @@ function readPreference<T>(key: string, fallback: T): T {
     }
 }
 
+// Inline icons: 16px grid, stroke follows the text colour.
+const UP = "M5 13.5v-11M2 5.5l3-3 3 3"
+const DOWN = "M11 2.5v11M8 10.5l3 3 3-3"
+const QUOTA_ICONS = {
+    unlimited: (
+        <path d="M8 8C6.5 6 5.4 5 4 5a3 3 0 0 0 0 6c1.4 0 2.5-1 4-3s2.6-3 4-3a3 3 0 0 1 0 6c-1.4 0-2.5-1-4-3Z" />
+    ),
+    sum: <path d={UP + DOWN} />,
+    // download faded: inbound is not counted
+    out: (
+        <>
+            <path d={UP} />
+            <path d={DOWN} opacity={0.35} />
+        </>
+    ),
+    // a bar over both directions: the larger one counts
+    max: <path d="M5 14V5M2 8l3-3 3 3M11 5v9M8 11l3 3 3-3M2 2h12" />,
+}
+
+function QuotaFact({ node, text }: { node: NodeInfo; text: string }) {
+    const { t } = useTranslation()
+    const unlimited = node.trafficLimit === 0
+    if (!unlimited && (node.trafficLimit < 0 || !node.trafficLimitTypeExplicit)) return text
+    const label = unlimited ? text : t(`node.traffic.${node.trafficLimitType}`)
+    return (
+        <span className="quota-fact" title={label}>
+            <svg
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+            >
+                {QUOTA_ICONS[unlimited ? "unlimited" : node.trafficLimitType]}
+            </svg>
+            <span className="sr-only">{label}</span>
+            {!unlimited && text}
+        </span>
+    )
+}
+
 function ServerFacts({ node, snap, showBilling }: RowProps) {
     const { t } = useTranslation()
     const billing = useBilling()
@@ -93,7 +136,7 @@ function ServerFacts({ node, snap, showBilling }: RowProps) {
     if (showBilling)
         facts.push(
             [t("metric.price"), billing.price(node) || "—"],
-            [t("metric.quota"), billing.quota(node)],
+            [t("metric.quota"), <QuotaFact node={node} text={billing.quota(node)} />],
             [t("metric.expiry"), expiry?.text || "—", expiry?.level],
         )
     return (

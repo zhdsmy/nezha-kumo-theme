@@ -689,6 +689,16 @@
     margin-top: 2px;
     overflow-wrap: anywhere;
 }
+.quota-fact {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.quota-fact svg {
+    flex: none;
+    width: 14px;
+    height: 14px;
+}
 .card-facts dd[data-level="warn"] {
     color: var(--text-color-kumo-warning);
 }
