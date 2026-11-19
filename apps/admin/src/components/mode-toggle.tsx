@@ -1,9 +1,10 @@
-import { Theme, useTheme } from "@/components/theme-provider"
+import { THEME_VALUES, normalizeTheme, useTheme } from "@/components/theme-provider"
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuItem,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Monitor, Moon, Sun } from "lucide-react"
@@ -14,10 +15,6 @@ export function ModeToggle() {
     const { theme, setTheme } = useTheme()
     const Icon = theme === "system" ? Monitor : theme === "dark" ? Moon : Sun
 
-    const toggleTheme = (theme: Theme) => {
-        setTheme(theme)
-    }
-
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -26,15 +23,13 @@ export function ModeToggle() {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => toggleTheme("light")}>
-                    {t("theme.light")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => toggleTheme("dark")}>
-                    {t("theme.dark")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => toggleTheme("system")}>
-                    {t("theme.system")}
-                </DropdownMenuItem>
+                <DropdownMenuRadioGroup value={theme} onValueChange={(value) => setTheme(normalizeTheme(value))}>
+                    {THEME_VALUES.map((value) => (
+                        <DropdownMenuRadioItem key={value} value={value}>
+                            {t(`theme.${value}`)}
+                        </DropdownMenuRadioItem>
+                    ))}
+                </DropdownMenuRadioGroup>
             </DropdownMenuContent>
         </DropdownMenu>
     )

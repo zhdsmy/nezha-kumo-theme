@@ -13,7 +13,7 @@
 
   * The above copyright notice and this permission notice shall be included in all
   * copies or substantial portions of the Software.
- 
+
   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -38,7 +38,7 @@ import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { type VariantProps, cva } from "class-variance-authority"
 import { CheckIcon, ChevronDown, WandSparkles, XIcon } from "lucide-react"
-import { KeyboardEvent, forwardRef, useState } from "react"
+import { CSSProperties, KeyboardEvent, forwardRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 /**
@@ -46,11 +46,11 @@ import { useTranslation } from "react-i18next"
  * Uses class-variance-authority (cva) to define different styles based on "variant" prop.
  */
 const multiSelectVariants = cva(
-    "m-1 transition-colors duration-150 motion-reduce:transition-none",
+    "transition-colors duration-150 motion-reduce:transition-none",
     {
         variants: {
             variant: {
-                default: "border-foreground/10 text-foreground bg-card hover:bg-card/80",
+                default: "border-foreground/10 text-foreground bg-kumo-fill hover:bg-accent",
                 secondary:
                     "border-foreground/10 bg-secondary text-secondary-foreground hover:bg-secondary/80",
                 destructive:
@@ -208,6 +208,7 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                         variant="outline"
                         {...props}
                         type="button"
+                        style={{ ...props.style, "--nkt-chip-duration": `${animation}s` } as CSSProperties}
                         className={cn(
                             "flex min-w-0 w-full p-1 rounded-lg border min-h-9 h-auto items-center justify-between bg-kumo-control text-foreground hover:bg-accent [&_svg]:pointer-events-auto [&>span]:min-w-0 [&>span]:w-full",
                             className,
@@ -215,7 +216,7 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                     >
                         {selectedValues.length > 0 ? (
                             <div className="flex min-w-0 w-full items-center justify-between gap-1">
-                                <div className="flex min-w-0 flex-1 flex-wrap items-center overflow-hidden">
+                                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1 overflow-hidden">
                                     {selectedValues.slice(0, maxCount).map((value) => {
                                         const option = options.find((o) => o.value === value)
                                         const IconComponent = option?.icon
@@ -224,10 +225,9 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                                                 key={value}
                                                 className={cn(
                                                     "!flex-initial !shrink min-w-0 max-w-full",
-                                                    isAnimating ? "animate-bounce" : "",
+                                                    isAnimating ? "animate-bounce [animation-duration:var(--nkt-chip-duration)]" : "",
                                                     multiSelectVariants({ variant }),
                                                 )}
-                                                style={{ animationDuration: `${animation}s` }}
                                             >
                                                 {IconComponent && (
                                                     <IconComponent className="mr-1.5 h-3.5 w-3.5 shrink-0" />
@@ -252,10 +252,9 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                                         <Badge
                                             className={cn(
                                                 "!flex-initial !shrink min-w-0 max-w-full bg-transparent text-foreground border-foreground/1 hover:bg-transparent",
-                                                isAnimating ? "animate-bounce" : "",
+                                                isAnimating ? "animate-bounce [animation-duration:var(--nkt-chip-duration)]" : "",
                                                 multiSelectVariants({ variant }),
                                             )}
-                                            style={{ animationDuration: `${animation}s` }}
                                         >
                                             <span className="truncate">
                                                 {t("MoreSelected", {
@@ -293,7 +292,7 @@ export const MultiSelect = forwardRef<HTMLButtonElement, MultiSelectProps>(
                             </div>
                         ) : (
                             <div className="flex min-w-0 items-center justify-between w-full mx-auto">
-                                <span className="truncate text-sm text-muted-foreground mx-3">
+                                <span className="truncate text-sm text-muted-foreground mx-2">
                                     {resolvedPlaceholder}
                                 </span>
                                 <ChevronDown className="mx-2 h-4 w-4 shrink-0 cursor-pointer text-muted-foreground" />

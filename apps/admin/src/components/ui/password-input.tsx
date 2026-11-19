@@ -13,7 +13,7 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
         const label = visible ? t("HidePassword") : t("ShowPassword")
 
         return (
-            <div className="relative w-full">
+            <div className="nkt-password relative w-full">
                 <Input
                     ref={ref}
                     type={visible ? "text" : "password"}

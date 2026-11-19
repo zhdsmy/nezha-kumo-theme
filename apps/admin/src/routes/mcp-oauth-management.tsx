@@ -330,7 +330,7 @@ export default function MCPOAuthManagementPage() {
                 <p role="status">{t("Loading")}</p>
             ) : (
                 <>
-                    <Tabs value={selected} onValueChange={setView} className="mb-4">
+                    <Tabs value={selected} onValueChange={setView} className="nkt-mcp-tabs mb-4">
                         <TabsList>
                             <TabsTrigger value="mine">{t("MCPOAuthManager.Mine")}</TabsTrigger>
                             {isAdmin && (

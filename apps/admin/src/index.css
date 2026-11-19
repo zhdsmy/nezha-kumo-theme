@@ -256,6 +256,9 @@ body,
     .nkt-table {
         --nkt-owner-grow: 0.55fr;
     }
+    .nkt-server-table [data-col="owner"] {
+        flex-grow: 0.55;
+    }
     .nkt-table td:is([data-col="name"], [data-col="username"], [data-col="owner"]) .nkt-cell-value {
         display: block;
         -webkit-line-clamp: unset;
@@ -779,31 +782,32 @@ body,
     position: static;
     grid-area: 1 / 3;
 }
+.nkt-note-billing-column > :is([data-note-field="autoRenewal"], [data-note-field="cycle"]) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto 1fr;
+    align-content: start;
+}
+.nkt-note-billing-column > :is([data-note-field="autoRenewal"], [data-note-field="cycle"]) > .nkt-note-label {
+    grid-area: 1 / 1;
+    display: flex;
+    align-items: center;
+    min-height: 36px;
+    margin: 0;
+}
+.nkt-note-billing-column > :is([data-note-field="autoRenewal"], [data-note-field="cycle"]) > .nkt-note-clear {
+    position: static;
+    grid-area: 1 / 2;
+    align-self: center;
+}
+.nkt-note-billing-column > :is([data-note-field="autoRenewal"], [data-note-field="cycle"]) > .nkt-note-control {
+    grid-area: 2 / 1 / 3 / -1;
+    padding-right: 0;
+}
 @media (max-width: 639px) {
-    .nkt-note-editor
-        .nkt-note-billing-column
-        > :is([data-note-field="autoRenewal"], [data-note-field="cycle"])
-        > .nkt-note-label {
-        display: flex;
-        align-items: center;
-        min-height: 32px;
-    }
-    .nkt-note-editor .nkt-note-billing-column > [data-note-field="cycle"] > .nkt-note-label {
-        padding-right: 36px;
-    }
-    .nkt-note-editor .nkt-note-billing-column > [data-note-field="cycle"] > .nkt-note-control {
-        padding-right: 0;
-    }
-    .nkt-note-editor
-        .nkt-note-billing-column
-        > [data-note-field="cycle"]
-        > .nkt-note-control
-        button {
+    .nkt-note-editor [data-note-field="cycle"] > .nkt-note-control button {
         padding-inline: 8px;
         gap: 4px;
-    }
-    .nkt-note-editor .nkt-note-billing-column > [data-note-field="cycle"] > .nkt-note-clear {
-        top: -2px;
     }
 }
 .nkt-note-editor [data-note-field] :is(input, [role="combobox"]) {
@@ -854,4 +858,82 @@ body,
 .nkt-json-row :is(input, textarea, [role="combobox"]) {
     min-width: 0;
     max-width: 100%;
+}
+
+.nkt-dialog-close {
+    --close-size: 32px;
+    width: var(--close-size);
+    height: var(--close-size);
+    top: calc(max(1.5rem, env(safe-area-inset-top)) + .75rem - var(--close-size) / 2);
+}
+.nk-topbar-actions > :is(button, a[aria-label]) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+}
+@media (max-width: 767px), (pointer: coarse) {
+    .nkt-dialog-close {
+        --close-size: 44px;
+    }
+    .nk-topbar .nk-drawer-trigger,
+    .nk-topbar-actions > :is(button, a[aria-label]) {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+    }
+    .nkt-server-toolbar button {
+        min-height: 44px;
+    }
+    .nkt-password:has(input[autocomplete="current-password"]) input {
+        height: 44px;
+        padding-right: 48px;
+    }
+    .nkt-password:has(input[autocomplete="current-password"]) > button {
+        inset-block: 0;
+        right: 0;
+        width: 44px;
+    }
+    .nkt-mcp-tabs .kumo-tabs-list,
+    .nkt-mcp-tabs [data-kumo-component="Tabs"] > div:first-child {
+        height: 48px;
+    }
+    .nkt-mcp-tabs [role="tab"] {
+        min-width: 44px;
+        min-height: 44px;
+    }
+}
+
+.nkt-table[data-container-layout] {
+    container: server-table / inline-size;
+}
+@media (min-width: 768px) {
+    .nkt-table .nkt-server-table tr {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .nkt-table .nkt-server-table [data-col] {
+        display: var(--column-display, flex);
+    }
+    .nkt-server-table [data-primary],
+    .nkt-server-table [colspan] {
+        flex: 1;
+    }
+    .nkt-table .nkt-server-table tr[data-open] > td {
+        display: flex;
+        order: var(--detail-order, 0);
+    }
+    .nkt-server-table tr[data-open] > td[data-label]::before {
+        content: attr(data-label);
+        display: var(--label-display, none);
+        flex: 0 0 34%;
+        color: var(--muted-foreground);
+    }
+}
+
+.nkt-server-search::placeholder {
+    color: var(--text-color-kumo-subtle);
+    opacity: 1;
 }

@@ -31,11 +31,12 @@ const Table = forwardRef<
     HTMLTableElement,
     HTMLAttributes<HTMLTableElement> & {
         primaryColumn?: string
+        containerLayout?: boolean
         columnPriority?: [string, number][]
     }
 >(
     (
-        { className, primaryColumn = "name", columnPriority = defaultPriority, children, ...props },
+        { className, primaryColumn = "name", containerLayout, columnPriority = defaultPriority, children, ...props },
         ref,
     ) => {
         const box = useRef<HTMLDivElement>(null)
@@ -43,7 +44,7 @@ const Table = forwardRef<
         const [hiddenColumns, setHiddenColumns] = useState<string[]>([])
         const [selectedCount, setSelectedCount] = useState(0)
         const selectedCountRef = useRef(0)
-        const layout = !tableWidth ? "cards" : hiddenColumns.length ? "compact" : "wide"
+        const layout = !tableWidth ? "cards" : containerLayout || hiddenColumns.length ? "compact" : "wide"
         useLayoutEffect(() => {
             const container = box.current
             if (!container) return
@@ -85,6 +86,7 @@ const Table = forwardRef<
                     })
                 }
             }
+            if (containerLayout) return () => selectionObserver?.disconnect()
             const actions = container.querySelectorAll<HTMLElement>(".nkt-table-actions")
             const actionWidth = Math.max(80, ...Array.from(actions, (el) => el.scrollWidth)) + 32
             const columns = heads.map((head) => head.dataset.col).filter((id): id is string => !!id)
@@ -169,12 +171,13 @@ const Table = forwardRef<
                 cancelAnimationFrame(frame)
                 selectionObserver?.disconnect()
             }
-        }, [children, columnPriority, primaryColumn, tableWidth])
+        }, [children, columnPriority, containerLayout, primaryColumn, tableWidth])
         return (
             <TableContext.Provider value={{ primaryColumn, layout, hiddenColumns, selectedCount }}>
                 <div
                     ref={box}
                     data-layout={layout}
+                    data-container-layout={containerLayout || undefined}
                     className="nkt-table relative w-full min-w-0 rounded-lg border bg-card"
                 >
                     <table
