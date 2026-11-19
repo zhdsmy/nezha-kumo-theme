@@ -429,6 +429,36 @@ test.describe("Layout polish (fe2)", () => {
         }
     })
 
+    test("touch range tabs are centered and the sign-in action matches its neighbours", async ({
+        page,
+    }) => {
+        await mockStressNezha(page)
+        await page.setViewportSize({ width: 375, height: 667 })
+        await page.goto("/server/6#latency")
+        const list = page.locator('.chart-toolbar [role="tablist"]')
+        await expect(list).toBeVisible()
+        const inset = await list.evaluate((el) => {
+            const a = el.getBoundingClientRect()
+            const b = el.querySelector('[aria-selected="true"]')!.getBoundingClientRect()
+            return { top: b.top - a.top, bottom: a.bottom - b.bottom }
+        })
+        expect(inset.top).toBeCloseTo(inset.bottom, 0)
+        const look = (name: string) =>
+            page.getByRole("button", { name }).evaluate((el) => {
+                const s = getComputedStyle(el)
+                return [s.backgroundColor, s.borderTopWidth, s.boxShadow]
+            })
+        expect(await look("Sign in")).toEqual(await look("Language"))
+        for (const name of ["Appearance", "Language", "Sign in"]) {
+            const icon = await page.getByRole("button", { name }).evaluate((el) => {
+                const a = el.getBoundingClientRect()
+                const b = el.querySelector("svg")!.getBoundingClientRect()
+                return { left: b.left - a.left, right: a.right - b.right }
+            })
+            expect(icon.left, name).toBeCloseTo(icon.right, 0)
+        }
+    })
+
     test("footer note is added below the credits", async ({ page }) => {
         await page.addInitScript(() => {
             ;(window as { NezhaKumoConfig?: unknown }).NezhaKumoConfig = {

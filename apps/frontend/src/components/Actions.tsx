@@ -10,8 +10,9 @@ import {
     MagnifyingGlassIcon,
     MonitorIcon,
     MoonIcon,
+    SignInIcon,
     SunIcon,
-    UserIcon,
+    UserCircleIcon,
 } from "@phosphor-icons/react"
 import {
     type ComponentType,
@@ -250,25 +251,25 @@ export function Actions() {
                     <LinkProvider>
                         <LinkButton
                             href={adapter.adminUrl}
-                            variant="secondary"
+                            variant="ghost"
                             size="sm"
                             aria-label={t("auth.dashboard")}
                             title={t("auth.dashboard")}
                         >
-                            <UserIcon size={16} />
+                            <UserCircleIcon size={16} weight="fill" />
                             <span className="action-label">{t("auth.dashboard")}</span>
                         </LinkButton>
                     </LinkProvider>
                 ) : (
                     <Button
-                        variant="secondary"
+                        variant="ghost"
                         size="sm"
                         aria-label={t("auth.signIn")}
                         onPointerEnter={() => void loadLoginDialog().catch(() => {})}
                         onFocus={() => void loadLoginDialog().catch(() => {})}
                         onClick={() => setLogin(true)}
                     >
-                        <UserIcon size={16} />
+                        <SignInIcon size={16} />
                         <span className="action-label">{t("auth.signIn")}</span>
                     </Button>
                 ))}

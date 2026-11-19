@@ -789,6 +789,12 @@
         min-width: 44px;
         min-height: 44px;
     }
+    .nk-topbar-actions > button,
+    .nk-topbar-actions > a {
+        /* icon-only at this size; keep the glyph centered in the 44px target */
+        justify-content: center;
+        padding-inline: 0;
+    }
     .nk-drawer-trigger {
         width: 44px;
     }
@@ -800,8 +806,8 @@
     }
     .chart-toolbar [data-kumo-component="Tabs"] > div:first-child,
     .chart-toolbar .kumo-tabs-list {
+        /* the tabs keep Kumo's 2px margin, which centers 44px tabs in 48px */
         height: 48px;
-        padding-block: 2px;
     }
     .chart-toolbar [role="tab"] {
         min-width: 44px;
