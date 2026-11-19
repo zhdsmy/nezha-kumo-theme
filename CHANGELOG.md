@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.12] - 2026-11-19
+
+- Center the selected range tab and the top bar icons on touch screens.
+- Show Sign in and Admin without a frame, with different icons before and after sign-in.
+- Show "—" instead of 0.0 ms for a latency route where every probe failed, and do not draw it as a 0 ms line.
+- Admin: clear the target user ID each time the batch owner dialog opens.
+
 ## [0.1.11] - 2026-11-19
 
 - Keep the node page chart lines at the left edge after switching ranges on cached history.
