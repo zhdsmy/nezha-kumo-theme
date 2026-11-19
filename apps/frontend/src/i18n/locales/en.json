@@ -130,6 +130,8 @@
         "reportRate": "Reporting rate",
         "reportedHours_one": "{{rate}}% · {{seen}}/{{count}} hour",
         "reportedHours_other": "{{rate}}% · {{seen}}/{{count}} hours",
+        "previousHour": "Previous hour",
+        "nextHour": "Next hour",
         "historyUp": "Reported",
         "historyDown": "Missed",
         "historyEmpty": "Unobserved",

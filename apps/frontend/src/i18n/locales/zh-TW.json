@@ -119,6 +119,8 @@
         "recentDays_other": "最近 {{count}} 天",
         "reportRate": "回報率",
         "reportedHours_other": "{{rate}}% · {{seen}}/{{count}} 小時",
+        "previousHour": "上一小時",
+        "nextHour": "下一小時",
         "historyUp": "正常回報",
         "historyDown": "未回報",
         "historyEmpty": "無觀測資料",

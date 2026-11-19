@@ -119,6 +119,8 @@
         "recentDays_other": "直近 {{count}} 日間",
         "reportRate": "レポート率",
         "reportedHours_other": "{{rate}}% · {{seen}}/{{count}} 時間",
+        "previousHour": "前の時間",
+        "nextHour": "次の時間",
         "historyUp": "報告あり",
         "historyDown": "報告なし",
         "historyEmpty": "未観測",

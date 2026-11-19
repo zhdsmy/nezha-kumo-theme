@@ -3,6 +3,8 @@ import { ChartCard } from "@/components/NodeCharts"
 import { formatNumber, ratio } from "@/core/format"
 import { bucketSeries } from "@/core/live"
 import type { HistoryPoint } from "@/core/model"
+import { Button } from "@cloudflare/kumo"
+import { CaretDownIcon } from "@phosphor-icons/react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -20,8 +22,6 @@ export function HourGrid({ points, days = 7 }: { points: readonly HistoryPoint[]
     const { t, i18n } = useTranslation()
     const [selected, setSelected] = useState<{
         at: number
-        stamp: string
-        state: "up" | "down"
         pinned: boolean
     } | null>(null)
     const now = Date.now()
@@ -42,12 +42,20 @@ export function HourGrid({ points, days = 7 }: { points: readonly HistoryPoint[]
         0,
     )
     const first = watched.length ? Math.min(...watched.map((p) => p.at)) : now
-    const rows = new Map<string, typeof buckets>()
-    for (const bucket of buckets) {
-        const day = new Date(bucket.at).toLocaleDateString(i18n.language, {
-            month: "numeric",
-            day: "numeric",
-        })
+    const hours = buckets.map((bucket) => {
+        const at = bucket.at
+        const hour = new Date(at)
+        const day = hour.toLocaleDateString(i18n.language, { month: "numeric", day: "numeric" })
+        const state =
+            !inWindow(at) || at < first - HOUR ? "unwatched" : bucket.value !== null ? "up" : "down"
+        return { at, day, state, stamp: `${day} ${String(hour.getHours()).padStart(2, "0")}:00` }
+    })
+    const selectable = hours.filter((hour) => hour.state !== "unwatched")
+    const reading = selectable.find((hour) => hour.at === selected?.at)
+    const index = reading ? selectable.indexOf(reading) : selectable.length - 1
+    const rows = new Map<string, typeof hours>()
+    for (const bucket of hours) {
+        const day = bucket.day
         const row = rows.get(day) ?? []
         row.push(bucket)
         rows.set(day, row)
@@ -58,12 +66,10 @@ export function HourGrid({ points, days = 7 }: { points: readonly HistoryPoint[]
         const el = target instanceof HTMLElement ? target.closest<HTMLElement>("[data-at]") : null
         if (!el) return
         const at = Number(el.dataset.at)
-        const stamp = el.dataset.stamp ?? ""
-        const state = el.dataset.state === "down" ? "down" : "up"
         setSelected((prev) => {
             if (pin && prev?.pinned && prev.at === at) return null
             if (!pin && prev?.pinned) return prev
-            return { at, stamp, state, pinned: pin }
+            return { at, pinned: pin }
         })
     }
 
@@ -98,17 +104,7 @@ export function HourGrid({ points, days = 7 }: { points: readonly HistoryPoint[]
                             {day}
                         </span>
                         <span className="flex flex-1 gap-[2px]">
-                            {row.map((cell) => {
-                                const at = cell.at
-                                // Hours we never watched, and hours still ahead of the clock, are not outages.
-                                const state =
-                                    !inWindow(at) || at < first - HOUR
-                                        ? "unwatched"
-                                        : cell.value !== null
-                                          ? "up"
-                                          : "down"
-                                const hour = new Date(at)
-                                const stamp = `${hour.toLocaleDateString(i18n.language, { month: "numeric", day: "numeric" })} ${String(hour.getHours()).padStart(2, "0")}:00`
+                            {row.map(({ at, state, stamp }) => {
                                 const interactive = state !== "unwatched"
                                 return (
                                     <span
@@ -145,10 +141,37 @@ export function HourGrid({ points, days = 7 }: { points: readonly HistoryPoint[]
                         {t("node.historyEmpty")}
                     </span>
                 </div>
-                {selected ? (
+                {selectable.length > 0 && (
+                    <div className="hour-grid-nav hidden items-center gap-1">
+                        {([-1, 1] as const).map((step) => {
+                            const target =
+                                !reading && step === 1
+                                    ? selectable.at(-1)
+                                    : selectable[index + step]
+                            return (
+                                <Button
+                                    key={step}
+                                    shape="square"
+                                    variant="secondary"
+                                    className="size-11"
+                                    aria-label={t(step < 0 ? "node.previousHour" : "node.nextHour")}
+                                    disabled={!target}
+                                    onClick={() =>
+                                        target && setSelected({ at: target.at, pinned: true })
+                                    }
+                                >
+                                    <CaretDownIcon
+                                        className={step < 0 ? "rotate-90" : "-rotate-90"}
+                                    />
+                                </Button>
+                            )
+                        })}
+                    </div>
+                )}
+                {reading ? (
                     <span className="hour-grid-selected num text-kumo-default">
-                        {selected.stamp} ·{" "}
-                        {t(selected.state === "up" ? "node.historyUp" : "node.historyDown")}
+                        {reading.stamp} ·{" "}
+                        {t(reading.state === "up" ? "node.historyUp" : "node.historyDown")}
                     </span>
                 ) : (
                     <span className="muted">{t("ui.historyHint")}</span>

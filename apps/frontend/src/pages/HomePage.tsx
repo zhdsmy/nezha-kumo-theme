@@ -180,7 +180,7 @@ const ServerCard = memo(function ServerCard({
                     <Link className="card-name" href={adapter.nodePath(node.id)} title={node.name}>
                         <span className="card-name-text">
                             {showRegions && <RegionFlag code={node.region} className="mr-1.5" />}
-                            {stripFlag(node.name)}
+                            <span>{stripFlag(node.name)}</span>
                         </span>
                     </Link>
                     <span className="card-meta muted" title={meta}>

@@ -255,7 +255,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
                 showRegions && node.region ? (
                     <>
                         <RegionFlag code={node.region} className="mr-2" />
-                        {stripFlag(node.name)}
+                        <span className="min-w-0">{stripFlag(node.name)}</span>
                     </>
                 ) : (
                     stripFlag(node.name)

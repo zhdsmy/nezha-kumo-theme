@@ -467,8 +467,10 @@ export function Chart({
         >
             {width > 0 && !empty && (
                 <svg
-                    width={width}
+                    width="100%"
                     height={height}
+                    viewBox={`0 0 ${width} ${height}`}
+                    preserveAspectRatio="none"
                     className="block touch-pan-y overflow-visible"
                     onPointerDown={onDown}
                     onPointerMove={onMove}

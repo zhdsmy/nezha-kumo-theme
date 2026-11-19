@@ -353,7 +353,7 @@
     max-width: 100%;
     min-height: 32px;
     margin: -8px -6px;
-    padding: 0 6px;
+    padding: 4px 6px;
     border: 0;
     border-radius: 6px;
     background: none;
@@ -479,6 +479,8 @@
     display: none;
 }
 .region-tabs {
+    display: flex;
+    background: var(--color-kumo-recessed);
     width: fit-content;
     max-width: 100%;
     margin-bottom: 16px;
@@ -505,7 +507,31 @@
         transparent
     );
 }
+.region-tabs .kumo-tabs-list {
+    order: 1;
+}
+.region-tabs [data-kumo-part="overflow-control"] {
+    position: relative;
+    flex-shrink: 0;
+    justify-content: center;
+    background: var(--color-kumo-recessed);
+}
+.region-tabs [data-kumo-part="overflow-control"] > span {
+    margin: 0;
+}
+.region-tabs [data-side="end"] {
+    order: 2;
+}
+.region-tabs [aria-hidden="true"][data-kumo-part="overflow-control"] {
+    display: none;
+}
+[data-mode="light"] .region-tab,
+[data-mode="light"] .region-tab .muted,
+[data-mode="light"] .nk-nav-link[aria-current="page"] .nk-nav-badge {
+    color: var(--text-color-kumo-default);
+}
 .region-tab {
+    flex-shrink: 0;
     gap: 6px;
     font-size: 13px;
 }
@@ -660,7 +686,16 @@
     border-radius: 4px;
     color: var(--text-color-kumo-link);
 }
-.card-name-text {
+.card-name-text,
+.nk-page-title-body h1:has(.region-flag) {
+    display: flex;
+    align-items: baseline;
+}
+.card-name-text .region-flag,
+.nk-page-title-body h1 .region-flag {
+    flex-shrink: 0;
+}
+.card-name-text > span {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -766,6 +801,10 @@
     gap: 8px;
     margin-bottom: 24px;
 }
+.chart-toolbar [data-kumo-component="Tabs"] > div:first-child,
+.chart-toolbar .kumo-tabs-list {
+    height: 32px;
+}
 .chart-toolbar > button {
     width: 32px;
     height: 32px;
@@ -798,9 +837,9 @@
     .nk-drawer-trigger {
         width: 44px;
     }
-    .chart-toolbar > button {
-        width: 44px;
-        height: 44px;
+    .chart-toolbar:has([role="tablist"]) > button {
+        width: 48px;
+        height: 48px;
         min-width: 44px;
         min-height: 44px;
     }
@@ -818,6 +857,7 @@
         gap: 6px;
         margin-block: -10px;
     }
+    .chart-toolbar > button,
     .info-trigger {
         width: 44px;
         height: 44px;
@@ -1242,4 +1282,47 @@
 svg.region-flag {
     color: var(--text-color-kumo-subtle);
     outline: none;
+}
+
+@media (max-width: 767px), (pointer: coarse) {
+    .section-controls button,
+    .cost-button,
+    .status-trigger,
+    .region-tabs [role="tab"],
+    .region-tabs [data-kumo-part="overflow-control"],
+    .node-subtabs [role="tab"],
+    .sidebar-search,
+    .nk-sidebar .nk-nav-link,
+    .nk-sidebar-footer button,
+    .nk-sidebar [data-sidebar="close"],
+    .login-form [type="submit"],
+    .dialog-close,
+    .dialog-close-btn {
+        min-width: 44px;
+        min-height: 44px;
+    }
+    .region-tabs .kumo-tabs-list,
+    .node-subtabs .kumo-tabs-list,
+    .node-subtabs [data-kumo-component="Tabs"] > div:first-child {
+        height: 48px;
+    }
+    .login-dialog .dialog-close {
+        top: 16px;
+        right: 16px;
+    }
+    .login-dialog .dialog-title {
+        padding-right: 44px;
+    }
+    .hour-grid-nav {
+        display: flex;
+    }
+    .shave-action [role="switch"]::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: max(100%, 44px);
+        height: 44px;
+        transform: translate(-50%, -50%);
+    }
 }
