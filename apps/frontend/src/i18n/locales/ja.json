@@ -193,7 +193,7 @@
         "notFound": "ページが見つかりません",
         "dailyIncluded": "本日0時から · {{count}}/{{total}} ノード",
         "noData": "データなし",
-        "poweredBy": "使用",
+        "poweredBy": "監視基盤:",
         "kumoTheme": "Kumo テーマ",
         "moreInfo": "詳細情報",
         "optional": "（任意）",

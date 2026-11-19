@@ -147,3 +147,10 @@ test.describe("Traditional Chinese preferences", () => {
         await expect(page.getByText("線上節點", { exact: true })).toBeVisible()
     })
 })
+
+test("Japanese footer names Nezha as the monitoring platform", async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem("nkt:language", "ja"))
+    await mockNezha(page)
+    await page.goto("/")
+    await expect(page.locator(".page-footnote")).toContainText("監視基盤: Nezha · Kumo テーマ")
+})
