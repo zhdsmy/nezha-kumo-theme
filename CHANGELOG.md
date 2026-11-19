@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.11] - 2026-11-19
+
+- Keep the node page chart lines at the left edge after switching ranges on cached history.
+- Show an unknown traffic quota type as plain text instead of the "larger direction" icon.
+- Wrap long site names in the footer so narrow screens do not scroll sideways.
+- Admin: keep a reopened editor open when an earlier save finishes.
+
 ## [0.1.10] - 2026-11-19
 
 - Fill the live charts after the page was in the background for more than 15 minutes, and retry a failed fill.
