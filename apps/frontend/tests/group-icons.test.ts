@@ -313,3 +313,24 @@ describe("nezha adapter groupIcons mapping", () => {
         expect(calls.filter((u) => u.endsWith("/api/v1/server-group"))).toHaveLength(1)
     })
 })
+
+it("parses a VPS identifier without interpreting paths or URL parameters", () => {
+    expect(classifyGroupIcon(" vps:tencent-cloud ")).toEqual({
+        kind: "vps",
+        value: "vps:tencent-cloud",
+        slug: "tencent-cloud",
+    })
+    for (const value of [
+        "vps:",
+        "vps:AWS",
+        "VPS:aws",
+        "vps:../aws",
+        "vps:a/b",
+        "vps:a?b",
+        "vps:%2f",
+        "vps:aws#x",
+        "vps:a b",
+    ]) {
+        expect(classifyGroupIcon(value)).toBeNull()
+    }
+})

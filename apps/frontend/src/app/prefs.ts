@@ -49,6 +49,9 @@ media.addEventListener("change", () => {
     emit()
 })
 
+const getResolvedMode = () => (document.documentElement.dataset.mode === "dark" ? "dark" : "light")
+export const useResolvedMode = () => useSyncExternalStore(subscribe, getResolvedMode)
+
 export const useAppearance = () => useSyncExternalStore(subscribe, getAppearance, getAppearance)
 
 /* ---------- latency spike shaving ---------- */

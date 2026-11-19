@@ -630,7 +630,8 @@ body,
 .nkt-dialog-footer > button {
     margin-block: 0;
 }
-.nkt-note-editor [data-side]:has(> [data-kumo-component]) {
+.nkt-note-editor [data-side]:has(> [data-kumo-component]),
+.nkt-vps-icon-picker [role="presentation"][data-side] {
     z-index: 30;
 }
 

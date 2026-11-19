@@ -3,7 +3,13 @@ export const GROUP_ICONS_SCRIPT_ID = "nezha-kumo-group-icons";
 export type GroupIcons = Record<string, string>;
 
 export type ParsedGroupIcon =
-  { kind: "text"; value: string } | { kind: "image"; value: string };
+  | { kind: "text"; value: string }
+  | { kind: "image"; value: string }
+  | { kind: "vps"; value: string; slug: string };
+
+export function vpsIconUrl(base: string, slug: string, mode: "light" | "dark"): string {
+  return `${base}vps-icons/v1.0.0/${mode}/${slug}.svg`;
+}
 
 const SCRIPT_BLOCK_RE =
   /<script\b[^>]*\bid=(?:"nezha-kumo-group-icons"|'nezha-kumo-group-icons')[^>]*>([\s\S]*?)<\/script>/i;
@@ -30,6 +36,8 @@ function countGraphemes(text: string): number {
 export function classifyGroupIcon(raw: string): ParsedGroupIcon | null {
   const value = raw.trim();
   if (!value) return null;
+  const vps = /^vps:([a-z0-9-]+)$/.exec(value);
+  if (vps) return { kind: "vps", value, slug: vps[1] };
   if (value.startsWith("//") || URI_SCHEME_RE.test(value)) {
     if (/\s/.test(value)) return null;
     try {

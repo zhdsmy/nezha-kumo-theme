@@ -16,9 +16,9 @@ import { FolderSimpleIcon, GaugeIcon, GlobeIcon, HardDrivesIcon } from "@phospho
 import { Component, type ReactNode, Suspense, lazy, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { classifyGroupIcon } from "../../../../packages/shared/group-icons"
+import { classifyGroupIcon, vpsIconUrl } from "../../../../packages/shared/group-icons"
 import { responsive } from "./layout"
-import { setDefaultAppearance } from "./prefs"
+import { setDefaultAppearance, useResolvedMode } from "./prefs"
 import { Link, navigate, useLastListHref, usePathname } from "./router"
 import { SECTIONS, type Section } from "./sections"
 import {
@@ -55,10 +55,16 @@ function BrandLink({ title }: { title: string }) {
     )
 }
 
-function GroupNavIcon({ icon }: { icon?: string }) {
+const failedVpsIcons = new Set<string>()
+
+function GroupNavIcon({ icon, mode }: { icon?: string; mode: "light" | "dark" }) {
     const [status, setStatus] = useState<"pending" | "loaded" | "failed">("pending")
     const parsed = icon ? classifyGroupIcon(icon) : null
-    if (!parsed || status === "failed") {
+    if (
+        !parsed ||
+        status === "failed" ||
+        (parsed.kind === "vps" && failedVpsIcons.has(parsed.slug))
+    ) {
         return <FolderSimpleIcon size={16} />
     }
     if (parsed.kind === "text") {
@@ -73,14 +79,21 @@ function GroupNavIcon({ icon }: { icon?: string }) {
                         ? "group-icon-img"
                         : "group-icon-img pointer-events-none absolute opacity-0"
                 }
-                src={parsed.value}
+                src={
+                    parsed.kind === "vps"
+                        ? vpsIconUrl(import.meta.env.BASE_URL, parsed.slug, mode)
+                        : parsed.value
+                }
                 alt=""
                 width={16}
                 height={16}
                 loading="lazy"
                 referrerPolicy="no-referrer"
                 onLoad={() => setStatus("loaded")}
-                onError={() => setStatus("failed")}
+                onError={() => {
+                    if (parsed.kind === "vps") failedVpsIcons.add(parsed.slug)
+                    setStatus("failed")
+                }}
             />
         </>
     )
@@ -173,6 +186,7 @@ export function App() {
     const phase = useStore((s) => s.phase)
     const site = useStore((s) => s.site)
     const settings = useStore((s) => s.settings)
+    const mode = useResolvedMode()
     const groupOrder = useStore((s) => s.groupOrder)
     const groupIcons = useStore((s) => s.groupIcons)
     const connectionState = useConnectionState()
@@ -359,6 +373,7 @@ export function App() {
                                                 icon: (
                                                     <GroupNavIcon
                                                         key={groupIcons[g]}
+                                                        mode={mode}
                                                         icon={g ? groupIcons[g] : undefined}
                                                     />
                                                 ),

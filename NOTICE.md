@@ -19,3 +19,7 @@
 ## Trademark Disclaimer
 
 This project is not affiliated with or endorsed by Cloudflare, Inc. "Cloudflare" and the Cloudflare logo are trademarks of Cloudflare, Inc. and are not used in this theme.
+
+## VPS group icons
+
+Both distributions include [vps-icons v1.0.0](https://github.com/zhdsmy/vps-icons/tree/v1.0.0) at commit `01958b7162d2733285509f44bd7fd8e841cfb89e`. The project is MIT licensed, copyright (c) 2026 zhdsmy and contributors. Brand rights belong to their respective owners. The bundled [license](packages/shared/vps-icons/v1.0.0/LICENSE.txt) and [per-icon sources and terms](packages/shared/vps-icons/v1.0.0/SOURCES.txt) accompany both copies.

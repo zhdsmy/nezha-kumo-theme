@@ -214,3 +214,41 @@ test("X07 MCP tabs and login password target", async ({ page }) => {
         "text",
     )
 })
+
+test("VPS icon picker searches localized names and aliases and saves the selected slug", async ({ page }) => {
+    await mockDashboard(page)
+    await page.setViewportSize({ width: 375, height: 800 })
+    await page.emulateMedia({ colorScheme: "light" })
+    await page.goto("/dashboard/server-group")
+    const dialog = await openEditor(page)
+    const trigger = dialog.getByRole("combobox", { name: "Choose a VPS icon" })
+    await trigger.press("Enter")
+    const search = page.getByPlaceholder("Search providers")
+    await search.fill("腾讯云")
+    await expect(page.getByRole("option")).toHaveCount(1)
+    await expect(page.getByRole("option")).toHaveText("Tencent Cloud")
+    await search.fill("LIGHTSAIL")
+    const option = page.getByRole("option", { name: "Amazon Web Services" })
+    await expect(option).toBeVisible()
+    for (const target of [trigger, search, option]) {
+        const rect = await box(target)
+        expect(rect.width).toBeGreaterThanOrEqual(44)
+        expect(rect.height).toBeGreaterThanOrEqual(44)
+    }
+    const mark = await box(option.locator("img"))
+    const name = await box(option.getByText("Amazon Web Services", { exact: true }))
+    expect(mark.right).toBeLessThan(name.left)
+    expect(Math.abs((mark.top + mark.bottom - name.top - name.bottom) / 2)).toBeLessThanOrEqual(1)
+    await search.press("ArrowDown")
+    await search.press("Enter")
+    await expect(dialog.getByLabel("Icon", { exact: true })).toHaveValue("vps:aws")
+    const preview = dialog.getByTestId("group-icon-preview").locator("img")
+    for (const mode of ["light", "dark"] as const) {
+        await page.emulateMedia({ colorScheme: mode })
+        await expect(preview).toHaveAttribute("src", `/dashboard/vps-icons/v1.0.0/${mode}/aws.svg`)
+        await expect.poll(() => preview.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true)
+    }
+    const save = page.waitForRequest((r) => r.method() === "PATCH" && r.url().endsWith("/api/v1/setting"))
+    await dialog.getByRole("button", { name: "Confirm", exact: true }).click()
+    expect((await save).postDataJSON().custom_code).toContain('"1":"vps:aws"')
+})
