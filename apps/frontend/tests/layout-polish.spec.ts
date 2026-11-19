@@ -407,6 +407,28 @@ test.describe("Layout polish (fe2)", () => {
         await expect(themeLink).toHaveAttribute("target", "_blank")
     })
 
+    test("long site names wrap within the mobile footer", async ({ page }) => {
+        const title = "infrastructuremonitoringdashboardproductioncluster.example.org"
+        await page.addInitScript((siteTitle) => {
+            Object.assign(window, { NezhaKumoConfig: { siteTitle } })
+        }, title)
+        await mockStressNezha(page)
+        for (const path of ["/", "/server/6"]) {
+            await page.goto(path)
+            const footer = page.locator(".page-footnote")
+            await expect(footer).toContainText(title)
+            for (const width of [320, 375]) {
+                await page.setViewportSize({ width, height: 667 })
+                const main = page.locator(".nk-main")
+                expect(await main.evaluate((el) => el.scrollWidth)).toBeLessThanOrEqual(width)
+                await expect(footer.locator(".page-footnote-build")).toHaveCSS(
+                    "white-space",
+                    "nowrap",
+                )
+            }
+        }
+    })
+
     test("footer note is added below the credits", async ({ page }) => {
         await page.addInitScript(() => {
             ;(window as { NezhaKumoConfig?: unknown }).NezhaKumoConfig = {

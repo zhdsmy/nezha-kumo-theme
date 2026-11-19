@@ -745,6 +745,7 @@
     color: var(--text-color-kumo-subtle);
     font-size: 12px;
     margin-top: 32px;
+    overflow-wrap: anywhere;
 }
 .page-footnote a {
     color: inherit;
