@@ -711,27 +711,26 @@ export const nezha = {
     async loadHistory(
         id: string,
         hours: number,
-        kind: keyof typeof METRIC_SETS = "overview",
+        kind: keyof typeof METRIC_SETS | "live" = "overview",
         signal?: AbortSignal,
     ) {
-        const names = METRIC_SETS[kind]
+        const names = METRIC_SETS[kind === "live" ? "overview" : kind]
         const series = await Promise.all(
             names.map(async (metric) => {
                 const url = `/api/v1/server/${encodeURIComponent(id)}/metrics?period=${period(hours)}&metric=${metric}`
-                const data = await cached(
-                    url,
-                    async (reqSignal) => {
-                        const res = await request<Common<NezhaMetricSeries>>(
-                            url,
-                            { signal: reqSignal },
-                            60_000,
-                        )
-                        if (!res.success) throw new Error("Nezha history unavailable")
-                        return res.data ?? {}
-                    },
-                    HISTORY_CACHE_MS,
-                    signal,
-                )
+                const load = async (reqSignal?: AbortSignal) => {
+                    const res = await request<Common<NezhaMetricSeries>>(
+                        url,
+                        { signal: reqSignal, cache: kind === "live" ? "no-store" : "default" },
+                        60_000,
+                    )
+                    if (!res.success) throw new Error("Nezha history unavailable")
+                    return res.data ?? {}
+                }
+                const data =
+                    kind === "live"
+                        ? await load(signal)
+                        : await cached(url, load, HISTORY_CACHE_MS, signal)
                 return [metric, data] as const
             }),
         )

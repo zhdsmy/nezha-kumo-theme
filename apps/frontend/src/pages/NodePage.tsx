@@ -26,7 +26,7 @@ import { hasDailyCounters, mergeHistoryTail, summariseDay } from "@/core/summary
 import { uiLabels } from "@/i18n"
 import { Badge, Banner, RefreshButton, Tabs } from "@cloudflare/kumo"
 import { Page } from "@nezha-kumo/ui"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { splitTags } from "../../../../packages/shared/public-note"
@@ -71,6 +71,7 @@ export default function NodePage({ id, section }: { id: string; section: Section
         section === "overview" || (section === "load" && !activeRange) ? s.liveVersion : -1,
     )
     const [nonce, setNonce] = useState(0)
+    const liveFill = useRef<AbortController>(null)
     const [liveBackfilledKey, setLiveBackfilledKey] = useState("")
     const [history, setHistory] = useState<{
         id: string
@@ -107,22 +108,21 @@ export default function NodePage({ id, section }: { id: string; section: Section
         [id, section, activeRange, liveVersion],
     )
     useEffect(() => {
-        if (section !== "load" || !recordHours) return
+        if (section !== "load" || activeRange || !recordHours) return
         const ctrl = new AbortController()
+        liveFill.current = ctrl
         void backfillLive(id, ctrl.signal)
             .catch(() => {})
             .finally(() => {
                 if (!ctrl.signal.aborted) setLiveBackfilledKey(dayKey)
             })
         return () => ctrl.abort()
-    }, [id, section, recordHours, dayKey])
+    }, [id, section, activeRange, recordHours, dayKey])
     // after the first fill, each new frame checks for a hole the page missed while paused
     useEffect(() => {
         if (section !== "load" || activeRange || liveBackfilledKey !== dayKey) return
         if (!liveNeedsFill(id)) return
-        // The cached 1d history predates the hole; drop it so the fill reads fresh 30 s points.
-        adapter.clearHistory(id)
-        void backfillLive(id).catch(() => {})
+        void backfillLive(id, liveFill.current?.signal)
     }, [id, section, activeRange, liveBackfilledKey, dayKey, liveVersion])
     useEffect(() => {
         if (!title) return

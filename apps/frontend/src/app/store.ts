@@ -287,11 +287,16 @@ const LIVE_GAP_MS = 10_000
 const LIVE_RETRY_MS = 10_000
 // Per node: live points up to here have already been checked against history.
 const filledThrough = new Map<string, number>()
+const pendingFills = new Map<string, { ctrl: AbortController; done: Promise<void> }>()
+const retries = new Map<string, ReturnType<typeof setTimeout>>()
 
-/** True when two live points are further apart than a few missed frames, and not yet filled. */
+/** Check the leading edge too: a long pause can evict every pre-pause frame. */
 export function liveNeedsFill(id: string) {
     const buf = getLive(id)
+    if (!buf.length || pendingFills.has(id) || retries.has(id)) return false
     const since = filledThrough.get(id) ?? 0
+    const from = Math.max(since, buf[buf.length - 1].at - LIVE_WINDOW_MS)
+    if (buf[0].at - from > LIVE_GAP_MS) return true
     for (let i = 1; i < buf.length; i++)
         if (
             buf[i].at > since &&
@@ -307,26 +312,52 @@ export function liveNeedsFill(id: string) {
  * and holes left while the page was paused. Live points are kept as they are.
  */
 export async function backfillLive(id: string, signal?: AbortSignal) {
-    if (!state.site?.recordHours) return
-    // mark first, so frames arriving during the request do not start another one
-    const prev = filledThrough.get(id)
-    filledThrough.set(id, getLive(id).at(-1)?.at ?? Date.now())
-    const points = await adapter.loadHistory(id, 1, "overview", signal).catch(() => null)
-    if (signal?.aborted) return
-    if (!points) {
-        // e.g. Safari wakes a suspended tab and the first request fails: unmark, so a later frame retries
-        setTimeout(() => filledThrough.set(id, prev ?? 0), LIVE_RETRY_MS)
-        return
-    }
-    const buf = getLive(id)
-    const from = Date.now() - LIVE_WINDOW_MS
-    // ponytail: O(history × live) scan, at most ~450 × a few hundred points
-    const fill = points.filter(
-        (p) => p.at >= from && !buf.some((b) => Math.abs(b.at - p.at) < LIVE_GAP_MS),
+    if (!state.site?.recordHours || signal?.aborted) return
+    const pending = pendingFills.get(id)
+    if (pending && !pending.ctrl.signal.aborted) return pending.done
+
+    clearTimeout(retries.get(id))
+    retries.delete(id)
+    const through = getLive(id).at(-1)?.at ?? Date.now()
+    const ctrl = new AbortController()
+    const abort = () => ctrl.abort()
+    signal?.addEventListener("abort", abort, { once: true })
+    const done = adapter.loadHistory(id, LIVE_WINDOW_MS / 3_600_000, "live", ctrl.signal).then(
+        (points) => {
+            if (ctrl.signal.aborted) return
+            filledThrough.set(id, through)
+            const now = Date.now()
+            const from = now - LIVE_WINDOW_MS
+            const buf = getLive(id).filter((p) => p.at >= from)
+            const fill = points.filter(
+                (p) =>
+                    p.at >= from &&
+                    p.at <= now &&
+                    !buf.some((b) => Math.abs(b.at - p.at) < LIVE_GAP_MS),
+            )
+            if (!fill.length) return
+            live.set(id, [...fill, ...buf].sort((a, b) => a.at - b.at).slice(-LIVE_CAPACITY))
+            set({ liveVersion: state.liveVersion + 1 })
+        },
+        () => {
+            if (ctrl.signal.aborted) return
+            retries.set(
+                id,
+                setTimeout(() => {
+                    retries.delete(id)
+                    set({ liveVersion: state.liveVersion + 1 })
+                }, LIVE_RETRY_MS),
+            )
+        },
     )
-    if (!fill.length) return
-    live.set(id, [...fill, ...buf].sort((a, b) => a.at - b.at).slice(-LIVE_CAPACITY))
-    set({ liveVersion: state.liveVersion + 1 })
+    pendingFills.set(id, { ctrl, done })
+    try {
+        await done
+    } finally {
+        signal?.removeEventListener("abort", abort)
+        ctrl.abort() // cancel any sibling metric requests left after a failure
+        if (pendingFills.get(id)?.ctrl === ctrl) pendingFills.delete(id)
+    }
 }
 
 export async function start() {
