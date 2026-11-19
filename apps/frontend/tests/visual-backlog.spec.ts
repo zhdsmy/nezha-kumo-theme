@@ -105,10 +105,31 @@ test.describe("touch controls", () => {
             await expect(rail.getByRole("tab")).toHaveCount(6)
             for (const control of await page
                 .locator(
-                    ".section-controls button:visible, .cost-button, .status-trigger, .region-tabs [role=tab], .region-tabs [data-kumo-part=overflow-control][aria-hidden=false]",
+                    ".section-controls button:visible, .cost-button, .region-tabs [role=tab], .region-tabs [data-kumo-part=overflow-control][aria-hidden=false]",
                 )
                 .all()) {
                 await touchSize(control)
+            }
+            // The status line appears and goes with live data. On one line it must keep the
+            // 32px box so the tiles do not jump; its 44px target comes from ::after.
+            const status = page.locator(".status-trigger")
+            if (await status.count()) {
+                const probe = await status.evaluate((el) => {
+                    const r = el.getBoundingClientRect()
+                    const label = el.querySelector("span")!
+                    const lines = Math.round(
+                        label.getBoundingClientRect().height /
+                            parseFloat(getComputedStyle(label).lineHeight),
+                    )
+                    const x = r.left + r.width / 2
+                    const y = r.top + r.height / 2
+                    const hits = [y - 21, y + 21].map((v) =>
+                        el.contains(document.elementFromPoint(x, v)),
+                    )
+                    return { height: r.height, lines, hits }
+                })
+                expect.soft(probe.hits).toEqual([true, true])
+                if (probe.lines === 1) expect.soft(probe.height).toBeLessThanOrEqual(32)
             }
             const list = rail.getByRole("tablist")
             const arrow = rail.locator("[data-side=end][aria-hidden=false]")

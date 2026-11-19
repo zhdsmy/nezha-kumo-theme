@@ -1288,7 +1288,6 @@ svg.region-flag {
 @media (max-width: 767px), (pointer: coarse) {
     .section-controls button,
     .cost-button,
-    .status-trigger,
     .region-tabs [role="tab"],
     .region-tabs [data-kumo-part="overflow-control"],
     .node-subtabs [role="tab"],
