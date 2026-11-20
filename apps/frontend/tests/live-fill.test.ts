@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest"
 
 import { nezha } from "../src/adapters/nezha"
-import { backfillLive, getLive, liveNeedsFill, start } from "../src/app/store"
+import { backfillLive, getLive, getState, liveNeedsFill, start } from "../src/app/store"
 import type { LiveEvent } from "../src/core/model"
 import { emptySnapshot } from "./snapshot"
 
@@ -68,6 +68,20 @@ it("retries the failed first fill on the ten-second cycle", async () => {
         expect(history).toHaveBeenCalledTimes(s < 10 ? 1 : 2)
     }
     expect(getLive(id)[0].at).toBe(point(-30).at)
+})
+
+it("drops the pending retry when the page that asked for the fill leaves", async () => {
+    const id = "left-page"
+    vi.spyOn(nezha, "loadHistory").mockRejectedValue(Error("offline"))
+    frame(id, 0)
+    const ctrl = new AbortController()
+    await backfillLive(id, ctrl.signal)
+    expect(vi.getTimerCount()).toBe(1)
+    const version = getState().liveVersion
+    ctrl.abort()
+    expect(vi.getTimerCount()).toBe(0)
+    vi.advanceTimersByTime(10_000)
+    expect(getState().liveVersion).toBe(version)
 })
 
 it("fills every live metric fresh after home spark loading and keeps other periods cached", async () => {

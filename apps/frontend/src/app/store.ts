@@ -341,12 +341,19 @@ export async function backfillLive(id: string, signal?: AbortSignal) {
         },
         () => {
             if (ctrl.signal.aborted) return
-            retries.set(
-                id,
-                setTimeout(() => {
-                    retries.delete(id)
-                    set({ liveVersion: state.liveVersion + 1 })
-                }, LIVE_RETRY_MS),
+            const timer = setTimeout(() => {
+                retries.delete(id)
+                set({ liveVersion: state.liveVersion + 1 })
+            }, LIVE_RETRY_MS)
+            retries.set(id, timer)
+            // the page that asked has left: drop the retry with it
+            signal?.addEventListener(
+                "abort",
+                () => {
+                    clearTimeout(timer)
+                    if (retries.get(id) === timer) retries.delete(id)
+                },
+                { once: true },
             )
         },
     )
