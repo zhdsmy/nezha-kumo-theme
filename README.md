@@ -1,8 +1,10 @@
 # Nezha Kumo Theme
 
-English | [简体中文](README.zh-CN.md)
+English | [简体中文](README.zh-CN.md) | [繁體中文·台灣](README.zh-TW.md) | [繁體中文·香港](README.zh-HK.md) | [日本語](README.ja.md)
 
 A responsive Nezha monitoring dashboard theme (public status frontend and admin panel) built in the visual language of Cloudflare's [Kumo](https://github.com/cloudflare/kumo) design system.
+
+The theme supports English, Simplified Chinese, Traditional Chinese for Taiwan and Hong Kong, and Japanese. Visitors can choose light, dark, or system appearance. Group icons accept one emoji or character, a bundled `vps:<slug>` icon, or an HTTPS image URL. The public page includes live status, traffic billing indicators, and today's traffic totals. The bundled Web App manifest lets visitors add the site to a Home Screen and opens the home page as a standalone app named after the site.
 
 ## Screenshots
 
@@ -41,7 +43,7 @@ Open your Nezha dashboard and navigate to **Settings → Frontends** (`设置 �
 | **User Frontend** | `zhdsmy/nezha-kumo-theme` (`https://github.com/zhdsmy/nezha-kumo-theme`) | `/`             | `dist.zip`    |
 | **Admin Panel**   | `zhdsmy/nezha-kumo-admin` (`https://github.com/zhdsmy/nezha-kumo-admin`) | `/dashboard/`   | `dist.zip`    |
 
-1. Under **User Frontend**, enter `zhdsmy/nezha-kumo-theme`, load releases, install the desired tag (e.g. `v0.1.0`), and click **Activate**.
+1. Under **User Frontend**, enter `zhdsmy/nezha-kumo-theme`, load releases, install the desired tag (for example `v1.0.0`), and click **Activate**.
 2. Open your public status page (`/`) to confirm the frontend renders as expected.
 3. Under **Admin Panel**, enter `zhdsmy/nezha-kumo-admin` (a release-only mirror published from matching tags of this repository), load releases, install the matching version tag, and click **Activate**.
 
@@ -144,7 +146,7 @@ All keys are optional and defined in [`apps/frontend/src/core/settings.ts`](apps
 | `showOffline`       | `boolean`                                      | `true`     | Include offline servers in the public server list (`false` hides offline servers).                                     |
 | `hiddenNodes`       | `string[]`                                     | `[]`       | Server IDs or exact server names to hide on the public frontend (also accepts a comma- or newline-separated `string`). |
 | `hideAdminEntry`    | `boolean`                                      | `false`    | Hide the sign-in / admin dashboard button in the top bar.                                                              |
-| `footerNote`        | `string`                                       | `""`       | Optional plain-text note shown on its own line below the footer credits.                                                                       |
+| `footerNote`        | `string`                                       | `""`       | Optional plain-text note shown on its own line below the footer credits.                                               |
 
 ### Server Group Icons (`nezha-kumo-group-icons`)
 
@@ -152,13 +154,13 @@ Custom icons for sidebar server groups are stored in user-frontend **Custom code
 
 ```html
 <script type="application/json" id="nezha-kumo-group-icons">
-  { "1": "🌐", "2": "⚡", "3": "https://cdn.example.com/icons/storage.svg" }
+  { "1": "vps:aws", "2": "vps:azure", "3": "🗄️", "4": "https://cdn.example.com/icons/storage.svg" }
 </script>
 ```
 
-- **Keys**: Nezha server-group IDs as strings (e.g. `"1"`, `"2"`).
-- **Values**: Either **a single grapheme** (one emoji or character to fit the `16px` sidebar icon slot) or an **`https://` image URL** (whitespace and non-HTTPS schemes are rejected).
-- **Visual editor**: In the Kumo Admin Panel (`zhdsmy/nezha-kumo-admin`), you can set or clear icons directly in the **Server Group** create/edit dialog, which updates only this `<script>` block inside `custom_code`.
+- **Keys**: Nezha server-group IDs as strings (for example `"1"`, `"2"`).
+- **Values**: A `vps:<slug>` entry from bundled **vps-icons v1.4.0** (263 light/dark provider assets), a single grapheme (one emoji or character to fit the `16px` sidebar icon slot), or an `https://` image URL. VPS slugs must match the bundled catalog.
+- **Visual editor**: In the Kumo Admin Panel (`zhdsmy/nezha-kumo-admin`), choose or clear an icon directly in the **Server Group** create/edit dialog. The picker searches provider names, Chinese names, aliases, and nicknames, and updates only this `<script>` block inside `custom_code`.
 
 ## Public Note & Billing / Plan Fields
 
@@ -231,7 +233,7 @@ Signed-in administrators can record a private renewal cost inside Nezha's privat
 
 - **Exchange-rate lookup**: When `showCost` is `true` (default), visitor browsers send a credential-less `GET` request to `https://api.frankfurter.dev/v2/rates?base=USD` to convert multi-currency fees, caching responses in `localStorage` (`nkt:exchange-rates`) for **24 hours**.
 - **Disabling external requests**: Set `"showCost": false` in `nezha-kumo-config` or `config.js` to disable fee aggregation and make **zero** requests to `api.frankfurter.dev`.
-- **Self-hosted assets**: Fonts (`@fontsource-variable/inter`) and SVG flags (`flag-icons`) are bundled locally in the release archive with no third-party font or icon CDNs.
+- **Self-hosted assets**: Fonts (`@fontsource-variable/inter`), SVG flags (`flag-icons`), and VPS provider icons are bundled locally in the release archive with no third-party font or icon CDNs.
 
 ## Development
 
@@ -249,6 +251,7 @@ pnpm build            # Build frontend and admin bundles
 
 - **Public frontend** ([`apps/frontend`](apps/frontend/README.md)): `pnpm --filter frontend test:e2e` runs Playwright against deterministic HTTP and WebSocket mocks (`apps/frontend/tests/mock.ts`) with no live Nezha panel required.
 - **Admin panel** ([`apps/admin`](apps/admin/README.md)): `pnpm --filter nezha-kumo-admin test` runs Vitest component/unit tests; Playwright E2E specs under `apps/admin/tests/e2e/` run against mocked `/api/v1/*` routes or a local test backend.
+- **README screenshots**: `NKT_DOCS_LANG=en node docs/capture-screenshots.mjs` generates the English set. Use `zh-CN`, `zh-TW`, `zh-HK`, or `ja` for the localized sets, then run `node docs/check-links.mjs`.
 
 ### Repository Layout
 
@@ -271,5 +274,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for commit conventions and shared shell l
 ## Acknowledgments & License
 
 - Visual components and tokens powered by [`@cloudflare/kumo`](https://github.com/cloudflare/kumo) (MIT). This project is an independent community theme and is **not** affiliated with or endorsed by Cloudflare, Inc.
-- Built for [Nezha Monitoring](https://github.com/nezhahq/nezha), building upon [`nezhahq/admin-frontend`](https://github.com/nezhahq/admin-frontend), Nezha data-layer adaptations from [`foru17/zool-theme`](https://github.com/foru17/zool-theme), [`lipis/flag-icons`](https://github.com/lipis/flag-icons), and [Inter](https://github.com/rsms/inter). Full attributions are listed in [NOTICE.md](NOTICE.md).
+- Built for [Nezha Monitoring](https://github.com/nezhahq/nezha), building upon [`nezhahq/admin-frontend`](https://github.com/nezhahq/admin-frontend), Nezha data-layer adaptations from [`foru17/zool-theme`](https://github.com/foru17/zool-theme), [`lipis/flag-icons`](https://github.com/lipis/flag-icons), and [Inter](https://github.com/rsms/inter). Full attributions, including vps-icons v1.4.0, are listed in [NOTICE.md](NOTICE.md).
 - Released under the [MIT License](LICENSE).

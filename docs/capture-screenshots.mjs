@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Generate release screenshots in docs/screenshots/ using mocked Nezha APIs.
- * Set NKT_DOCS_LANG=zh-CN for Simplified Chinese. English is the default.
+ * Set NKT_DOCS_LANG to en, zh-CN, zh-TW, zh-HK, or ja. English is the default.
  * Ports used: 5381 (frontend Vite dev server), 5382 (admin Vite preview server).
  */
 import { execFileSync, spawn } from "node:child_process";
@@ -16,32 +16,82 @@ const rootDir = resolve(__dirname, "..");
 const feDir = join(rootDir, "apps/frontend");
 const adminDir = join(rootDir, "apps/admin");
 const language = process.env.NKT_DOCS_LANG ?? "en";
-if (!["en", "zh-CN"].includes(language)) {
-  throw new Error("NKT_DOCS_LANG must be en or zh-CN");
+const LANGUAGE_CONFIGS = {
+  en: {
+    locale: "en-US",
+    timezoneId: "UTC",
+    directory: "",
+    adminEditLabel: "Edit",
+    groups: ["Edge", "Compute", "Storage", "Relay"],
+  },
+  "zh-CN": {
+    locale: "zh-CN",
+    timezoneId: "Asia/Shanghai",
+    directory: "zh-CN",
+    adminEditLabel: "编辑",
+    groups: ["边缘", "计算", "存储", "中继"],
+  },
+  "zh-TW": {
+    locale: "zh-TW",
+    timezoneId: "Asia/Taipei",
+    directory: "zh-TW",
+    adminEditLabel: "編輯",
+    groups: ["邊緣", "運算", "儲存", "中繼"],
+  },
+  "zh-HK": {
+    locale: "zh-HK",
+    timezoneId: "Asia/Hong_Kong",
+    directory: "zh-HK",
+    adminEditLabel: "編輯",
+    groups: ["邊緣", "運算", "儲存", "中繼"],
+  },
+  ja: {
+    locale: "ja-JP",
+    timezoneId: "Asia/Tokyo",
+    directory: "ja",
+    adminEditLabel: "編集",
+    groups: ["エッジ", "コンピュート", "ストレージ", "リレー"],
+  },
+};
+const languageConfig = LANGUAGE_CONFIGS[language];
+if (!languageConfig) {
+  throw new Error("NKT_DOCS_LANG must be en, zh-CN, zh-TW, zh-HK, or ja");
 }
-const chinese = language === "zh-CN";
-const browserLocale = chinese
-  ? { locale: "zh-CN", timezoneId: "Asia/Shanghai" }
-  : { locale: "en-US", timezoneId: "UTC" };
-const outDir = join(__dirname, "screenshots", chinese ? "zh-CN" : "");
+const browserLocale = {
+  locale: languageConfig.locale,
+  timezoneId: languageConfig.timezoneId,
+};
+const outDir = join(__dirname, "screenshots", languageConfig.directory);
 const tmpDir = join(outDir, ".tmp-png");
 
 const FE_PORT = Number(process.env.NKT_DOCS_FE_PORT) || 5381;
 const ADMIN_PORT = Number(process.env.NKT_DOCS_ADMIN_PORT) || 5382;
 const MAX_BYTES = 200 * 1024;
 
-const SYNTHETIC_GROUPS = {
+const groupResponse = (serverIds) => ({
   success: true,
-  data: [
-    { group: { id: 1, name: "Edge" }, servers: [6, 25, 29, 32] },
-    { group: { id: 2, name: "Compute" }, servers: [4, 8, 9, 23] },
-    { group: { id: 3, name: "Storage" }, servers: [19, 27, 31] },
-    { group: { id: 4, name: "Relay" }, servers: [35, 38, 40, 42, 44] },
-  ],
-};
+  data: languageConfig.groups.map((name, index) => ({
+    group: { id: index + 1, name },
+    servers: serverIds[index],
+  })),
+});
+
+const SYNTHETIC_GROUPS = groupResponse([
+  [6, 25, 29, 32],
+  [4, 8, 9, 23],
+  [19, 27, 31],
+  [35, 38, 40, 42, 44],
+]);
+
+const ADMIN_GROUPS = groupResponse([
+  [1, 2],
+  [3, 4],
+  [5],
+  [6],
+]);
 
 const CUSTOM_GROUP_ICONS =
-  '<script type="application/json" id="nezha-kumo-group-icons">{"1":"🌐","2":"⚡","3":"🗄️","4":"🛡️"}</script>';
+  '<script type="application/json" id="nezha-kumo-group-icons">{"1":"vps:aws","2":"vps:azure","3":"🗄️","4":"🛡️"}</script>';
 
 const ADMIN_SERVERS = [
   {
@@ -369,23 +419,19 @@ async function setupAdminMock(page) {
       });
     }
     if (pathname.endsWith("/server-group")) {
-      return route.fulfill({
-        json: {
-          success: true,
-          data: [
-            { group: { id: 1, name: "Edge" }, servers: [1, 2] },
-            { group: { id: 2, name: "Compute" }, servers: [3, 4] },
-            { group: { id: 3, name: "Storage" }, servers: [5] },
-            { group: { id: 4, name: "Relay" }, servers: [6] },
-          ],
-        },
-      });
+      return route.fulfill({ json: ADMIN_GROUPS });
     }
     if (pathname.endsWith("/server")) {
       return route.fulfill({ json: { success: true, data: ADMIN_SERVERS } });
     }
     return route.fulfill({ json: { success: true, data: [] } });
   });
+}
+
+async function waitForGroupIcons(page) {
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll("img.group-icon-img")].every((image) => image.complete),
+  );
 }
 
 async function captureFrontend(browser, feUrl) {
@@ -451,6 +497,7 @@ async function captureFrontend(browser, feUrl) {
     await page.locator(shot.waitSelector).first().waitFor({ state: "visible" });
     await page.locator(`html[lang="${language}"]`).waitFor();
     await page.evaluate(() => document.fonts.ready);
+    await waitForGroupIcons(page);
     await page.waitForTimeout(300);
     const pngPath = join(tmpDir, `${shot.name}.png`);
     const webpPath = join(outDir, `${shot.name}.webp`);
@@ -486,6 +533,7 @@ async function captureAdmin(browser, adminUrl) {
     await page.locator("table tbody tr").nth(4).waitFor({ state: "visible" });
     await page.locator(`html[lang="${language}"]`).waitFor();
     await page.evaluate(() => document.fonts.ready);
+    await waitForGroupIcons(page);
     await page.waitForTimeout(300);
     const pngPath = join(tmpDir, "admin-servers.png");
     const webpPath = join(outDir, "admin-servers.webp");
@@ -495,7 +543,10 @@ async function captureAdmin(browser, adminUrl) {
 
     // 2. Public note editor (open Edit dialog on row 1 and scroll to public note editor)
     await page
-      .getByRole("button", { name: chinese ? "编辑" : "Edit", exact: true })
+      .getByRole("button", {
+        name: languageConfig.adminEditLabel,
+        exact: true,
+      })
       .first()
       .click();
     const editor = page.locator("[data-public-note-editor]");
