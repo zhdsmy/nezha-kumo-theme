@@ -10,41 +10,56 @@
       "lightsail",
       "amazon",
       "yamaxun"
+    ],
+    "nicknames": [
+      "AWS"
     ]
   },
   {
     "slug": "google-cloud",
     "name": "Google Cloud",
     "names": {
-      "zh-CN": "谷歌云"
+      "zh-CN": "Google Cloud"
     },
     "aliases": [
       "gcp",
       "google",
       "gugeyun"
+    ],
+    "nicknames": [
+      "谷歌云",
+      "GCP"
     ]
   },
   {
     "slug": "azure",
     "name": "Microsoft Azure",
     "names": {
-      "zh-CN": "微软 Azure"
+      "zh-CN": "微软智能云 Azure"
     },
     "aliases": [
       "azure",
       "weiruan"
+    ],
+    "nicknames": [
+      "微软云"
     ]
   },
   {
     "slug": "oracle-cloud",
     "name": "Oracle Cloud Infrastructure",
     "names": {
-      "zh-CN": "甲骨文云"
+      "zh-CN": "Oracle Cloud Infrastructure"
     },
     "aliases": [
       "oci",
       "oracle",
       "jiaguwen"
+    ],
+    "nicknames": [
+      "甲骨文",
+      "甲骨文云",
+      "OCI"
     ]
   },
   {
@@ -56,7 +71,8 @@
     "aliases": [
       "ibm",
       "bluemix"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "cloudflare",
@@ -67,6 +83,9 @@
     "aliases": [
       "cf",
       "cloudflare workers"
+    ],
+    "nicknames": [
+      "CF"
     ]
   },
   {
@@ -79,6 +98,9 @@
       "aliyun",
       "ali",
       "alibabacloud"
+    ],
+    "nicknames": [
+      "阿里"
     ]
   },
   {
@@ -91,6 +113,9 @@
       "tencent",
       "tengxunyun",
       "qcloud"
+    ],
+    "nicknames": [
+      "腾讯"
     ]
   },
   {
@@ -102,7 +127,8 @@
     "aliases": [
       "huawei",
       "huaweiyun"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "jd-cloud",
@@ -113,7 +139,8 @@
     "aliases": [
       "jd",
       "jingdongyun"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "volcengine",
@@ -124,7 +151,8 @@
     "aliases": [
       "volc",
       "huoshanyinqing"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "ucloud",
@@ -135,7 +163,8 @@
     "aliases": [
       "ucloud",
       "youkede"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "ctyun",
@@ -145,9 +174,9 @@
     },
     "aliases": [
       "ctyun",
-      "tianyiyun",
-      "china telecom"
-    ]
+      "tianyiyun"
+    ],
+    "nicknames": []
   },
   {
     "slug": "digitalocean",
@@ -158,7 +187,8 @@
     "aliases": [
       "do",
       "digital ocean"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "vultr",
@@ -169,7 +199,8 @@
     "aliases": [
       "vultr",
       "choopa"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "linode",
@@ -180,7 +211,8 @@
     "aliases": [
       "linode",
       "akamai cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "akamai",
@@ -192,7 +224,8 @@
       "akamai",
       "akamai technologies",
       "akamaiyun"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "hetzner",
@@ -203,7 +236,8 @@
     "aliases": [
       "hz",
       "hetzner cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "ovhcloud",
@@ -214,7 +248,8 @@
     "aliases": [
       "ovh",
       "ovh cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "scaleway",
@@ -225,7 +260,8 @@
     "aliases": [
       "scw",
       "online.net"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "upcloud",
@@ -236,7 +272,8 @@
     "aliases": [
       "upcloud",
       "up cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "contabo",
@@ -246,7 +283,8 @@
     },
     "aliases": [
       "contabo"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "netcup",
@@ -257,7 +295,8 @@
     "aliases": [
       "netcup",
       "nc"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "kamatera",
@@ -267,7 +306,8 @@
     },
     "aliases": [
       "kamatera"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "ionos",
@@ -278,7 +318,8 @@
     "aliases": [
       "1and1",
       "1&1"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "hostinger",
@@ -288,7 +329,8 @@
     },
     "aliases": [
       "hostinger"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "buyvm",
@@ -299,7 +341,8 @@
     "aliases": [
       "buyvm",
       "frantech"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "hosthatch",
@@ -310,7 +353,8 @@
     "aliases": [
       "hh",
       "hosthatch"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "cloudcone",
@@ -321,6 +365,9 @@
     "aliases": [
       "cc",
       "cloudcone"
+    ],
+    "nicknames": [
+      "CC"
     ]
   },
   {
@@ -332,17 +379,23 @@
     "aliases": [
       "rn",
       "racknerd"
+    ],
+    "nicknames": [
+      "RN"
     ]
   },
   {
     "slug": "greencloud",
     "name": "GreenCloud",
     "names": {
-      "zh-CN": "绿云"
+      "zh-CN": "GreenCloud"
     },
     "aliases": [
       "greencloudvps",
       "lvyun"
+    ],
+    "nicknames": [
+      "绿云"
     ]
   },
   {
@@ -354,18 +407,22 @@
     "aliases": [
       "hd",
       "hostdare"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "v-ps",
     "name": "V.PS",
     "names": {
-      "zh-CN": "小秘书"
+      "zh-CN": "V.PS"
     },
     "aliases": [
       "v.ps",
       "xiaomishu",
       "xtom"
+    ],
+    "nicknames": [
+      "小秘书"
     ]
   },
   {
@@ -378,6 +435,9 @@
       "ak",
       "akile",
       "akilecloud"
+    ],
+    "nicknames": [
+      "AK"
     ]
   },
   {
@@ -389,7 +449,8 @@
     "aliases": [
       "bage",
       "bagevm"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "dmit",
@@ -401,18 +462,25 @@
       "dmit",
       "dama",
       "大妈"
+    ],
+    "nicknames": [
+      "大妈"
     ]
   },
   {
     "slug": "bandwagonhost",
     "name": "BandwagonHost",
     "names": {
-      "zh-CN": "搬瓦工"
+      "zh-CN": "BandwagonHost"
     },
     "aliases": [
       "bwh",
       "bandwagon",
       "banwagong"
+    ],
+    "nicknames": [
+      "搬瓦工",
+      "瓦工"
     ]
   },
   {
@@ -424,6 +492,9 @@
     "aliases": [
       "dog yun",
       "gouyun"
+    ],
+    "nicknames": [
+      "狗云"
     ]
   },
   {
@@ -435,7 +506,8 @@
     "aliases": [
       "misaka",
       "misaka.io"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "zenlayer",
@@ -445,7 +517,8 @@
     },
     "aliases": [
       "zenlayer cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "colocrossing",
@@ -456,6 +529,9 @@
     "aliases": [
       "ccs",
       "colocrossing"
+    ],
+    "nicknames": [
+      "CCS"
     ]
   },
   {
@@ -467,17 +543,21 @@
     "aliases": [
       "evoxt",
       "yiwosi"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "spartan-host",
     "name": "Spartan Host",
     "names": {
-      "zh-CN": "斯巴达"
+      "zh-CN": "Spartan Host"
     },
     "aliases": [
       "spartan",
       "sibada"
+    ],
+    "nicknames": [
+      "斯巴达"
     ]
   },
   {
@@ -490,7 +570,8 @@
       "baiduyun",
       "bce",
       "baidu cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "civo",
@@ -500,7 +581,8 @@
     },
     "aliases": [
       "civo cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "exoscale",
@@ -511,7 +593,8 @@
     "aliases": [
       "exo",
       "exoscale"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "vercel",
@@ -522,7 +605,8 @@
     "aliases": [
       "vercel",
       "zeit"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "home",
@@ -534,7 +618,8 @@
       "home",
       "jiakuan",
       "家庭宽带"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "nas",
@@ -546,7 +631,8 @@
       "nas",
       "wangluocunchu",
       "storage"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "relay",
@@ -558,7 +644,8 @@
       "relay",
       "zhongzhuan",
       "forward"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "other",
@@ -570,7 +657,8 @@
       "other",
       "qita",
       "misc"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "unknown",
@@ -582,7 +670,8 @@
       "unknown",
       "weizhi",
       "placeholder"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "render",
@@ -592,7 +681,8 @@
     },
     "aliases": [
       "render.com"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "railway",
@@ -602,7 +692,8 @@
     },
     "aliases": [
       "railway.app"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "heroku",
@@ -612,7 +703,8 @@
     },
     "aliases": [
       "heroku cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "netlify",
@@ -622,7 +714,8 @@
     },
     "aliases": [
       "netlify hosting"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "fastly",
@@ -632,7 +725,8 @@
     },
     "aliases": [
       "fastly cdn"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "gcore",
@@ -643,7 +737,8 @@
     "aliases": [
       "g-core labs",
       "gcore cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "godaddy",
@@ -653,6 +748,9 @@
     },
     "aliases": [
       "go daddy"
+    ],
+    "nicknames": [
+      "狗爹"
     ]
   },
   {
@@ -663,7 +761,8 @@
     },
     "aliases": [
       "backblaze b2"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "wasabi",
@@ -673,17 +772,21 @@
     },
     "aliases": [
       "wasabi cloud storage"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "yandex-cloud",
     "name": "Yandex Cloud",
     "names": {
-      "zh-CN": "Yandex 云"
+      "zh-CN": "Yandex Cloud"
     },
     "aliases": [
       "yandexcloud",
       "yandex cloud"
+    ],
+    "nicknames": [
+      "Yandex 云"
     ]
   },
   {
@@ -695,7 +798,8 @@
     "aliases": [
       "fly.io",
       "flyio"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "bunny",
@@ -706,7 +810,8 @@
     "aliases": [
       "bunny.net",
       "bunnycdn"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "leaseweb",
@@ -716,7 +821,8 @@
     },
     "aliases": [
       "lease web"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "hostwinds",
@@ -726,7 +832,8 @@
     },
     "aliases": [
       "hostwinds cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "liquid-web",
@@ -736,7 +843,8 @@
     },
     "aliases": [
       "liquidweb"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "dreamhost",
@@ -746,7 +854,8 @@
     },
     "aliases": [
       "dream host"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "namecheap",
@@ -756,7 +865,8 @@
     },
     "aliases": [
       "name cheap"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "bluehost",
@@ -766,7 +876,8 @@
     },
     "aliases": [
       "blue host"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "cherry-servers",
@@ -776,7 +887,8 @@
     },
     "aliases": [
       "cherryservers"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "latitude-sh",
@@ -787,7 +899,8 @@
     "aliases": [
       "latitude.sh",
       "maxihost"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "interserver",
@@ -797,7 +910,8 @@
     },
     "aliases": [
       "interserver.net"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "virmach",
@@ -807,7 +921,8 @@
     },
     "aliases": [
       "virtual machine solutions"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "psychz",
@@ -817,7 +932,8 @@
     },
     "aliases": [
       "psychz networks"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "time4vps",
@@ -827,7 +943,8 @@
     },
     "aliases": [
       "time 4 vps"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "aeza",
@@ -837,7 +954,8 @@
     },
     "aliases": [
       "aéza"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "hostkey",
@@ -847,7 +965,8 @@
     },
     "aliases": [
       "hostkey cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "selectel",
@@ -857,7 +976,8 @@
     },
     "aliases": [
       "селектел"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "timeweb",
@@ -868,7 +988,8 @@
     "aliases": [
       "timeweb cloud",
       "таймвэб"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "reliablesite",
@@ -879,6 +1000,9 @@
     "aliases": [
       "reliable site",
       "reliablesite.net"
+    ],
+    "nicknames": [
+      "RS"
     ]
   },
   {
@@ -890,7 +1014,8 @@
     "aliases": [
       "is*hosting",
       "is hosting"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "qiniu",
@@ -900,7 +1025,8 @@
     },
     "aliases": [
       "qiniuyun"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "upyun",
@@ -910,7 +1036,8 @@
     },
     "aliases": [
       "youpaiyun"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "qingcloud",
@@ -920,7 +1047,8 @@
     },
     "aliases": [
       "qingyun"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "byteplus",
@@ -930,18 +1058,20 @@
     },
     "aliases": [
       "byteplus"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "sakura-internet",
     "name": "SAKURA internet",
     "names": {
-      "zh-CN": "樱花互联网"
+      "zh-CN": "SAKURA internet"
     },
     "aliases": [
       "さくらインターネット",
       "sakura cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "xserver",
@@ -951,7 +1081,8 @@
     },
     "aliases": [
       "エックスサーバー"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "kagoya",
@@ -961,7 +1092,8 @@
     },
     "aliases": [
       "カゴヤ・ジャパン"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "vmiss",
@@ -971,7 +1103,8 @@
     },
     "aliases": [
       "vmiss"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "vmrack",
@@ -981,16 +1114,20 @@
     },
     "aliases": [
       "vmrack"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "neburst",
     "name": "Neburst Networks",
     "names": {
-      "zh-CN": "奶爸云"
+      "zh-CN": "Neburst Networks"
     },
     "aliases": [
       "neburst networks",
+      "奶爸"
+    ],
+    "nicknames": [
       "奶爸"
     ]
   },
@@ -1003,7 +1140,8 @@
     "aliases": [
       "rainyun",
       "yuyun"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "lcayun",
@@ -1013,7 +1151,8 @@
     },
     "aliases": [
       "laikayun"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "lightnode",
@@ -1023,7 +1162,8 @@
     },
     "aliases": [
       "lightnode"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "conoha",
@@ -1034,28 +1174,31 @@
     "aliases": [
       "このは",
       "gmo conoha"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "naver-cloud",
     "name": "NAVER Cloud Platform",
     "names": {
-      "zh-CN": "NAVER 云"
+      "zh-CN": "NAVER Cloud Platform"
     },
     "aliases": [
       "ncp",
       "네이버 클라우드"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "nhn-cloud",
     "name": "NHN Cloud",
     "names": {
-      "zh-CN": "NHN 云"
+      "zh-CN": "NHN Cloud"
     },
     "aliases": [
       "엔에이치엔 클라우드"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "lisahost",
@@ -1066,7 +1209,8 @@
     "aliases": [
       "lisha",
       "lisa host"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "zgocloud",
@@ -1077,7 +1221,8 @@
     "aliases": [
       "zgovps",
       "zgo cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "yecaoyun",
@@ -1087,7 +1232,8 @@
     },
     "aliases": [
       "yecao"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "kingsoft-cloud",
@@ -1098,7 +1244,8 @@
     "aliases": [
       "ksyun",
       "jinshanyun"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "ecloud",
@@ -1109,7 +1256,8 @@
     "aliases": [
       "移动云",
       "ydyun"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "unicom-cloud",
@@ -1120,7 +1268,8 @@
     "aliases": [
       "中国联通云",
       "liantongyun"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "west-cn",
@@ -1131,7 +1280,8 @@
     "aliases": [
       "west digital",
       "xibushuma"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "hncloud",
@@ -1141,7 +1291,8 @@
     },
     "aliases": [
       "huanayun"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "henghost",
@@ -1151,7 +1302,8 @@
     },
     "aliases": [
       "hengchuang"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "wangsu",
@@ -1162,17 +1314,19 @@
     "aliases": [
       "chinanetcenter",
       "wangsu"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "kt-cloud",
     "name": "kt cloud",
     "names": {
-      "zh-CN": "KT 云"
+      "zh-CN": "kt cloud"
     },
     "aliases": [
       "케이티클라우드"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "akkocloud",
@@ -1182,7 +1336,8 @@
     },
     "aliases": [
       "akko cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "rackspace",
@@ -1192,7 +1347,8 @@
     },
     "aliases": [
       "rackspace technology"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "cloudways",
@@ -1202,7 +1358,8 @@
     },
     "aliases": [
       "cloudways hosting"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "infomaniak",
@@ -1212,7 +1369,8 @@
     },
     "aliases": [
       "infomaniak cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "wp-engine",
@@ -1222,7 +1380,8 @@
     },
     "aliases": [
       "wpengine"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "koyeb",
@@ -1232,7 +1391,8 @@
     },
     "aliases": [
       "koyeb cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "kinsta",
@@ -1242,7 +1402,8 @@
     },
     "aliases": [
       "kinsta hosting"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "gandi",
@@ -1252,7 +1413,8 @@
     },
     "aliases": [
       "gandi.net"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "strato",
@@ -1262,7 +1424,8 @@
     },
     "aliases": [
       "strato hosting"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "servers-com",
@@ -1272,7 +1435,8 @@
     },
     "aliases": [
       "servers.com"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "hostgator",
@@ -1282,7 +1446,8 @@
     },
     "aliases": [
       "host gator"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "siteground",
@@ -1292,7 +1457,8 @@
     },
     "aliases": [
       "site ground"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "hosting-com",
@@ -1304,7 +1470,8 @@
       "a2 hosting",
       "a2-hosting",
       "a2hosting"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "hostus",
@@ -1314,7 +1481,8 @@
     },
     "aliases": [
       "hostus.us"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "webdock",
@@ -1324,7 +1492,8 @@
     },
     "aliases": [
       "webdock.io"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "ruvds",
@@ -1334,7 +1503,8 @@
     },
     "aliases": [
       "ru vds"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "firstvds",
@@ -1344,7 +1514,8 @@
     },
     "aliases": [
       "first vds"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "clouvider",
@@ -1354,7 +1525,8 @@
     },
     "aliases": [
       "clouvider cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "reg-ru",
@@ -1365,7 +1537,8 @@
     "aliases": [
       "reg.ru",
       "рег.ру"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "inmotion-hosting",
@@ -1375,7 +1548,8 @@
     },
     "aliases": [
       "inmotion"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "cloudsigma",
@@ -1385,7 +1559,8 @@
     },
     "aliases": [
       "cloud sigma"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "liteserver",
@@ -1395,7 +1570,8 @@
     },
     "aliases": [
       "liteserver.nl"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "alphavps",
@@ -1405,7 +1581,8 @@
     },
     "aliases": [
       "alpha vps"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "host-europe",
@@ -1415,7 +1592,8 @@
     },
     "aliases": [
       "hosteurope"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "sharktech",
@@ -1425,7 +1603,8 @@
     },
     "aliases": [
       "sharktech.net"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "atlantic-net",
@@ -1435,7 +1614,8 @@
     },
     "aliases": [
       "atlantic.net"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "servarica",
@@ -1445,7 +1625,8 @@
     },
     "aliases": [
       "serva rica"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "krypt",
@@ -1455,7 +1636,8 @@
     },
     "aliases": [
       "krypt.com"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "beget",
@@ -1465,7 +1647,8 @@
     },
     "aliases": [
       "бегет"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "coreweave",
@@ -1475,7 +1658,8 @@
     },
     "aliases": [
       "core weave"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "lambda",
@@ -1487,7 +1671,8 @@
       "lambda cloud",
       "lambda labs",
       "lambdalabs"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "runpod",
@@ -1497,7 +1682,8 @@
     },
     "aliases": [
       "runpod.io"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "vast-ai",
@@ -1508,7 +1694,8 @@
     "aliases": [
       "vast.ai",
       "vastai"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "paperspace",
@@ -1519,7 +1706,8 @@
     "aliases": [
       "paperspace cloud",
       "digitalocean paperspace"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "nebius",
@@ -1529,7 +1717,8 @@
     },
     "aliases": [
       "nebius ai cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "crusoe",
@@ -1539,7 +1728,8 @@
     },
     "aliases": [
       "crusoe cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "hyperstack",
@@ -1550,7 +1740,8 @@
     "aliases": [
       "hyperstack cloud",
       "nexgen cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "modal",
@@ -1560,7 +1751,8 @@
     },
     "aliases": [
       "modal labs"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "zeabur",
@@ -1570,7 +1762,8 @@
     },
     "aliases": [
       "zeabur cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "tensordock",
@@ -1580,7 +1773,8 @@
     },
     "aliases": [
       "tensor dock"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "deno-deploy",
@@ -1591,7 +1785,8 @@
     "aliases": [
       "deno deploy",
       "deno land"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "cdn77",
@@ -1601,7 +1796,8 @@
     },
     "aliases": [
       "cdn77.com"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "keycdn",
@@ -1611,7 +1807,8 @@
     },
     "aliases": [
       "key cdn"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "sealos",
@@ -1621,7 +1818,8 @@
     },
     "aliases": [
       "sealos cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "advin-servers",
@@ -1631,7 +1829,8 @@
     },
     "aliases": [
       "advinservers"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "lunanode",
@@ -1641,7 +1840,8 @@
     },
     "aliases": [
       "luna node"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "dedibox",
@@ -1652,7 +1852,8 @@
     "aliases": [
       "scaleway dedibox",
       "online.net dedibox"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "ramnode",
@@ -1662,7 +1863,8 @@
     },
     "aliases": [
       "ram node"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "hostodo",
@@ -1672,7 +1874,8 @@
     },
     "aliases": [
       "hostodo.com"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "hosteons",
@@ -1682,7 +1885,8 @@
     },
     "aliases": [
       "host eons"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "letbox",
@@ -1692,7 +1896,8 @@
     },
     "aliases": [
       "let box"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "webhorizon",
@@ -1702,7 +1907,8 @@
     },
     "aliases": [
       "web horizon"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "nocix",
@@ -1712,7 +1918,8 @@
     },
     "aliases": [
       "nocix.net"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "kimsufi",
@@ -1723,7 +1930,8 @@
     "aliases": [
       "ovh kimsufi",
       "ks"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "soyoustart",
@@ -1735,7 +1943,8 @@
       "so you start",
       "ovh soyoustart",
       "sys"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "inspur-cloud",
@@ -1746,18 +1955,20 @@
     "aliases": [
       "inspur",
       "langchaoyun"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "webarena",
     "name": "WebARENA",
     "names": {
-      "zh-CN": "NTT WebARENA"
+      "zh-CN": "WebARENA"
     },
     "aliases": [
       "webarena",
       "NTTPC"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "gabia",
@@ -1768,7 +1979,8 @@
     "aliases": [
       "가비아",
       "gabia"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "cafe24",
@@ -1779,7 +1991,8 @@
     "aliases": [
       "카페24",
       "cafe24"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "bizfly-cloud",
@@ -1790,7 +2003,8 @@
     "aliases": [
       "bizfly",
       "vccorp"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "idcloudhost",
@@ -1801,7 +2015,8 @@
     "aliases": [
       "idch",
       "idcloudhost"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "exabytes",
@@ -1812,7 +2027,8 @@
     "aliases": [
       "exabytes malaysia",
       "exabytes"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "nipa-cloud",
@@ -1823,7 +2039,8 @@
     "aliases": [
       "nipa",
       "nipa cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "unisyscloud",
@@ -1835,7 +2052,8 @@
       "unicloud",
       "紫光云",
       "ziguangyun"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "e2e-networks",
@@ -1846,7 +2064,8 @@
     "aliases": [
       "e2e",
       "e2e networks"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "baishan",
@@ -1857,7 +2076,8 @@
     "aliases": [
       "baishanyun",
       "baishan"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "21vianet",
@@ -1869,7 +2089,8 @@
       "21vianet",
       "vnet",
       "shijihulian"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "capitalonline",
@@ -1880,7 +2101,8 @@
     "aliases": [
       "cds",
       "shouduzaixian"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "netease-cloud",
@@ -1891,7 +2113,8 @@
     "aliases": [
       "netease shufan",
       "wangyishufan"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "zzidc",
@@ -1904,7 +2127,8 @@
       "景安",
       "gainet",
       "景安网络"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "xinnet",
@@ -1915,7 +2139,8 @@
     "aliases": [
       "xinnet",
       "新网数码"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "vpsor",
@@ -1927,18 +2152,20 @@
       "vpsor",
       "guiyun",
       "硅云"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "iij",
     "name": "Internet Initiative Japan",
     "names": {
-      "zh-CN": "日本互联网倡议"
+      "zh-CN": "Internet Initiative Japan"
     },
     "aliases": [
       "iij",
       "インターネットイニシアティブ"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "hicloud",
@@ -1947,21 +2174,21 @@
       "zh-CN": "中华电信 hicloud"
     },
     "aliases": [
-      "中華電信",
-      "hicloud",
-      "HiNet"
-    ]
+      "hicloud"
+    ],
+    "nicknames": []
   },
   {
     "slug": "viettel-idc",
     "name": "Viettel IDC",
     "names": {
-      "zh-CN": "越南 Viettel IDC"
+      "zh-CN": "Viettel IDC"
     },
     "aliases": [
       "viettel idc",
       "viettelidc"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "biznet-gio",
@@ -1972,7 +2199,8 @@
     "aliases": [
       "biznetgio",
       "biznet gio"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "100tb",
@@ -1982,7 +2210,8 @@
     },
     "aliases": [
       "100tb.io"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "vollcloud",
@@ -1992,7 +2221,8 @@
     },
     "aliases": [
       "vollcloud.com"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "terabix",
@@ -2002,7 +2232,8 @@
     },
     "aliases": [
       "terabix.net"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "ipraft",
@@ -2012,7 +2243,8 @@
     },
     "aliases": [
       "ip raft"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "cubecloud",
@@ -2023,7 +2255,8 @@
     "aliases": [
       "魔方云",
       "mofangyun"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "onidel",
@@ -2033,7 +2266,8 @@
     },
     "aliases": [
       "onidel cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "raksmart",
@@ -2043,7 +2277,8 @@
     },
     "aliases": [
       "raksmart.com"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "orangevps",
@@ -2053,7 +2288,8 @@
     },
     "aliases": [
       "orangevps.com"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "tnahosting",
@@ -2063,7 +2299,8 @@
     },
     "aliases": [
       "tna hosting"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "ethernet-servers",
@@ -2073,7 +2310,8 @@
     },
     "aliases": [
       "ethernetservers"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "lightlayer",
@@ -2084,7 +2322,8 @@
     "aliases": [
       "light layer",
       "megalayer"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "isif",
@@ -2094,7 +2333,8 @@
     },
     "aliases": [
       "isif cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "acckcloud",
@@ -2105,7 +2345,8 @@
     "aliases": [
       "acck",
       "acck.io"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "desivps",
@@ -2115,7 +2356,8 @@
     },
     "aliases": [
       "desivps.com"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "halocloud",
@@ -2125,7 +2367,8 @@
     },
     "aliases": [
       "halocloud.net"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "bytevirt",
@@ -2135,17 +2378,21 @@
     },
     "aliases": [
       "bytevirt.com"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "bestvm",
     "name": "BestVM",
     "names": {
-      "zh-CN": "BestVM（富婆）"
+      "zh-CN": "BestVM"
     },
     "aliases": [
       "富婆",
       "bestvm.cloud"
+    ],
+    "nicknames": [
+      "富婆"
     ]
   },
   {
@@ -2156,7 +2403,8 @@
     },
     "aliases": [
       "rabisu.com"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "tokyonline",
@@ -2166,7 +2414,8 @@
     },
     "aliases": [
       "tokyonline.com"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "yt-net",
@@ -2177,17 +2426,21 @@
     "aliases": [
       "yt.net",
       "云途"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "rfchost",
     "name": "RFCHost",
     "names": {
-      "zh-CN": "花卷"
+      "zh-CN": "RFCHost"
     },
     "aliases": [
       "花卷",
       "rfc host"
+    ],
+    "nicknames": [
+      "花卷"
     ]
   },
   {
@@ -2198,7 +2451,8 @@
     },
     "aliases": [
       "vmshell.com"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "zorocloud",
@@ -2209,7 +2463,8 @@
     "aliases": [
       "索隆云",
       "zoro cloud"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "fiberstate",
@@ -2220,6 +2475,9 @@
     "aliases": [
       "fiber state",
       "AS26042"
+    ],
+    "nicknames": [
+      "FS"
     ]
   },
   {
@@ -2230,7 +2488,8 @@
     },
     "aliases": [
       "digitalvirt.com"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "moecloud",
@@ -2240,7 +2499,8 @@
     },
     "aliases": [
       "lite.moe"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "zovps",
@@ -2252,7 +2512,8 @@
       "慈云数据",
       "ciyun data",
       "ciyundata"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "666clouds",
@@ -2263,7 +2524,8 @@
     "aliases": [
       "六六云",
       "666云"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "v5-server",
@@ -2274,7 +2536,8 @@
     "aliases": [
       "v5.net",
       "v5"
-    ]
+    ],
+    "nicknames": []
   },
   {
     "slug": "wap-ac",
@@ -2284,6 +2547,739 @@
     },
     "aliases": [
       "wap.ac"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "highendnetwork",
+    "name": "HighEndNetwork",
+    "names": {
+      "zh-CN": "HighEndNetwork"
+    },
+    "aliases": [
+      "HighEnd",
+      "HEN",
+      "High End Network"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "wepc",
+    "name": "WePC",
+    "names": {
+      "zh-CN": "WePC"
+    },
+    "aliases": [
+      "WePC.au",
+      "车库云",
+      "車庫雲"
+    ],
+    "nicknames": [
+      "车库云"
     ]
+  },
+  {
+    "slug": "boil",
+    "name": "Boil Cloud",
+    "names": {
+      "zh-CN": "Boil Cloud"
+    },
+    "aliases": [
+      "Boil Network",
+      "BoilCloud",
+      "boil.network"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "po0",
+    "name": "PortChannel Zero",
+    "names": {
+      "zh-CN": "PortChannel Zero"
+    },
+    "aliases": [
+      "PO0.com",
+      "PO0.io",
+      "PortChannel Zero LLC",
+      "Port Channel Zero"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "pqs",
+    "name": "PQS",
+    "names": {
+      "zh-CN": "PQS彼得巧私有雲"
+    },
+    "aliases": [
+      "PittQiao",
+      "PQS彼得巧私有雲",
+      "彼得巧",
+      "PittQiao Network Information",
+      "pqs.pw"
+    ],
+    "nicknames": [
+      "彼得巧"
+    ]
+  },
+  {
+    "slug": "home-cloud",
+    "name": "Home Cloud",
+    "names": {
+      "zh-CN": "家里云"
+    },
+    "aliases": [
+      "家庭云",
+      "家庭服务器",
+      "home server",
+      "homelab",
+      "jialiyun"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "router",
+    "name": "Router",
+    "names": {
+      "zh-CN": "路由器"
+    },
+    "aliases": [
+      "软路由",
+      "無線路由器",
+      "wireless router",
+      "soft router",
+      "luyouqi"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "server",
+    "name": "Dedicated Server",
+    "names": {
+      "zh-CN": "独立服务器"
+    },
+    "aliases": [
+      "机架服务器",
+      "独服",
+      "rack server",
+      "dedicated machine"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "mini-pc",
+    "name": "Mini PC",
+    "names": {
+      "zh-CN": "小主机"
+    },
+    "aliases": [
+      "迷你主机",
+      "迷你电脑",
+      "mini computer",
+      "小方盒主机"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "desktop",
+    "name": "Desktop PC",
+    "names": {
+      "zh-CN": "台式机"
+    },
+    "aliases": [
+      "台式电脑",
+      "桌上型電腦",
+      "desktop computer",
+      "台式主机"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "laptop",
+    "name": "Laptop",
+    "names": {
+      "zh-CN": "笔记本"
+    },
+    "aliases": [
+      "笔记本电脑",
+      "笔电",
+      "notebook computer"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "sbc",
+    "name": "Single-Board Computer",
+    "names": {
+      "zh-CN": "单板机"
+    },
+    "aliases": [
+      "开发板",
+      "盒子",
+      "single board computer",
+      "单板电脑",
+      "开发板主机"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "nat",
+    "name": "NAT Gateway",
+    "names": {
+      "zh-CN": "NAT 机"
+    },
+    "aliases": [
+      "NAT主机",
+      "端口映射",
+      "port forwarding",
+      "network address translation"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "gpu",
+    "name": "GPU Server",
+    "names": {
+      "zh-CN": "GPU 服务器"
+    },
+    "aliases": [
+      "显卡",
+      "图形处理器",
+      "graphics card",
+      "显卡服务器"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "synology",
+    "name": "Synology",
+    "names": {
+      "zh-CN": "群晖"
+    },
+    "aliases": [
+      "群晖",
+      "群暉",
+      "qunhui",
+      "DiskStation",
+      "Synology DSM",
+      "DS920+"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "qnap",
+    "name": "QNAP",
+    "names": {
+      "zh-CN": "威联通"
+    },
+    "aliases": [
+      "威联通",
+      "威聯通",
+      "weiliantong",
+      "QTS",
+      "QuTS hero"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "ugreen-nas",
+    "name": "UGREEN NAS",
+    "names": {
+      "zh-CN": "绿联"
+    },
+    "aliases": [
+      "绿联",
+      "綠聯",
+      "绿联私有云",
+      "UGREEN NASync",
+      "UGOS Pro",
+      "lü lian"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "zspace",
+    "name": "ZSpace NAS",
+    "names": {
+      "zh-CN": "极空间"
+    },
+    "aliases": [
+      "极空间",
+      "極空間",
+      "jikongjian",
+      "极空间私有云",
+      "ZOS"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "fnos",
+    "name": "fnOS",
+    "names": {
+      "zh-CN": "飞牛"
+    },
+    "aliases": [
+      "飞牛",
+      "飛牛",
+      "飞牛OS",
+      "飞牛私有云",
+      "feiniu",
+      "FNNAS"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "unraid",
+    "name": "Unraid",
+    "names": {
+      "zh-CN": "Unraid"
+    },
+    "aliases": [
+      "unraid os",
+      "unRAID Server"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "truenas",
+    "name": "TrueNAS",
+    "names": {
+      "zh-CN": "TrueNAS"
+    },
+    "aliases": [
+      "FreeNAS",
+      "TrueNAS CORE",
+      "TrueNAS SCALE"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "proxmox",
+    "name": "Proxmox VE",
+    "names": {
+      "zh-CN": "Proxmox VE"
+    },
+    "aliases": [
+      "proxmox",
+      "PVE",
+      "Proxmox Virtual Environment"
+    ],
+    "nicknames": [
+      "PVE"
+    ]
+  },
+  {
+    "slug": "openwrt",
+    "name": "OpenWrt",
+    "names": {
+      "zh-CN": "OpenWrt"
+    },
+    "aliases": [
+      "open wrt",
+      "OpenWrt 路由器"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "istoreos",
+    "name": "iStoreOS",
+    "names": {
+      "zh-CN": "iStoreOS"
+    },
+    "aliases": [
+      "iStoreOS",
+      "酷友社 iStoreOS",
+      "iStore OS"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "raspberry-pi",
+    "name": "Raspberry Pi",
+    "names": {
+      "zh-CN": "树莓派"
+    },
+    "aliases": [
+      "树莓派",
+      "樹莓派",
+      "shumeipai",
+      "RPi",
+      "Raspberry Pi OS"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "esxi",
+    "name": "VMware ESXi",
+    "names": {
+      "zh-CN": "VMware ESXi"
+    },
+    "aliases": [
+      "vmware",
+      "VMware vSphere Hypervisor",
+      "ESX Server"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "hkt",
+    "name": "HKT",
+    "names": {
+      "zh-CN": "香港电讯"
+    },
+    "aliases": [
+      "香港电讯",
+      "香港電訊",
+      "Hong Kong Telecommunications",
+      "hkt.com",
+      "Netvigator",
+      "網上行",
+      "AS4760"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "hinet",
+    "name": "HiNet",
+    "names": {
+      "zh-CN": "中华电信 HiNet"
+    },
+    "aliases": [
+      "中华电信",
+      "中華電信",
+      "中華電信 HiNet",
+      "Chunghwa Telecom",
+      "Chunghwa Telecom HiNet",
+      "HiNet 光世代",
+      "hinet.net",
+      "AS3462"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "seednet",
+    "name": "Seednet",
+    "names": {
+      "zh-CN": "远传大宽频"
+    },
+    "aliases": [
+      "遠傳大寬頻",
+      "远传大宽频",
+      "速博",
+      "數位聯合電信",
+      "数字联合电信",
+      "seed.net.tw",
+      "AS4780"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "ctcsci",
+    "name": "CTCSCI Tech Limited",
+    "names": {
+      "zh-CN": "CTCSCI Tech Limited"
+    },
+    "aliases": [
+      "CTCSCI",
+      "ctcsci.com",
+      "AS9886"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "china-telecom",
+    "name": "China Telecom",
+    "names": {
+      "zh-CN": "中国电信"
+    },
+    "aliases": [
+      "中国电信",
+      "中國電信",
+      "电信",
+      "電信",
+      "Chinanet",
+      "CN2",
+      "CN2 GIA",
+      "163",
+      "AS4809",
+      "CTGNet",
+      "AS4134",
+      "AS23764"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "china-unicom",
+    "name": "China Unicom",
+    "names": {
+      "zh-CN": "中国联通"
+    },
+    "aliases": [
+      "中国联通",
+      "中國聯通",
+      "联通",
+      "聯通",
+      "AS4837",
+      "AS9929",
+      "CUII",
+      "China Unicom Industrial Internet"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "china-mobile",
+    "name": "China Mobile",
+    "names": {
+      "zh-CN": "中国移动"
+    },
+    "aliases": [
+      "中国移动",
+      "中國移動",
+      "移动",
+      "移動",
+      "CMI",
+      "CMIN2",
+      "AS58453",
+      "CMHK",
+      "AS9808",
+      "China Mobile International"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "pccw-global",
+    "name": "PCCW Global",
+    "names": {
+      "zh-CN": "PCCW Global"
+    },
+    "aliases": [
+      "电讯盈科环球",
+      "電訊盈科環球",
+      "pccwglobal.com",
+      "AS3491",
+      "PCCW Global Limited"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "hkbn",
+    "name": "HKBN",
+    "names": {
+      "zh-CN": "香港宽频"
+    },
+    "aliases": [
+      "香港宽频",
+      "香港寬頻",
+      "Hong Kong Broadband Network",
+      "hkbn.net",
+      "AS9269"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "hgc",
+    "name": "HGC Global Communications",
+    "names": {
+      "zh-CN": "环球全域电讯"
+    },
+    "aliases": [
+      "环球全域电讯",
+      "環球全域電訊",
+      "环电",
+      "環電",
+      "HGC Broadband",
+      "环电宽频",
+      "環電寬頻",
+      "Hutchison Global Communications",
+      "和记环球电讯",
+      "和記環球電訊",
+      "AS9304",
+      "hgc.com.hk",
+      "huanqiuquanyudianxun"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "taiwan-mobile",
+    "name": "Taiwan Mobile",
+    "names": {
+      "zh-CN": "台湾大哥大"
+    },
+    "aliases": [
+      "台灣大哥大",
+      "臺灣大哥大",
+      "台湾大哥大",
+      "TFN",
+      "Taiwan Fixed Network",
+      "台灣固網",
+      "台湾固网",
+      "AS9924",
+      "taiwanmobile.com"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "retn",
+    "name": "RETN",
+    "names": {
+      "zh-CN": "RETN"
+    },
+    "aliases": [
+      "RETN Networks",
+      "AS9002",
+      "retn.net"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "gsl-networks",
+    "name": "Global Secure Layer",
+    "names": {
+      "zh-CN": "Global Secure Layer"
+    },
+    "aliases": [
+      "GSL Networks",
+      "GSL",
+      "AS137409",
+      "AS7578",
+      "gslnetworks.com.au"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "ntt",
+    "name": "NTT",
+    "names": {
+      "zh-CN": "NTT"
+    },
+    "aliases": [
+      "NTT Communications",
+      "NTT Global IP Network",
+      "AS2914",
+      "NTT Com",
+      "日本电信电话",
+      "日本電信電話"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "kddi",
+    "name": "KDDI",
+    "names": {
+      "zh-CN": "KDDI"
+    },
+    "aliases": [
+      "KDDI Corporation",
+      "AS2516",
+      "kddi.com"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "softbank",
+    "name": "SoftBank",
+    "names": {
+      "zh-CN": "软银"
+    },
+    "aliases": [
+      "软银",
+      "軟銀",
+      "SoftBank Corp.",
+      "AS17676",
+      "softbank.jp",
+      "ruanyin"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "singtel",
+    "name": "Singtel",
+    "names": {
+      "zh-CN": "新加坡电信"
+    },
+    "aliases": [
+      "新加坡电信",
+      "新加坡電信",
+      "Singapore Telecommunications",
+      "AS7473",
+      "Singtel Internet Exchange",
+      "STiX",
+      "singtel.com"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "cogent",
+    "name": "Cogent Communications",
+    "names": {
+      "zh-CN": "Cogent Communications"
+    },
+    "aliases": [
+      "Cogent",
+      "AS174",
+      "cogentco.com"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "hurricane-electric",
+    "name": "Hurricane Electric",
+    "names": {
+      "zh-CN": "Hurricane Electric"
+    },
+    "aliases": [
+      "HE",
+      "he.net",
+      "AS6939",
+      "Hurricane Electric Internet Services"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "lumen",
+    "name": "Lumen",
+    "names": {
+      "zh-CN": "Lumen"
+    },
+    "aliases": [
+      "Lumen Technologies",
+      "Level3",
+      "Level 3 Communications",
+      "CenturyLink",
+      "AS3356",
+      "lumen.com"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "arelion",
+    "name": "Arelion",
+    "names": {
+      "zh-CN": "Arelion"
+    },
+    "aliases": [
+      "Telia Carrier",
+      "TeliaSonera International Carrier",
+      "AS1299",
+      "arelion.com"
+    ],
+    "nicknames": []
+  },
+  {
+    "slug": "tata-communications",
+    "name": "Tata Communications",
+    "names": {
+      "zh-CN": "塔塔通讯"
+    },
+    "aliases": [
+      "Tata Communications Limited",
+      "塔塔通讯",
+      "塔塔通訊",
+      "塔塔通信",
+      "AS6453",
+      "VSNL",
+      "tatacommunications.com"
+    ],
+    "nicknames": []
   }
 ]

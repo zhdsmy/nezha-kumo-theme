@@ -245,7 +245,7 @@ test("VPS icon picker searches localized names and aliases and saves the selecte
     const preview = dialog.getByTestId("group-icon-preview").locator("img")
     for (const mode of ["light", "dark"] as const) {
         await page.emulateMedia({ colorScheme: mode })
-        await expect(preview).toHaveAttribute("src", `/dashboard/vps-icons/v1.0.0/${mode}/aws.svg`)
+        await expect(preview).toHaveAttribute("src", `/dashboard/vps-icons/v1.4.0/${mode}/aws.svg`)
         await expect.poll(() => preview.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true)
     }
     const save = page.waitForRequest((r) => r.method() === "PATCH" && r.url().endsWith("/api/v1/setting"))

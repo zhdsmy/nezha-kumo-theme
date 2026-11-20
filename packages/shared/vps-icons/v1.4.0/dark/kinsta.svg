@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="k1" x1="15" y1="60" x2="49" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FE5A00" stop-opacity="0"/>
+      <stop offset="0.35" stop-color="#FE5A00" stop-opacity="0.82"/>
+      <stop offset="0.75" stop-color="#FF3B00"/>
+      <stop offset="1" stop-color="#FF1200"/>
+    </linearGradient>
+    <linearGradient id="k2" x1="52" y1="60" x2="96" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FE5A00" stop-opacity="0"/>
+      <stop offset="0.35" stop-color="#FE5A00" stop-opacity="0.82"/>
+      <stop offset="0.75" stop-color="#FF3B00"/>
+      <stop offset="1" stop-color="#FF0000"/>
+    </linearGradient>
+  </defs>
+  <g transform="matrix(0.4166667 0 0 0.4166667 7 7)">
+    <path fill="#F9F5F3" d="M0 24C0 10.7452 10.7452 0 24 0H96C109.254 0 120 10.7452 120 24V96C120 109.254 109.254 120 96 120H24C10.7452 120 0 109.254 0 96V24Z"/>
+    <path fill="url(#k1)" d="M38.3632 26.0246C44.0636 26.0246 48.6843 30.6453 48.6843 36.3456V83.6548C48.6843 89.3551 44.0636 93.9755 38.3632 93.9755H15V26.0252C22.8 26.0242 30.6 26.0246 38.3632 26.0246Z"/>
+    <path fill="url(#k2)" d="M85.3079 26.0252C91.0083 26.0252 95.629 30.646 95.629 36.3463V83.6554C95.629 89.3557 91.0083 93.9762 85.3079 93.9762L52 93.9844V26.0156L85.3079 26.0252Z"/>
+  </g>
+</svg>

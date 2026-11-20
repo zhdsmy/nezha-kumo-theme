@@ -822,7 +822,7 @@ test("VPS group icons follow the effective theme and keep a failed slug on the f
     await page.goto("/")
     const image = page.locator('.nk-nav-link:has([title="🛜 宽带"]) img')
     const checkImage = async (mode: string) => {
-        await expect(image).toHaveAttribute("src", `/vps-icons/v1.0.0/${mode}/aws.svg`)
+        await expect(image).toHaveAttribute("src", `/vps-icons/v1.4.0/${mode}/aws.svg`)
         await expect
             .poll(() =>
                 image.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0),

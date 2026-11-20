@@ -1,4 +1,4 @@
-"""Regenerate bundled v1.0.0 icons: python3 scripts/sync-vps-icons.py /path/to/vps-icons."""
+"""Regenerate bundled v1.4.0 icons: python3 scripts/sync-vps-icons.py /path/to/vps-icons."""
 import argparse
 import io
 import json
@@ -8,8 +8,8 @@ import subprocess
 import tarfile
 
 ROOT = Path(__file__).resolve().parents[1]
-TAG = "v1.0.0"
-COMMIT = "01958b7162d2733285509f44bd7fd8e841cfb89e"
+TAG = "v1.4.0"
+COMMIT = "79c5441af8518eb7ae4646835333b5230a08085d"
 
 
 def sync(repo):
@@ -42,6 +42,7 @@ def sync(repo):
                 "name": icon["name"],
                 "names": icon.get("names", {}),
                 "aliases": icon.get("aliases", []),
+                "nicknames": icon.get("nicknames", []),
             })
             source = small.get("source", icon["source"]) if compact else icon["source"]
             notices.append(f"{icon['name']} | {icon['license']} | {source}")

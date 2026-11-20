@@ -28,7 +28,7 @@ export function VpsIconPicker({
                 value={icons.find((icon) => icon.slug === slug) ?? null}
                 itemToStringLabel={(icon) => icon.name}
                 filter={(icon, query) =>
-                    [icon.slug, icon.name, ...Object.values(icon.names), ...icon.aliases].some(
+                    [icon.slug, icon.name, ...Object.values(icon.names), ...icon.aliases, ...icon.nicknames].some(
                         (term) => term?.toLowerCase().includes(query.trim().toLowerCase()),
                     )
                 }

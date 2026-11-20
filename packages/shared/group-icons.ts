@@ -8,7 +8,7 @@ export type ParsedGroupIcon =
   | { kind: "vps"; value: string; slug: string };
 
 export function vpsIconUrl(base: string, slug: string, mode: "light" | "dark"): string {
-  return `${base}vps-icons/v1.0.0/${mode}/${slug}.svg`;
+  return `${base}vps-icons/v1.4.0/${mode}/${slug}.svg`;
 }
 
 const SCRIPT_BLOCK_RE =
