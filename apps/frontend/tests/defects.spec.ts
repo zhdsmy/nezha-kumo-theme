@@ -235,6 +235,10 @@ test("first paint avoids Nezha placeholder, wrong node header/count, and false r
     releaseFrame()
     await expect(page.locator("main h1")).toContainText("Tokyo primary")
     await expect(page).toHaveTitle("Tokyo primary · Monitor Hub")
+    await expect(page.locator('meta[name="apple-mobile-web-app-title"]')).toHaveAttribute(
+        "content",
+        "Monitor Hub",
+    )
     await expect(page.locator(".nk-sidebar .brand")).toHaveText("Monitor Hub")
     await expect(page.locator(".connection")).toHaveAttribute("data-status", "live")
     await expect(page.locator(".connection")).toHaveText("Live")

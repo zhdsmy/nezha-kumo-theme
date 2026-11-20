@@ -31,22 +31,24 @@ export function mergeHistoryTail(
     return [...readings.values()].sort((a, b) => a.at - b.at)
 }
 
+/**
+ * Nezha stamps a history bucket with a reading taken up to 30 s later, so merged live readings
+ * can step back a little. Only a fall below half is a reset (agent restart); smaller steps back
+ * are skipped.
+ */
+function step(sum: number, previous: number | undefined, value: number): [number, number] {
+    if (previous === undefined || value >= previous) return [sum + value - (previous ?? value), value]
+    return value < previous / 2 ? [sum + value, value] : [sum, previous]
+}
+
 /** Counter drops start a new segment; its first reading is traffic observed since reset. */
 export function dailyTraffic(points: readonly HistoryPoint[], midnight: number): HistoryPoint[] {
     let previousUp: number | undefined, previousDown: number | undefined
     let up = 0,
         down = 0
     return mergeHistoryTail(points, [], midnight).map((p) => {
-        if (p.totalUp !== undefined) {
-            if (previousUp !== undefined)
-                up += p.totalUp >= previousUp ? p.totalUp - previousUp : p.totalUp
-            previousUp = p.totalUp
-        }
-        if (p.totalDown !== undefined) {
-            if (previousDown !== undefined)
-                down += p.totalDown >= previousDown ? p.totalDown - previousDown : p.totalDown
-            previousDown = p.totalDown
-        }
+        if (p.totalUp !== undefined) [up, previousUp] = step(up, previousUp, p.totalUp)
+        if (p.totalDown !== undefined) [down, previousDown] = step(down, previousDown, p.totalDown)
         return {
             ...p,
             totalUp: previousUp === undefined ? undefined : up,

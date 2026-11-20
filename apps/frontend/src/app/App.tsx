@@ -259,6 +259,17 @@ export function App() {
     useEffect(() => {
         if (!nodeId && siteTitle) document.title = siteTitle
     }, [nodeId, siteTitle])
+    // iOS names a home screen icon after the page title, which on a node page starts with the node.
+    useEffect(() => {
+        if (!siteTitle) return
+        let meta = document.querySelector<HTMLMetaElement>('meta[name="apple-mobile-web-app-title"]')
+        if (!meta) {
+            meta = document.createElement("meta")
+            meta.name = "apple-mobile-web-app-title"
+            document.head.append(meta)
+        }
+        meta.content = siteTitle
+    }, [siteTitle])
     const reconnecting = phase === "ready" && connectionState === "reconnecting"
     const kumoTranslations = useMemo(
         () => ({

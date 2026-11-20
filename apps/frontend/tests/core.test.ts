@@ -135,6 +135,18 @@ describe("day summary", () => {
         )
     })
 
+    it("does not count a history bucket stamped before its reading as a reset", () => {
+        // Live 2026-11-20: the bucket stamped 13:44:00 held the 13:44:18 reading.
+        const history = [p(0, 0, 0, 1000, 0), p(30_000, 0, 0, 1130, 0)]
+        const live = [
+            { ...p(33_000, 0, 0, 1100, 0), reportedAt: 33_000 },
+            { ...p(36_000, 0, 0, 1110, 0), reportedAt: 36_000 },
+            { ...p(51_000, 0, 0, 1135, 0), reportedAt: 51_000 },
+        ]
+        const merged = mergeHistoryTail(history, live, 0)
+        expect(dailyTraffic(merged, 0).at(-1)?.totalUp).toBe(135)
+    })
+
     it("orders and deduplicates counters by report time including a late snapshot", () => {
         const history = [p(1000, 0, 0, 1000, 0), p(3000, 0, 0, 1500, 0)]
         const live = [
