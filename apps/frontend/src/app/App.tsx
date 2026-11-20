@@ -262,7 +262,9 @@ export function App() {
     // iOS names a home screen icon after the page title, which on a node page starts with the node.
     useEffect(() => {
         if (!siteTitle) return
-        let meta = document.querySelector<HTMLMetaElement>('meta[name="apple-mobile-web-app-title"]')
+        let meta = document.querySelector<HTMLMetaElement>(
+            'meta[name="apple-mobile-web-app-title"]',
+        )
         if (!meta) {
             meta = document.createElement("meta")
             meta.name = "apple-mobile-web-app-title"

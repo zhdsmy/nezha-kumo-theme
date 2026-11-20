@@ -37,7 +37,8 @@ export function mergeHistoryTail(
  * are skipped.
  */
 function step(sum: number, previous: number | undefined, value: number): [number, number] {
-    if (previous === undefined || value >= previous) return [sum + value - (previous ?? value), value]
+    if (previous === undefined || value >= previous)
+        return [sum + value - (previous ?? value), value]
     return value < previous / 2 ? [sum + value, value] : [sum, previous]
 }
 

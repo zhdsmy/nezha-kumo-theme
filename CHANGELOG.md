@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.13] - 2026-11-20
+
+- Fix today's traffic growing by terabytes in a page left open: a history reading stamped slightly early is no longer counted as a counter reset.
+- Show VPS provider icons for groups (vps-icons v1.4.0, 263 icons), in light or dark to match the page.
+- Add a web app manifest, so a site added to the Home Screen from any page opens at the home page as a standalone app named after the site.
+- Hide the ⌘K hint on touch-only devices.
+- Keep the active item background and the footer button whole and centered in the collapsed sidebar on touch screens, and keep the home tiles from jumping when the status line appears.
+- Keep charts, filters and touch controls usable across widths.
+- Admin: pick a group's icon from the bundled VPS icons, searching by name, Chinese name, alias or nickname.
+- Admin: let server, group, notifier, cron, service and MCP OAuth lists use the spare table width, and align form controls on narrow screens.
+
 ## [0.1.12] - 2026-11-19
 
 - Center the selected range tab and the top bar icons on touch screens.
