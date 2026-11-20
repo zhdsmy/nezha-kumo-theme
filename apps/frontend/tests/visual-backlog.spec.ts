@@ -165,6 +165,8 @@ test.describe("touch controls", () => {
             ]) {
                 await touchSize(page.locator(selector + ":visible").first())
             }
+            // No keyboard on a touch-only device, so no shortcut hint.
+            await expect(page.locator(".sidebar-search-kbd")).toBeHidden()
             if (width === 952) {
                 // The 57px rail leaves 34px per item. A wider target is clipped by the item and
                 // sits off center, so each control keeps equal insets inside the rail.

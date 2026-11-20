@@ -168,6 +168,12 @@
     font-size: 12px;
     color: var(--text-color-kumo-subtle);
 }
+/* Touch-only devices have no keyboard to press it with. */
+@media (hover: none) and (pointer: coarse) {
+    .sidebar-search-kbd {
+        display: none;
+    }
+}
 .nk-sidebar:not([data-mobile])[data-state="collapsed"] .sidebar-search {
     border-color: transparent;
     background: transparent;
