@@ -2,9 +2,9 @@
 
 English | [简体中文](README.zh-CN.md) | [繁體中文·台灣](README.zh-TW.md) | [繁體中文·香港](README.zh-HK.md) | [日本語](README.ja.md)
 
-A responsive Nezha monitoring dashboard theme (public status frontend and admin panel) built in the visual language of Cloudflare's [Kumo](https://github.com/cloudflare/kumo) design system.
+Responsive public status frontend and admin panel for [Nezha Monitoring](https://github.com/nezhahq/nezha), built with Cloudflare's [Kumo](https://github.com/cloudflare/kumo) design system.
 
-The theme supports English, Simplified Chinese, Traditional Chinese for Taiwan and Hong Kong, and Japanese. Visitors can choose light, dark, or system appearance. Group icons accept one emoji or character, a bundled `vps:<slug>` icon, or an HTTPS image URL. The public page includes live status, traffic billing indicators, and today's traffic totals. The bundled Web App manifest lets visitors add the site to a Home Screen and opens the home page as a standalone app named after the site.
+Supports English, Simplified Chinese, Traditional Chinese (Taiwan and Hong Kong), and Japanese, with **Light**, **Dark**, and **System** appearance modes. The public page shows live server status, traffic billing indicators, and **Today’s traffic** totals, and ships a Web App manifest so adding the site to a Home Screen opens the home page as a standalone app named after the site. Sidebar group icons accept an emoji or single character, a bundled `vps:<slug>` provider icon, or an `https://` image URL.
 
 ## Screenshots
 
@@ -26,37 +26,37 @@ The theme supports English, Simplified Chinese, Traditional Chinese for Taiwan a
 
 ## Compatibility
 
-- **Supported**: [Nezha Monitoring](https://github.com/nezhahq/nezha) **v2.6.0 and above** (built-in Frontend Management was introduced in `v2.6.0`).
-- **Verified**: Tested and verified against **Nezha v2.6.1**.
+- **Supported**: [Nezha Monitoring](https://github.com/nezhahq/nezha) **v2.6.0 and later** (built-in Frontend Management was introduced in `v2.6.0`).
+- **Verified**: Tested against **Nezha v2.6.1**.
 
 ## Installation (Recommended — Nezha v2.6.0+)
 
 > [!IMPORTANT]
 >
-> 1. Install and verify the **User Frontend** first before replacing the **Admin Panel**.
-> 2. Before activating a third-party **Admin Panel**, copy and save the [Rollback](#rollback) commands (plus a Personal Access Token or server shell access) so you can restore the built-in admin UI even if a custom admin build fails to load.
+> 1. Install and verify the **User frontend** before replacing the **Admin frontend**.
+> 2. Before activating a third-party **Admin frontend**, save the [Rollback](#rollback) commands along with a Personal Access Token (PAT) or server shell access so you can restore the built-in admin UI if a custom build fails to load.
 
-Open your Nezha dashboard and navigate to **Settings → Frontends** (`设置 → 前端管理`):
+Open your Nezha dashboard and go to **Settings → Frontends** (or **System → Frontends** in Kumo Admin):
 
-| Target            | GitHub Repository                                                        | Asset Base Path | Release Asset |
-| ----------------- | ------------------------------------------------------------------------ | --------------- | ------------- |
-| **User Frontend** | `zhdsmy/nezha-kumo-theme` (`https://github.com/zhdsmy/nezha-kumo-theme`) | `/`             | `dist.zip`    |
-| **Admin Panel**   | `zhdsmy/nezha-kumo-admin` (`https://github.com/zhdsmy/nezha-kumo-admin`) | `/dashboard/`   | `dist.zip`    |
+| Frontend Type      | Repository URL                                  | Asset Base Path | Release Asset |
+| ------------------ | ----------------------------------------------- | --------------- | ------------- |
+| **User frontend**  | `https://github.com/zhdsmy/nezha-kumo-theme`    | `/`             | `dist.zip`    |
+| **Admin frontend** | `https://github.com/zhdsmy/nezha-kumo-admin`    | `/dashboard/`   | `dist.zip`    |
 
-1. Under **User Frontend**, enter `zhdsmy/nezha-kumo-theme`, load releases, install the desired tag (for example `v1.0.0`), and click **Activate**.
-2. Open your public status page (`/`) to confirm the frontend renders as expected.
-3. Under **Admin Panel**, enter `zhdsmy/nezha-kumo-admin` (a release-only mirror published from matching tags of this repository), load releases, install the matching version tag, and click **Activate**.
+1. Set **Frontend type** to **User frontend**, enter `https://github.com/zhdsmy/nezha-kumo-theme`, click **Read releases**, click **Install** next to the target tag (for example `v1.0.0`), and click **Activate**.
+2. Open your public status page (`/`) and confirm the frontend renders properly.
+3. Set **Frontend type** to **Admin frontend**, enter `https://github.com/zhdsmy/nezha-kumo-admin` (a release-only mirror published from matching tags of this repository), click **Read releases**, install the matching tag, and click **Activate**.
 
-Each release ships a `dist.zip` whose contents live under `dist/` with a non-empty `dist/index.html`, adhering to Nezha's archive limits (`dist.zip` ≤ 64 MiB, extracted ≤ 256 MiB, ≤ 10,000 entries, no symlinks or duplicate paths).
+Each release ships a `dist.zip` whose contents live under `dist/` with a non-empty `dist/index.html`, within Nezha's archive limits (`dist.zip` ≤ 64 MiB, extracted ≤ 256 MiB, ≤ 10,000 entries, no symlinks or duplicate paths).
 
 ## Manual Installation
 
-For panels without Frontend Management or custom container/host mounts:
+For panels without Frontend Management or deployments using custom host/container mounts:
 
-1. Download `dist.zip` (and `dist.zip.sha256`) from [GitHub Releases](https://github.com/zhdsmy/nezha-kumo-theme/releases) for the user frontend, or from [`zhdsmy/nezha-kumo-admin` Releases](https://github.com/zhdsmy/nezha-kumo-admin/releases) for the admin panel, and verify the SHA-256 checksum.
-2. Extract `dist/` to a directory readable by the Nezha Dashboard process/container (for example `data/kumo-user` or `data/kumo-admin`).
-3. _(Optional, user frontend)_ Copy [`apps/frontend/public/config.js`](apps/frontend/public/config.js) next to the extracted `index.html` and customize `window.NezhaKumoConfig`. `dist.zip` ships an all-commented `config.js`, so back up your own copy before extracting an upgrade and restore it afterwards.
-4. Update `user_template` (and/or `admin_template`) in Nezha's `data/config.yaml` to point to the extracted directory, then restart the Nezha Dashboard service.
+1. Download `dist.zip` and `dist.zip.sha256` from [GitHub Releases](https://github.com/zhdsmy/nezha-kumo-theme/releases) (user frontend) or [`zhdsmy/nezha-kumo-admin` Releases](https://github.com/zhdsmy/nezha-kumo-admin/releases) (admin panel), then verify the SHA-256 checksum.
+2. Extract `dist/` to a directory readable by the Nezha Dashboard process or container (for example `data/kumo-user` or `data/kumo-admin`).
+3. _(Optional, user frontend)_ Copy [`apps/frontend/public/config.js`](apps/frontend/public/config.js) next to the extracted `index.html` and customize `window.NezhaKumoConfig`. Because `dist.zip` includes an all-commented `config.js`, back up your file before extracting an upgrade and restore it afterward.
+4. Set `user_template` (and/or `admin_template`) in `data/config.yaml` to the extracted directory, then restart Nezha Dashboard.
 
 ## Rollback
 
@@ -72,7 +72,7 @@ For panels without Frontend Management or custom container/host mounts:
   ```
 
 - **Option B — `config.yaml` on the server**:
-  Stop the Nezha Dashboard service/container, set `admin_template: admin-dist` in `data/config.yaml`, and start the panel again.
+  Stop the Nezha Dashboard service or container, set `admin_template: admin-dist` in `data/config.yaml`, and start the panel again.
 
 ### Roll back the User Frontend
 
@@ -86,13 +86,13 @@ For panels without Frontend Management or custom container/host mounts:
   ```
 
 - **Option B — `config.yaml` on the server**:
-  Stop the Nezha Dashboard service/container, set `user_template: user-dist` in `data/config.yaml`, and start the panel again (or switch back from **Settings → Frontends** in the admin UI).
+  Stop the Nezha Dashboard service or container, set `user_template: user-dist` in `data/config.yaml`, and start the panel again (or switch back on the **Frontends** page in the admin UI).
 
 ## Upgrading & Removing Old Versions
 
-1. In **Settings → Frontends**, refresh the release list for `zhdsmy/nezha-kumo-theme` (and `zhdsmy/nezha-kumo-admin`), install the new tag, and activate it.
-2. Nezha retains previously installed frontend versions on disk for instant rollback. After confirming the new release works, delete inactive older versions from the **Frontends** page to reclaim disk space.
-3. For manual deployments, extract the new `dist.zip` over the template directory (preserving your `config.js` next to `index.html`) and remove unused version directories.
+1. Open **System → Frontends** (or **Settings → Frontends**), load releases for `https://github.com/zhdsmy/nezha-kumo-theme` (and `https://github.com/zhdsmy/nezha-kumo-admin`), click **Install** on the new tag, and click **Activate**.
+2. Nezha keeps previously installed frontend versions on disk for instant rollback. Once the new release is verified, click **Delete** on inactive older versions on the **Frontends** page to reclaim disk space.
+3. For manual deployments, extract the new `dist.zip` over the template directory (preserving your `config.js` next to `index.html`) and delete unused version directories.
 
 ## Configuration
 
@@ -101,7 +101,7 @@ For panels without Frontend Management or custom container/host mounts:
 Two configuration methods are supported and can be used together:
 
 1. **Panel Custom Code (Recommended for Frontend Management installs)**
-   In **Settings → System settings → Custom code** (`设置 → 自定义代码`, user frontend custom code), add a JSON `<script>` block with `id="nezha-kumo-config"`:
+   In **System → System settings** → **Custom Codes (Style and Script)** (or **Settings → System settings** in the built-in admin; user-frontend `custom_code`), add a JSON `<script>` block with `id="nezha-kumo-config"`:
 
    ```html
    <script type="application/json" id="nezha-kumo-config">
@@ -114,10 +114,10 @@ Two configuration methods are supported and can be used together:
    </script>
    ```
 
-   This block uses `type="application/json"` — it is parsed as data only and never executed as JavaScript.
+   This `<script>` uses `type="application/json"` — it is parsed strictly as JSON data and never executed as JavaScript.
 
 2. **`config.js` (`window.NezhaKumoConfig`, for manual deployments)**
-   Place a `config.js` file next to the extracted `index.html`:
+   Place `config.js` next to the extracted `index.html`:
 
    ```js
    window.NezhaKumoConfig = {
@@ -126,31 +126,31 @@ Two configuration methods are supported and can be used together:
    };
    ```
 
-   - When both `<script id="nezha-kumo-config">` and `config.js` exist, settings are merged key-by-key and **`config.js` takes precedence**.
-   - When `config.js` is absent, the page works normally on the panel JSON or defaults. The browser logs a 404 for the missing file; `dist.zip` ships a commented `config.js`, so this only happens if you delete it.
+   - When both `<script id="nezha-kumo-config">` and `config.js` are present, settings merge key by key and **`config.js` takes precedence**.
+   - Without `config.js`, the frontend uses the panel JSON or built-in defaults. `dist.zip` includes a commented `config.js`, so the browser only logs a 404 if that file is deleted.
 
 ### Theme Settings Reference
 
 All keys are optional and defined in [`apps/frontend/src/core/settings.ts`](apps/frontend/src/core/settings.ts):
 
-| Key                 | Type                                           | Default    | Description                                                                                                            |
-| ------------------- | ---------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `defaultAppearance` | `"system" \| "light" \| "dark"`                | `"system"` | Initial color scheme before a visitor chooses one (`nkt:appearance`).                                                  |
-| `defaultLanguage`   | `"auto" \| "en" \| "zh-CN" \| "zh-HK" \| "zh-TW" \| "ja"` | `"auto"`   | Initial UI language (`"auto"` follows browser / panel language).                                                       |
-| `siteTitle`         | `string`                                       | `""`       | Custom brand title in the sidebar and `<title>`. Falls back to the panel's `site_name` (or `"Nezha"`) when empty.      |
-| `showOverview`      | `boolean`                                      | `true`     | Show the summary metric tiles at the top of the home page.                                                             |
-| `showCost`          | `boolean`                                      | `true`     | Show the aggregated recurring fee menu on the home page and enable currency conversion.                                |
-| `showRegions`       | `boolean`                                      | `true`     | Show the region flag filter bar above the server list.                                                                 |
-| `showGroups`        | `boolean`                                      | `true`     | Show server-group navigation in the sidebar and group sections on the home page.                                       |
-| `showBilling`       | `boolean`                                      | `true`     | Show plan fee, billing cycle, expiration, and quota metadata parsed from `public_note`.                                |
-| `showOffline`       | `boolean`                                      | `true`     | Include offline servers in the public server list (`false` hides offline servers).                                     |
-| `hiddenNodes`       | `string[]`                                     | `[]`       | Server IDs or exact server names to hide on the public frontend (also accepts a comma- or newline-separated `string`). |
-| `hideAdminEntry`    | `boolean`                                      | `false`    | Hide the sign-in / admin dashboard button in the top bar.                                                              |
-| `footerNote`        | `string`                                       | `""`       | Optional plain-text note shown on its own line below the footer credits.                                               |
+| Key                 | Type                                                       | Default    | Description                                                                                                              |
+| ------------------- | ---------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `defaultAppearance` | `"system" \| "light" \| "dark"`                            | `"system"` | Initial color scheme before a visitor chooses one (`nkt:appearance`).                                                    |
+| `defaultLanguage`   | `"auto" \| "en" \| "zh-CN" \| "zh-HK" \| "zh-TW" \| "ja"` | `"auto"`   | Initial UI language before a visitor chooses one (`nkt:language`); `"auto"` uses the panel language, then browser language. |
+| `siteTitle`         | `string`                                                   | `""`       | Custom brand title in the sidebar and `<title>`. Falls back to the panel's `site_name` (or `"Nezha"`) when empty.        |
+| `showOverview`      | `boolean`                                                  | `true`     | Show the summary metric tiles at the top of the home page.                                                               |
+| `showCost`          | `boolean`                                                  | `true`     | Show the recurring fee menu (**Monthly fees** / **Yearly fees**) on the home page and enable currency conversion.        |
+| `showRegions`       | `boolean`                                                  | `true`     | Show the region flag filter bar above the server list.                                                                   |
+| `showGroups`        | `boolean`                                                  | `true`     | Show **Groups** navigation in the sidebar and enable filtering by group.                                                 |
+| `showBilling`       | `boolean`                                                  | `true`     | Show plan fee, billing cycle, expiration, and quota metadata parsed from `public_note`.                                  |
+| `showOffline`       | `boolean`                                                  | `true`     | Include offline servers in the public server list (`false` hides offline servers).                                       |
+| `hiddenNodes`       | `string[]`                                                 | `[]`       | Server IDs or exact server names to hide on the public frontend (also accepts a comma- or newline-separated `string`).   |
+| `hideAdminEntry`    | `boolean`                                                  | `false`    | Hide the **Sign in** / **Dashboard** button in the top bar.                                                              |
+| `footerNote`        | `string`                                                   | `""`       | Optional plain-text note shown on its own line below the footer credits.                                                 |
 
 ### Server Group Icons (`nezha-kumo-group-icons`)
 
-Custom icons for sidebar server groups are stored in user-frontend **Custom code** (`custom_code`) as a JSON block with `id="nezha-kumo-group-icons"` (see [`packages/shared/group-icons.ts`](packages/shared/group-icons.ts)):
+Custom icons for sidebar server groups are stored in user-frontend **Custom Codes (Style and Script)** (`custom_code`) as a JSON `<script>` block with `id="nezha-kumo-group-icons"` (see [`packages/shared/group-icons.ts`](packages/shared/group-icons.ts)):
 
 ```html
 <script type="application/json" id="nezha-kumo-group-icons">
@@ -159,12 +159,12 @@ Custom icons for sidebar server groups are stored in user-frontend **Custom code
 ```
 
 - **Keys**: Nezha server-group IDs as strings (for example `"1"`, `"2"`).
-- **Values**: A `vps:<slug>` entry from bundled **vps-icons v1.4.0** (263 light/dark provider assets), a single grapheme (one emoji or character to fit the `16px` sidebar icon slot), or an `https://` image URL. VPS slugs must match the bundled catalog.
-- **Visual editor**: In the Kumo Admin Panel (`zhdsmy/nezha-kumo-admin`), choose or clear an icon directly in the **Server Group** create/edit dialog. The picker searches provider names, Chinese names, aliases, and nicknames, and updates only this `<script>` block inside `custom_code`.
+- **Values**: A `vps:<slug>` entry from bundled **vps-icons v1.4.0** (263 light/dark provider icons), a single grapheme (one emoji or character for the `16px` sidebar slot), or an `https://` image URL. VPS slugs must exist in the bundled catalog.
+- **Visual editor**: In Kumo Admin (`zhdsmy/nezha-kumo-admin`), open **Server groups** and use **Create Server Group** / **Edit Server Group** → **Choose a VPS icon** (or enter an icon directly) to set or clear an icon. The picker searches slugs, provider names, Chinese names, aliases, and nicknames, updating only this `<script>` block in `custom_code`.
 
 ## Public Note & Billing / Plan Fields
 
-Server billing and plan metadata live in Nezha's `public_note` JSON field. This theme is compatible with **[nezhainfojson](https://plane.2233444.xyz/)** generators (as well as `nezha-dash` and `Nazhua` dialects) and includes a structured **Public Note** editor in the Kumo Admin Panel (which preserves unknown JSON keys when saving).
+Server billing and plan metadata are stored in Nezha's `public_note` JSON field. The theme is compatible with **[nezhainfojson](https://plane.2233444.xyz/)** generators (as well as `nezha-dash` and `Nazhua` dialects) and includes a structured **Public Note** editor in Kumo Admin that preserves unknown JSON keys on save.
 
 ```json
 {
@@ -217,7 +217,7 @@ Server billing and plan metadata live in Nezha's `public_note` JSON field. This 
 
 ### Private Actual Renewal Amount (`note`)
 
-Signed-in administrators can record a private renewal cost inside Nezha's private **`note`** field so public visitors still see the list price (or nothing) while signed-in sessions see the actual cost in fee totals:
+Administrators can record an actual renewal cost in Nezha's private **`note`** field (or via the **Private note** editor in Kumo Admin). Public visitors still see only the public price (or none), while signed-in users see the actual cost in fee totals and node **Actual cost** details:
 
 ```json
 {
@@ -227,13 +227,13 @@ Signed-in administrators can record a private renewal cost inside Nezha's privat
 }
 ```
 
-`billingDataMod.actualAmount` accepts an optional `/Cycle` suffix (for example `"CNY 300.00/Year"` or `"USD 25.00/Quarter"`). When the cycle suffix is omitted, it falls back to `billingDataMod.cycle` from `public_note`.
+`billingDataMod.actualAmount` requires a currency code or symbol and accepts an optional `/Cycle` suffix (for example `"CNY 300.00/Year"` or `"USD 25.00/Quarter"`). When `/Cycle` is omitted, it inherits `billingDataMod.cycle` from `public_note`.
 
 ## Privacy & Third-Party Requests
 
-- **Exchange-rate lookup**: When `showCost` is `true` (default), visitor browsers send a credential-less `GET` request to `https://api.frankfurter.dev/v2/rates?base=USD` to convert multi-currency fees, caching responses in `localStorage` (`nkt:exchange-rates`) for **24 hours**.
-- **Disabling external requests**: Set `"showCost": false` in `nezha-kumo-config` or `config.js` to disable fee aggregation and make **zero** requests to `api.frankfurter.dev`.
-- **Self-hosted assets**: Fonts (`@fontsource-variable/inter`), SVG flags (`flag-icons`), and VPS provider icons are bundled locally in the release archive with no third-party font or icon CDNs.
+- **Exchange-rate lookup**: When `showCost` is `true` (default), visitor browsers send a credential-less `GET` request to `https://api.frankfurter.dev/v2/rates?base=USD` for multi-currency conversion and cache the response in `localStorage` (`nkt:exchange-rates`) for **24 hours**.
+- **Disabling external requests**: Set `"showCost": false` in `nezha-kumo-config` or `config.js` to hide fee totals and make **zero** requests to `api.frankfurter.dev`.
+- **Self-hosted assets**: Fonts (`@fontsource-variable/inter`), SVG flags (`flag-icons`), and VPS provider icons are bundled in the release archive with no third-party font or icon CDNs.
 
 ## Development
 
@@ -249,9 +249,9 @@ pnpm build            # Build frontend and admin bundles
 
 ### Mock E2E & App Workflows
 
-- **Public frontend** ([`apps/frontend`](apps/frontend/README.md)): `pnpm --filter frontend test:e2e` runs Playwright against deterministic HTTP and WebSocket mocks (`apps/frontend/tests/mock.ts`) with no live Nezha panel required.
-- **Admin panel** ([`apps/admin`](apps/admin/README.md)): `pnpm --filter nezha-kumo-admin test` runs Vitest component/unit tests; Playwright E2E specs under `apps/admin/tests/e2e/` run against mocked `/api/v1/*` routes or a local test backend.
-- **README screenshots**: `NKT_DOCS_LANG=en node docs/capture-screenshots.mjs` generates the English set. Use `zh-CN`, `zh-TW`, `zh-HK`, or `ja` for the localized sets, then run `node docs/check-links.mjs`.
+- **Public frontend** ([`apps/frontend`](apps/frontend/README.md)): `pnpm --filter frontend test:e2e` runs Playwright against deterministic HTTP and WebSocket mocks (`apps/frontend/tests/mock.ts`) without a live Nezha panel.
+- **Admin panel** ([`apps/admin`](apps/admin/README.md)): `pnpm --filter nezha-kumo-admin test` runs Vitest component and unit tests; Playwright E2E specs under `apps/admin/tests/e2e/` run against mocked `/api/v1/*` routes or a local test backend.
+- **README screenshots**: `NKT_DOCS_LANG=en node docs/capture-screenshots.mjs` generates the English set. Pass `zh-CN`, `zh-TW`, `zh-HK`, or `ja` for localized sets, then verify with `node docs/check-links.mjs`.
 
 ### Repository Layout
 
@@ -273,6 +273,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for commit conventions and shared shell l
 
 ## Acknowledgments & License
 
-- Visual components and tokens powered by [`@cloudflare/kumo`](https://github.com/cloudflare/kumo) (MIT). This project is an independent community theme and is **not** affiliated with or endorsed by Cloudflare, Inc.
+- UI components and design tokens powered by [`@cloudflare/kumo`](https://github.com/cloudflare/kumo) (MIT). This project is an independent community theme and is **not** affiliated with or endorsed by Cloudflare, Inc.
 - Built for [Nezha Monitoring](https://github.com/nezhahq/nezha), building upon [`nezhahq/admin-frontend`](https://github.com/nezhahq/admin-frontend), Nezha data-layer adaptations from [`foru17/zool-theme`](https://github.com/foru17/zool-theme), [`lipis/flag-icons`](https://github.com/lipis/flag-icons), and [Inter](https://github.com/rsms/inter). Full attributions, including vps-icons v1.4.0, are listed in [NOTICE.md](NOTICE.md).
 - Released under the [MIT License](LICENSE).
