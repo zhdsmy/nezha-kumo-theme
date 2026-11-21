@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.0] - 2026-11-21
+
+- First stable release.
+- README in English, Simplified Chinese, Traditional Chinese (Taiwan), Traditional Chinese (Hong Kong) and Japanese, each with fresh screenshots in that language; install steps now use the full repository URL that the Frontends page expects.
+- Stop a failed live chart fill from retrying after you leave the node page.
+
 ## [0.1.13] - 2026-11-20
 
 - Fix today's traffic growing by terabytes in a page left open: a history reading stamped slightly early is no longer counted as a counter reset.
